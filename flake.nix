@@ -3,7 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/22.05";
-
   };
 
   outputs = { self, nixpkgs }@inputs:
@@ -15,7 +14,13 @@
         mynixhost = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            ./configuration.nix
+            ./qemu/configuration.nix
+          ];
+        };
+        beast = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            ./beast/configuration.nix
           ];
         };
       };
