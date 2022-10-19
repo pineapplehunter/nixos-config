@@ -13,14 +13,15 @@
 
   # enable nix features
   nix = {
-    package = pkgs.nixFlakes;
+    package = pkgs.nixVersions.stable;
     gc.automatic = true;
     settings.auto-optimise-store = true;
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
   };
-
+  nixpkgs.config.allowUnfree = true;
+  
   # input manager
   i18n.inputMethod.enabled = "ibus";
   i18n.inputMethod.ibus.engines = with pkgs.ibus-engines;[ mozc ];
@@ -32,7 +33,7 @@
   boot.loader.systemd-boot.enable = true;
   #boot.loader.efi.canTouchEfiVariables = true;
 
-  # networking.hostName = "beast"; # Define your hostname.
+  networking.hostName = "beast"; # Define your hostname.
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
@@ -91,6 +92,7 @@
     wget
     curl
     git
+    vscode
   ];
 
   fonts = {
