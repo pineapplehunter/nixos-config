@@ -29,8 +29,8 @@
         beast = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            # {pkgs, ...}: {nixpkgs.overlays = [(import rust-overlay)];}
-            ./os/beast/configuration.nix
+            ({pkgs, ...}: {nixpkgs.overlays = [ (import rust-overlay)];})
+            ./beast/configuration.nix
           ];
         };
       };

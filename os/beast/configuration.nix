@@ -93,6 +93,8 @@
     curl
     git
     vscode
+    helix
+    cargo rustc
   ];
 
   fonts = {
