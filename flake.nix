@@ -1,28 +1,59 @@
 {
-  description = "A very basic flake";
+  description = "Configurations for some systems";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/22.05";
+    nixpkgs.url = "nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.utils.follows = "flake-utils";
+    };
   };
 
-  outputs = { self, nixpkgs }@inputs:
-    let
-    in
+  outputs = { self, nixpkgs, flake-utils, rust-overlay, home-manager }:
     {
-      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
       nixosConfigurations = {
         mynixhost = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            ./qemu/configuration.nix
+            # {pkgs, ...}: {nixpkgs.overlays = [(import rust-overlay)];}
+            ./os/qemu/configuration.nix
           ];
         };
         beast = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            ./beast/configuration.nix
+            # {pkgs, ...}: {nixpkgs.overlays = [(import rust-overlay)];}
+            ./os/beast/configuration.nix
           ];
         };
       };
-    };
+    } // {
+      homeConfigurations =
+        let
+          overlays = [ (import rust-overlay) ];
+          pkgs = import nixpkgs { system = "x86_64-linux"; inherit overlays; };
+        in
+        {
+          "shogo" = home-manager.lib.homeManagerConfiguration {
+            inherit pkgs;
+            modules = [ ./home/home.nix ];
+          };
+        };
+    } //
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        overlays = [ ];
+        pkgs = import nixpkgs { inherit system overlays; };
+      in
+      {
+        formatter = pkgs.nixpkgs-fmt;
+      });
+
 }
