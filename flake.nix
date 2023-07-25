@@ -48,8 +48,8 @@
             ({ pkgs, ... }: {
               nixpkgs.overlays = [
                 inputs.nix-xilinx.overlay
-                inputs.curl-http3.overlays.default
-                # (import inputs.rust-overlay)
+                inputs.curl-http3.overlay
+                (import inputs.rust-overlay)
               ];
             })
             ./os/action/configuration.nix

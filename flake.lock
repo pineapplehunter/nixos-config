@@ -10,11 +10,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1684691550,
-        "narHash": "sha256-20/jKaKq+NeYMBNMqPKskqZHkfXK5nH5X6HgxtzG/c0=",
+        "lastModified": 1690299711,
+        "narHash": "sha256-Udp6UfYlWvgrwPdcLeB3fAGVtYlaAzaJRHKEMQqUxKU=",
         "owner": "pineapplehunter",
         "repo": "nix-curl-http3",
-        "rev": "7a6ee100402a0e8daf4a8ccf6dc89b3991d8095b",
+        "rev": "70819789dac07ee285272011bc4fe8dad4b3320d",
         "type": "github"
       },
       "original": {

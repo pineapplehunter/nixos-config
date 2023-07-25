@@ -14,6 +14,7 @@
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   networking.hostName = "action"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -140,7 +141,17 @@
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix = {
+    settings = {
+      experimental-features = [ "nix-command" "flakes" ];
+      auto-optimise-store = true;
+    };
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 30d";
+    };
+  };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -162,11 +173,12 @@
     gnumake
     jetbrains.idea-ultimate
     gnome.gnome-tweaks
-    curl-http3
+    (writeShellScriptBin "curl-http3" "exec -a $0 ${curl-http3}/bin/curl $@")
     vivado
     elan
     htop
     github-cli
+    julia
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -195,6 +207,6 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "23.05"; # Did you read the comment?
+  system.stateVersion = "23.11"; # Did you read the comment?
 
 }
