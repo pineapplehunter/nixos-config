@@ -12,7 +12,9 @@
     ];
 
   # Bootloader.
-  boot.loader.systemd-boot.enable = true;
+  boot.loader.grub.enable = true;
+  boot.loader.grub.useOSProber = true;
+  boot.loader.grub.device = "nodev";
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
@@ -49,7 +51,7 @@
     LC_TIME = "ja_JP.UTF-8";
   };
 
-  fonts.fonts = with pkgs; [
+  fonts.packages = with pkgs; [
     noto-fonts
     noto-fonts-cjk-sans
     noto-fonts-cjk-serif
@@ -179,7 +181,9 @@
     htop
     github-cli
     julia
+    (python3.withPackages (ps: with ps;[sympy]))
   ];
+  environment.variables.EDITOR = "hx";
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
