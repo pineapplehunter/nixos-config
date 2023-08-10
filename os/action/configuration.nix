@@ -12,11 +12,13 @@
     ];
 
   # Bootloader.
-  boot.loader.grub.enable = true;
-  boot.loader.grub.useOSProber = true;
-  boot.loader.grub.device = "nodev";
+  #boot.loader.grub.enable = true;
+  #boot.loader.grub.useOSProber = true;
+  #boot.loader.grub.device = "nodev";
+  boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" "riscv64-linux" ];
 
   networking.hostName = "action"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -58,6 +60,7 @@
     noto-fonts-emoji
     fira-code
     fira-code-symbols
+    vistafonts
   ];
   fonts.fontDir.enable = true;
 
@@ -67,6 +70,26 @@
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
+  services.gnome.gnome-keyring.enable = true;
+  security.pam.services = {
+    gdm.fprintAuth = false;
+    login.fprintAuth = false;
+    passwd.fprintAuth = false;
+  };
+
+  services.snapper.configs = {
+    home = {
+      SUBVOLUME = "/home";
+      ALLOW_USERS = [ "shogo" ];
+      TIMELINE_CREATE = true;
+      TIMELINE_CLEANUP = true;
+      TIMELINE_LIMIT_HOURLY="3"
+TIMELINE_LIMIT_DAILY="3"
+TIMELINE_LIMIT_WEEKLY="2"
+TIMELINE_LIMIT_MONTHLY="1"
+TIMELINE_LIMIT_YEARLY="0"
+    };
+  };
 
   # Configure keymap in X11
   services.xserver = {
@@ -161,27 +184,25 @@
     vim
     curl
     helix
-    nano
     unzip
     vscode
     git
     nix-index
-    ncdu
     syncthing
     rustup
-    stdenv.cc
-    pkg-config
     webcord
-    gnumake
     jetbrains.idea-ultimate
     gnome.gnome-tweaks
     (writeShellScriptBin "curl-http3" "exec -a $0 ${curl-http3}/bin/curl $@")
     vivado
-    elan
     htop
     github-cli
     julia
-    (python3.withPackages (ps: with ps;[sympy]))
+    nethogs
+    (python3.withPackages (ps: with ps;[ sympy ]))
+    nix-output-monitor
+    du-dust
+    ripgrep
   ];
   environment.variables.EDITOR = "hx";
 

@@ -2,11 +2,6 @@
 # and may be overwritten by future invocations.  Please make changes
 # to /etc/nixos/configuration.nix instead.
 { config, lib, pkgs, modulesPath, ... }:
-
-let
-
-  options = [ "subvol=@,autodefrag,commit=120,compress=zstd,noatime,space_cache=v2" ];
-in
 {
   imports =
     [
@@ -22,7 +17,14 @@ in
     {
       device = "/dev/disk/by-uuid/c73fb028-c49b-4d3e-8628-39e326535d46";
       fsType = "btrfs";
-      inherit options;
+      options = [ "subvol=@,autodefrag,commit=120,compress=zstd,noatime,space_cache=v2" ];
+    };
+
+fileSystems."/home" =
+    {
+      device = "/dev/disk/by-uuid/c73fb028-c49b-4d3e-8628-39e326535d46";
+      fsType = "btrfs";
+      options = [ "subvol=@home,autodefrag,commit=120,compress=zstd,noatime,space_cache=v2" ];
     };
 
   fileSystems."/boot" =
