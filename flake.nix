@@ -2,7 +2,7 @@
   description = "Configurations for some systems";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-unstable";
+    nixpkgs.url = "nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
@@ -69,7 +69,39 @@
             modules = [ ./home/home.nix ];
           };
         };
+        apps.x86_64-linux =
+          let
+            mkCmd = t:
+              pkgs.writeShellScriptBin "nixos-${t}-script" ''
+                sudo ${pkgs.nixos-rebuild}/bin/nixos-rebuild ${t} --flake . -v --log-format internal-json |& ${pkgs.nix-output-monitor}/bin/nom --json
+              '';
+          in
+          {
+            switch = {
+              type = "app";
+              program = "${mkCmd "switch"}/bin/nixos-switch-script";
+            };
+            boot = {
+              type = "app";
+              program = "${mkCmd "boot"}/bin/nixos-boot-script";
+            };
+            build = {
+              type = "app";
+              program = "${mkCmd "build"}/bin/nixos-build-script";
+            };
+            diff = {
+              type = "app";
+              program =
+                let
+                  cmd = pkgs.writeShellScriptBin "nixos-diff-script" ''
+                
+${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json |& ${pkgs.nix-output-monitor}/bin/nom --json
+${pkgs.nvd}/bin/nvd diff /run/current-system result
+              '';
+                in
+                "${cmd}/bin/nixos-diff-script";
+            };
+          };
       }
     );
-
 }
