@@ -1,0 +1,17 @@
+diff --git a/direnvrc b/direnvrc
+index 10a20a8..3e46487 100644
+--- a/direnvrc
++++ b/direnvrc
+@@ -204,6 +204,12 @@ use_flake() {
+     # We need to update our cache
+     local tmp_profile="${layout_dir}/flake-profile.$$"
+     local tmp_profile_rc
++      
++      "${NIX_BIN_PREFIX}nix" develop \
++        --extra-experimental-features "nix-command flakes" \
++        --profile "$tmp_profile" "$@" \
++        --log-format internal-json -v --command true |& nom --json
++ 
+     tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" print-dev-env \
+       --extra-experimental-features "nix-command flakes" \
+       --profile "$tmp_profile" "$@")

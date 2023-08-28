@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   imports =
@@ -16,12 +16,28 @@
   #boot.loader.grub.useOSProber = true;
   #boot.loader.grub.device = "nodev";
   boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.configurationLimit = 10;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "riscv64-linux" ];
 
   networking.hostName = "action"; # Define your hostname.
+  #networking.networkmanager.enableStrongSwan = true;
+  #services.xl2tpd.enable = true;
+  #services.libreswan.enable = true;
+  services.strongswan = {
+    enable = true;
+    secrets = [
+      "ipsec.d/ipsec.nm-l2tp.secrets"
+    ];
+  };
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+
+  # virtualisation.virtualbox.host.enable = true;
+  # virtualisation.virtualbox.host.enableExtensionPack = true;
+  # users.extraGroups.vboxusers.members = [ "shogo" ];
+  # virtualisation.libvirtd.enable = true;
+  # programs.dconf.enable = true;
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
@@ -71,10 +87,30 @@
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
   services.gnome.gnome-keyring.enable = true;
-  security.pam.services = {
-    gdm.fprintAuth = false;
-    login.fprintAuth = false;
-    passwd.fprintAuth = false;
+  # security.pam.services = {
+  #   gdm.fprintAuth = false;
+  #   login.fprintAuth = false;
+  #   passwd.fprintAuth = false;
+  # };
+  security.pam.services.login.fprintAuth = false;
+  security.pam.services.gdm-fingerprint = lib.mkIf (config.services.fprintd.enable) {
+    text = ''
+      auth       required                    pam_shells.so
+      auth       requisite                   pam_nologin.so
+      auth       requisite                   pam_faillock.so      preauth
+      auth       required                    ${pkgs.fprintd}/lib/security/pam_fprintd.so
+      auth       optional                    pam_permit.so
+      auth       required                    pam_env.so
+      auth       [success=ok default=1]      ${pkgs.gnome.gdm}/lib/security/pam_gdm.so
+      auth       optional                    ${pkgs.gnome.gnome-keyring}/lib/security/pam_gnome_keyring.so
+
+      account    include                     login
+
+      password   required                    pam_deny.so
+
+      session    include                     login
+      session    optional                    ${pkgs.gnome.gnome-keyring}/lib/security/pam_gnome_keyring.so auto_start
+    '';
   };
 
   services.snapper.configs = {
@@ -83,11 +119,11 @@
       ALLOW_USERS = [ "shogo" ];
       TIMELINE_CREATE = true;
       TIMELINE_CLEANUP = true;
-      TIMELINE_LIMIT_HOURLY="3"
-TIMELINE_LIMIT_DAILY="3"
-TIMELINE_LIMIT_WEEKLY="2"
-TIMELINE_LIMIT_MONTHLY="1"
-TIMELINE_LIMIT_YEARLY="0"
+      TIMELINE_LIMIT_HOURLY = "3";
+      TIMELINE_LIMIT_DAILY = "3";
+      TIMELINE_LIMIT_WEEKLY = "2";
+      TIMELINE_LIMIT_MONTHLY = "1";
+      TIMELINE_LIMIT_YEARLY = "0";
     };
   };
 
@@ -102,6 +138,9 @@ TIMELINE_LIMIT_YEARLY="0"
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
+  services.avahi.enable = true;
+  services.avahi.nssmdns = true;
+  services.avahi.openFirewall = true;
 
   services.flatpak.enable = true;
 
@@ -117,7 +156,7 @@ TIMELINE_LIMIT_YEARLY="0"
 
   virtualisation = {
     docker.enable = true;
-    podman.enable = true;
+    #podman.enable = true;
   };
   # Enable sound with pipewire.
   sound.enable = true;
@@ -168,14 +207,15 @@ TIMELINE_LIMIT_YEARLY="0"
   nixpkgs.config.allowUnfree = true;
   nix = {
     settings = {
-      experimental-features = [ "nix-command" "flakes" ];
-      auto-optimise-store = true;
+      experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
+      trusted-users = [ "shogo" "riken" ];
     };
     gc = {
       automatic = true;
       dates = "weekly";
       options = "--delete-older-than 30d";
     };
+    optimise.automatic = true;
   };
 
   # List packages installed in system profile. To search, run:
@@ -191,6 +231,7 @@ TIMELINE_LIMIT_YEARLY="0"
     syncthing
     rustup
     webcord
+    slack
     jetbrains.idea-ultimate
     gnome.gnome-tweaks
     (writeShellScriptBin "curl-http3" "exec -a $0 ${curl-http3}/bin/curl $@")
@@ -203,8 +244,29 @@ TIMELINE_LIMIT_YEARLY="0"
     nix-output-monitor
     du-dust
     ripgrep
+    virt-manager
+    btrfs-assistant
+    starship
   ];
   environment.variables.EDITOR = "hx";
+  programs.direnv = {
+    enable = true;
+    silent = true;
+    persistDerivations = true;
+    nix-direnv = {
+      enable = true;
+      package = (pkgs.nix-direnv.overrideAttrs (old: {
+        patches = [ ./direnv.patch ];
+        postPatch = ''
+          sed -i "2iNIX_BIN_PREFIX=${pkgs.nix}/bin/" direnvrc
+          substituteInPlace direnvrc \
+            --replace "grep" "${pkgs.gnugrep}/bin/grep"
+          substituteInPlace direnvrc \
+            --replace "nom" "${pkgs.nix-output-monitor}/bin/nom"
+        '';
+      }));
+    };
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
