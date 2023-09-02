@@ -23,9 +23,18 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
+    devenv = {
+      url = "github:cachix/devenv";
+      # inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, ... }@inputs:
+  nixConfig = {
+    extra-trusted-public-keys = "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=";
+    extra-substituters = "https://devenv.cachix.org";
+  };
+
+  outputs = { self, nixpkgs, devenv, ... }@inputs:
     {
       nixosConfigurations = {
         mynixhost = nixpkgs.lib.nixosSystem {
@@ -52,6 +61,17 @@
                 (import inputs.rust-overlay)
               ];
             })
+            ({ pkgs, ... }: {
+              nixpkgs.overlays = [
+                (final: super: {
+                  devenv = devenv.packages.x86_64-linux.devenv;
+                  #python3 = final.python311;
+                  julia = final.writeShellScriptBin "julia" ''
+                    PYTHON=${final.python3.withPackages (ps: with ps;[sympy numpy])}/bin/python3 ${super.julia}/bin/julia $@
+                  '';
+                })
+              ];
+            })
             ./os/action/configuration.nix
           ];
         };
@@ -71,24 +91,22 @@
         };
         apps.x86_64-linux =
           let
-            mkCmd = t:
-              pkgs.writeShellScriptBin "nixos-${t}-script" ''
-                sudo ${pkgs.nixos-rebuild}/bin/nixos-rebuild ${t} --flake . -v --log-format internal-json |& ${pkgs.nix-output-monitor}/bin/nom --json
-              '';
+            mkApp = t:
+              let
+                scriptName = "nixos-${t}-script";
+                cmd = pkgs.writeShellScriptBin scriptName ''
+                  sudo ${pkgs.nixos-rebuild}/bin/nixos-rebuild ${t} --flake . -v --log-format internal-json |& ${pkgs.nix-output-monitor}/bin/nom --json
+                '';
+              in
+              {
+                type = "app";
+                program = "${cmd}/bin/${scriptName}";
+              };
           in
           {
-            switch = {
-              type = "app";
-              program = "${mkCmd "switch"}/bin/nixos-switch-script";
-            };
-            boot = {
-              type = "app";
-              program = "${mkCmd "boot"}/bin/nixos-boot-script";
-            };
-            build = {
-              type = "app";
-              program = "${mkCmd "build"}/bin/nixos-build-script";
-            };
+            switch = mkApp "switch";
+            boot = mkApp "boot";
+            build = mkApp "build";
             diff = {
               type = "app";
               program =
