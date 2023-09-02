@@ -31,6 +31,10 @@
       "ipsec.d/ipsec.nm-l2tp.secrets"
     ];
   };
+  services.btrfs.autoScrub = {
+    enable = true;
+    fileSystems = [ "/" ];
+  };
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # virtualisation.virtualbox.host.enable = true;
@@ -213,7 +217,7 @@
     gc = {
       automatic = true;
       dates = "weekly";
-      options = "--delete-older-than 30d";
+      options = "--delete-older-than 14d";
     };
     optimise.automatic = true;
   };
@@ -240,13 +244,15 @@
     github-cli
     julia
     nethogs
-    (python3.withPackages (ps: with ps;[ sympy ]))
+    #python3
     nix-output-monitor
     du-dust
     ripgrep
     virt-manager
     btrfs-assistant
     starship
+    devenv
+    (writeShellScriptBin "flatpak-chrome-alias" "flatpak run com.google.Chrome $@")
   ];
   environment.variables.EDITOR = "hx";
   programs.direnv = {
