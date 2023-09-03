@@ -112,12 +112,33 @@
               program =
                 let
                   cmd = pkgs.writeShellScriptBin "nixos-diff-script" ''
-                
-${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json |& ${pkgs.nix-output-monitor}/bin/nom --json
-${pkgs.nvd}/bin/nvd diff /run/current-system result
-              '';
+                    ${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json |& ${pkgs.nix-output-monitor}/bin/nom --json
+                    ${pkgs.nvd}/bin/nvd diff /run/current-system result
+                  '';
                 in
                 "${cmd}/bin/nixos-diff-script";
+            };
+            update = {
+              type = "app";
+              program =
+                let
+                  cmd = pkgs.writeShellScriptBin "nixos-update-script" ''
+                    nix flake update
+                    ${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json |& ${pkgs.nix-output-monitor}/bin/nom --json
+                    ${pkgs.nvd}/bin/nvd diff /run/current-system result
+                    function yes_or_no {
+                        while true; do
+                            read -p "$* [y/n]: " yn
+                            case $yn in
+                                [Yy]*) return 0  ;;  
+                                [Nn]*) echo "Aborted" ; return  1 ;;
+                            esac
+                        done
+                    }
+                    yes_or_no "do you want to commit and update?" && git add . && git commit -m "$(date -Iminutes)" && nix run ".#switch"
+                  '';
+                in
+                "${cmd}/bin/nixos-update-script";
             };
           };
       }
