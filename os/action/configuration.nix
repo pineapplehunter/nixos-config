@@ -254,7 +254,9 @@
     devenv
     (writeShellScriptBin "flatpak-chrome-alias" "flatpak run com.google.Chrome $@")
   ];
+
   environment.variables.EDITOR = "hx";
+
   programs.direnv = {
     enable = true;
     silent = true;
