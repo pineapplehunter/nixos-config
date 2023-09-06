@@ -65,10 +65,15 @@
               nixpkgs.overlays = [
                 (final: super: {
                   devenv = devenv.packages.x86_64-linux.devenv;
-                  #python3 = final.python311;
-                  julia = final.writeShellScriptBin "julia" ''
-                    PYTHON=${final.python3.withPackages (ps: with ps;[sympy numpy])}/bin/python3 ${super.julia}/bin/julia $@
-                  '';
+                  julia = final.symlinkJoin {
+                    name = "julia";
+                    paths = [ super.julia ];
+                    buildInputs = [ final.makeWrapper ];
+                    postBuild = ''
+                      wrapProgram $out/bin/julia \
+                        --set-default PYTHON "${final.python3.withPackages (ps: with ps;[sympy numpy])}/bin/python3"
+                    '';
+                  };
                 })
               ];
             })
