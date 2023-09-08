@@ -20,6 +20,7 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "riscv64-linux" ];
+  boot.loader.efi.efiSysMountPoint = "/efi";
 
   networking.hostName = "action"; # Define your hostname.
   #networking.networkmanager.enableStrongSwan = true;
