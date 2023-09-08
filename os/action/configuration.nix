@@ -81,6 +81,7 @@
     fira-code
     fira-code-symbols
     vistafonts
+    (nerdfonts.override { fonts = [ "FiraCode" "DejaVuSansMono" ]; })
   ];
   fonts.fontDir.enable = true;
 
