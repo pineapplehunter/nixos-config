@@ -27,11 +27,20 @@
       options = [ "subvol=@home,autodefrag,commit=120,compress=zstd,noatime,space_cache=v2" ];
     };
 
+  fileSystems."/efi" =
+    {
+      device = "/dev/disk/by-uuid/DA91-D0F6";
+      fsType = "vfat";
+    };
+
   fileSystems."/boot" =
     {
       device = "/dev/disk/by-uuid/8057-31F0";
       fsType = "vfat";
     };
+
+  #fileSystems."/efi/EFI/Linux" = { device = "/boot/EFI/Linux"; options = [ "bind" ]; };
+  #fileSystems."/efi/EFI/nixos" = { device = "/boot/EFI/nixos"; options = [ "bind" ]; };
 
   swapDevices = [ ];
 
