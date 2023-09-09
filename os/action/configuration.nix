@@ -255,6 +255,7 @@
     starship
     devenv
     (writeShellScriptBin "flatpak-chrome-alias" "flatpak run com.google.Chrome $@")
+    nixos-artwork-wallpaper
   ];
 
   environment.variables.EDITOR = "hx";

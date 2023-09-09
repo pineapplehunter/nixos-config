@@ -27,6 +27,10 @@
       url = "github:cachix/devenv";
       # inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixos-artwork = {
+      url = "github:NixOS/nixos-artwork";
+      flake = false;
+    };
   };
 
   nixConfig = {
@@ -72,6 +76,18 @@
                     postBuild = ''
                       wrapProgram $out/bin/julia \
                         --set-default PYTHON "${final.python3.withPackages (ps: with ps;[sympy numpy])}/bin/python3"
+                    '';
+                  };
+                  nixos-artwork-wallpaper = final.stdenv.mkDerivation rec {
+                    pname = "nixos-wallpapers";
+                    version = "1.0.0";
+                    src = inputs.nixos-artwork;
+                    unpackPhase = "true";
+                    buildPhase = "true";
+                    installPhase = ''
+                      mkdir -pv $out/share/backgrounds/nixos
+                      realpath ${src}
+                      cp -v ${src}/wallpapers/*.png $out/share/backgrounds/nixos
                     '';
                   };
                 })
