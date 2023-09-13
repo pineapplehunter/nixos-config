@@ -227,33 +227,39 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+    # tools
     vim
     curl
     helix
     unzip
-    vscode
     git
     nix-index
-    syncthing
-    rustup
-    webcord
-    slack
-    jetbrains.idea-ultimate
-    gnome.gnome-tweaks
-    (writeShellScriptBin "curl-http3" "exec -a $0 ${curl-http3}/bin/curl $@")
-    vivado
     htop
-    github-cli
-    julia
     nethogs
-    #python3
-    nix-output-monitor
+    github-cli
+    starship
     du-dust
-    ripgrep
     virt-manager
     btrfs-assistant
-    starship
+    ripgrep
     devenv
+    nix-output-monitor
+    gnome.gnome-tweaks
+    nil
+    (writeShellScriptBin "curl-http3" "exec -a $0 ${curl-http3}/bin/curl $@")
+    # editor
+    vscode
+    jetbrains.idea-ultimate
+    vivado
+    # service
+    syncthing
+    webcord
+    slack
+    # lang
+    rustup
+    julia
+    python3
+    # other
     (writeShellScriptBin "flatpak-chrome-alias" "flatpak run com.google.Chrome $@")
     nixos-artwork-wallpaper
   ];
