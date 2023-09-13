@@ -116,7 +116,7 @@
               let
                 scriptName = "nixos-${t}-script";
                 cmd = pkgs.writeShellScriptBin scriptName ''
-                  sudo ${pkgs.nixos-rebuild}/bin/nixos-rebuild ${t} --flake . -v --log-format internal-json |& ${pkgs.nix-output-monitor}/bin/nom --json
+                  sudo ${pkgs.nixos-rebuild}/bin/nixos-rebuild ${t} --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
                 '';
               in
               {
@@ -133,7 +133,7 @@
               program =
                 let
                   cmd = pkgs.writeShellScriptBin "nixos-diff-script" ''
-                    ${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json |& ${pkgs.nix-output-monitor}/bin/nom --json
+                    ${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
                     ${pkgs.nvd}/bin/nvd diff /run/current-system result
                   '';
                 in
@@ -145,7 +145,7 @@
                 let
                   cmd = pkgs.writeShellScriptBin "nixos-update-script" ''
                     nix flake update
-                    ${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json |& ${pkgs.nix-output-monitor}/bin/nom --json
+                    ${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
                     ${pkgs.nvd}/bin/nvd diff /run/current-system result
                     function yes_or_no {
                         while true; do

@@ -286,7 +286,16 @@
   #   enable = true;
   #   enableSSHSupport = true;
   # };
-  programs.zsh.enable = true;
+  programs.zsh = {
+    enable = true;
+    shellAliases = {
+      ls = "${pkgs.eza}/bin/eza --icons";
+    };
+    ohMyZsh.enable = true;
+    interactiveShellInit = ''
+      eval "$(starship init zsh)"
+    '';
+  };
 
   # List services that you want to enable:
 
