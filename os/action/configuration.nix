@@ -290,6 +290,7 @@
     enable = true;
     shellAliases = {
       ls = "${pkgs.eza}/bin/eza --icons";
+      la = "ls -a";
     };
     ohMyZsh.enable = true;
     interactiveShellInit = ''
