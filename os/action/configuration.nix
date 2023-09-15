@@ -202,10 +202,10 @@
       isNormalUser = true;
       description = "Shogo at Riken";
       extraGroups = [ "networkmanager" "wheel" ];
-      packages = with pkgs; [
-        # firefox
-        #  thunderbird
-      ];
+      # packages = with pkgs; [
+      #   # firefox
+      #   #  thunderbird
+      # ];
     };
   };
 
@@ -269,7 +269,6 @@
   programs.direnv = {
     enable = true;
     silent = true;
-    persistDerivations = true;
     nix-direnv = {
       enable = true;
       package = (pkgs.nix-direnv.overrideAttrs (old: {
