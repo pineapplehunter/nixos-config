@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixpkgs-unstable";
+    nixpkgs-gnome.url = "nixpkgs/gnome";
     flake-utils.url = "github:numtide/flake-utils";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
@@ -90,6 +91,7 @@
                       cp -v ${src}/wallpapers/*.png $out/share/backgrounds/nixos
                     '';
                   };
+                  # gnome = inputs.nixpkgs-gnome.legacyPackages.x86_64-linux.gnome;
                 })
               ];
             })
