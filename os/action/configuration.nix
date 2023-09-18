@@ -196,7 +196,7 @@
         #  thunderbird
         jetbrains.idea-ultimate
       ];
-      shell = pkgs.nushell;
+      # shell = pkgs.nushell;
     };
 
     riken = {
