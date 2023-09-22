@@ -91,7 +91,7 @@
                       cp -v ${src}/wallpapers/*.png $out/share/backgrounds/nixos
                     '';
                   };
-                  gnome = inputs.nixpkgs-gnome.legacyPackages.x86_64-linux.gnome;
+                  # gnome = inputs.nixpkgs-gnome.legacyPackages.x86_64-linux.gnome;
                   # python3 = final.python311;
                 })
               ];
