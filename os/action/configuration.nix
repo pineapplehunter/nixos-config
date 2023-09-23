@@ -246,7 +246,7 @@
     devenv
     nix-output-monitor
     gnome.gnome-tweaks
-    nil
+    nixd
     cachix
     (writeShellScriptBin "curl-http3" "exec -a $0 ${curl-http3}/bin/curl $@")
     # editor
