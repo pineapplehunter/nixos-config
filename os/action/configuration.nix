@@ -248,6 +248,7 @@
     gnome.gnome-tweaks
     nixd
     cachix
+    nixpkgs-fmt
     (writeShellScriptBin "curl-http3" "exec -a $0 ${curl-http3}/bin/curl $@")
     # editor
     vscode
