@@ -247,6 +247,7 @@
     nix-output-monitor
     gnome.gnome-tweaks
     nil
+    cachix
     (writeShellScriptBin "curl-http3" "exec -a $0 ${curl-http3}/bin/curl $@")
     # editor
     vscode
