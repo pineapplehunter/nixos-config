@@ -263,6 +263,7 @@
     # other
     (writeShellScriptBin "flatpak-chrome-alias" "flatpak run com.google.Chrome $@")
     nixos-artwork-wallpaper
+    udisks2
   ];
 
   environment.variables.EDITOR = "hx";
