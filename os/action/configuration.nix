@@ -21,7 +21,7 @@
     useOSProber = true;
     efiSupport = true;
     device = "nodev";
-    configurationLimit = 10;
+    configurationLimit = 20;
     default = "saved";
   };
   boot.loader.efi.canTouchEfiVariables = true;
@@ -227,7 +227,7 @@
     gc = {
       automatic = true;
       dates = "weekly";
-      options = "--delete-older-than 14d";
+      options = "--delete-older-than 30d";
     };
     optimise.automatic = true;
   };
