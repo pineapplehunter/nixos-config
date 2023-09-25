@@ -36,6 +36,7 @@
     enable = true;
     fileSystems = [ "/" ];
   };
+  services.fwupd.enable = true;
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # virtualisation.virtualbox.host.enable = true;
