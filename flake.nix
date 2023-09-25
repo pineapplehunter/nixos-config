@@ -62,14 +62,10 @@
             ({ pkgs, ... }: {
               nixpkgs.overlays = [
                 inputs.nix-xilinx.overlay
-                inputs.curl-http3.overlay
-                (import inputs.rust-overlay)
-              ];
-            })
-            ({ pkgs, ... }: {
-              nixpkgs.overlays = [
+                inputs.curl-http3.overlays.default
+                inputs.rust-overlay.overlays.default
                 (final: super: {
-                  devenv = devenv.packages.x86_64-linux.devenv;
+                  devenv = devenv.packages.${final.system}.devenv;
                   julia = final.symlinkJoin {
                     name = "julia";
                     paths = [ super.julia ];
@@ -102,8 +98,7 @@
       };
     } // (
       let
-        overlays = [ (import inputs.rust-overlay) ];
-        pkgs = import nixpkgs { system = "x86_64-linux"; inherit overlays; };
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
       in
       {
         formatter.x86_64-linux = pkgs.nixpkgs-fmt;
