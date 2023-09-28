@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixpkgs-unstable";
-    nixpkgs-gnome.url = "nixpkgs/gnome";
+    # nixpkgs.url = "nixpkgs/gnome";
     flake-utils.url = "github:numtide/flake-utils";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
@@ -121,8 +121,7 @@
                 type = "app";
                 program = "${cmd}/bin/${scriptName}";
               };
-          in
-          {
+          in rec {
             switch = mkApp "switch";
             boot = mkApp "boot";
             build = mkApp "build";
@@ -159,6 +158,7 @@
                 in
                 "${cmd}/bin/nixos-update-script";
             };
+            default = update;
           };
       }
     );
