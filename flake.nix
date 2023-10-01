@@ -121,7 +121,8 @@
                 type = "app";
                 program = "${cmd}/bin/${scriptName}";
               };
-          in rec {
+          in
+          rec {
             switch = mkApp "switch";
             boot = mkApp "boot";
             build = mkApp "build";
