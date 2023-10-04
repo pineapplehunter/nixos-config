@@ -11,17 +11,19 @@
       ./hardware-configuration.nix
     ];
 
-  # enable nix features
-  nix = {
-    package = pkgs.nixVersions.stable;
-    gc.automatic = true;
-    settings.auto-optimise-store = true;
-    extraOptions = ''
-      experimental-features = nix-command flakes
-    '';
-  };
   nixpkgs.config.allowUnfree = true;
-
+  nix = {
+    settings = {
+      experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
+      trusted-users = [ "shogo" "riken" ];
+    };
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 30d";
+    };
+    optimise.automatic = true;
+  };
   # input manager
   i18n.inputMethod.enabled = "ibus";
   i18n.inputMethod.ibus.engines = with pkgs.ibus-engines;[ mozc ];
