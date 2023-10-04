@@ -274,6 +274,8 @@
     nixos-artwork-wallpaper
     udisks2
     gnome-firmware
+    wineWowPackages.waylandFull
+    winetricks
   ];
 
   environment.variables.EDITOR = "hx";
