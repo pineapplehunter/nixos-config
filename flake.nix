@@ -45,53 +45,20 @@
         mynixhost = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            # {pkgs, ...}: {nixpkgs.overlays = [(import rust-overlay)];}
             ./os/qemu/configuration.nix
           ];
         };
         beast = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            ({ pkgs, ... }: { nixpkgs.overlays = [ (import inputs.rust-overlay) ]; })
+            (import ./os/common-module { inherit inputs; })
             ./os/beast/configuration.nix
           ];
         };
         action = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            ({ pkgs, ... }: {
-              nixpkgs.overlays = [
-                inputs.nix-xilinx.overlay
-                inputs.curl-http3.overlays.default
-                inputs.rust-overlay.overlays.default
-                (final: super: {
-                  devenv = devenv.packages.${final.system}.devenv;
-                  julia = final.symlinkJoin {
-                    name = "julia";
-                    paths = [ super.julia ];
-                    buildInputs = [ final.makeWrapper ];
-                    postBuild = ''
-                      wrapProgram $out/bin/julia \
-                        --set-default PYTHON "${final.python3.withPackages (ps: with ps;[sympy numpy])}/bin/python3"
-                    '';
-                  };
-                  nixos-artwork-wallpaper = final.stdenv.mkDerivation rec {
-                    pname = "nixos-wallpapers";
-                    version = "1.0.0";
-                    src = inputs.nixos-artwork;
-                    unpackPhase = "true";
-                    buildPhase = "true";
-                    installPhase = ''
-                      mkdir -pv $out/share/backgrounds/nixos
-                      realpath ${src}
-                      cp -v ${src}/wallpapers/*.png $out/share/backgrounds/nixos
-                    '';
-                  };
-                  # gnome = inputs.nixpkgs-gnome.legacyPackages.x86_64-linux.gnome;
-                  # python3 = final.python311;
-                })
-              ];
-            })
+            (import ./os/common-module { inherit inputs; })
             ./os/action/configuration.nix
           ];
         };
@@ -154,7 +121,7 @@
                             esac
                         done
                     }
-                    yes_or_no "do you want to commit and update?" && git add . && git commit -m "$(date -Iminutes)" && nix run ".#switch"
+                    yes_or_no "do you want to commit and update?" && sudo echo starting upgrade && git add . && git commit -m "$(date -Iminutes)" && nix run ".#switch"
                   '';
                 in
                 "${cmd}/bin/nixos-update-script";
