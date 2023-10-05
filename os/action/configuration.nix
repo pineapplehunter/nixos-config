@@ -81,18 +81,6 @@
     LC_TIME = "ja_JP.UTF-8";
   };
 
-  fonts.packages = with pkgs; [
-    noto-fonts
-    noto-fonts-cjk-sans
-    noto-fonts-cjk-serif
-    noto-fonts-emoji
-    fira-code
-    fira-code-symbols
-    vistafonts
-    (nerdfonts.override { fonts = [ "FiraCode" "DejaVuSansMono" ]; })
-  ];
-  fonts.fontDir.enable = true;
-
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
@@ -155,8 +143,6 @@
   services.avahi.nssmdns = true;
   services.avahi.openFirewall = true;
 
-  services.flatpak.enable = true;
-
   services.fprintd = {
     enable = true;
     tod.enable = true;
@@ -165,28 +151,11 @@
 
   services.udev.packages = with pkgs; [ gnome.gnome-settings-daemon ];
 
-  services.tailscale.enable = true;
-
   virtualisation = {
     docker.enable = true;
     #podman.enable = true;
   };
-  # Enable sound with pipewire.
-  sound.enable = true;
-  hardware.pulseaudio.enable = false;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    #jack.enable = true;
 
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
-  };
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
@@ -201,7 +170,6 @@
       packages = with pkgs; [
         # firefox
         #  thunderbird
-        jetbrains.idea-ultimate
       ];
       # shell = pkgs.nushell;
     };
@@ -216,111 +184,6 @@
       # ];
     };
   };
-
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
-  nix = {
-    settings = {
-      experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
-      trusted-users = [ "shogo" "riken" ];
-    };
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 30d";
-    };
-    optimise.automatic = true;
-  };
-
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-  environment.systemPackages = with pkgs; [
-    # tools
-    vim
-    curl
-    helix
-    unzip
-    git
-    nix-index
-    htop
-    nethogs
-    github-cli
-    starship
-    du-dust
-    virt-manager
-    btrfs-assistant
-    ripgrep
-    devenv
-    nix-output-monitor
-    gnome.gnome-tweaks
-    nixd
-    cachix
-    nixpkgs-fmt
-    (writeShellScriptBin "curl-http3" "exec -a $0 ${curl-http3}/bin/curl $@")
-    # editor
-    vscode
-    jetbrains.idea-ultimate
-    vivado
-    # service
-    syncthing
-    webcord
-    slack
-    # lang
-    rustup
-    julia
-    python3
-    # other
-    (writeShellScriptBin "flatpak-chrome-alias" "flatpak run com.google.Chrome $@")
-    nixos-artwork-wallpaper
-    udisks2
-    gnome-firmware
-    wineWowPackages.waylandFull
-    winetricks
-  ];
-
-  environment.variables.EDITOR = "hx";
-
-  programs.direnv = {
-    enable = true;
-    silent = true;
-    nix-direnv = {
-      enable = true;
-      package = (pkgs.nix-direnv.overrideAttrs (old: {
-        patches = [ ./direnv.patch ];
-        postPatch = ''
-          sed -i "2iNIX_BIN_PREFIX=${pkgs.nix}/bin/" direnvrc
-          substituteInPlace direnvrc \
-            --replace "grep" "${pkgs.gnugrep}/bin/grep"
-          substituteInPlace direnvrc \
-            --replace "nom" "${pkgs.nix-output-monitor}/bin/nom"
-        '';
-      }));
-    };
-  };
-
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-  programs.zsh = {
-    enable = true;
-    shellAliases = {
-      ls = "${pkgs.eza}/bin/eza --icons";
-      la = "ls -a";
-    };
-    ohMyZsh.enable = true;
-    interactiveShellInit = ''
-      eval "$(starship init zsh)"
-    '';
-  };
-
-  # List services that you want to enable:
-
-  # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];

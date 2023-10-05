@@ -11,26 +11,6 @@
       ./hardware-configuration.nix
     ];
 
-  nixpkgs.config.allowUnfree = true;
-  nix = {
-    settings = {
-      experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
-      trusted-users = [ "shogo" "riken" ];
-    };
-    gc = {
-      automatic = true;
-      dates = "weekly";
-      options = "--delete-older-than 30d";
-    };
-    optimise.automatic = true;
-  };
-  # input manager
-  i18n.inputMethod.enabled = "ibus";
-  i18n.inputMethod.ibus.engines = with pkgs.ibus-engines;[ mozc ];
-
-  # Enable flatpak
-  services.flatpak.enable = true;
-
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   #boot.loader.efi.canTouchEfiVariables = true;
@@ -71,13 +51,6 @@
   #   "caps:escape" # map caps to escape.
   # };
 
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
-
-  #Enable sound.
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
-
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
@@ -86,44 +59,6 @@
     isNormalUser = true;
     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
   };
-
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
-  environment.systemPackages = with pkgs; [
-    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-    wget
-    curl
-    git
-    vscode
-    helix
-    cargo
-    rustc
-  ];
-
-  fonts = {
-    fontDir.enable = true;
-    fonts = with pkgs; [
-      noto-fonts
-      noto-fonts-emoji
-      noto-fonts-cjk
-      noto-fonts-cjk-sans
-      noto-fonts-cjk-serif
-      fira-code
-    ];
-  };
-
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
-
-  # List services that you want to enable:
-
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
@@ -142,7 +77,7 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "22.05"; # Did you read the comment?
+  system.stateVersion = "23.05"; # Did you read the comment?
 
 }
 
