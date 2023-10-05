@@ -41,6 +41,9 @@
 
   outputs = { self, nixpkgs, devenv, ... }@inputs:
     {
+      nixosModules = {
+        common = import ./modules/common { inherit inputs; };
+      };
       nixosConfigurations = {
         mynixhost = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
@@ -51,14 +54,14 @@
         beast = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            (import ./os/common-module { inherit inputs; })
+            self.nixosModules.common
             ./os/beast/configuration.nix
           ];
         };
         action = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            (import ./os/common-module { inherit inputs; })
+            self.nixosModules.common
             ./os/action/configuration.nix
           ];
         };
