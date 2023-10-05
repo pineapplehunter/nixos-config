@@ -4,6 +4,7 @@
     (import ./overlays.nix { inherit inputs; })
     ./packages.nix
     ./fonts.nix
+    ./inputs.nix
   ];
 
   nixpkgs.config.allowUnfree = true;
@@ -44,6 +45,7 @@
       eval "$(starship init zsh)"
     '';
   };
+  users.defaultUserShell = pkgs.zsh;
 
   programs.direnv = {
     enable = true;
@@ -87,4 +89,11 @@
     # no need to redefine it in your config for now)
     #media-session.enable = true;
   };
+
+  services.avahi.enable = true;
+  services.avahi.nssmdns = true;
+  services.avahi.openFirewall = true;
+
+  # Configure console keymap
+  console.keyMap = "jp106";
 }
