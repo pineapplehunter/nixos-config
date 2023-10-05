@@ -64,11 +64,6 @@
   # Select internationalisation properties.
   i18n.defaultLocale = "ja_JP.UTF-8";
 
-  i18n.inputMethod = {
-    enabled = "ibus";
-    ibus.engines = with pkgs.ibus-engines; [ mozc anthy ];
-  };
-
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "ja_JP.UTF-8";
     LC_IDENTIFICATION = "ja_JP.UTF-8";
@@ -134,15 +129,6 @@
     xkbVariant = "";
   };
 
-  # Configure console keymap
-  console.keyMap = "jp106";
-
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
-  services.avahi.enable = true;
-  services.avahi.nssmdns = true;
-  services.avahi.openFirewall = true;
-
   services.fprintd = {
     enable = true;
     tod.enable = true;
@@ -161,7 +147,6 @@
   # services.xserver.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.defaultUserShell = pkgs.zsh;
   users.users = {
     shogo = {
       isNormalUser = true;
