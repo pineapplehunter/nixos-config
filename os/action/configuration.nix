@@ -17,9 +17,10 @@
       {
         system = "x86_64-linux";
         maxJobs = 16;
-        supportedFeatures = [ "big-parallel" "kvm" ];
+        supportedFeatures = [ "big-parallel" "kvm" "benchmark" "nixos-test" ];
         sshUser = "shogo";
         hostName = "192.168.10.20";
+        sshKey = "/home/shogo/.ssh/id_ecdsa.1";
         speedFactor = 10;
       }
     ];
