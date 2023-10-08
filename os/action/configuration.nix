@@ -11,6 +11,20 @@
       ./hardware-configuration.nix
     ];
 
+  nix = {
+    distributedBuilds = true;
+    buildMachines = [
+      {
+        system = "x86_64-linux";
+        maxJobs = 16;
+        supportedFeatures = [ "big-parallel" "kvm" ];
+        sshUser = "shogo";
+        hostName = "192.168.10.20";
+        speedFactor = 10;
+      }
+    ];
+  };
+
   # Bootloader.
 
   # boot.loader.systemd-boot.enable = true;
