@@ -26,6 +26,16 @@
     ];
   };
 
+  services.xremap = {
+    withGnome = true;
+    yamlConfig = ''
+      modmap:
+        - name: caps-esc
+          remap:
+            CapsLock: Esc
+    '';
+  };
+
   # Bootloader.
 
   # boot.loader.systemd-boot.enable = true;

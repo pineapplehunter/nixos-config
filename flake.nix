@@ -32,6 +32,11 @@
       url = "github:NixOS/nixos-artwork";
       flake = false;
     };
+    xremap-flake = {
+      url = "github:xremap/nix-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
   };
 
   nixConfig = {
@@ -53,6 +58,7 @@
         };
         beast = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
           modules = [
             self.nixosModules.common
             ./os/beast/configuration.nix
@@ -60,8 +66,10 @@
         };
         action = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
+          specialArgs = { inherit inputs; };
           modules = [
             self.nixosModules.common
+            inputs.xremap-flake.nixosModules.default
             ./os/action/configuration.nix
           ];
         };
