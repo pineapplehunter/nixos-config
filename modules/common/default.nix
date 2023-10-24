@@ -39,6 +39,7 @@
     shellAliases = {
       ls = "${pkgs.eza}/bin/eza --icons";
       la = "ls -a";
+      ll = "ls -lha";
     };
     ohMyZsh.enable = true;
     interactiveShellInit = ''
