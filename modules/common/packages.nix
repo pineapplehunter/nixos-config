@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: {
+{ pkgs, ... }: {
   # system wide packages
   environment.systemPackages = with pkgs;[
     # tools
@@ -26,6 +26,7 @@
     nixpkgs-fmt
     tree
     (writeShellScriptBin "curl-http3" "exec -a $0 ${curl-http3}/bin/curl $@")
+    zellij
     # editor
     vscode
     jetbrains.idea-ultimate
