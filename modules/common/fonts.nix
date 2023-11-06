@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: {
+{ pkgs, ... }: {
   fonts = {
     packages = with pkgs; [
       noto-fonts
@@ -8,6 +8,7 @@
       fira-code
       fira-code-symbols
       vistafonts
+      ubuntu_font_family
       (nerdfonts.override { fonts = [ "FiraCode" "DejaVuSansMono" ]; })
     ];
     fontDir.enable = true;
