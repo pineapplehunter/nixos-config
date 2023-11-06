@@ -163,7 +163,14 @@
   services.udev.packages = with pkgs; [ gnome.gnome-settings-daemon ];
 
   virtualisation = {
-    docker.enable = true;
+    docker = {
+      enable = true;
+      rootless = {
+        enable = true;
+        setSocketVariable = true;
+      };
+      storageDriver = "btrfs";
+    };
     #podman.enable = true;
   };
 
@@ -177,10 +184,10 @@
       isNormalUser = true;
       description = "Shogo Takata";
       extraGroups = [ "networkmanager" "wheel" ];
-      packages = with pkgs; [
-        # firefox
-        #  thunderbird
-      ];
+      # packages = with pkgs; [
+      # firefox
+      #  thunderbird
+      # ];
       # shell = pkgs.nushell;
     };
 
