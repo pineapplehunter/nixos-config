@@ -31,6 +31,7 @@
     vscode
     jetbrains.idea-ultimate
     vivado
+    gnome.dconf-editor
     # service
     syncthing
     webcord
