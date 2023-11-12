@@ -66,8 +66,8 @@
   powerManagement.powertop.enable = true;
   services.thermald.enable = true;
 
-  services.auto-cpufreq.enable = true;
-  services.auto-cpufreq.settings = {
+  programs.auto-cpufreq.enable = true;
+  programs.auto-cpufreq.settings = {
     battery = {
       governor = "conservative";
       turbo = "auto";
