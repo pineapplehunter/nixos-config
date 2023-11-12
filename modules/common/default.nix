@@ -5,6 +5,7 @@
     ./packages.nix
     ./fonts.nix
     ./inputs.nix
+    inputs.auto-cpufreq.nixosModules.default
   ];
 
   nixpkgs.config.allowUnfree = true;

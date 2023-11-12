@@ -47,6 +47,7 @@
     gnome-firmware
     wineWowPackages.staging
     winetricks
+    auto-cpufreq
   ];
   environment.variables.EDITOR = "hx";
 }

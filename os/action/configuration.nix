@@ -26,6 +26,13 @@
     ];
   };
 
+  security.doas.enable = true;
+  security.sudo.enable = false;
+  security.doas.extraRules = [{
+    groups = [ "wheel" ];
+    persist = true;
+  }];
+
   services.xremap = {
     withGnome = true;
     yamlConfig = ''
@@ -55,10 +62,21 @@
 
   # https://discourse.nixos.org/t/suspend-then-hibernate/31953/5
   boot.resumeDevice = "/dev/disk/by-uuid/244fb3a7-4e9c-4707-9427-a33f667a08bd";
-  systemd.sleep.extraConfig = ''
-    HibernateDelaySec=600s # very low value to test suspend-then-hibernate
-    SuspendState=mem # suspend2idle is buggy :(
-  '';
+  powerManagement.enable = true;
+  powerManagement.powertop.enable = true;
+  services.thermald.enable = true;
+
+  services.auto-cpufreq.enable = true;
+  services.auto-cpufreq.settings = {
+    battery = {
+      governor = "conservative";
+      turbo = "auto";
+    };
+    charger = {
+      governor = "ondemand";
+      turbo = "auto";
+    };
+  };
 
   networking.hostName = "action"; # Define your hostname.
   #networking.networkmanager.enableStrongSwan = true;
