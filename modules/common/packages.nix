@@ -47,8 +47,6 @@
     gnome-firmware
     wineWowPackages.staging
     winetricks
-    auto-cpufreq
-    (writeShellScriptBin "sudo" "doas $@")
   ];
   environment.variables.EDITOR = "hx";
 }
