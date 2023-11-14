@@ -96,7 +96,7 @@
               let
                 scriptName = "nixos-${t}-script";
                 cmd = pkgs.writeShellScriptBin scriptName ''
-                  ${pkgs.sudo}/bin/sudo ${pkgs.nixos-rebuild}/bin/nixos-rebuild ${t} --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
+                  sudo ${pkgs.nixos-rebuild}/bin/nixos-rebuild ${t} --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
                 '';
               in
               {
@@ -136,7 +136,7 @@
                             esac
                         done
                     }
-                    yes_or_no "do you want to commit and update?" && ${pkgs.sudo}/bin/sudo echo starting upgrade && git add . && git commit -m "$(date -Iminutes)" && nix run ".#switch"
+                    yes_or_no "do you want to commit and update?" && sudo echo starting upgrade && git add . && git commit -m "$(date -Iminutes)" && nix run ".#switch"
                   '';
                 in
                 "${cmd}/bin/nixos-update-script";
