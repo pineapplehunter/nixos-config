@@ -18,7 +18,7 @@ index 723f29c..ee3668f 100644
          --extra-experimental-features "nix-command flakes" \
 -        --profile "$tmp_profile" "$@")
 +        --profile "$tmp_profile" "$@" \
-+        --log-format internal-json -v |& nom --json
++        --log-format internal-json -L |& nom --json
 + 
 +    tmp_profile_rc=$("${NIX_BIN_PREFIX}nix" print-dev-env \
 +      --extra-experimental-features "nix-command flakes" \
