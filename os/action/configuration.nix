@@ -71,18 +71,6 @@
   powerManagement.powertop.enable = true;
   services.thermald.enable = true;
 
-  programs.auto-cpufreq.enable = true;
-  programs.auto-cpufreq.settings = {
-    battery = {
-      governor = "conservative";
-      turbo = "auto";
-    };
-    charger = {
-      governor = "ondemand";
-      turbo = "auto";
-    };
-  };
-
   networking.hostName = "action"; # Define your hostname.
   #networking.networkmanager.enableStrongSwan = true;
   #services.xl2tpd.enable = true;

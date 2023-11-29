@@ -26,7 +26,7 @@
     };
     devenv = {
       url = "github:cachix/devenv";
-      # inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-artwork = {
       url = "github:NixOS/nixos-artwork";
