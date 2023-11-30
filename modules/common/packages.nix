@@ -47,6 +47,7 @@
     gnome-firmware
     wineWowPackages.staging
     winetricks
+    snapper-gui
   ];
   environment.variables.EDITOR = "hx";
 }
