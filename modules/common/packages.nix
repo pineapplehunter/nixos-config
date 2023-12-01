@@ -27,6 +27,8 @@
     tree
     (writeShellScriptBin "curl-http3" "exec -a $0 ${curl-http3}/bin/curl $@")
     zellij
+    btop
+    jq
     # editor
     vscode
     jetbrains.idea-ultimate
