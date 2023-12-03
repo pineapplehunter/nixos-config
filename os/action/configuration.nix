@@ -33,6 +33,8 @@
   #   persist = true;
   # }];
 
+  zramSwap.enable = true;
+
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
