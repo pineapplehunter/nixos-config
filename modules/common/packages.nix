@@ -29,6 +29,7 @@
     zellij
     btop
     jq
+    file
     # editor
     vscode
     jetbrains.idea-ultimate
