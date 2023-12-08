@@ -52,6 +52,7 @@
     wineWowPackages.staging
     winetricks
     snapper-gui
+    ghidra
   ];
   environment.variables.EDITOR = "hx";
 }
