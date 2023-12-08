@@ -347,11 +347,11 @@
     "nixos-artwork": {
       "flake": false,
       "locked": {
-        "lastModified": 1701277246,
-        "narHash": "sha256-FtVDCZlaqXAaKwP2HTf+oqNPUtXOY52dCfCIqQ30FCE=",
+        "lastModified": 1701990405,
+        "narHash": "sha256-QZrC1cSNThvQJymM7rRVXxpZ+rY+vOVm17P6vVVB6WM=",
         "owner": "NixOS",
         "repo": "nixos-artwork",
-        "rev": "ac0b0737b2fa81536e32f3498659f8c60884d93d",
+        "rev": "e3a74d1c40086393f2b1b9f218497da2db0ff3ae",
         "type": "github"
       },
       "original": {
@@ -509,11 +509,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1701915404,
-        "narHash": "sha256-+aR/adz9lNglnCzrCh30FSj+Ee+liy8gwOKtS7ll9yY=",
+        "lastModified": 1702001829,
+        "narHash": "sha256-6gEVidNVqzTb06zIy2Gxhz9m6/jXyAgViRxfgEpZkQ8=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "670ae43e7e5e7cf90b873cea596941d2e24e9c2c",
+        "rev": "c2a1dd067a928624c1aab36f976758c0722c79bd",
         "type": "github"
       },
       "original": {
