@@ -126,6 +126,10 @@
                   cmd = pkgs.writeShellScriptBin "nixos-update-script" ''
                     nix flake update
                     ${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
+                    if [ $(readlink -f ./result) = $(readlink -f /run/current-system) ]; then
+                      echo All packges up to date!
+                      exit
+                    fi
                     ${pkgs.nvd}/bin/nvd diff /run/current-system result
                     function yes_or_no {
                         while true; do
