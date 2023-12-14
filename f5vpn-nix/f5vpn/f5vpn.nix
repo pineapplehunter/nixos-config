@@ -5,10 +5,11 @@ let
     hash = "sha256-wrZ8vE7i6JUkhteWCc6B6ycgscAff46NGrMe87opAw4=";
   };
 in
-stdenv.mkDerivation {
+with qt5; stdenv.mkDerivation {
   pname = "f5vpn";
   version = "0.0.0";
-  nativeBuildInputs = [ rpmextract autoPatchelfHook qt5.wrapQtAppsHook ];
+  buildInputs = [ qtbase ];
+  nativeBuildInputs = [ rpmextract autoPatchelfHook wrapQtAppsHook ];
   unpackPhase = ''
     rpmextract ${src-rpm}
   '';
@@ -18,7 +19,7 @@ stdenv.mkDerivation {
   # dontBuild = true;
   # set this to stop messing with rpath
   # https://github.com/NixOS/patchelf/issues/99
-  # dontStrip = true;
+  dontStrip = true;
 
   outputs = [ "out" "lib" ];
 
@@ -31,7 +32,6 @@ stdenv.mkDerivation {
     install -D ./opt/f5/vpn/svpn $out/bin/svpn
     install -D ./opt/f5/vpn/tunnelserver $out/bin/tunnelserver
     cp -r ./opt/f5/vpn/lib $lib
-    # patchelf --set-rpath $out/lib $out/bin/f5vpn
   '';
 
 }
