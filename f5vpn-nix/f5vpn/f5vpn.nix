@@ -8,7 +8,7 @@ in
 with qt5; stdenv.mkDerivation {
   pname = "f5vpn";
   version = "0.0.0";
-  buildInputs = [ qtbase ];
+  buildInputs = [ qtbase qttools ];
   nativeBuildInputs = [ rpmextract autoPatchelfHook wrapQtAppsHook ];
   unpackPhase = ''
     rpmextract ${src-rpm}
