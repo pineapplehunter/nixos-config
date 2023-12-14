@@ -1,10 +1,10 @@
-{ inputs }: { pkgs, ... }: {
+{ inputs }: { pkgs, ... }: with inputs;{
   nixpkgs.overlays = [
-    inputs.nix-xilinx.overlay
-    inputs.curl-http3.overlays.default
-    inputs.rust-overlay.overlays.default
+    nix-xilinx.overlay
+    curl-http3.overlays.default
+    rust-overlay.overlays.default
     (final: super: {
-      devenv = inputs.devenv.packages.${final.system}.devenv;
+      devenv = devenv.packages.${final.system}.devenv;
       julia = final.symlinkJoin {
         name = "julia";
         paths = [ super.julia ];
@@ -17,7 +17,7 @@
       nixos-artwork-wallpaper = final.stdenv.mkDerivation rec {
         pname = "nixos-wallpapers";
         version = "1.0.0";
-        src = inputs.nixos-artwork;
+        src = nixos-artwork;
         unpackPhase = "true";
         buildPhase = "true";
         installPhase = ''
@@ -26,6 +26,7 @@
           cp -v ${src}/wallpapers/*.png $out/share/backgrounds/nixos
         '';
       };
+      f5vpn = pkgs.callPackage ../../f5vpn-nix/f5vpn/f5vpn.nix { };
     })
   ];
 }

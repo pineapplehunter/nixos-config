@@ -222,6 +222,10 @@
     };
   };
 
+  environment.systemPackages = with pkgs;[
+    f5vpn
+  ];
+
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];

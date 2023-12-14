@@ -3,17 +3,11 @@
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixpkgs-unstable";
-    # nixpkgs.url = "nixpkgs/gnome";
     flake-utils.url = "github:numtide/flake-utils";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
-    };
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-      # inputs.utils.follows = "flake-utils";
     };
     nix-xilinx = {
       url = "gitlab:pineapplehunter/nix-xilinx";
@@ -34,11 +28,6 @@
     };
     xremap-flake = {
       url = "github:xremap/nix-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
-    };
-    auto-cpufreq = {
-      url = "github:adnanhodzic/auto-cpufreq";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
