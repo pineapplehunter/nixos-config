@@ -12,7 +12,13 @@
   outputs = { self, nixpkgs, f5vpn-rpm }:
     let
       system = "x86_64-linux";
-      pkgs = import nixpkgs { inherit system; };
+      pkgs = import nixpkgs {
+        inherit system;
+        config.permittedInsecurePackages = [
+          "qtwebkit-5.212.0-alpha4"
+          "openssl-1.1.1w"
+        ];
+      };
     in
 
     {

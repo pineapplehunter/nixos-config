@@ -13,7 +13,6 @@
     github-cli
     starship
     du-dust
-    virt-manager
     btrfs-assistant
     ripgrep
     devenv

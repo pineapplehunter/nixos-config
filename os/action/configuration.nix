@@ -192,7 +192,9 @@
       storageDriver = "btrfs";
     };
     #podman.enable = true;
+    libvirtd.enable = true;
   };
+  programs.virt-manager.enable = true;
 
 
   # Enable touchpad support (enabled default in most desktopManager).
@@ -223,7 +225,7 @@
   };
 
   environment.systemPackages = with pkgs;[
-    f5vpn
+    # f5vpn
   ];
 
   # Open ports in the firewall.
