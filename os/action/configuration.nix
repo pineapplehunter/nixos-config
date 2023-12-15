@@ -90,12 +90,6 @@
   services.fwupd.enable = true;
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
-  # virtualisation.virtualbox.host.enable = true;
-  # virtualisation.virtualbox.host.enableExtensionPack = true;
-  # users.extraGroups.vboxusers.members = [ "shogo" ];
-  # virtualisation.libvirtd.enable = true;
-  # programs.dconf.enable = true;
-
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
@@ -192,7 +186,14 @@
       storageDriver = "btrfs";
     };
     #podman.enable = true;
-    libvirtd.enable = true;
+    libvirtd = {
+      enable = true;
+      qemu = {
+        swtpm.enable = true;
+        ovmf.enable = true;
+        ovmf.packages = [ pkgs.OVMFFull.fd ];
+      };
+    };
   };
   programs.virt-manager.enable = true;
 
@@ -226,6 +227,8 @@
 
   environment.systemPackages = with pkgs;[
     # f5vpn
+    win-virtio
+    win-spice
   ];
 
   # Open ports in the firewall.
