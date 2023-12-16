@@ -86,13 +86,13 @@
             mkApp = t:
               let
                 scriptName = "nixos-${t}-script";
-                cmd = pkgs.writeShellScriptBin scriptName ''
+                cmd = pkgs.writeShellScript scriptName ''
                   sudo ${pkgs.nixos-rebuild}/bin/nixos-rebuild ${t} --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
                 '';
               in
               {
                 type = "app";
-                program = "${cmd}/bin/${scriptName}";
+                program = "${cmd}";
               };
           in
           rec {
@@ -101,40 +101,32 @@
             build = mkApp "build";
             diff = {
               type = "app";
-              program =
-                let
-                  cmd = pkgs.writeShellScriptBin "nixos-diff-script" ''
-                    ${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
-                    ${pkgs.nvd}/bin/nvd diff /run/current-system result
-                  '';
-                in
-                "${cmd}/bin/nixos-diff-script";
+              program = toString (pkgs.writeShellScript "nixos-diff-script" ''
+                ${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
+                ${pkgs.nvd}/bin/nvd diff /run/current-system result
+              '');
             };
             update = {
               type = "app";
-              program =
-                let
-                  cmd = pkgs.writeShellScriptBin "nixos-update-script" ''
-                    nix flake update
-                    ${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
-                    if [ $(readlink -f ./result) = $(readlink -f /run/current-system) ]; then
-                      echo All packges up to date!
-                      exit
-                    fi
-                    ${pkgs.nvd}/bin/nvd diff /run/current-system result
-                    function yes_or_no {
-                        while true; do
-                            read -p "$* [y/n]: " yn
-                            case $yn in
-                                [Yy]*) return 0  ;;  
-                                [Nn]*) echo "Aborted" ; return  1 ;;
-                            esac
-                        done
-                    }
-                    yes_or_no "do you want to commit and update?" && sudo echo starting upgrade && git add . && git commit -m "$(date -Iminutes)" && nix run ".#switch"
-                  '';
-                in
-                "${cmd}/bin/nixos-update-script";
+              program = toString (pkgs.writeShellScript "nixos-update-script" ''
+                nix flake update
+                ${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
+                if [ $(readlink -f ./result) = $(readlink -f /run/current-system) ]; then
+                  echo All packges up to date!
+                  exit
+                fi
+                ${pkgs.nvd}/bin/nvd diff /run/current-system result
+                function yes_or_no {
+                    while true; do
+                        read -p "$* [y/n]: " yn
+                        case $yn in
+                            [Yy]*) return 0  ;;  
+                            [Nn]*) echo "Aborted" ; return  1 ;;
+                        esac
+                    done
+                }
+                yes_or_no "do you want to commit and update?" && sudo echo starting upgrade && git add . && git commit -m "$(date -Iminutes)" && nix run ".#switch"
+              '');
             };
             default = update;
           };

@@ -5,7 +5,7 @@
     ./packages.nix
     ./fonts.nix
     ./inputs.nix
-    # inputs.auto-cpufreq.nixosModules.default
+    ../shell-config
   ];
 
   nixpkgs.config.allowUnfree = true;
@@ -44,6 +44,8 @@
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
+
+  programs.starship.enable = true;
   programs.zsh = {
     enable = true;
     shellAliases = {
@@ -52,9 +54,7 @@
       ll = "ls -lha";
     };
     ohMyZsh.enable = true;
-    interactiveShellInit = ''
-      eval "$(starship init zsh)"
-    '';
+    not-found-exec.enable = true;
   };
   users.defaultUserShell = pkgs.zsh;
 
