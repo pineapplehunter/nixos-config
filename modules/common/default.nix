@@ -1,7 +1,7 @@
 { inputs }: { config, pkgs, ... }:
 {
   imports = [
-    (import ./overlays.nix { inherit inputs; })
+    ./overlays.nix
     ./packages.nix
     ./fonts.nix
     ./inputs.nix
@@ -63,16 +63,6 @@
     silent = true;
     nix-direnv = {
       enable = true;
-      # package = (pkgs.nix-direnv.overrideAttrs (old: {
-      #   patches = [ ./direnv.patch ];
-      #   postPatch = ''
-      #     sed -i "2iNIX_BIN_PREFIX=${pkgs.nix}/bin/" direnvrc
-      #     substituteInPlace direnvrc \
-      #       --replace "grep" "${pkgs.gnugrep}/bin/grep"
-      #     substituteInPlace direnvrc \
-      #       --replace "nom" "${pkgs.nix-output-monitor}/bin/nom"
-      #   '';
-      # }));
     };
   };
 

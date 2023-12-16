@@ -1,4 +1,4 @@
-{ inputs }: { pkgs, ... }: with inputs;{
+{ pkgs, inputs, ... }: with inputs;{
   nixpkgs.overlays = [
     nix-xilinx.overlay
     curl-http3.overlays.default
@@ -15,8 +15,7 @@
         '';
       };
       nixos-artwork-wallpaper = final.stdenv.mkDerivation rec {
-        pname = "nixos-wallpapers";
-        version = "1.0.0";
+        name = "nixos-wallpapers";
         src = nixos-artwork;
         unpackPhase = "true";
         buildPhase = "true";
