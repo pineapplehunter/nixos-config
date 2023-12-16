@@ -66,10 +66,10 @@ in
         environment.systemPackages = mkIf cfg.which-nix.enable [ 
           (pkgs.writeShellScriptBin "which-nix" ''
             #!${pkgs.stdenv.shell}
-            local cmd="$1"
+            export cmd="$1"
             if [[ $cmd = *@* ]]; then
-              local cmd_no_at=''\${''\${(s/@/)cmd}[1]}
-              local cmd_package=''\${''\${(s/@/)cmd}[2]}
+              export cmd_no_at=''\${''\${(s/@/)cmd}[1]}
+              export cmd_package=''\${''\${(s/@/)cmd}[2]}
               echo ''\${${nix-bin} path-info "${cfg.nixpkgs.url}#$cmd_package" 2> /dev/null}/bin/$cmd_no_at
             else
               echo ''\${${nix-bin} path-info "${cfg.nixpkgs.url}#$cmd" 2> /dev/null}/bin/$cmd
