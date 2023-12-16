@@ -30,6 +30,7 @@
       url = "github:xremap/nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
   };
 
   nixConfig = {
@@ -63,6 +64,7 @@
           modules = [
             self.nixosModules.common
             inputs.xremap-flake.nixosModules.default
+            inputs.nixos-hardware.nixosModules.dell-xps-13-9310
             ./os/action/configuration.nix
           ];
         };
