@@ -70,9 +70,9 @@ in
             if [[ $cmd = *@* ]]; then
               export cmd_no_at=''\${''\${(s/@/)cmd}[1]}
               export cmd_package=''\${''\${(s/@/)cmd}[2]}
-              echo ''\${${nix-bin} path-info "${cfg.nixpkgs.url}#$cmd_package" 2> /dev/null}/bin/$cmd_no_at
+              echo ''\${${nix-bin} path-info "${cfg.nixpkgs.url}#$cmd_package"}/bin/$cmd_no_at
             else
-              echo ''\${${nix-bin} path-info "${cfg.nixpkgs.url}#$cmd" 2> /dev/null}/bin/$cmd
+              echo ''\${${nix-bin} path-info "${cfg.nixpkgs.url}#$cmd"}/bin/$cmd
             fi
           '')
          ];
