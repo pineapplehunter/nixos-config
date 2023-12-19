@@ -1,10 +1,14 @@
 { pkgs, ... }: {
+  programs.helix = {
+    enable = true;
+    defaultEditor = true;
+  };
+
   # system wide packages
   environment.systemPackages = with pkgs;[
     # tools
     vim
     curl
-    helix
     unzip
     git
     nix-index
@@ -53,5 +57,4 @@
     snapper-gui
     ghidra
   ];
-  environment.variables.EDITOR = "hx";
 }

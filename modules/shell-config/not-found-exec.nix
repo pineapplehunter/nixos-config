@@ -63,7 +63,7 @@ in
           }
         '';
 
-        environment.systemPackages = mkIf cfg.which-nix.enable [ 
+        environment.systemPackages = mkIf cfg.which-nix.enable [
           (pkgs.writeShellScriptBin "which-nix" ''
             #!${pkgs.stdenv.shell}
             export cmd="$1"
@@ -78,9 +78,3 @@ in
          ];
       };
 }
-
-
-
-
-
-

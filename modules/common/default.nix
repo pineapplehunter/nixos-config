@@ -6,6 +6,7 @@
     ./fonts.nix
     ./inputs.nix
     ../shell-config
+    ../helix
   ];
 
   nixpkgs.config.allowUnfree = true;
