@@ -1,12 +1,12 @@
-{ inputs }: { config, pkgs, ... }:
+{ pkgs,self, ... }:
 {
-  imports = [
+  imports = with self.nixosModules;[
     ./overlays.nix
     ./packages.nix
     ./fonts.nix
     ./inputs.nix
-    ../shell-config
-    ../helix
+    shell-config
+    helix
   ];
 
   nixpkgs.config.allowUnfree = true;

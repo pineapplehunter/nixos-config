@@ -41,7 +41,9 @@
   outputs = { self, nixpkgs, devenv, ... }@inputs:
     {
       nixosModules = {
-        common = import ./modules/common { inherit inputs; };
+        common = import ./modules/common;
+        helix = import ./modules/helix;
+        shell-config = import ./modules/shell-config;
       };
       nixosConfigurations = {
         mynixhost = nixpkgs.lib.nixosSystem {
@@ -52,7 +54,7 @@
         };
         beast = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
-          specialArgs = { inherit inputs; };
+          specialArgs = { inherit inputs self; };
           modules = [
             self.nixosModules.common
             ./os/beast/configuration.nix
@@ -60,7 +62,7 @@
         };
         action = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
-          specialArgs = { inherit inputs; };
+          specialArgs = { inherit inputs self; };
           modules = [
             self.nixosModules.common
             inputs.xremap-flake.nixosModules.default
@@ -109,6 +111,9 @@
             update = {
               type = "app";
               program = toString (pkgs.writeShellScript "nixos-update-script" ''
+                #!${pkgs.stdenv.shell}
+
+                set -e
                 nix flake update
                 ${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
                 if [ $(readlink -f ./result) = $(readlink -f /run/current-system) ]; then
