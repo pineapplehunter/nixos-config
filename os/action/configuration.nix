@@ -24,6 +24,9 @@
       #   speedFactor = 10;
       # }
     ];
+    extraOptions = ''
+      builders-use-substitutes = true
+    '';
   };
 
   # security.doas.enable = true;

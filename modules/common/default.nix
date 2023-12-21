@@ -1,4 +1,4 @@
-{ pkgs,self, ... }:
+{ pkgs, self, ... }:
 {
   imports = with self.nixosModules;[
     ./overlays.nix

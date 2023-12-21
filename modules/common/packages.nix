@@ -36,7 +36,7 @@
     file
     # editor
     vscode
-    jetbrains.idea-ultimate
+    (jetbrains.plugins.addPlugins jetbrains.idea-ultimate [ "github-copilot" ])
     vivado
     gnome.dconf-editor
     # service
