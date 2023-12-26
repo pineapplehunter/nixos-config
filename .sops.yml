@@ -1,0 +1,7 @@
+keys:
+  - &action age1829ry46h0ctesxrehhuehw4sxwa5rcpwamjldne3jjzj9gjthq9qflh2vh
+creation_rules:
+  - path_regex: secrets/secrets.yml$
+    key_groups:
+      - age:
+          - *action

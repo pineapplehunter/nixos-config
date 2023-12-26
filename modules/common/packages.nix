@@ -9,7 +9,7 @@
     # tools
     vim
     curl
-    unzip
+    unzipNLS
     git
     nix-index
     htop

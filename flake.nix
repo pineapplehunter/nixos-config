@@ -31,6 +31,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-hardware.url = "github:NixOS/nixos-hardware";
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   nixConfig = {
@@ -58,6 +62,7 @@
           modules = [
             self.nixosModules.common
             ./os/beast/configuration.nix
+            inputs.sops-nix.nixosModules.sops
           ];
         };
         action = nixpkgs.lib.nixosSystem {
@@ -68,6 +73,7 @@
             inputs.xremap-flake.nixosModules.default
             inputs.nixos-hardware.nixosModules.dell-xps-13-9310
             ./os/action/configuration.nix
+            inputs.sops-nix.nixosModules.sops
           ];
         };
       };
