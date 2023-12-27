@@ -26,6 +26,9 @@
         '';
       };
       f5vpn = pkgs.callPackage ../../f5vpn-nix/f5vpn/f5vpn.nix { };
+      helix = super.helix.overrideAttrs (old: {
+        patches = [ ./formatter.patch ];
+      });
     })
   ];
 }
