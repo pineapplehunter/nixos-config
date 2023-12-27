@@ -1,9 +1,9 @@
 { config, lib, pkgs, ... }: with lib; let
-  cfg = config.programs.zsh.not-found-exec;
+  cfg = config.programs.not-found-exec;
 in
 {
   options = {
-    programs.zsh.not-found-exec = {
+    programs.not-found-exec = {
       enable = mkOption {
         type = types.bool;
         default = false;
@@ -37,10 +37,21 @@ in
 
   config = mkIf cfg.enable {
     programs.command-not-found.enable = false;
+
     programs.zsh.interactiveShellInit = ''
       function command_not_found_handler() {
         not-found-exec-shell $@
       }
+    '';
+    programs.fish.interactiveShellInit = ''
+      function fish_command_not_found
+        not-found-exec-shell $argv
+      end
+    '';
+    programs.bash.interactiveShellInit = ''
+      function command_not_found_handler() {
+          not-found-exec-shell $@
+        }
     '';
 
     environment.systemPackages = mkIf cfg.which-nix.enable [
