@@ -39,44 +39,16 @@ in
   config = mkIf cfg.enable {
     programs.command-not-found.enable = false;
     programs.zsh.interactiveShellInit = ''
-          function command_not_found_handler() {
-            local cmd="$1"
-            shift
+      function command_not_found_handler() {
+        not-found-exec-shell $@
+      }
+    '';
 
-            if [[ $cmd = *@* ]]; then
-              local cmd_no_at=''\${''\${(s/@/)cmd}[1]}
-              local cmd_package=''\${''\${(s/@/)cmd}[2]}
-              ${optionalString cfg.confirm ''echo "Command '$cmd' not found, do you want to try $cmd_no_at from ${cfg.nixpkgs.url}#$cmd_package? [y/N]: "''}
-            else
-              ${optionalString cfg.confirm ''echo "Command '$cmd' not found, do you want to try $cmd from ${cfg.nixpkgs.url}? [y/N]: "''}
-            fi
-
-            ${optionalString cfg.confirm ''if read -q; then''}
-            if [[ $cmd = *@* ]]; then
-              local cmd_no_at=''\${''\${(s/@/)cmd}[1]}
-              local cmd_package=''\${''\${(s/@/)cmd}[2]}
-              ${nix-bin} shell "${cfg.nixpkgs.url}#$cmd_package" -c $cmd_no_at $*
-            else
-              ${nix-bin} shell "${cfg.nixpkgs.url}#$cmd" -c $cmd $*
-            fi
-            ${optionalString cfg.confirm ''fi''}
-          }
-        '';
-
-        environment.systemPackages = mkIf cfg.which-nix.enable [
-          (pkgs.writeShellScriptBin "which-nix" ''
-            #!${pkgs.stdenv.shell}
-            export cmd="$1"
-            if [[ $cmd = *@* ]]; then
-              export cmd_no_at=''\${''\${(s/@/)cmd}[1]}
-              export cmd_package=''\${''\${(s/@/)cmd}[2]}
-              echo $(${nix-bin} path-info "${cfg.nixpkgs.url}#$cmd_package")/bin/$cmd_no_at
-            else
-              echo $(${nix-bin} path-info "${cfg.nixpkgs.url}#$cmd")/bin/$cmd
-            fi
-          '')
-         ];
-      };
+    environment.systemPackages = mkIf cfg.which-nix.enable [
+      (pkgs.callPackage ./not-found-exec-shell.nix { inherit (cfg) nixpkgs confirm; })
+      (pkgs.callPackage ./which-nix.nix { inherit (cfg) nixpkgs; })
+    ];
+  };
 }
 
 
