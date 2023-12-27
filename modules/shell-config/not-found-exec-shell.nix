@@ -1,4 +1,5 @@
-{ writeShellScriptBin, confirm ? false, lib, nixpkgs, nix }:let 
+{ writeShellScriptBin, confirm ? false, lib, nixpkgs, nix }:
+let
   name = "not-found-exec-shell";
 in
 writeShellScriptBin name ''

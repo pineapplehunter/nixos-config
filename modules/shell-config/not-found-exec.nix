@@ -1,6 +1,5 @@
 { config, lib, pkgs, ... }: with lib; let
   cfg = config.programs.zsh.not-found-exec;
-  nix-bin = "${config.nix.package}/bin/nix";
 in
 {
   options = {
