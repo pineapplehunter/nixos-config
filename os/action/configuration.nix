@@ -90,7 +90,6 @@
     enable = true;
     fileSystems = [ "/" ];
   };
-  services.fwupd.enable = true;
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -170,14 +169,6 @@
     layout = "jp";
     xkbVariant = "";
   };
-
-  services.fprintd = {
-    enable = true;
-    tod.enable = true;
-    tod.driver = pkgs.libfprint-2-tod1-goodix;
-  };
-
-  services.udev.packages = with pkgs; [ gnome.gnome-settings-daemon ];
 
   virtualisation = {
     docker = {
