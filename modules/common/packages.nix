@@ -52,7 +52,8 @@
     nixos-artwork-wallpaper
     udisks2
     gnome-firmware
-    wineWowPackages.staging
+    wineWowPackages.stable
+    wineWowPackages.wayland
     winetricks
     snapper-gui
     ghidra

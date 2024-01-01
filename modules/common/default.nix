@@ -58,7 +58,7 @@
     ll = "ls -lha";
   };
   
-  users.defaultUserShell = pkgs.fish;
+  users.defaultUserShell = pkgs.zsh;
   programs.not-found-exec.enable = true;
 
   programs.direnv = {
