@@ -49,9 +49,9 @@
   programs.starship.enable = true;
   programs.zsh = {
     enable = true;
-    ohMyZsh.enable = true;
+    # ohMyZsh.enable = true;
   };
-  programs.fish.enable = true;
+  # programs.fish.enable = true;
   environment.shellAliases = {
     ls = "${pkgs.eza}/bin/eza --icons";
     la = "ls -a";
