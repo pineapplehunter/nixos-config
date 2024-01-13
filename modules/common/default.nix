@@ -49,24 +49,21 @@
   programs.starship.enable = true;
   programs.zsh = {
     enable = true;
-    # ohMyZsh.enable = true;
+    autosuggestions.enable = true;
+    syntaxHighlighting.enable = true;
+    shellAliases = {
+      ls = "${pkgs.eza}/bin/eza --icons";
+      la = "ls -a";
+      ll = "ls -lha";
+    };
   };
-  # programs.fish.enable = true;
-  environment.shellAliases = {
-    ls = "${pkgs.eza}/bin/eza --icons";
-    la = "ls -a";
-    ll = "ls -lha";
-  };
-  
+
   users.defaultUserShell = pkgs.zsh;
   programs.not-found-exec.enable = true;
 
   programs.direnv = {
     enable = true;
     silent = true;
-    nix-direnv = {
-      enable = true;
-    };
   };
 
   # Enable CUPS to print documents.
