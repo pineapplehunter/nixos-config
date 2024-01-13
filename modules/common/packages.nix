@@ -34,6 +34,7 @@
     btop
     jq
     file
+    binutils
     # editor
     vscode
     (jetbrains.plugins.addPlugins jetbrains.idea-ultimate [ "github-copilot" ])
