@@ -220,7 +220,6 @@
   };
 
   environment.systemPackages = with pkgs;[
-    # f5vpn
     win-virtio
     win-spice
   ];
