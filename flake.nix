@@ -10,7 +10,7 @@
       inputs.flake-utils.follows = "flake-utils";
     };
     nix-xilinx = {
-      url = "gitlab:pineapplehunter/nix-xilinx";
+      url = "gitlab:doronbehar/nix-xilinx";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     curl-http3 = {
