@@ -19,7 +19,6 @@
     du-dust
     btrfs-assistant
     ripgrep
-    devenv
     nix-output-monitor
     gnome.gnome-tweaks
     nixd

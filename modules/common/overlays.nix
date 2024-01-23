@@ -1,10 +1,9 @@
-{ inputs, ... }: with inputs;{
+{ inputs, config, ... }: with inputs;{
   nixpkgs.overlays = [
     nix-xilinx.overlay
     curl-http3.overlays.default
     rust-overlay.overlays.default
     (final: super: {
-      devenv = devenv.packages.${final.system}.devenv;
       nixos-artwork-wallpaper = final.stdenv.mkDerivation rec {
         name = "nixos-wallpapers";
         src = nixos-artwork;
@@ -34,6 +33,14 @@
           '';
         });
       };
+      nix = config.nix.package;
+      # haskellPackages = super.haskellPackages.override {
+      #   overrides = hsFinal: hsPrev: {
+      #     cachix = hsPrev.cachix.override {
+      #       nix = config.nix.package;
+      #     };
+      #   };
+      # };
     })
   ];
 }

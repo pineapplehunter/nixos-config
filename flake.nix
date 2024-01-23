@@ -18,10 +18,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
-    devenv = {
-      url = "github:cachix/devenv";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     nixos-artwork = {
       url = "github:NixOS/nixos-artwork";
       flake = false;
@@ -38,12 +34,7 @@
     mozc-flake.url = "github:pineapplehunter/mozc-flake";
   };
 
-  nixConfig = {
-    extra-trusted-public-keys = "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=";
-    extra-substituters = "https://devenv.cachix.org";
-  };
-
-  outputs = { self, nixpkgs, devenv, ... }@inputs:
+  outputs = { self, nixpkgs, ... }@inputs:
     {
       nixosModules = {
         common = import ./modules/common;
