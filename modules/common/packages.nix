@@ -47,6 +47,7 @@
     rustup
     julia
     python3
+    stdenv.cc
     # other
     (writeShellScriptBin "flatpak-chrome-alias" "flatpak run com.google.Chrome $@")
     nixos-artwork-wallpaper
