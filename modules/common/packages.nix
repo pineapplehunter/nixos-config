@@ -57,5 +57,6 @@
     winetricks
     snapper-gui
     ghidra
+    jdk
   ];
 }
