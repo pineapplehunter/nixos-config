@@ -187,11 +187,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1705356233,
-        "narHash": "sha256-1h5mclm4oyc+dRzWNZvh4iuKGPxjv3Q2b2AGkddDbQg=",
+        "lastModified": 1706472935,
+        "narHash": "sha256-GjTM7NlO6IkOoVVzmNX+T7JaH/heb4r74/RGw1mOI2M=",
         "owner": "pineapplehunter",
         "repo": "mozc-flake",
-        "rev": "01b65e1610c410ec6415581a775e4f9828f25b3f",
+        "rev": "c05caff7f02d2671b95bfaf608ea47c67b08e8ee",
         "type": "github"
       },
       "original": {
