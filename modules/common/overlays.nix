@@ -33,7 +33,7 @@
           '';
         });
       };
-      nix = config.nix.package;
+      # nix = config.nix.package;
       # haskellPackages = super.haskellPackages.override {
       #   overrides = hsFinal: hsPrev: {
       #     cachix = hsPrev.cachix.override {
