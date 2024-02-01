@@ -39,6 +39,7 @@
     (jetbrains.plugins.addPlugins jetbrains.idea-ultimate [ "github-copilot" ])
     vivado
     gnome.dconf-editor
+    blender
     # service
     syncthing
     webcord
