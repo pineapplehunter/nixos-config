@@ -41,6 +41,27 @@
       #     };
       #   };
       # };
+      python310 = super.python310.override {
+        packageOverrides = pyself: pysuper: {
+          py-slvs = pyself.callPackage ../../packages/python/py-slvs.nix { };
+        };
+      };
+      blender = final.symlinkJoin {
+        inherit (super.blender) name pname version;
+        paths = [ super.blender ];
+        nativeBuildInputs = with final;[ makeWrapper python310Packages.wrapPython ];
+        pythonPath = with final.python310Packages; [numpy requests py-slvs];
+        postBuild = ''
+          rm $out/bin/blender
+          mv $out/bin/.blender-wrapped $out/bin/blender
+          
+          buildPythonPath "$pythonPath"
+          wrapProgram $out/bin/blender \
+            --prefix PATH : $program_PATH \
+            --prefix PYTHONPATH : "$program_PYTHONPATH" \
+            --add-flags "--python-use-system-env"
+        '';
+      };
     })
   ];
 }
