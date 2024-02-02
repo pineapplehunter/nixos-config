@@ -239,11 +239,11 @@
     },
     "nixos-hardware": {
       "locked": {
-        "lastModified": 1706782449,
-        "narHash": "sha256-8hEkOJDqR+7gJvXzwIM/VhR9iQzZyrNeh68u+Et2TzA=",
+        "lastModified": 1706834982,
+        "narHash": "sha256-3CfxA7gZ+DVv/N9Pvw61bV5Oe/mWfxYPyVQGqp9TMJA=",
         "owner": "NixOS",
         "repo": "nixos-hardware",
-        "rev": "cc65e27670abccced5997d4a93c4c930aef6fd0b",
+        "rev": "83e571bb291161682b9c3ccd48318f115143a550",
         "type": "github"
       },
       "original": {
@@ -364,6 +364,26 @@
         "type": "github"
       }
     },
+    "printer-flake": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1704765687,
+        "narHash": "sha256-bh4fv9f2P7t4qnht0x3izy7ukvm9cRKZEeabP8Q+NT8=",
+        "owner": "pineapplehunter",
+        "repo": "3dprinter-slicer-flake",
+        "rev": "709f0ffc243d79b96438a97369fde206311e36ca",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pineapplehunter",
+        "repo": "3dprinter-slicer-flake",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "curl-http3": "curl-http3",
@@ -373,6 +393,7 @@
         "nixos-artwork": "nixos-artwork",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_2",
+        "printer-flake": "printer-flake",
         "rust-overlay": "rust-overlay",
         "sops-nix": "sops-nix",
         "xremap-flake": "xremap-flake"

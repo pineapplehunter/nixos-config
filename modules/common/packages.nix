@@ -40,6 +40,9 @@
     vivado
     gnome.dconf-editor
     blender
+    cura
+    creality-print
+    prusaslicer
     # service
     syncthing
     webcord
