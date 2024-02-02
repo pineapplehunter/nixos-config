@@ -371,11 +371,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1706856411,
-        "narHash": "sha256-hYHbcDo+B+zhBAlja+eCqjbu6aGRLjcv7F4cUp8jnFA=",
+        "lastModified": 1706858509,
+        "narHash": "sha256-HXwWOvIN8k5fk3VS2WiKnU120YsQndpU/HCUXOlXYHQ=",
         "owner": "pineapplehunter",
         "repo": "3dprinter-slicer-flake",
-        "rev": "7fc06c1a0d404c630f9414ddf1c66a550f326b15",
+        "rev": "3c8eabe43bc5fd7c1aa942bbf180f825501ccfc8",
         "type": "github"
       },
       "original": {
