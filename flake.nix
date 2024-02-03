@@ -31,7 +31,6 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    mozc-flake.url = "github:pineapplehunter/mozc-flake";
     printer-flake = {
       url = "github:pineapplehunter/3dprinter-slicer-flake";
       inputs.nixpkgs.follows = "nixpkgs";

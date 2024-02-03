@@ -18,21 +18,6 @@
       helix = super.helix.overrideAttrs (old: {
         patches = [ ./helix.formatter.patch ];
       });
-
-      ibus-engines = super.ibus-engines // {
-        mozc = super.ibus-engines.mozc.overrideAttrs (old: {
-          postUnpack = "";
-          postPatch = ''
-            substituteInPlace src/gyp/common.gypi \
-              --replace "'-stdlib=libc++'," "" \
-              --replace "-lc++" "-lstdc++"
-            pushd src/third_party/abseil-cpp/absl/strings/internal/str_format
-            cp extension.h extension.h_bak
-            cat <(echo "#include <stdint.h>") extension.h_bak > extension.h # prepend stdint
-            popd
-          '';
-        });
-      };
       # nix = config.nix.package;
       # haskellPackages = super.haskellPackages.override {
       #   overrides = hsFinal: hsPrev: {
