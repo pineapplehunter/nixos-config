@@ -8,7 +8,7 @@
   environment.systemPackages = with pkgs;[
     # tools
     vim
-    curl
+    curl-http3
     unzipNLS
     git
     nix-index
@@ -28,7 +28,6 @@
     nixpkgs-fmt
     tree
     fd
-    (writeShellScriptBin "curl-http3" "exec -a $0 ${curl-http3}/bin/curl $@")
     zellij
     btop
     jq
