@@ -31,7 +31,6 @@
           py-slvs = pyself.callPackage ../../packages/python/py-slvs.nix { };
         };
       };
-      inherit (printer-flake.packages.${final.system}) cura creality-print prusaslicer;
       blender = final.symlinkJoin {
         inherit (super.blender) name pname version;
         paths = [ super.blender ];
