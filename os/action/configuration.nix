@@ -38,11 +38,6 @@
 
   zramSwap.enable = true;
 
-  programs.hyprland = {
-    enable = true;
-    xwayland.enable = true;
-  };
-
   services.xremap = {
     withGnome = true;
     yamlConfig = ''

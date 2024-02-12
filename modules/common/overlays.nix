@@ -15,9 +15,6 @@
           cp -v ${src}/wallpapers/*.png $out/share/backgrounds/nixos
         '';
       };
-      helix = super.helix.overrideAttrs (old: {
-        patches = [ ./helix.formatter.patch ];
-      });
       # nix = config.nix.package;
       # haskellPackages = super.haskellPackages.override {
       #   overrides = hsFinal: hsPrev: {
@@ -32,7 +29,8 @@
         };
       };
       blender = final.symlinkJoin {
-        inherit (super.blender) name pname version;
+        pname = "${super.blender.pname}-patched";
+        inherit (super.blender) name version;
         paths = [ super.blender ];
         nativeBuildInputs = with final;[ makeWrapper python310Packages.wrapPython ];
         pythonPath = with final.python310Packages; [numpy requests py-slvs];
