@@ -4,8 +4,10 @@ writeShellScriptBin "which-nix" ''
   if [[ $cmd = *@* ]]; then
     export cmd_no_at=$(echo $cmd | cut -d "@" -f 1)
     export cmd_package=$(echo $cmd | cut -d "@" -f 2)
-    echo $(${lib.getExe nix} path-info "${nixpkgs.url}#$cmd_package")/bin/$cmd_no_at
+    nix build nixpkgs#$cmd_package --no-link
+    echo $(${lib.getExe nix} path-info "${nixpkgs.url}#$cmd_package" 2> /dev/null)/bin/$cmd_no_at
   else
-    echo $(${lib.getExe nix} "${nixpkgs.url}#$cmd")/bin/$cmd
+    nix build nixpkgs#$cmd --no-link
+    echo $(${lib.getExe nix} path-info "${nixpkgs.url}#$cmd" 2> /dev/null)/bin/$cmd
   fi
 ''
