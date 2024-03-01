@@ -55,7 +55,6 @@
     gnome-firmware
     wineWowPackages.wayland
     winetricks
-    snapper-gui
     ghidra
     jdk
   ];
