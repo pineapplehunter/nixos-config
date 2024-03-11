@@ -33,7 +33,7 @@
     binutils
     # editor
     vscode
-    (jetbrains.plugins.addPlugins jetbrains.idea-ultimate [ "github-copilot" ])
+    jetbrains.idea-ultimate
     vivado
     gnome.dconf-editor
     blender
