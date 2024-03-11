@@ -21,8 +21,6 @@
     ripgrep
     nix-output-monitor
     gnome.gnome-tweaks
-    nixd
-    rnix-lsp
     nil
     cachix
     nixpkgs-fmt
