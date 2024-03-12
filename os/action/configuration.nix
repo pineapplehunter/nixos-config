@@ -60,6 +60,7 @@
     device = "nodev";
     configurationLimit = 20;
     default = "saved";
+    gfxmodeEfi = "1920x1200";
   };
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
