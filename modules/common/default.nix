@@ -11,7 +11,7 @@
 
   nixpkgs.config.allowUnfree = true;
   nix = {
-    package = pkgs.nixVersions.unstable;
+    # package = pkgs.nixVersions.unstable;
     settings = {
       experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
       trusted-users = [ "shogo" "riken" ];
