@@ -10,7 +10,8 @@
       inputs.flake-utils.follows = "flake-utils";
     };
     nix-xilinx = {
-      url = "gitlab:doronbehar/nix-xilinx";
+      url = "gitlab:pineapplehunter/nix-xilinx";
+      # url = "gitlab:doronbehar/nix-xilinx";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     curl-http3 = {
@@ -44,7 +45,7 @@
         mynixhost = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            ./os/qemu/configuration.nix
+            ./machines/qemu/configuration.nix
           ];
         };
         beast = nixpkgs.lib.nixosSystem {
@@ -52,7 +53,7 @@
           specialArgs = { inherit inputs self; };
           modules = [
             self.nixosModules.common
-            ./os/beast/configuration.nix
+            ./machines/beast/configuration.nix
             inputs.sops-nix.nixosModules.sops
           ];
         };
@@ -63,7 +64,7 @@
             self.nixosModules.common
             inputs.xremap-flake.nixosModules.default
             inputs.nixos-hardware.nixosModules.dell-xps-13-9310
-            ./os/action/configuration.nix
+            ./machines/action/configuration.nix
             inputs.sops-nix.nixosModules.sops
           ];
         };
