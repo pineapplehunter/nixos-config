@@ -56,11 +56,11 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs self; };
           modules = [
-            self.nixosModules.common
             inputs.xremap-flake.nixosModules.default
             inputs.nixos-hardware.nixosModules.dell-xps-13-9310
             ./machines/action/configuration.nix
             inputs.sops-nix.nixosModules.sops
+            self.nixosModules.common
           ];
         };
       };

@@ -1,11 +1,11 @@
-{ pkgs, ... }: {
+{ pkgs, lib, config, ... }: {
   programs.helix = {
     enable = true;
     defaultEditor = true;
   };
 
   # system wide packages
-  environment.systemPackages = with pkgs;[
+  environment.systemPackages = (with pkgs;[
     # tools
     vim
     curl-http3
@@ -55,5 +55,16 @@
     winetricks
     ghidra
     jdk
-  ];
+  ]) ++
+  # gnome-extensions
+  (lib.optionals
+    config.services.xserver.desktopManager.gnome.enable
+    (with pkgs.gnomeExtensions;[
+      tailscale-status
+      runcat
+      caffeine
+      appindicator
+      just-perfection
+      syncthing-indicator
+    ]));
 }
