@@ -55,6 +55,8 @@
     winetricks
     ghidra
     jdk
+    usbutils
+    pciutils
   ]) ++
   # gnome-extensions
   (lib.optionals
