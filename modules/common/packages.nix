@@ -57,6 +57,7 @@
     jdk
     usbutils
     pciutils
+    super-productivity
   ]) ++
   # gnome-extensions
   (lib.optionals
