@@ -24,6 +24,7 @@
     nil
     cachix
     nixfmt
+    nixpkgs-fmt
     tree
     fd
     zellij
