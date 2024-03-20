@@ -1,5 +1,1 @@
-{ ... }: {
-  imports = [
-    ./not-found-exec.nix
-  ];
-}
+{ ... }: { imports = [ ./not-found-exec.nix ]; }

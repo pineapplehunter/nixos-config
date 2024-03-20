@@ -1,8 +1,6 @@
 { writeShellScriptBin, confirm ? false, lib, nixpkgs, nix }:
-let
-  name = "not-found-exec-shell";
-in
-writeShellScriptBin name ''
+let name = "not-found-exec-shell";
+in writeShellScriptBin name ''
   export cmd="$1"
   shift
 
@@ -12,22 +10,26 @@ writeShellScriptBin name ''
   fi
 
   ${lib.optionalString confirm ''
-  if [[ $cmd = *@* ]]; then
-    export cmd_no_at=$(echo $cmd | cut -d "@" -f 1)
-    export cmd_package=$(echo $cmd | cut -d "@" -f 2)
-    echo "Command '$cmd_no_at' not found, do you want to try $cmd_no_at from ${nixpkgs.url}#$cmd_package? [y/N]: "
-  else
-    echo "Command '$cmd' not found, do you want to try $cmd from ${nixpkgs.url}? [y/N]: "
-  fi 
+    if [[ $cmd = *@* ]]; then
+      export cmd_no_at=$(echo $cmd | cut -d "@" -f 1)
+      export cmd_package=$(echo $cmd | cut -d "@" -f 2)
+      echo "Command '$cmd_no_at' not found, do you want to try $cmd_no_at from ${nixpkgs.url}#$cmd_package? [y/N]: "
+    else
+      echo "Command '$cmd' not found, do you want to try $cmd from ${nixpkgs.url}? [y/N]: "
+    fi 
   ''}
 
-  ${lib.optionalString confirm ''if read -q; then''}
+  ${lib.optionalString confirm "if read -q; then"}
   if [[ $cmd = *@* ]]; then
     export cmd_no_at=$(echo $cmd | cut -d "@" -f 1)
     export cmd_package=$(echo $cmd | cut -d "@" -f 2)
-    NIXPKGS_ALLOW_UNFREE=1 ${lib.getExe nix} shell "${nixpkgs.url}#$cmd_package" --impure -c $cmd_no_at $*
+    NIXPKGS_ALLOW_UNFREE=1 ${
+      lib.getExe nix
+    } shell "${nixpkgs.url}#$cmd_package" --impure -c $cmd_no_at $*
   else
-    NIXPKGS_ALLOW_UNFREE=1 ${lib.getExe nix} shell "${nixpkgs.url}#$cmd" --impure -c $cmd $*
+    NIXPKGS_ALLOW_UNFREE=1 ${
+      lib.getExe nix
+    } shell "${nixpkgs.url}#$cmd" --impure -c $cmd $*
   fi
-  ${lib.optionalString confirm ''fi''}
+  ${lib.optionalString confirm "fi"}
 ''

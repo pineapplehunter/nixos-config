@@ -1,4 +1,5 @@
-{ inputs, config, ... }: with inputs;{
+{ inputs, config, ... }:
+with inputs; {
   nixpkgs.overlays = [
     nix-xilinx.overlay
     curl-http3.overlays.default
@@ -22,12 +23,15 @@
         pname = "${super.blender.pname}-patched";
         inherit (super.blender) name version;
         paths = [ super.blender ];
-        nativeBuildInputs = with final;[ makeWrapper python310Packages.wrapPython ];
+        nativeBuildInputs = with final; [
+          makeWrapper
+          python310Packages.wrapPython
+        ];
         pythonPath = with final.python310Packages; [ numpy requests py-slvs ];
         postBuild = ''
           rm $out/bin/blender
           mv $out/bin/.blender-wrapped $out/bin/blender
-          
+
           buildPythonPath "$pythonPath"
           wrapProgram $out/bin/blender \
             --prefix PATH : $program_PATH \

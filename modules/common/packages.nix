@@ -5,7 +5,7 @@
   };
 
   # system wide packages
-  environment.systemPackages = (with pkgs;[
+  environment.systemPackages = (with pkgs; [
     # tools
     vim
     curl-http3
@@ -23,7 +23,7 @@
     gnome.gnome-tweaks
     nil
     cachix
-    nixpkgs-fmt
+    nixfmt
     tree
     fd
     zellij
@@ -47,7 +47,8 @@
     python3
     stdenv.cc
     # other
-    (writeShellScriptBin "flatpak-chrome-alias" "flatpak run com.google.Chrome $@")
+    (writeShellScriptBin "flatpak-chrome-alias"
+      "flatpak run com.google.Chrome $@")
     nixos-artwork-wallpaper
     udisks2
     gnome-firmware
@@ -60,9 +61,8 @@
     super-productivity
   ]) ++
   # gnome-extensions
-  (lib.optionals
-    config.services.xserver.desktopManager.gnome.enable
-    (with pkgs.gnomeExtensions;[
+  (lib.optionals config.services.xserver.desktopManager.gnome.enable
+    (with pkgs.gnomeExtensions; [
       tailscale-status
       runcat
       caffeine

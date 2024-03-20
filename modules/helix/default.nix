@@ -1,7 +1,7 @@
-{ config, lib, pkgs, ... }: with lib; let
-  cfg = config.programs.helix;
-in
-{
+{ config, lib, pkgs, ... }:
+with lib;
+let cfg = config.programs.helix;
+in {
   options = {
     programs.helix = {
       enable = mkOption {
@@ -25,7 +25,6 @@ in
   config = mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
 
-    environment.variables.EDITOR =
-      mkIf cfg.defaultEditor (mkOverride 900 "hx");
+    environment.variables.EDITOR = mkIf cfg.defaultEditor (mkOverride 900 "hx");
   };
 }

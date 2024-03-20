@@ -5,11 +5,10 @@
 { config, pkgs, ... }:
 
 {
-  imports =
-    [
-      # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+  ];
 
   environment.variables = { EDITOR = "vim"; };
 
@@ -25,7 +24,7 @@
 
   # input manager
   i18n.inputMethod.enabled = "ibus";
-  i18n.inputMethod.ibus.engines = with pkgs.ibus-engines;[ mozc ];
+  i18n.inputMethod.ibus.engines = with pkgs.ibus-engines; [ mozc ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;

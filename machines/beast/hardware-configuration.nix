@@ -4,35 +4,29 @@
 { config, lib, pkgs, modulesPath, ... }:
 
 {
-  imports =
-    [
-      (modulesPath + "/installer/scan/not-detected.nix")
-    ];
+  imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usbhid" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
-  fileSystems."/" =
-    {
-      device = "/dev/disk/by-uuid/a95bd03d-e22e-4cfb-8a49-fe79716bda9f";
-      fsType = "btrfs";
-      options = [ "subvol=@nix" ];
-    };
+  fileSystems."/" = {
+    device = "/dev/disk/by-uuid/a95bd03d-e22e-4cfb-8a49-fe79716bda9f";
+    fsType = "btrfs";
+    options = [ "subvol=@nix" ];
+  };
 
-  fileSystems."/boot" =
-    {
-      device = "/dev/disk/by-uuid/D9D2-D657";
-      fsType = "vfat";
-    };
+  fileSystems."/boot" = {
+    device = "/dev/disk/by-uuid/D9D2-D657";
+    fsType = "vfat";
+  };
 
-  fileSystems."/swap" =
-    {
-      device = "/dev/disk/by-uuid/a95bd03d-e22e-4cfb-8a49-fe79716bda9f";
-      fsType = "btrfs";
-      options = [ "subvol=@swap" ];
-    };
+  fileSystems."/swap" = {
+    device = "/dev/disk/by-uuid/a95bd03d-e22e-4cfb-8a49-fe79716bda9f";
+    fsType = "btrfs";
+    options = [ "subvol=@swap" ];
+  };
 
   swapDevices = [{ device = "/swap/swapfile"; }];
 
@@ -43,5 +37,6 @@
   networking.useDHCP = lib.mkDefault true;
   # networking.interfaces.enp34s0.useDHCP = lib.mkDefault true;
 
-  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+  hardware.cpu.amd.updateMicrocode =
+    lib.mkDefault config.hardware.enableRedistributableFirmware;
 }

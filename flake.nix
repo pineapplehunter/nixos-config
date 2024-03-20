@@ -39,9 +39,7 @@
       nixosConfigurations = {
         mynixhost = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
-          modules = [
-            ./machines/qemu/configuration.nix
-          ];
+          modules = [ ./machines/qemu/configuration.nix ];
         };
         beast = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
@@ -65,10 +63,8 @@
         };
       };
     } // (
-      let
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      in
-      {
+      let pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      in {
         formatter.x86_64-linux = pkgs.nixpkgs-fmt;
         homeConfigurations = {
           "shogo" = inputs.home-manager.lib.homeManagerConfiguration {
