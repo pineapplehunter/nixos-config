@@ -10,7 +10,7 @@
     ./hardware-configuration.nix
   ];
 
-  nixpkgs.flaek.source = lib.mkForce null;
+  nixpkgs.flake.source = lib.mkForce null;
   nix = {
     distributedBuilds = true;
     buildMachines = [
@@ -27,6 +27,7 @@
     extraOptions = ''
       builders-use-substitutes = true
     '';
+    channel.enable = false;
   };
 
   # security.doas.enable = true;
