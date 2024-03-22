@@ -12,7 +12,7 @@ buildPythonPackage rec {
     fetchSubmodules = true;
   };
 
-  nativeBuildInputs = [ cmake ninja swig scikit-build];
+  nativeBuildInputs = [ cmake ninja swig scikit-build ];
   dontUseCmakeConfigure = true;
 
   doCheck = false;

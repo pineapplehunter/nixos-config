@@ -5,7 +5,7 @@
 stdenv.mkDerivation {
   pname = "nixos-wallpapers";
   version = "unstable";
-  
+
   src = fetchFromGitHub {
     owner = "nixos";
     repo = "nixos-artwork";
