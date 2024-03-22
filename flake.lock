@@ -302,22 +302,6 @@
         "type": "gitlab"
       }
     },
-    "nixos-artwork": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1708013693,
-        "narHash": "sha256-t6UXqsBJhKtZEriWdrm19HIbdyvB6V9dR47WHFxENhc=",
-        "owner": "NixOS",
-        "repo": "nixos-artwork",
-        "rev": "35ebbbf01c3119005ed180726c388a01d4d1100c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "repo": "nixos-artwork",
-        "type": "github"
-      }
-    },
     "nixos-hardware": {
       "locked": {
         "lastModified": 1710123225,
@@ -435,7 +419,6 @@
         "curl-http3": "curl-http3",
         "flake-utils": "flake-utils",
         "nix-xilinx": "nix-xilinx",
-        "nixos-artwork": "nixos-artwork",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
         "rust-overlay": "rust-overlay",

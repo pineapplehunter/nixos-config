@@ -19,10 +19,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
-    nixos-artwork = {
-      url = "github:NixOS/nixos-artwork";
-      flake = false;
-    };
     xremap-flake = {
       url = "github:xremap/nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -80,6 +76,9 @@
             inherit pkgs;
             modules = [ ./home/home.nix ];
           };
+        };
+        packages.x86_64-linux = {
+          nixos-artwork-wallpaper = pkgs.callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
         };
         apps.x86_64-linux =
           let

@@ -11,6 +11,7 @@
       ./hardware-configuration.nix
     ];
 
+  nixpkgs.flaek.source = lib.mkForce null;
   nix = {
     distributedBuilds = true;
     buildMachines = [

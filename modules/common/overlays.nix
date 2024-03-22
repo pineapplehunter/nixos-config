@@ -4,17 +4,7 @@
     curl-http3.overlays.default
     rust-overlay.overlays.default
     (final: super: {
-      nixos-artwork-wallpaper = final.stdenv.mkDerivation rec {
-        name = "nixos-wallpapers";
-        src = nixos-artwork;
-        unpackPhase = "true";
-        buildPhase = "true";
-        installPhase = ''
-          mkdir -pv $out/share/backgrounds/nixos
-          realpath ${src}
-          cp -v ${src}/wallpapers/*.png $out/share/backgrounds/nixos
-        '';
-      };
+      nixos-artwork-wallpaper = final.callPackage ../../packages/nixos-artwork-wallpaper/package.nix { };
       # nix = config.nix.package;
       # haskellPackages = super.haskellPackages.override {
       #   overrides = hsFinal: hsPrev: {
@@ -33,7 +23,7 @@
         inherit (super.blender) name version;
         paths = [ super.blender ];
         nativeBuildInputs = with final;[ makeWrapper python310Packages.wrapPython ];
-        pythonPath = with final.python310Packages; [numpy requests py-slvs];
+        pythonPath = with final.python310Packages; [ numpy requests py-slvs ];
         postBuild = ''
           rm $out/bin/blender
           mv $out/bin/.blender-wrapped $out/bin/blender
