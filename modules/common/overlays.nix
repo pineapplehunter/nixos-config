@@ -39,6 +39,47 @@ with inputs; {
             --add-flags "--python-use-system-env"
         '';
       };
+      fprintd = super.fprintd.overrideAttrs {
+        postPatch = ''
+          patchShebangs \
+            po/check-translations.sh \
+            tests/unittest_inspector.py
+
+          # Stop tests from failing due to unhandled GTasks uncovered by GLib 2.76 bump.
+          # https://gitlab.freedesktop.org/libfprint/fprintd/-/issues/151
+          substituteInPlace tests/fprintd.py \
+            --replace "env['G_DEBUG'] = 'fatal-criticals'" ""
+          substituteInPlace tests/meson.build \
+            --replace "'G_DEBUG=fatal-criticals'," ""
+
+          # TODO: this is a temporary fix
+          # Stop pam tests from failing with timeout
+          substituteInPlace tests/pam/meson.build \
+            --replace-fail "'test_pam_fprintd'," ""
+        '';
+      };
+      fprintd-tod = (final.fprintd.override {
+        libfprint = final.libfprint-tod;
+      }).overrideAttrs
+        {
+          pname = "fprintd-tod";
+        };
+      libfprint-tod = final.libfprint.overrideAttrs rec {
+        pname = "libfprint-tod";
+        version = "1.94.6";
+
+        src = final.fetchFromGitLab {
+          domain = "gitlab.freedesktop.org";
+          owner = "3v1n0";
+          repo = "libfprint";
+          rev = "v${version}+tod1";
+          sha256 = "sha256-Ce56BIkuo2MnDFncNwq022fbsfGtL5mitt+gAAPcO/Y=";
+        };
+
+        postPatch = ''
+          patchShebangs ./tests/*.py ./tests/*.sh ./libfprint/tod/tests/*.sh
+        '';
+      };
     })
   ];
 }
