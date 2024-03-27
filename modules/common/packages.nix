@@ -31,6 +31,7 @@
     btop
     jq
     file
+    wl-clipboard
     binutils
     # editor
     vscode
