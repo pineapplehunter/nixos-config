@@ -73,6 +73,9 @@
   powerManagement.powertop.enable = true;
   services.thermald.enable = true;
 
+  systemd.services.NetworkManager-wait-online.enable = false;
+  systemd.services.docker.enable = false;
+
   networking.hostName = "action"; # Define your hostname.
   #networking.networkmanager.enableStrongSwan = true;
   #services.xl2tpd.enable = true;

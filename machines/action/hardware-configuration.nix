@@ -52,5 +52,5 @@
   hardware.cpu.intel.updateMicrocode =
     lib.mkDefault config.hardware.enableRedistributableFirmware;
 
-  powerManagement.powertop.enable = true;
+  #powerManagement.powertop.enable = true;
 }
