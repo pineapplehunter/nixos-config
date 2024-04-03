@@ -36,6 +36,7 @@
     nix-tree
     sops
     tectonic
+    gnumake
     # editor
     vscode
     jetbrains.idea-ultimate
