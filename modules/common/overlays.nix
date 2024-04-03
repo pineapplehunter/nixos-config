@@ -82,7 +82,7 @@ with inputs; {
       };
 
       gnome-console = super.gnome-console.overrideAttrs (old: {
-        patches = (old.patches or []) ++ [
+        patches = (old.patches or [ ]) ++ [
           (final.fetchpatch {
             url = "https://gitlab.gnome.org/GNOME/console/-/commit/7a02b32ca4efed6db74fd2e4f4c567e30493b968.patch";
             hash = "sha256-4TjlSgLlIELTTjSuz7HT6GMIL4lqsLtKVH9YtXsB2RQ=";

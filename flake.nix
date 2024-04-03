@@ -35,6 +35,7 @@
         common = import ./modules/common;
         helix = import ./modules/helix;
         shell-config = import ./modules/shell-config;
+        japanese = import ./modules/japanese.nix;
       };
       nixosConfigurations = {
         mynixhost = nixpkgs.lib.nixosSystem {
@@ -106,7 +107,7 @@
                 #!${pkgs.stdenv.shell}
 
                 set -e
-                nix flake update
+                # nix flake update
                 ${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
                 if [ $(readlink -f ./result) = $(readlink -f /run/current-system) ]; then
                   echo All packges up to date!

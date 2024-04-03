@@ -33,6 +33,9 @@
     file
     wl-clipboard
     binutils
+    nix-tree
+    sops
+    tectonic
     # editor
     vscode
     jetbrains.idea-ultimate

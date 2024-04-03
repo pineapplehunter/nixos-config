@@ -6,6 +6,7 @@
     ./inputs.nix
     shell-config
     helix
+    japanese
   ];
 
   nixpkgs.config.allowUnfree = true;
@@ -87,10 +88,9 @@
     #media-session.enable = true;
   };
 
-  services.avahi.enable = true;
-  services.avahi.nssmdns4 = true;
-  services.avahi.openFirewall = true;
-
-  # Configure console keymap
-  console.keyMap = "jp106";
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    openFirewall = true;
+  };
 }
