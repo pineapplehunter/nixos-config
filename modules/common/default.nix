@@ -93,4 +93,6 @@
     nssmdns4 = true;
     openFirewall = true;
   };
+
+  environment.variables.BAT_THEME = "GitHub";
 }
