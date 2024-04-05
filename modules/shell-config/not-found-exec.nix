@@ -18,13 +18,6 @@ in {
           Confirm before running the command.
         '';
       };
-      nixpkgs.url = mkOption {
-        type = types.str;
-        default = "nixpkgs/nixpkgs-unstable";
-        description = ''
-          The nixpkgs url to use.
-        '';
-      };
       which-nix.enable = mkOption {
         type = types.bool;
         default = true;
@@ -56,9 +49,9 @@ in {
 
     environment.systemPackages = mkIf cfg.which-nix.enable [
       (pkgs.callPackage ./not-found-exec-shell.nix {
-        inherit (cfg) nixpkgs confirm;
+        inherit (cfg) confirm;
       })
-      (pkgs.callPackage ./which-nix.nix { inherit (cfg) nixpkgs; })
+      (pkgs.callPackage ./which-nix.nix { })
     ];
   };
 }
