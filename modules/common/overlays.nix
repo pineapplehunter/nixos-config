@@ -58,12 +58,9 @@ with inputs; {
             --replace-fail "'test_pam_fprintd'," ""
         '';
       };
-      fprintd-tod = (final.fprintd.override {
-        libfprint = final.libfprint-tod;
-      }).overrideAttrs
-        {
-          pname = "fprintd-tod";
-        };
+      fprintd-tod = (final.fprintd.override { libfprint = final.libfprint-tod; }).overrideAttrs {
+        pname = "fprintd-tod";
+      };
       libfprint-tod = final.libfprint.overrideAttrs rec {
         pname = "libfprint-tod";
         version = "1.94.6";

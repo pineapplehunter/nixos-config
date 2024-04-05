@@ -37,6 +37,7 @@
     sops
     tectonic
     gnumake
+    ncdu
     # editor
     vscode
     jetbrains.idea-ultimate
