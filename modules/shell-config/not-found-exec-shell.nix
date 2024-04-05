@@ -30,7 +30,7 @@ in writeShellScriptBin name ''
   else
     NIXPKGS_ALLOW_UNFREE=1 ${
       lib.getExe nix
-    } shell "$nixpkgs.url#$cmd" --impure -c $cmd $*
+    } shell "$nixpkgs#$cmd" --impure -c $cmd $*
   fi
   ${lib.optionalString confirm "fi"}
 ''
