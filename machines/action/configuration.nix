@@ -67,6 +67,10 @@
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "riscv64-linux" ];
   boot.supportedFilesystems = [ ];
   boot.plymouth.enable = true;
+  boot.kernelPatches = [{
+    name = "hibernation";
+    patch = ./hibernation.patch;
+  }];
 
   # https://discourse.nixos.org/t/suspend-then-hibernate/31953/5
   boot.resumeDevice = "/dev/disk/by-uuid/244fb3a7-4e9c-4707-9427-a33f667a08bd";
