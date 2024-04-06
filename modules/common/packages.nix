@@ -23,7 +23,6 @@
     gnome.gnome-tweaks
     nil
     cachix
-    nixfmt
     nixpkgs-fmt
     tree
     fd
