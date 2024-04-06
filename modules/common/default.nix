@@ -1,13 +1,20 @@
-{ pkgs, self, ... }: {
-  imports = with self.nixosModules; [
-    ./overlays.nix
-    ./packages.nix
-    ./fonts.nix
-    ./inputs.nix
-    shell-config
-    helix
-    japanese
-  ];
+{ pkgs, self, inputs, ... }: {
+  imports =
+    let
+      inherit (self.nixosModules) shell-config helix japanese;
+      inherit (inputs) sops-nix xremap-flake;
+    in
+    [
+      ./overlays.nix
+      ./packages.nix
+      ./fonts.nix
+      ./inputs.nix
+      shell-config
+      helix
+      japanese
+      sops-nix.nixosModules.sops
+      xremap-flake.nixosModules.default
+    ];
 
   nixpkgs.config.allowUnfree = true;
   nix = {

@@ -38,6 +38,7 @@
     tectonic
     gnumake
     ncdu
+    jujutsu
     # editor
     vscode
     jetbrains.idea-ultimate

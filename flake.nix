@@ -48,25 +48,26 @@
           modules = [
             self.nixosModules.common
             ./machines/beast/configuration.nix
-            inputs.sops-nix.nixosModules.sops
           ];
         };
         action = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = { inherit inputs self; };
           modules = [
-            inputs.xremap-flake.nixosModules.default
             inputs.nixos-hardware.nixosModules.dell-xps-13-9310
-            ./machines/action/configuration.nix
-            inputs.sops-nix.nixosModules.sops
             self.nixosModules.common
+            ./machines/action/configuration.nix
           ];
         };
       };
     } // (
-      let pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      in {
-        formatter.x86_64-linux = pkgs.nixpkgs-fmt;
+      let
+        inherit (nixpkgs) lib;
+        inherit (nixpkgs.legacyPackages.x86_64-linux)
+          nixpkgs-fmt callPackage writeShellScript nixos-rebuild nix-output-monitor nvd pkgs;
+      in
+      {
+        formatter.x86_64-linux = nixpkgs-fmt;
         homeConfigurations = {
           "shogo" = inputs.home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
@@ -74,58 +75,58 @@
           };
         };
         packages.x86_64-linux = {
-          nixos-artwork-wallpaper = pkgs.callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
+          nixos-artwork-wallpaper = callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
         };
         apps.x86_64-linux =
           let
-            mkApp = t:
-              let
-                scriptName = "nixos-${t}-script";
-                cmd = pkgs.writeShellScript scriptName ''
-                  sudo ${pkgs.nixos-rebuild}/bin/nixos-rebuild ${t} --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
-                '';
-              in
-              {
-                type = "app";
-                program = "${cmd}";
-              };
+            mkScriptApp = name: script: {
+              type = "app";
+              program = "${writeShellScript name script}";
+            };
           in
           rec {
-            switch = mkApp "switch";
-            boot = mkApp "boot";
-            build = mkApp "build";
-            diff = {
-              type = "app";
-              program = toString (pkgs.writeShellScript "nixos-diff-script" ''
-                ${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
-                ${pkgs.nvd}/bin/nvd diff /run/current-system result
-              '');
-            };
-            update = {
-              type = "app";
-              program = toString (pkgs.writeShellScript "nixos-update-script" ''
-                #!${pkgs.stdenv.shell}
-
-                set -e
-                # nix flake update
-                ${pkgs.nixos-rebuild}/bin/nixos-rebuild build --flake . -v --log-format internal-json $@ |& ${pkgs.nix-output-monitor}/bin/nom --json
-                if [ $(readlink -f ./result) = $(readlink -f /run/current-system) ]; then
-                  echo All packges up to date!
-                  exit
-                fi
-                ${pkgs.nvd}/bin/nvd diff /run/current-system result
-                function yes_or_no {
-                    while true; do
-                        read -p "$* [y/n]: " yn
-                        case $yn in
-                            [Yy]*) return 0  ;;  
-                            [Nn]*) echo "Aborted" ; return  1 ;;
-                        esac
-                    done
-                }
-                yes_or_no "do you want to commit and update?" && sudo echo starting upgrade && git add . && git commit -m "$(date -Iminutes)" && nix run ".#switch"
-              '');
-            };
+            switch = mkScriptApp "switch" ''
+              set +e
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" $@
+              sudo echo switching
+              sudo ${lib.getExe nixos-rebuild} switch --flake .
+            '';
+            boot = mkScriptApp "boot" ''
+              set +e
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" $@
+              sudo echo switching boot
+              sudo ${lib.getExe nixos-rebuild} boot --flake .
+            '';
+            build = mkScriptApp "build" ''
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" $@
+            '';
+            diff = mkScriptApp "diff" ''
+              set +e
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" $@
+              ${lib.getExe nvd} diff /run/current-system result
+            '';
+            update = mkScriptApp "update-system" ''
+              set -e
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" $@
+              if [ $(readlink -f ./result) = $(readlink -f /run/current-system) ]; then
+                echo All packges up to date!
+                exit
+              fi
+              ${lib.getExe nvd} diff /run/current-system ./result
+              function yes_or_no {
+                  while true; do
+                      read -p "$* [y/n]: " yn
+                      case $yn in
+                          [Yy]*) return 0  ;;  
+                          [Nn]*) echo "Aborted" ; return 1 ;;
+                      esac
+                  done
+              }
+              yes_or_no "do you want to commit and update?"
+              sudo echo starting upgrade
+              git commit -am "$(date -Iminutes)"
+              sudo ${lib.getExe nixos-rebuild} boot --flake .
+            '';
             default = update;
           };
       }
