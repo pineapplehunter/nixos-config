@@ -3,7 +3,6 @@ with inputs; {
   nixpkgs.overlays = [
     nix-xilinx.overlay
     curl-http3.overlays.default
-    rust-overlay.overlays.default
     (final: super: {
       nixos-artwork-wallpaper = final.callPackage ../../packages/nixos-artwork-wallpaper/package.nix { };
       # nix = config.nix.package;
