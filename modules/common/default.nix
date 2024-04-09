@@ -1,4 +1,4 @@
-{ pkgs, self, inputs, ... }: {
+{ pkgs, self, inputs, lib, ... }: {
   imports =
     let
       inherit (self.nixosModules) shell-config helix japanese;
@@ -36,6 +36,8 @@
     };
     optimise.automatic = true;
   };
+
+  services.xremap.enable = lib.mkDefault false;
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
