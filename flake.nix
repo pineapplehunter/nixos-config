@@ -82,27 +82,27 @@
           rec {
             switch = mkScriptApp "switch" ''
               set +e
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" $@
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" "$@"
               sudo echo switching
               sudo ${lib.getExe nixos-rebuild} switch --flake .
             '';
             boot = mkScriptApp "boot" ''
               set +e
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" $@
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" "$@"
               sudo echo switching boot
               sudo ${lib.getExe nixos-rebuild} boot --flake .
             '';
             build = mkScriptApp "build" ''
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" $@
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" "$@"
             '';
             diff = mkScriptApp "diff" ''
               set +e
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" $@
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" "$@"
               ${lib.getExe nvd} diff /run/current-system result
             '';
             update = mkScriptApp "update-system" ''
               set -e
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" $@
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" "$@"
               if [ $(readlink -f ./result) = $(readlink -f /run/current-system) ]; then
                 echo All packges up to date!
                 exit

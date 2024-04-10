@@ -66,6 +66,7 @@
     usbutils
     pciutils
     super-productivity
+    android-studio
   ]) ++
   # gnome-extensions
   (lib.optionals config.services.xserver.desktopManager.gnome.enable
