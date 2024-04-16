@@ -45,6 +45,8 @@
     enableSSHSupport = true;
   };
 
+  i18n.inputMethod.enabled = "ibus";
+
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.

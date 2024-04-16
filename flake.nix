@@ -30,7 +30,7 @@
         common = import ./modules/common;
         helix = import ./modules/helix;
         shell-config = import ./modules/shell-config;
-        japanese = import ./modules/japanese.nix;
+        japanese = import ./modules/japanese;
         personal = import ./modules/personal;
         work = import ./modules/work;
       };
