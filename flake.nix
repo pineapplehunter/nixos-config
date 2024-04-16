@@ -31,6 +31,8 @@
         helix = import ./modules/helix;
         shell-config = import ./modules/shell-config;
         japanese = import ./modules/japanese.nix;
+        personal = import ./modules/personal;
+        work = import ./modules/work;
       };
       nixosConfigurations = {
         mynixhost = nixpkgs.lib.nixosSystem {
@@ -42,6 +44,7 @@
           specialArgs = { inherit inputs self; };
           modules = [
             self.nixosModules.common
+            self.nixosModules.personal
             ./machines/beast/configuration.nix
           ];
         };
@@ -51,7 +54,17 @@
           modules = [
             inputs.nixos-hardware.nixosModules.dell-xps-13-9310
             self.nixosModules.common
+            self.nixosModules.personal
             ./machines/action/configuration.nix
+          ];
+        };
+        micky = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs self; };
+          modules = [
+            self.nixosModules.common
+            self.nixosModules.work
+            ./machines/micky/configuration.nix
           ];
         };
       };

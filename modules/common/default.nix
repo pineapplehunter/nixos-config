@@ -21,7 +21,7 @@
     # package = pkgs.nixVersions.unstable;
     settings = {
       experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
-      trusted-users = [ "shogo" "riken" ];
+      trusted-users = [ "shogo" "riken" "shogotr" ];
       substituters =
         [ "https://cache.nixos.org/" "https://pineapplehunter.cachix.org" ];
       trusted-public-keys = [
