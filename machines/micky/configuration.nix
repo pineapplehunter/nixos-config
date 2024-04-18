@@ -10,8 +10,6 @@
     ./hardware-configuration.nix
   ];
 
-  services.fwupd.enable = true;
-
   # nixpkgs.flake.source = lib.mkForce null;
   nix = {
     package = pkgs.nixUnstable;
