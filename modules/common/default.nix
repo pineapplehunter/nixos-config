@@ -8,7 +8,6 @@
       ./overlays.nix
       ./packages.nix
       ./fonts.nix
-      ./inputs.nix
       shell-config
       helix
       japanese
