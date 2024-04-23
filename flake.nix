@@ -17,7 +17,7 @@
       url = "github:xremap/nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixos-hardware.url = "github:NixOS/nixos-hardware";
+    nixos-hardware.url = "github:pineapplehunter/nixos-hardware";
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -62,6 +62,7 @@
           system = "x86_64-linux";
           specialArgs = { inherit inputs self; };
           modules = [
+            inputs.nixos-hardware.nixosModules.mouse-daiv-z4-i7i01sr-a
             self.nixosModules.common
             self.nixosModules.work
             ./machines/micky/configuration.nix
