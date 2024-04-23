@@ -130,17 +130,7 @@
       };
       storageDriver = "btrfs";
     };
-    #podman.enable = true;
-    libvirtd = {
-      enable = true;
-      qemu = {
-        swtpm.enable = true;
-        ovmf.enable = true;
-        ovmf.packages = [ pkgs.OVMFFull.fd ];
-      };
-    };
   };
-  programs.virt-manager.enable = true;
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
@@ -158,8 +148,6 @@
       # shell = pkgs.nushell;
     };
   };
-
-  environment.systemPackages = with pkgs; [ win-virtio win-spice ];
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ 8080 ];
