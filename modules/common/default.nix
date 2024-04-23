@@ -8,7 +8,6 @@
       ./overlays.nix
       ./packages.nix
       ./fonts.nix
-      ./inputs.nix
       shell-config
       helix
       japanese
@@ -44,6 +43,8 @@
     enable = true;
     enableSSHSupport = true;
   };
+
+  i18n.inputMethod.enabled = "ibus";
 
   # List services that you want to enable:
 

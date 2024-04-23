@@ -1,4 +1,4 @@
-{pkgs, lib, config, ...}: {
+{ pkgs, lib, config, ... }: {
   environment.systemPackages = (with pkgs; [
     tectonic
     blender
@@ -13,7 +13,7 @@
       "flatpak run com.google.Chrome $@")
     nixos-artwork-wallpaper
     ghidra
-    wineWowPackages.wayland
+    wineWow64Packages.wayland
     winetricks
     jdk
     super-productivity
