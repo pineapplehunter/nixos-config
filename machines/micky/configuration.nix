@@ -10,35 +10,7 @@
     ./hardware-configuration.nix
   ];
 
-  # nixpkgs.flake.source = lib.mkForce null;
-  nix = {
-    package = pkgs.nixUnstable;
-    distributedBuilds = true;
-    buildMachines = [
-      # {
-      #   system = "x86_64-linux";
-      #   maxJobs = 16;
-      #   supportedFeatures = [ "big-parallel" "kvm" "benchmark" "nixos-test" ];
-      #   sshUser = "shogo";
-      #   hostName = "192.168.10.20";
-      #   sshKey = "/home/shogo/.ssh/id_ecdsa.1";
-      #   speedFactor = 10;
-      # }
-    ];
-    extraOptions = ''
-      builders-use-substitutes = true
-    '';
-    # channel.enable = false;
-  };
-
-  # security.doas.enable = true;
-  # security.sudo.enable = false;
-  # security.doas.extraRules = [{
-  #   groups = [ "wheel" ];
-  #   persist = true;
-  # }];
-
-  # zramSwap.enable = true;
+  nix.package = pkgs.nixUnstable;
 
   services.xremap = {
     withGnome = true;
@@ -52,9 +24,6 @@
 
   # Bootloader.
 
-  # boot.loader.systemd-boot.enable = true;
-  # boot.loader.systemd-boot.configurationLimit = 5;
-  # boot.loader.efi.efiSysMountPoint = "/efi";
   boot.loader.grub = {
     enable = true;
     useOSProber = true;
@@ -62,7 +31,7 @@
     device = "nodev";
     configurationLimit = 20;
     default = "saved";
-    extraEntries = ''
+    extraEntries = lib.mkBefore ''
       menuentry "System shutdown" {
       	echo "System shutting down..."
       	halt
