@@ -31,7 +31,7 @@
     device = "nodev";
     configurationLimit = 20;
     default = "saved";
-    extraEntries = lib.mkBefore ''
+    extraEntries = lib.mkAfter ''
       menuentry "System shutdown" {
       	echo "System shutting down..."
       	halt

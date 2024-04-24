@@ -1,7 +1,5 @@
 { pkgs, lib, config, ... }: {
   environment.systemPackages = (with pkgs; [
-    tectonic
-    blender
     webcord
     slack
     super-productivity
