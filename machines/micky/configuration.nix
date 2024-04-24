@@ -62,6 +62,21 @@
     device = "nodev";
     configurationLimit = 20;
     default = "saved";
+    extraEntries = ''
+      menuentry "System shutdown" {
+      	echo "System shutting down..."
+      	halt
+      }
+      menuentry "System restart" {
+      	echo "System rebooting..."
+      	reboot
+      }
+      if [ ''${grub_platform} == "efi" ]; then
+      	menuentry 'UEFI Firmware Settings' --id 'uefi-firmware' {
+      		fwsetup
+      	}
+      fi
+    '';
   };
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
