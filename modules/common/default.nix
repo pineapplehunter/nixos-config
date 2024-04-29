@@ -60,6 +60,7 @@
       ls = "${pkgs.eza}/bin/eza --icons";
       la = "ls -a";
       ll = "ls -lha";
+      ip = "ip -c";
     };
   };
 
