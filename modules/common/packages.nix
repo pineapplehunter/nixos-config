@@ -21,7 +21,7 @@
     nix-output-monitor
     gnome.gnome-tweaks
     nil
-    cachix
+    (symlinkJoin { name = "cachix"; version = cachix.version; paths = [ cachix.bin ]; })
     nixpkgs-fmt
     tree
     fd
