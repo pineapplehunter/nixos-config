@@ -53,7 +53,7 @@
 
   programs.starship = {
     enable = true;
-    presets = [ "bracketed-segments" ];
+    # presets = [ "bracketed-segments" ];
   };
   programs.zsh = {
     enable = true;
