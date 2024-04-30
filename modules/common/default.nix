@@ -51,7 +51,10 @@
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
-  programs.starship.enable = true;
+  programs.starship = {
+    enable = true;
+    presets = [ "bracketed-segments" ];
+  };
   programs.zsh = {
     enable = true;
     autosuggestions.enable = true;

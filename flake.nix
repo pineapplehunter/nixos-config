@@ -96,27 +96,32 @@
           rec {
             switch = mkScriptApp "switch" ''
               set +e
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" "$@"
+              export HOST=''${HOST:-$(hostname)}
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
               sudo echo switching
               sudo ${lib.getExe nixos-rebuild} switch --flake .
             '';
             boot = mkScriptApp "boot" ''
               set +e
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" "$@"
+              export HOST=''${HOST:-$(hostname)}
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
               sudo echo switching boot
               sudo ${lib.getExe nixos-rebuild} boot --flake .
             '';
             build = mkScriptApp "build" ''
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" "$@"
+              export HOST=''${HOST:-$(hostname)}
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
             '';
             diff = mkScriptApp "diff" ''
               set +e
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" "$@"
+              export HOST=''${HOST:-$(hostname)}
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
               ${lib.getExe nvd} diff /run/current-system result
             '';
             update = mkScriptApp "update-system" ''
               set -e
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" "$@"
+              export HOST=''${HOST:-$(hostname)}
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
               if [ $(readlink -f ./result) = $(readlink -f /run/current-system) ]; then
                 echo All packges up to date!
                 exit
@@ -134,7 +139,7 @@
               yes_or_no "do you want to commit and update?"
               sudo echo starting upgrade
               git commit -am "$(date -Iminutes)"
-              sudo ${lib.getExe nixos-rebuild} switch --flake .
+              sudo ${lib.getExe nixos-rebuild} switch --flake ".#$HOST"
             '';
             default = update;
           };
