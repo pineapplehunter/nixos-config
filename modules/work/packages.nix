@@ -13,5 +13,6 @@
       appindicator
       just-perfection
       syncthing-indicator
+      tiling-assistant
     ]));
 }
