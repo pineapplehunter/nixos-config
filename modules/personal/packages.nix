@@ -18,6 +18,7 @@
     jdk
     super-productivity
     android-studio
+    orca-slicer
   ]) ++
   # gnome-extensions
   (lib.optionals config.services.xserver.desktopManager.gnome.enable
@@ -28,5 +29,6 @@
       appindicator
       just-perfection
       syncthing-indicator
+      tiling-assistant
     ]));
 }
