@@ -21,29 +21,6 @@
         "type": "github"
       }
     },
-    "curl-http3": {
-      "inputs": {
-        "flake-utils": [
-          "flake-utils"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1695630951,
-        "narHash": "sha256-T7F+UmJ7JJtwW3tsxz+xfDYsUFMaew9P94B/RCxNbqQ=",
-        "owner": "pineapplehunter",
-        "repo": "nix-curl-http3",
-        "rev": "2142b778013a12f754c83e2b9925066845d31b70",
-        "type": "github"
-      },
-      "original": {
-        "owner": "pineapplehunter",
-        "repo": "nix-curl-http3",
-        "type": "github"
-      }
-    },
     "devshell": {
       "inputs": {
         "flake-utils": "flake-utils_2",
@@ -289,11 +266,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1714467729,
-        "narHash": "sha256-86HOIDU4ESCGlFR8y1uIdH8VhIzs5e7/V0xKcjz6z4c=",
+        "lastModified": 1714726954,
+        "narHash": "sha256-ntvKzUnrSA6YMqzEHKug6au6FraPooWmNbYaDJEGH8Q=",
         "owner": "doronbehar",
         "repo": "nix-xilinx",
-        "rev": "2d39bd035ca0d5db873d117825b9376843a6732e",
+        "rev": "1cf4a92e2105057ee4398cf12ff3ffc65dfb9757",
         "type": "gitlab"
       },
       "original": {
@@ -319,11 +296,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1714253743,
-        "narHash": "sha256-mdTQw2XlariysyScCv2tTE45QSU9v/ezLcHJ22f0Nxc=",
+        "lastModified": 1714635257,
+        "narHash": "sha256-4cPymbty65RvF1DWQfc+Bc8B233A1BWxJnNULJKQ1EY=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "58a1abdbae3217ca6b702f03d3b35125d88a2994",
+        "rev": "63c3a29ca82437c87573e4c6919b09a24ea61b0f",
         "type": "github"
       },
       "original": {
@@ -417,7 +394,6 @@
     },
     "root": {
       "inputs": {
-        "curl-http3": "curl-http3",
         "flake-utils": "flake-utils",
         "nix-xilinx": "nix-xilinx",
         "nixos-hardware": "nixos-hardware",

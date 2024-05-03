@@ -10,8 +10,6 @@
     ./hardware-configuration.nix
   ];
 
-  nix.package = pkgs.nixUnstable;
-
   services.xremap = {
     withGnome = true;
     yamlConfig = ''

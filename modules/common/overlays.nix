@@ -2,7 +2,6 @@
 with inputs; {
   nixpkgs.overlays = [
     nix-xilinx.overlay
-    curl-http3.overlays.default
     (final: super: {
       nixos-artwork-wallpaper = final.callPackage ../../packages/nixos-artwork-wallpaper/package.nix { };
       python310 = super.python310.override {
@@ -42,11 +41,16 @@ with inputs; {
       };
 
       ibus-engines = super.ibus-engines // {
-        mozc = super.ibus-engines.mozc.overrideAttrs (old:{
+        mozc = super.ibus-engines.mozc.overrideAttrs (old: {
           deps = old.deps.overrideAttrs {
             outputHash = "sha256-ToBLVJpAQErL/P1bfWJca2FjhDW5XTrwuJQLquwlrhA=";
           };
         });
+      };
+
+      curl-http3 = super.curl.override {
+        http3Support = true;
+        openssl = super.quictls;
       };
     })
   ];

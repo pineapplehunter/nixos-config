@@ -8,11 +8,6 @@
       url = "gitlab:doronbehar/nix-xilinx";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    curl-http3 = {
-      url = "github:pineapplehunter/nix-curl-http3";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
-    };
     xremap-flake = {
       url = "github:xremap/nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -69,24 +64,18 @@
           ];
         };
       };
-    } // (
+    } // (inputs.flake-utils.lib.eachDefaultSystem (system:
       let
         inherit (nixpkgs) lib;
-        inherit (nixpkgs.legacyPackages.x86_64-linux)
+        inherit (nixpkgs.legacyPackages.${system})
           nixpkgs-fmt callPackage writeShellScript nixos-rebuild nix-output-monitor nvd pkgs;
       in
       {
-        formatter.x86_64-linux = nixpkgs-fmt;
-        homeConfigurations = {
-          "shogo" = inputs.home-manager.lib.homeManagerConfiguration {
-            inherit pkgs;
-            modules = [ ./home/home.nix ];
-          };
-        };
-        packages.x86_64-linux = {
+        formatter = nixpkgs-fmt;
+        packages = {
           nixos-artwork-wallpaper = callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
         };
-        apps.x86_64-linux =
+        apps =
           let
             mkScriptApp = name: script: {
               type = "app";
@@ -144,5 +133,5 @@
             default = update;
           };
       }
-    );
+    ));
 }
