@@ -52,6 +52,8 @@ with inputs; {
         http3Support = true;
         openssl = super.quictls;
       };
+
+      inherit (nixpkgs-stable.legacyPackages.${super.system}) fprintd libfprint libfprint-tod fprintd-tod;
     })
   ];
 }
