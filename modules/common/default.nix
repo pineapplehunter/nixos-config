@@ -62,7 +62,7 @@
     shellAliases = {
       ls = "${pkgs.eza}/bin/eza --icons";
       la = "ls -a";
-      ll = "ls -lha";
+      ll = "ls -lha --git";
       ip = "ip -c";
     };
   };
