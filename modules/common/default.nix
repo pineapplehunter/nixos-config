@@ -60,9 +60,9 @@
     autosuggestions.enable = true;
     syntaxHighlighting.enable = true;
     shellAliases = {
-      ls = "${pkgs.eza}/bin/eza --icons";
+      ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";
       la = "ls -a";
-      ll = "ls -lha --git";
+      ll = "ls -lha";
       ip = "ip -c";
     };
   };
