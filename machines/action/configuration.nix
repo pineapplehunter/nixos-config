@@ -78,13 +78,6 @@
   systemd.services.docker.enable = false;
 
   networking.hostName = "action"; # Define your hostname.
-  #networking.networkmanager.enableStrongSwan = true;
-  #services.xl2tpd.enable = true;
-  #services.libreswan.enable = true;
-  services.strongswan = {
-    enable = true;
-    secrets = [ "ipsec.d/ipsec.nm-l2tp.secrets" ];
-  };
   services.btrfs.autoScrub = {
     enable = true;
     fileSystems = [ "/" ];

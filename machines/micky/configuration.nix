@@ -60,9 +60,6 @@
   systemd.services.docker.enable = false;
 
   networking.hostName = "micky"; # Define your hostname.
-  #networking.networkmanager.enableStrongSwan = true;
-  #services.xl2tpd.enable = true;
-  #services.libreswan.enable = true;
   services.btrfs.autoScrub = {
     enable = true;
     fileSystems = [ "/" ];
