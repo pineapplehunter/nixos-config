@@ -76,6 +76,7 @@
 
   systemd.services.NetworkManager-wait-online.enable = false;
   systemd.services.docker.enable = false;
+  systemd.sockets.docker.enable = false;
 
   networking.hostName = "action"; # Define your hostname.
   services.btrfs.autoScrub = {
