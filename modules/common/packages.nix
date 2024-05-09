@@ -35,6 +35,8 @@
     sops
     gnumake
     ncdu
+    niv
+    npins
     # editor
     vscode
     gnome.dconf-editor
