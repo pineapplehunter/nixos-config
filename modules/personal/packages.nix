@@ -19,6 +19,15 @@
     super-productivity
     android-studio
     orca-slicer
+
+    sqlx-cli
+    cargo-tauri
+    cargo-expand
+    cargo-fuzz
+    cargo-watch
+    cargo-bloat
+    cargo-outdated
+    trunk
   ]) ++
   # gnome-extensions
   (lib.optionals config.services.xserver.desktopManager.gnome.enable
