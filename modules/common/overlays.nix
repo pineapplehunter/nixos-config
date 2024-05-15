@@ -40,9 +40,6 @@ with inputs; {
         });
       };
 
-      ibus-engines = super.ibus-engines // {
-        mozc = nixpkgs-stable.legacyPackages.${super.system}.ibus-engines.mozc;
-      };
       # ibus-engines = super.ibus-engines // {
       #   mozc = super.ibus-engines.mozc.overrideAttrs (old: rec {
       #     src = super.fetchFromGitHub {
