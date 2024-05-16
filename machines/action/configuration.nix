@@ -31,7 +31,7 @@
     # channel.enable = false;
   };
 
-  i18n.inputMethod.enabled = lib.mkForce "fcitx5";
+  # i18n.inputMethod.enabled = lib.mkForce "fcitx5";
 
   # security.doas.enable = true;
   # security.sudo.enable = false;
