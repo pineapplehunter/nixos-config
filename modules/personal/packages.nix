@@ -28,6 +28,7 @@
     cargo-bloat
     cargo-outdated
     trunk
+    gnome.gnome-terminal
   ]) ++
   # gnome-extensions
   (lib.optionals config.services.xserver.desktopManager.gnome.enable
