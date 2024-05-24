@@ -70,12 +70,13 @@
       let
         inherit (nixpkgs) lib;
         inherit (nixpkgs.legacyPackages.${system})
-          nixpkgs-fmt callPackage writeShellScript nixos-rebuild nix-output-monitor nvd pkgs;
+          nixpkgs-fmt callPackage writeShellScript nixos-rebuild nix-output-monitor nvd;
       in
       {
         formatter = nixpkgs-fmt;
         packages = {
           nixos-artwork-wallpaper = callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
+          ibus = callPackage ./packages/ibus { };
         };
         apps =
           let

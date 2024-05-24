@@ -1,4 +1,4 @@
-{ inputs, config, ... }:
+{ inputs, config, self, ... }:
 with inputs; {
   nixpkgs.overlays = [
     nix-xilinx.overlay
@@ -65,7 +65,8 @@ with inputs; {
       };
 
       # inherit (nixpkgs-stable.legacyPackages.${super.system}) fprintd libfprint libfprint-tod fprintd-tod;
-      inherit (nixpkgs-stable.legacyPackages.${super.system}) ibus;
+      # inherit (nixpkgs-stable.legacyPackages.${super.system}) ibus;
+      ibus = self.packages.${final.system}.ibus;
     })
   ];
 }
