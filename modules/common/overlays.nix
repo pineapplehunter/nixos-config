@@ -64,7 +64,7 @@ with inputs; {
         openssl = super.quictls;
       };
 
-      inherit (nixpkgs-stable.legacyPackages.${super.system}) fprintd libfprint libfprint-tod fprintd-tod;
+      # inherit (nixpkgs-stable.legacyPackages.${super.system}) fprintd libfprint libfprint-tod fprintd-tod;
     })
   ];
 }
