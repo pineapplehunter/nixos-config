@@ -67,6 +67,15 @@ with inputs; {
       # inherit (nixpkgs-stable.legacyPackages.${super.system}) fprintd libfprint libfprint-tod fprintd-tod;
       # inherit (nixpkgs-stable.legacyPackages.${super.system}) ibus;
       # ibus = self.packages.${final.system}.ibus;
+      ibus = super.ibus.overrideAttrs rec {
+        version = "1.5.30";
+        src = super.fetchFromGitHub {
+          owner = "ibus";
+          repo = "ibus";
+          rev = version;
+          hash = "sha256-VgSjeKF9DCkDfE9lHEaWpgZb6ibdgoDf/I6qeJf8Ah4=";
+        };
+      };
     })
   ];
 }
