@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-23.11";
-    nixpkgs-pineapplehunter.url = "github:pineapplehunter/nixpkgs?ref=mozc-desktop-entry";
+    nixpkgs-pineapplehunter.url = "github:pineapplehunter/nixpkgs?ref=mozc-updates";
     flake-utils.url = "github:numtide/flake-utils";
     nix-xilinx = {
       url = "gitlab:doronbehar/nix-xilinx";
