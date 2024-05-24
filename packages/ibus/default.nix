@@ -63,8 +63,8 @@ stdenv.mkDerivation rec {
   src = fetchFromGitHub {
     owner = "ibus";
     repo = "ibus";
-    rev = "281c9aeb0ad566b1500416ea56f740c1b15ed46f";
-    sha256 = "sha256-yIBXCyjsAdbU5ZSJF1zm3qq/Aw4JWXk0i9qJdfE8YYI=";
+    rev = "f05c12d";
+    sha256 = "sha256-wKWEiPjj+K4CzeaM7OcIG1GL53YxJquFvJNFgoENEmU=";
   };
 
   patches = [
