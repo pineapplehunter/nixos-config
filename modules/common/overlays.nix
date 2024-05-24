@@ -66,7 +66,7 @@ with inputs; {
 
       # inherit (nixpkgs-stable.legacyPackages.${super.system}) fprintd libfprint libfprint-tod fprintd-tod;
       # inherit (nixpkgs-stable.legacyPackages.${super.system}) ibus;
-      ibus = self.packages.${final.system}.ibus;
+      # ibus = self.packages.${final.system}.ibus;
     })
   ];
 }
