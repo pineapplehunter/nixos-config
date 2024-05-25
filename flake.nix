@@ -3,21 +3,18 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-23.11";
+    nixpkgs-pineapplehunter.url = "github:pineapplehunter/nixpkgs?ref=mozc-updates";
     flake-utils.url = "github:numtide/flake-utils";
     nix-xilinx = {
       url = "gitlab:doronbehar/nix-xilinx";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    curl-http3 = {
-      url = "github:pineapplehunter/nix-curl-http3";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
-    };
     xremap-flake = {
       url = "github:xremap/nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixos-hardware.url = "github:NixOS/nixos-hardware";
+    nixos-hardware.url = "github:pineapplehunter/nixos-hardware";
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -30,7 +27,9 @@
         common = import ./modules/common;
         helix = import ./modules/helix;
         shell-config = import ./modules/shell-config;
-        japanese = import ./modules/japanese.nix;
+        japanese = import ./modules/japanese;
+        personal = import ./modules/personal;
+        work = import ./modules/work;
       };
       nixosConfigurations = {
         mynixhost = nixpkgs.lib.nixosSystem {
@@ -42,6 +41,7 @@
           specialArgs = { inherit inputs self; };
           modules = [
             self.nixosModules.common
+            self.nixosModules.personal
             ./machines/beast/configuration.nix
           ];
         };
@@ -51,28 +51,34 @@
           modules = [
             inputs.nixos-hardware.nixosModules.dell-xps-13-9310
             self.nixosModules.common
+            self.nixosModules.personal
             ./machines/action/configuration.nix
           ];
         };
+        micky = nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          specialArgs = { inherit inputs self; };
+          modules = [
+            inputs.nixos-hardware.nixosModules.mouse-daiv-z4-i7i01sr-a
+            self.nixosModules.common
+            self.nixosModules.work
+            ./machines/micky/configuration.nix
+          ];
+        };
       };
-    } // (
+    } // (inputs.flake-utils.lib.eachDefaultSystem (system:
       let
         inherit (nixpkgs) lib;
-        inherit (nixpkgs.legacyPackages.x86_64-linux)
-          nixpkgs-fmt callPackage writeShellScript nixos-rebuild nix-output-monitor nvd pkgs;
+        inherit (nixpkgs.legacyPackages.${system})
+          nixpkgs-fmt callPackage writeShellScript nixos-rebuild nix-output-monitor nvd;
       in
       {
-        formatter.x86_64-linux = nixpkgs-fmt;
-        homeConfigurations = {
-          "shogo" = inputs.home-manager.lib.homeManagerConfiguration {
-            inherit pkgs;
-            modules = [ ./home/home.nix ];
-          };
-        };
-        packages.x86_64-linux = {
+        formatter = nixpkgs-fmt;
+        packages = {
           nixos-artwork-wallpaper = callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
+          ibus = callPackage ./packages/ibus { };
         };
-        apps.x86_64-linux =
+        apps =
           let
             mkScriptApp = name: script: {
               type = "app";
@@ -82,27 +88,32 @@
           rec {
             switch = mkScriptApp "switch" ''
               set +e
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" $@
+              export HOST=''${HOST:-$(hostname)}
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
               sudo echo switching
               sudo ${lib.getExe nixos-rebuild} switch --flake .
             '';
             boot = mkScriptApp "boot" ''
               set +e
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" $@
+              export HOST=''${HOST:-$(hostname)}
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
               sudo echo switching boot
               sudo ${lib.getExe nixos-rebuild} boot --flake .
             '';
             build = mkScriptApp "build" ''
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" $@
+              export HOST=''${HOST:-$(hostname)}
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
             '';
             diff = mkScriptApp "diff" ''
               set +e
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" $@
+              export HOST=''${HOST:-$(hostname)}
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
               ${lib.getExe nvd} diff /run/current-system result
             '';
             update = mkScriptApp "update-system" ''
               set -e
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$(hostname).config.system.build.toplevel" $@
+              export HOST=''${HOST:-$(hostname)}
+              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
               if [ $(readlink -f ./result) = $(readlink -f /run/current-system) ]; then
                 echo All packges up to date!
                 exit
@@ -120,10 +131,10 @@
               yes_or_no "do you want to commit and update?"
               sudo echo starting upgrade
               git commit -am "$(date -Iminutes)"
-              sudo ${lib.getExe nixos-rebuild} switch --flake .
+              sudo ${lib.getExe nixos-rebuild} switch --flake ".#$HOST"
             '';
             default = update;
           };
       }
-    );
+    ));
 }

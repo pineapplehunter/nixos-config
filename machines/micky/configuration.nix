@@ -10,38 +10,6 @@
     ./hardware-configuration.nix
   ];
 
-  # nixpkgs.flake.source = lib.mkForce null;
-  nix = {
-    package = pkgs.nixVersions.latest;
-    distributedBuilds = true;
-    buildMachines = [
-      {
-        system = "x86_64-linux";
-        maxJobs = 16;
-        supportedFeatures = [ "big-parallel" "kvm" "benchmark" "nixos-test" ];
-        sshUser = "shogo";
-        hostName = "daniel-njlab-pc";
-        # sshKey = "/home/shogo/.ssh/id_ecdsa.1";
-        speedFactor = 10;
-      }
-    ];
-    extraOptions = ''
-      builders-use-substitutes = true
-    '';
-    # channel.enable = false;
-  };
-
-  # i18n.inputMethod.enabled = lib.mkForce "fcitx5";
-
-  # security.doas.enable = true;
-  # security.sudo.enable = false;
-  # security.doas.extraRules = [{
-  #   groups = [ "wheel" ];
-  #   persist = true;
-  # }];
-
-  zramSwap.enable = true;
-
   services.xremap = {
     withGnome = true;
     yamlConfig = ''
@@ -54,9 +22,6 @@
 
   # Bootloader.
 
-  # boot.loader.systemd-boot.enable = true;
-  # boot.loader.systemd-boot.configurationLimit = 5;
-  # boot.loader.efi.efiSysMountPoint = "/efi";
   boot.loader.grub = {
     enable = true;
     useOSProber = true;
@@ -64,6 +29,21 @@
     device = "nodev";
     configurationLimit = 20;
     default = "saved";
+    extraEntries = lib.mkAfter ''
+      menuentry "System shutdown" {
+      	echo "System shutting down..."
+      	halt
+      }
+      menuentry "System restart" {
+      	echo "System rebooting..."
+      	reboot
+      }
+      if [ ''${grub_platform} == "efi" ]; then
+      	menuentry 'UEFI Firmware Settings' --id 'uefi-firmware' {
+      		fwsetup
+      	}
+      fi
+    '';
   };
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
@@ -71,7 +51,7 @@
   boot.plymouth.enable = true;
 
   # https://discourse.nixos.org/t/suspend-then-hibernate/31953/5
-  boot.resumeDevice = "/dev/disk/by-uuid/244fb3a7-4e9c-4707-9427-a33f667a08bd";
+  # boot.resumeDevice = "/dev/disk/by-uuid/244fb3a7-4e9c-4707-9427-a33f667a08bd";
   powerManagement.enable = true;
   powerManagement.powertop.enable = true;
   services.thermald.enable = true;
@@ -80,7 +60,7 @@
   systemd.services.docker.enable = false;
   systemd.sockets.docker.enable = false;
 
-  networking.hostName = "action"; # Define your hostname.
+  networking.hostName = "micky"; # Define your hostname.
   services.btrfs.autoScrub = {
     enable = true;
     fileSystems = [ "/" ];
@@ -106,27 +86,6 @@
   #   login.fprintAuth = false;
   #   passwd.fprintAuth = false;
   # };
-  security.pam.services.login.fprintAuth = false;
-  security.pam.services.gdm-fingerprint =
-    lib.mkIf (config.services.fprintd.enable) {
-      text = ''
-        auth       required                    pam_shells.so
-        auth       requisite                   pam_nologin.so
-        auth       requisite                   pam_faillock.so      preauth
-        auth       required                    ${pkgs.fprintd}/lib/security/pam_fprintd.so
-        auth       optional                    pam_permit.so
-        auth       required                    pam_env.so
-        auth       [success=ok default=1]      ${pkgs.gnome.gdm}/lib/security/pam_gdm.so
-        auth       optional                    ${pkgs.gnome.gnome-keyring}/lib/security/pam_gnome_keyring.so
-
-        account    include                     login
-
-        password   required                    pam_deny.so
-
-        session    include                     login
-        session    optional                    ${pkgs.gnome.gnome-keyring}/lib/security/pam_gnome_keyring.so auto_start
-      '';
-    };
 
   services.snapper.configs = {
     home = {
@@ -134,11 +93,11 @@
       ALLOW_USERS = [ "shogo" ];
       TIMELINE_CREATE = true;
       TIMELINE_CLEANUP = true;
-      TIMELINE_LIMIT_HOURLY = "10";
-      TIMELINE_LIMIT_DAILY = "7";
-      TIMELINE_LIMIT_WEEKLY = "4";
-      TIMELINE_LIMIT_MONTHLY = "10";
-      TIMELINE_LIMIT_YEARLY = "2";
+      TIMELINE_LIMIT_HOURLY = "5";
+      TIMELINE_LIMIT_DAILY = "6";
+      TIMELINE_LIMIT_WEEKLY = "3";
+      TIMELINE_LIMIT_MONTHLY = "2";
+      TIMELINE_LIMIT_YEARLY = "0";
     };
   };
 
@@ -151,24 +110,14 @@
       };
       storageDriver = "btrfs";
     };
-    #podman.enable = true;
-    libvirtd = {
-      enable = true;
-      qemu = {
-        swtpm.enable = true;
-        ovmf.enable = true;
-        ovmf.packages = [ pkgs.OVMFFull.fd ];
-      };
-    };
   };
-  programs.virt-manager.enable = true;
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users = {
-    shogo = {
+    shogotr = {
       isNormalUser = true;
       description = "Shogo Takata";
       extraGroups = [ "networkmanager" "wheel" ];
@@ -178,22 +127,10 @@
       # ];
       # shell = pkgs.nushell;
     };
-
-    riken = {
-      isNormalUser = true;
-      description = "Shogo at Riken";
-      extraGroups = [ "networkmanager" "wheel" ];
-      # packages = with pkgs; [
-      #   # firefox
-      #   #  thunderbird
-      # ];
-    };
   };
 
-  environment.systemPackages = with pkgs; [ win-virtio win-spice ];
-
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 8080 ];
+  # networking.firewall.allowedTCPPorts = [ 8080 ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;

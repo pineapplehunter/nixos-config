@@ -1,4 +1,6 @@
-{ pkgs, config, lib, ... }: {
+{ pkgs, lib, inputs, ... }: let
+  mozc-ut = inputs.nixpkgs-pineapplehunter.legacyPackages.x86_64-linux.ibus-engines.mozc-ut;
+in {
   fonts = {
     packages = with pkgs; [
       noto-fonts
@@ -10,7 +12,7 @@
 
   # japanese input managers
   i18n.inputMethod = {
-    ibus.engines = with pkgs.ibus-engines;[ mozc anthy ];
+    ibus.engines = with pkgs.ibus-engines;[ mozc-ut anthy ];
     fcitx5.addons = with pkgs;[ fcitx5-mozc fcitx5-anthy ];
   };
 

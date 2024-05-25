@@ -1,18 +1,9 @@
-{ inputs, config, ... }:
+{ inputs, config, self, ... }:
 with inputs; {
   nixpkgs.overlays = [
     nix-xilinx.overlay
-    curl-http3.overlays.default
     (final: super: {
       nixos-artwork-wallpaper = final.callPackage ../../packages/nixos-artwork-wallpaper/package.nix { };
-      # nix = config.nix.package;
-      # haskellPackages = super.haskellPackages.override {
-      #   overrides = hsFinal: hsPrev: {
-      #     cachix = hsPrev.cachix.override {
-      #       nix = config.nix.package;
-      #     };
-      #   };
-      # };
       python310 = super.python310.override {
         packageOverrides = pyself: pysuper: {
           py-slvs = pyself.callPackage ../../packages/python/py-slvs.nix { };
@@ -38,53 +29,6 @@ with inputs; {
             --add-flags "--python-use-system-env"
         '';
       };
-      fprintd = super.fprintd.overrideAttrs {
-        postPatch = ''
-          patchShebangs \
-            po/check-translations.sh \
-            tests/unittest_inspector.py
-
-          # Stop tests from failing due to unhandled GTasks uncovered by GLib 2.76 bump.
-          # https://gitlab.freedesktop.org/libfprint/fprintd/-/issues/151
-          substituteInPlace tests/fprintd.py \
-            --replace "env['G_DEBUG'] = 'fatal-criticals'" ""
-          substituteInPlace tests/meson.build \
-            --replace "'G_DEBUG=fatal-criticals'," ""
-
-          # TODO: this is a temporary fix
-          # Stop pam tests from failing with timeout
-          substituteInPlace tests/pam/meson.build \
-            --replace-fail "'test_pam_fprintd'," ""
-        '';
-      };
-      fprintd-tod = (final.fprintd.override { libfprint = final.libfprint-tod; }).overrideAttrs {
-        pname = "fprintd-tod";
-      };
-      libfprint-tod = final.libfprint.overrideAttrs rec {
-        pname = "libfprint-tod";
-        version = "1.94.6";
-
-        src = final.fetchFromGitLab {
-          domain = "gitlab.freedesktop.org";
-          owner = "3v1n0";
-          repo = "libfprint";
-          rev = "v${version}+tod1";
-          sha256 = "sha256-Ce56BIkuo2MnDFncNwq022fbsfGtL5mitt+gAAPcO/Y=";
-        };
-
-        postPatch = ''
-          patchShebangs ./tests/*.py ./tests/*.sh ./libfprint/tod/tests/*.sh
-        '';
-      };
-
-      gnome-console = super.gnome-console.overrideAttrs (old: {
-        patches = (old.patches or [ ]) ++ [
-          (final.fetchpatch {
-            url = "https://gitlab.gnome.org/GNOME/console/-/commit/7a02b32ca4efed6db74fd2e4f4c567e30493b968.patch";
-            hash = "sha256-4TjlSgLlIELTTjSuz7HT6GMIL4lqsLtKVH9YtXsB2RQ=";
-          })
-        ];
-      });
 
       gnome = super.gnome // {
         gnome-settings-daemon = super.gnome.gnome-settings-daemon.overrideAttrs (old: {
@@ -94,6 +38,43 @@ with inputs; {
               --replace-fail "show_sleep_warning (manager);" "if(0) show_sleep_warning (manager);"
           '';
         });
+      };
+
+      ibus-engines = super.ibus-engines // {
+        mozc = inputs.nixpkgs-pineapplehunter.legacyPackages.x86_64-linux.ibus-engines.mozc;
+      };
+      # ibus-engines = super.ibus-engines // {
+      #   mozc = super.ibus-engines.mozc.overrideAttrs (old: rec {
+      #     src = super.fetchFromGitHub {
+      #       owner = "google";
+      #       repo = "mozc";
+      #       rev = "d569f615fabd238b479bb6e44a8288b2eea4e0b1";
+      #       hash = "sha256-RsUk6iVCS/6ETJjudnux+Py/gP8lyjPi94WXPzhmYxg=";
+      #       fetchSubmodules = true;
+      #     };
+      #     deps = old.deps.overrideAttrs {
+      #       inherit src;
+      #       outputHash = "sha256-aZCy89mQ7ztJrt84a69mM9Cv+omJzVjWawNWZLU56tI=";
+      #     };
+      #   });
+      # };
+
+      curl-http3 = super.curl.override {
+        http3Support = true;
+        openssl = super.quictls;
+      };
+
+      # inherit (nixpkgs-stable.legacyPackages.${super.system}) fprintd libfprint libfprint-tod fprintd-tod;
+      # inherit (nixpkgs-stable.legacyPackages.${super.system}) ibus;
+      # ibus = self.packages.${final.system}.ibus;
+      ibus = super.ibus.overrideAttrs rec {
+        version = "1.5.30";
+        src = super.fetchFromGitHub {
+          owner = "ibus";
+          repo = "ibus";
+          rev = version;
+          hash = "sha256-VgSjeKF9DCkDfE9lHEaWpgZb6ibdgoDf/I6qeJf8Ah4=";
+        };
       };
     })
   ];

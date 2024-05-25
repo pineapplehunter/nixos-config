@@ -5,10 +5,9 @@
   };
 
   # system wide packages
-  environment.systemPackages = (with pkgs; [
+  environment.systemPackages = with pkgs; [
     # tools
     vim
-    curl-http3
     unzipNLS
     git
     nix-index
@@ -22,7 +21,7 @@
     nix-output-monitor
     gnome.gnome-tweaks
     nil
-    cachix
+    (symlinkJoin { name = "cachix"; version = cachix.version; paths = [ cachix.bin ]; })
     nixpkgs-fmt
     tree
     fd
@@ -34,47 +33,22 @@
     binutils
     nix-tree
     sops
-    tectonic
     gnumake
     ncdu
-    jujutsu
+    niv
+    npins
     # editor
     vscode
-    jetbrains.idea-ultimate
-    vivado
     gnome.dconf-editor
-    blender
-    # service
-    syncthing
-    webcord
-    slack
     # lang
-    rustup
     julia
+    rustup
     python3
     stdenv.cc
     # other
-    (writeShellScriptBin "flatpak-chrome-alias"
-      "flatpak run com.google.Chrome $@")
-    nixos-artwork-wallpaper
     udisks2
     gnome-firmware
-    wineWowPackages.wayland
-    winetricks
-    ghidra
-    jdk
     usbutils
     pciutils
-    super-productivity
-  ]) ++
-  # gnome-extensions
-  (lib.optionals config.services.xserver.desktopManager.gnome.enable
-    (with pkgs.gnomeExtensions; [
-      tailscale-status
-      runcat
-      caffeine
-      appindicator
-      just-perfection
-      syncthing-indicator
-    ]));
+  ];
 }

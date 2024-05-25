@@ -8,7 +8,6 @@
       ./overlays.nix
       ./packages.nix
       ./fonts.nix
-      ./inputs.nix
       shell-config
       helix
       japanese
@@ -21,7 +20,7 @@
     # package = pkgs.nixVersions.unstable;
     settings = {
       experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
-      trusted-users = [ "shogo" "riken" ];
+      trusted-users = [ "shogo" "riken" "shogotr" ];
       substituters =
         [ "https://cache.nixos.org/" "https://pineapplehunter.cachix.org" ];
       trusted-public-keys = [
@@ -47,20 +46,26 @@
     enableSSHSupport = true;
   };
 
+  i18n.inputMethod.enabled = "ibus";
+
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
-  programs.starship.enable = true;
+  programs.starship = {
+    enable = true;
+    # presets = [ "bracketed-segments" ];
+  };
   programs.zsh = {
     enable = true;
     autosuggestions.enable = true;
     syntaxHighlighting.enable = true;
     shellAliases = {
-      ls = "${pkgs.eza}/bin/eza --icons";
+      ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";
       la = "ls -a";
       ll = "ls -lha";
+      ip = "ip -c";
     };
   };
 
