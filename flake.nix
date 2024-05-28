@@ -76,7 +76,6 @@
         formatter = nixpkgs-fmt;
         packages = {
           nixos-artwork-wallpaper = callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
-          ibus = callPackage ./packages/ibus { };
         };
         apps =
           let

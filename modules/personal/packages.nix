@@ -31,7 +31,6 @@
     gnome.gnome-terminal
 
     lean4
-    elan
   ]) ++
   # gnome-extensions
   (lib.optionals config.services.xserver.desktopManager.gnome.enable
