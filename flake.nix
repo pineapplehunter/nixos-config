@@ -129,7 +129,7 @@
               }
               yes_or_no "do you want to commit and update?"
               sudo echo starting upgrade
-              git commit -am "$(date -Iminutes)"
+              git commit -am "$(date -Iminutes)" || true
               sudo ${lib.getExe nixos-rebuild} switch --flake ".#$HOST"
             '';
             default = update;
