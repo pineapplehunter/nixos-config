@@ -45,4 +45,22 @@ in
     LC_TELEPHONE = lib.mkDefault "ja_JP.UTF-8";
     LC_TIME = lib.mkDefault "ja_JP.UTF-8";
   };
+
+  nixpkgs.overlays = [
+    (finel: prev: {
+      ibus =
+        if prev.ibus.version == "1.5.29" then
+          prev.ibus.overrideAttrs
+            rec {
+              version = "1.5.30";
+              src = prev.fetchFromGitHub {
+                owner = "ibus";
+                repo = "ibus";
+                rev = version;
+                hash = "sha256-VgSjeKF9DCkDfE9lHEaWpgZb6ibdgoDf/I6qeJf8Ah4=";
+              };
+            }
+        else prev.ibus;
+    })
+  ];
 }
