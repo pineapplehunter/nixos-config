@@ -1,6 +1,8 @@
-{ pkgs, lib, inputs, ... }: let
+{ pkgs, lib, inputs, ... }:
+let
   mozc-ut = inputs.nixpkgs-pineapplehunter.legacyPackages.x86_64-linux.ibus-engines.mozc-ut;
-in {
+in
+{
   fonts = {
     packages = with pkgs; [
       noto-fonts
