@@ -37,6 +37,7 @@
     ncdu
     niv
     npins
+    alacritty
     # editor
     vscode
     gnome.dconf-editor
