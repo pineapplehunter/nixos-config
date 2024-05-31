@@ -1,16 +1,14 @@
-{ pkgs, lib, inputs, ... }:
+{ pkgs, lib, config, inputs, ... }:
 let
-  mozc-ut = inputs.nixpkgs-pineapplehunter.legacyPackages.x86_64-linux.ibus-engines.mozc-ut;
+  ibus-engines-patch = inputs.nixpkgs-pineapplehunter.legacyPackages.x86_64-linux.ibus-engines;
 in
 {
-  fonts = {
-    packages = with pkgs; [
-      noto-fonts
-      noto-fonts-cjk-sans
-      noto-fonts-cjk-serif
-      noto-fonts-emoji
-    ];
-  };
+  fonts.packages = with pkgs; [
+    noto-fonts
+    noto-fonts-cjk-sans
+    noto-fonts-cjk-serif
+    noto-fonts-emoji
+  ];
 
   # japanese input managers
   i18n.inputMethod = {
@@ -46,21 +44,27 @@ in
     LC_TIME = lib.mkDefault "ja_JP.UTF-8";
   };
 
-  nixpkgs.overlays = [
-    (finel: prev: {
-      ibus =
-        if prev.ibus.version == "1.5.29" then
-          prev.ibus.overrideAttrs
-            rec {
-              version = "1.5.30";
-              src = prev.fetchFromGitHub {
-                owner = "ibus";
-                repo = "ibus";
-                rev = version;
-                hash = "sha256-VgSjeKF9DCkDfE9lHEaWpgZb6ibdgoDf/I6qeJf8Ah4=";
-              };
-            }
-        else prev.ibus;
-    })
-  ];
+  nixpkgs.overlays =
+    let
+      ibus-version-overlay = final: prev: {
+        ibus =
+          if prev.ibus.version == "1.5.29" then
+            prev.ibus.overrideAttrs
+              rec {
+                version = "1.5.30";
+                src = prev.fetchFromGitHub {
+                  owner = "ibus";
+                  repo = "ibus";
+                  rev = version;
+                  hash = "sha256-VgSjeKF9DCkDfE9lHEaWpgZb6ibdgoDf/I6qeJf8Ah4=";
+                };
+              }
+          else prev.ibus;
+
+        ibus-engines = prev.ibus-engines // {
+          inherit (ibus-engines-patch) mozc mozc-ut;
+        };
+      };
+    in
+    lib.optionals (config.i18n.inputMethod.enabled == "ibus") [ ibus-version-overlay ];
 }

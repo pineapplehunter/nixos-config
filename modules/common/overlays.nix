@@ -1,4 +1,4 @@
-{ inputs, config, self, ... }:
+{ inputs, ... }:
 with inputs; {
   nixpkgs.overlays = [
     nix-xilinx.overlay
