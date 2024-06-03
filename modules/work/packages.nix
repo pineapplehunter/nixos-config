@@ -4,6 +4,7 @@
     slack
     super-productivity
     android-studio
+    jdk
   ]) ++
   # gnome-extensions
   (lib.optionals config.services.xserver.desktopManager.gnome.enable
