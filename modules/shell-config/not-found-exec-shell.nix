@@ -2,7 +2,7 @@
 let name = "not-found-exec-shell";
 in writeShellScriptBin name ''
   export cmd="$1"
-  export nixpkgs=$(cat /etc/nix/registry.json | jq '.flakes.[] | select(.from.id | contains("nixpkgs")) | .to.path' -r)
+  export nixpkgs=$(cat /etc/nix/registry.json | jq '.flakes[] | select(.from.id | contains("nixpkgs")) | .to.path' -r)
   shift
 
   if [ -z $cmd ]; then

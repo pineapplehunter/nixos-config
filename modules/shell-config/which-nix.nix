@@ -1,7 +1,7 @@
 { writeShellScriptBin, nix, lib }:
 writeShellScriptBin "which-nix" ''
   export cmd="$1"
-  export nixpkgs=$(cat /etc/nix/registry.json | jq '.flakes.[] | select(.from.id | contains("nixpkgs")) | .to.path' -r)
+  export nixpkgs=$(cat /etc/nix/registry.json | jq '.flakes[] | select(.from.id | contains("nixpkgs")) | .to.path' -r)
   if [[ $cmd = *@* ]]; then
     export cmd_no_at=$(echo $cmd | cut -d "@" -f 1)
     export cmd_package=$(echo $cmd | cut -d "@" -f 2)
