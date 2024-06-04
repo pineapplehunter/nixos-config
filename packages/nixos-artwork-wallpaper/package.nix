@@ -4,13 +4,13 @@
 
 stdenv.mkDerivation {
   pname = "nixos-wallpapers";
-  version = "unstable";
+  version = "bootloader-18.09-pre-unstable-2024-05-27";
 
   src = fetchFromGitHub {
     owner = "nixos";
     repo = "nixos-artwork";
-    rev = "35ebbbf01c3119005ed180726c388a01d4d1100c";
-    hash = "sha256-t6UXqsBJhKtZEriWdrm19HIbdyvB6V9dR47WHFxENhc=";
+    rev = "53ea652ec7d8af5d21fd2b79b6c49cb39078ddfb";
+    hash = "sha256-Zam3vXUBcF09GhaL0eehlTvmhx++qXBO7UhuBySPX84=";
   };
 
   buildPhase = ''
