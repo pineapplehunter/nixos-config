@@ -43,13 +43,16 @@
   zramSwap.enable = true;
 
   services.xremap = {
+    enable = true;
     withGnome = true;
-    yamlConfig = ''
-      modmap:
-        - name: caps-esc
-          remap:
-            CapsLock: Esc
-    '';
+    config.modmap = [
+      {
+        name = "caps-esc";
+        remap = {
+          "CapsLock" = "Esc";
+        };
+      }
+    ];
   };
 
   # Bootloader.
