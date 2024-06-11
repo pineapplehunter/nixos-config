@@ -53,4 +53,5 @@
     lib.mkDefault config.hardware.enableRedistributableFirmware;
 
   #powerManagement.powertop.enable = true;
+  hardware.sensor.iio.enable = true;
 }
