@@ -48,6 +48,14 @@ with inputs; {
         openssl = super.quictls;
       };
 
+      flatpak = super.flatpak.overrideAttrs (old: {
+        postPatch = (old.postPatch or "") + ''
+          substituteInPlace common/flatpak-run.c \
+            --replace-fail "if (!sandboxed && !(flags & FLATPAK_RUN_FLAG_NO_DOCUMENTS_PORTAL))" "" \
+            --replace-fail "add_document_portal_args (bwrap, app_id, &doc_mount_path);" ""
+        '';
+      });
+
       # python3 = super.python312;
 
       # inherit (nixpkgs-stable.legacyPackages.${super.system}) fprintd libfprint libfprint-tod fprintd-tod;

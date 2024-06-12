@@ -103,7 +103,7 @@
             '';
             switch-script = writeShellScriptBin "switch" ''
               set -e
-              ${getExe diff-script}
+              ${getExe diff-script} "$@"
               function yes_or_no {
                   while true; do
                       read -p "$* [y/n]: " yn
@@ -122,11 +122,11 @@
               set -e
               ${getExe build-script} "$@"
               sudo echo switching boot
-              sudo ${getExe nixos-rebuild} boot --flake .
+              sudo ${getExe nixos-rebuild} boot --flake ".#$HOST"
             '';
             update-script = writeShellScriptBin "update" ''
               nix flake update
-              ${getExe switch-script}
+              ${getExe switch-script} "$@"
             '';
           in
           mkShellNoCC {
