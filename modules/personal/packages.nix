@@ -19,7 +19,10 @@
     super-productivity
     android-studio
     orca-slicer
-    ventoy
+    (ventoy-full.override {
+      defaultGuiType = "gtk3";
+      withGtk3 = true;
+    })
 
     sqlx-cli
     cargo-tauri
