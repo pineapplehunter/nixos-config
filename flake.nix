@@ -77,6 +77,7 @@
           nixos-rebuild
           nix-output-monitor
           nvd
+          python3
           mkShellNoCC
           ;
       in
@@ -85,9 +86,10 @@
         packages = rec {
           nixos-artwork-wallpaper = callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
           stl2pov = callPackage ./packages/stl2pov { };
-
           nautilus-thumbnailer-stl = callPackage ./packages/nautilus-thumbnailer-stl { inherit stl2pov; };
           nautilus-thumbnailer-3mf = callPackage ./packages/nautilus-thumbnailer-3mf { };
+          gcode-thumbnailer = python3.pkgs.callPackage ./packages/gcode-thumbnailer { };
+          typst-thumbnailer = callPackage ./packages/typst-thumbnailer { };
         };
         devShells.default =
           let

@@ -25,6 +25,7 @@
     })
     self.packages.${pkgs.system}.nautilus-thumbnailer-stl
     self.packages.${pkgs.system}.nautilus-thumbnailer-3mf
+    self.packages.${pkgs.system}.typst-thumbnailer
 
     sqlx-cli
     cargo-tauri
