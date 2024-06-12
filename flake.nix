@@ -82,8 +82,10 @@
       in
       {
         formatter = nixpkgs-fmt;
-        packages = {
+        packages = rec {
           nixos-artwork-wallpaper = callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
+                    stl2pov = callPackage ./packages/stl2pov { };
+          nautilus-thumbnailer-stl = callPackage ./packages/nautilus-thumbnailer-stl { inherit stl2pov;};
         };
         devShells.default =
           let

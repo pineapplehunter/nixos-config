@@ -1,4 +1,4 @@
-{ pkgs, lib, config, ... }: {
+{ pkgs, lib, config, self, ... }: {
   environment.systemPackages = (with pkgs; [
     tectonic
     blender
@@ -23,6 +23,7 @@
       defaultGuiType = "gtk3";
       withGtk3 = true;
     })
+    self.packages.${pkgs.system}.nautilus-thumbnailer-stl
 
     sqlx-cli
     cargo-tauri
