@@ -20,7 +20,7 @@
     ripgrep
     nix-output-monitor
     gnome.gnome-tweaks
-    nil
+    nixd
     (symlinkJoin { name = "cachix"; version = cachix.version; paths = [ cachix.bin ]; })
     nixpkgs-fmt
     tree
