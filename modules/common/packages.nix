@@ -51,5 +51,8 @@
     gnome-firmware
     usbutils
     pciutils
+    papers
   ];
+
+  environment.gnome.excludePackages = [ pkgs.gnome.evince ];
 }
