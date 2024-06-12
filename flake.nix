@@ -34,7 +34,9 @@
       nixosConfigurations = {
         mynixhost = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
-          modules = [ ./machines/qemu/configuration.nix ];
+          modules = [
+            ./machines/qemu/configuration.nix
+          ];
         };
         beast = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
@@ -68,56 +70,40 @@
       };
     } // (inputs.flake-utils.lib.eachDefaultSystem (system:
       let
-        inherit (nixpkgs) lib;
         inherit (nixpkgs.legacyPackages.${system})
-          nixpkgs-fmt callPackage writeShellScript nixos-rebuild nix-output-monitor nvd;
+          nixpkgs-fmt
+          callPackage
+          writeShellScriptBin
+          nixos-rebuild
+          nix-output-monitor
+          nvd
+          mkShellNoCC
+          symlinkJoin;
       in
       {
         formatter = nixpkgs-fmt;
         packages = {
           nixos-artwork-wallpaper = callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
         };
-        apps =
+        devShells.default =
           let
-            mkScriptApp = name: script: {
-              type = "app";
-              program = "${writeShellScript name script}";
-            };
-          in
-          rec {
-            switch = mkScriptApp "switch" ''
-              set +e
-              export HOST=''${HOST:-$(hostname)}
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
-              sudo echo switching
-              sudo ${lib.getExe nixos-rebuild} switch --flake .
+            inherit (nixpkgs.lib) getExe;
+            build-script = writeShellScriptBin "build" ''
+              ${getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
+              exit $?
             '';
-            boot = mkScriptApp "boot" ''
-              set +e
-              export HOST=''${HOST:-$(hostname)}
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
-              sudo echo switching boot
-              sudo ${lib.getExe nixos-rebuild} boot --flake .
-            '';
-            build = mkScriptApp "build" ''
-              export HOST=''${HOST:-$(hostname)}
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
-            '';
-            diff = mkScriptApp "diff" ''
-              set +e
-              export HOST=''${HOST:-$(hostname)}
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
-              ${lib.getExe nvd} diff /run/current-system result
-            '';
-            update = mkScriptApp "update-system" ''
+            diff-script = writeShellScriptBin "diff" ''
               set -e
-              export HOST=''${HOST:-$(hostname)}
-              ${lib.getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
+              ${getExe build-script} "$@"
               if [ $(readlink -f ./result) = $(readlink -f /run/current-system) ]; then
                 echo All packges up to date!
-                exit
+                exit 1
               fi
-              ${lib.getExe nvd} diff /run/current-system ./result
+              ${getExe nvd} diff /run/current-system ./result
+            '';
+            switch-script = writeShellScriptBin "switch" ''
+              set -e
+              ${getExe diff-script}
               function yes_or_no {
                   while true; do
                       read -p "$* [y/n]: " yn
@@ -130,9 +116,30 @@
               yes_or_no "do you want to commit and update?"
               sudo echo starting upgrade
               git commit -am "$(date -Iminutes)" || true
-              sudo ${lib.getExe nixos-rebuild} switch --flake ".#$HOST"
+              sudo ${getExe nixos-rebuild} switch --flake ".#$HOST"
             '';
-            default = update;
+            boot-script = writeShellScriptBin "boot" ''
+              set -e
+              ${getExe build-script} "$@"
+              sudo echo switching boot
+              sudo ${getExe nixos-rebuild} boot --flake .
+            '';
+            update-script = writeShellScriptBin "update" ''
+              nix flake update
+              ${getExe switch-script}
+            '';
+          in
+          mkShellNoCC {
+            packages = [
+              build-script
+              switch-script
+              diff-script
+              update-script
+              boot-script
+            ];
+            shellHook = ''
+              export HOST=`hostname`
+            '';
           };
       }
     ));
