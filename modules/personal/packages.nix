@@ -19,6 +19,7 @@
     super-productivity
     android-studio
     orca-slicer
+    ventoy
 
     sqlx-cli
     cargo-tauri

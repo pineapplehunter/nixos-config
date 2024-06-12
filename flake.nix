@@ -78,7 +78,7 @@
           nix-output-monitor
           nvd
           mkShellNoCC
-          symlinkJoin;
+          ;
       in
       {
         formatter = nixpkgs-fmt;
