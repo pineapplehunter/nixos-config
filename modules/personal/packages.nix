@@ -24,6 +24,7 @@
       withGtk3 = true;
     })
     self.packages.${pkgs.system}.nautilus-thumbnailer-stl
+    self.packages.${pkgs.system}.nautilus-thumbnailer-3mf
 
     sqlx-cli
     cargo-tauri

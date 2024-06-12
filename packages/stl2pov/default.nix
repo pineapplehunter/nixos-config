@@ -14,7 +14,7 @@ stdenv.mkDerivation {
     hash = "sha256-lgN0G8YQHLUnALr8DnpEwEdfA6tmsgIovhRT/fwgo0M=";
   };
 
-    outputs = [ "out" "man" "doc" ];
+  outputs = [ "out" "man" "doc" ];
 
   makeFlags = [
     "PREFIX=${placeholder "out"}"
