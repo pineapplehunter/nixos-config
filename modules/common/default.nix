@@ -108,5 +108,8 @@
     openFirewall = true;
   };
 
-  environment.variables.BAT_THEME = "GitHub";
+  environment.variables = {
+    BAT_THEME = "GitHub";
+    DIRENV_WARN_TIMEOUT = "1h";
+  };
 }
