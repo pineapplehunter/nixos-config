@@ -18,21 +18,47 @@
   #boot.loader.efi.canTouchEfiVariables = true;
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "riscv64-linux" ];
 
+  nix = {
+    package = pkgs.nixVersions.latest;
+    distributedBuilds = true;
+    buildMachines = [
+      {
+        system = "x86_64-linux";
+        maxJobs = 16;
+        supportedFeatures = [ "big-parallel" "kvm" "benchmark" "nixos-test" ];
+        sshUser = "shogo";
+        hostName = "daniel-njlab-pc";
+        speedFactor = 2;
+      }
+      {
+        system = "x86_64-linux,aarch64-linux,riscv64-linux";
+        maxJobs = 8;
+        supportedFeatures = [ "big-parallel" "kvm" "benchmark" "nixos-test" ];
+        sshUser = "shogo";
+        hostName = "action";
+        speedFactor = 1;
+      }
+    ];
+    extraOptions = ''
+      builders-use-substitutes = true
+    '';
+  };
+
   networking.hostName = "beast"; # Define your hostname.
-  # Pick only one of the below networking options.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  networking.networkmanager.enable =
-    true; # Easiest to use and most distros use this by default.
+  networking.networkmanager.enable = true;
 
   # Enable the X11 windowing system.
-  services.xserver.enable = true;
+  services.xserver = {
+    enable = true;
 
-  # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
+    # Enable the GNOME Desktop Environment.
+    desktopManager.gnome.enable = true;
+    displayManager.gdm.enable = true;
+  };
+  services.displayManager.autoLogin = {
+    enable = true;
+    user = "shogo";
+  };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.shogo = {
@@ -40,24 +66,6 @@
     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
   };
 
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-
-  # Copy the NixOS configuration file and link it from the resulting system
-  # (/run/current-system/configuration.nix). This is useful in case you
-  # accidentally delete configuration.nix.
-  # system.copySystemConfiguration = true;
-
-  # This value determines the NixOS release from which the default
-  # settings for stateful data, like file locations and database versions
-  # on your system were taken. It‘s perfectly fine and recommended to leave
-  # this value at the release version of the first install of this system.
-  # Before changing this value read the documentation for this option
-  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = config.system.nixos.release;
-
 }
 

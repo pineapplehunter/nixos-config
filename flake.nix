@@ -142,6 +142,8 @@
               diff-script
               update-script
               boot-script
+              nvd
+              nix-output-monitor
             ];
             shellHook = ''
               export HOST=`hostname`
