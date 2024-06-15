@@ -95,6 +95,13 @@
   powerManagement.powertop.enable = true;
   services.thermald.enable = true;
 
+  services.kubo = {
+    enable = true;
+    enableGC = true;
+    settings.Addresses.API = "/ip4/127.0.0.1/tcp/5001";
+    settings.Addresses.Gateway = [ ];
+  };
+
   systemd.services.NetworkManager-wait-online.enable = false;
   systemd.services.docker.enable = false;
   systemd.sockets.docker.enable = false;
@@ -190,7 +197,7 @@
     shogo = {
       isNormalUser = true;
       description = "Shogo Takata";
-      extraGroups = [ "networkmanager" "wheel" ];
+      extraGroups = [ "networkmanager" "wheel" config.services.kubo.group ];
       # packages = with pkgs; [
       # firefox
       #  thunderbird
@@ -201,7 +208,7 @@
     riken = {
       isNormalUser = true;
       description = "Shogo at Riken";
-      extraGroups = [ "networkmanager" "wheel" ];
+      extraGroups = [ "networkmanager" "wheel" config.services.kubo.group ];
       # packages = with pkgs; [
       #   # firefox
       #   #  thunderbird
