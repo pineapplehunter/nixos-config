@@ -22,7 +22,16 @@
         sshUser = "shogo";
         hostName = "daniel-njlab-pc";
         # sshKey = "/home/shogo/.ssh/id_ecdsa.1";
-        speedFactor = 10;
+        speedFactor = 2;
+      }
+      {
+        system = "x86_64-linux,aarch64-linux,riscv64-linux";
+        maxJobs = 16;
+        supportedFeatures = [ "big-parallel" "kvm" "benchmark" "nixos-test" ];
+        sshUser = "shogo";
+        hostName = "beast";
+        # sshKey = "/home/shogo/.ssh/id_ecdsa.1";
+        speedFactor = 2;
       }
     ];
     extraOptions = ''
@@ -30,15 +39,6 @@
     '';
     # channel.enable = false;
   };
-
-  # i18n.inputMethod.enabled = lib.mkForce "fcitx5";
-
-  # security.doas.enable = true;
-  # security.sudo.enable = false;
-  # security.doas.extraRules = [{
-  #   groups = [ "wheel" ];
-  #   persist = true;
-  # }];
 
   zramSwap.enable = true;
 
@@ -57,9 +57,6 @@
 
   # Bootloader.
 
-  # boot.loader.systemd-boot.enable = true;
-  # boot.loader.systemd-boot.configurationLimit = 5;
-  # boot.loader.efi.efiSysMountPoint = "/efi";
   boot.loader.grub = {
     enable = true;
     useOSProber = true;
@@ -90,7 +87,6 @@
   boot.supportedFilesystems = [ "btrfs" "bcachefs" ];
 
   # https://discourse.nixos.org/t/suspend-then-hibernate/31953/5
-  boot.resumeDevice = "/dev/disk/by-uuid/244fb3a7-4e9c-4707-9427-a33f667a08bd";
   powerManagement.enable = true;
   powerManagement.powertop.enable = true;
   services.thermald.enable = true;
@@ -111,11 +107,6 @@
     enable = true;
     fileSystems = [ "/" ];
   };
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Enable networking
   networking.networkmanager.enable = true;
@@ -127,11 +118,6 @@
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
   services.gnome.gnome-keyring.enable = true;
-  # security.pam.services = {
-  #   gdm.fprintAuth = false;
-  #   login.fprintAuth = false;
-  #   passwd.fprintAuth = false;
-  # };
   security.pam.services.login.fprintAuth = false;
   security.pam.services.gdm-fingerprint =
     lib.mkIf (config.services.fprintd.enable) {
@@ -198,21 +184,12 @@
       isNormalUser = true;
       description = "Shogo Takata";
       extraGroups = [ "networkmanager" "wheel" config.services.kubo.group ];
-      # packages = with pkgs; [
-      # firefox
-      #  thunderbird
-      # ];
-      # shell = pkgs.nushell;
     };
 
     riken = {
       isNormalUser = true;
       description = "Shogo at Riken";
       extraGroups = [ "networkmanager" "wheel" config.services.kubo.group ];
-      # packages = with pkgs; [
-      #   # firefox
-      #   #  thunderbird
-      # ];
     };
   };
 
