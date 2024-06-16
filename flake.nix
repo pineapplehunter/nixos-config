@@ -25,6 +25,7 @@
     {
       nixosModules = {
         common = import ./modules/common;
+        overlays = import ./modules/overlays;
         helix = import ./modules/helix;
         shell-config = import ./modules/shell-config;
         japanese = import ./modules/japanese;

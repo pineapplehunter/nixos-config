@@ -1,13 +1,13 @@
 { pkgs, self, inputs, lib, ... }: {
   imports =
     let
-      inherit (self.nixosModules) shell-config helix japanese;
+      inherit (self.nixosModules) shell-config helix japanese overlays;
       inherit (inputs) sops-nix xremap-flake;
     in
     [
-      ./overlays.nix
       ./packages.nix
       ./fonts.nix
+      overlays
       shell-config
       helix
       japanese

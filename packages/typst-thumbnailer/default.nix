@@ -1,6 +1,4 @@
-{ writeShellScript
-, writeTextFile
-, runCommand
+{ runCommand
 , typst
 , lib
 }:
