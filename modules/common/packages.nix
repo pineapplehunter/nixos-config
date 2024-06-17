@@ -10,7 +10,6 @@
     htop
     nethogs
     github-cli
-    starship
     du-dust
     btrfs-assistant
     ripgrep

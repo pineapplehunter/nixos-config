@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, self, ... }:
 
 {
   imports = [
@@ -64,6 +64,9 @@
   users.users.shogo = {
     isNormalUser = true;
     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+  };
+  home-manager.users = {
+    inherit (self.homeConfigurations) shogo;
   };
 
   system.stateVersion = config.system.nixos.release;

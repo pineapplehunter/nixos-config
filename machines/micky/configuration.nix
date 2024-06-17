@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, self, ... }:
 
 {
   imports = [
@@ -131,6 +131,7 @@
       # shell = pkgs.nushell;
     };
   };
+  home-manager.users.shogotr = self.homeConfigurations.shogotr;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ 8080 ];

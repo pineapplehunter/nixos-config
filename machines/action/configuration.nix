@@ -192,7 +192,9 @@
       extraGroups = [ "networkmanager" "wheel" config.services.kubo.group ];
     };
   };
-  home-manager.users.shogo = self.homeConfigurations.shogo;
+  home-manager.users = {
+    inherit (self.homeConfigurations) shogo riken;
+  };
 
   environment.systemPackages = with pkgs; [ win-virtio win-spice ];
 

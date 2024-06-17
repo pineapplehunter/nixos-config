@@ -28,9 +28,7 @@
   outputs = { self, nixpkgs, ... }@inputs:
     {
       nixosModules = import ./modules;
-      homeConfigurations = {
-        shogo = import ./home/shogo;
-      };
+      homeConfigurations = import ./home;
       nixosConfigurations = {
         mynixhost = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
