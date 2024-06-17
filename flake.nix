@@ -5,6 +5,10 @@
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-23.11";
     nixpkgs-pineapplehunter.url = "github:pineapplehunter/nixpkgs?ref=mozc-updates";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     flake-utils.url = "github:numtide/flake-utils";
     nix-xilinx = {
       url = "gitlab:doronbehar/nix-xilinx";
@@ -24,6 +28,9 @@
   outputs = { self, nixpkgs, ... }@inputs:
     {
       nixosModules = import ./modules;
+      homeConfigurations = {
+        shogo = import ./home/shogo;
+      };
       nixosConfigurations = {
         mynixhost = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
@@ -45,6 +52,7 @@
           specialArgs = { inherit inputs self; };
           modules = [
             inputs.nixos-hardware.nixosModules.dell-xps-13-9310
+            inputs.home-manager.nixosModules.home-manager
             self.nixosModules.common
             self.nixosModules.personal
             ./machines/action/configuration.nix

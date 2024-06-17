@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, self, ... }:
 
 {
   imports = [
@@ -192,6 +192,7 @@
       extraGroups = [ "networkmanager" "wheel" config.services.kubo.group ];
     };
   };
+  home-manager.users.shogo = self.homeConfigurations.shogo;
 
   environment.systemPackages = with pkgs; [ win-virtio win-spice ];
 

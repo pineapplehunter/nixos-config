@@ -1,8 +1,4 @@
-{ pkgs, lib, config, ... }: {
-  programs.helix = {
-    enable = true;
-    defaultEditor = true;
-  };
+{ pkgs, ... }: {
 
   # system wide packages
   environment.systemPackages = with pkgs; [
@@ -25,7 +21,6 @@
     nixpkgs-fmt
     tree
     fd
-    zellij
     btop
     jq
     file
