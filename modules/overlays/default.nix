@@ -1,36 +1,54 @@
-{ inputs, lib, ... }:
+{ inputs, self, lib, ... }:
 let
   overlayCombined = final: prev:
     let
-      callOverlay = file: import file { inherit final prev inputs; };
-      genOverlays = overlays: lib.attrsets.mergeAttrsList (map callOverlay overlays);
-      removeDesktopEntry = package: {
-        ${package} = final.symlinkJoin rec {
-          inherit (prev.${package}) pname version;
+      importOverlayFile = file: import file { inherit final prev inputs self; };
+      importOverlayFileList = files:
+        lib.attrsets.mergeAttrsList (map importOverlayFile files);
+
+      removeDesktopEntry = packageName: {
+        ${packageName} = final.symlinkJoin rec {
+          inherit (prev.${packageName}) pname version;
           name = "${pname}-no-dekstop-${version}";
-          paths = [ prev.${package} ];
+          paths = [ prev.${packageName} ];
           postBuild = ''
             rm -rfv $out/share/applications
           '';
         };
       };
-      genRemoveDesktopEntries = packages: lib.attrsets.mergeAttrsList (map removeDesktopEntry packages);
+      removeDesktopEntryList = packages:
+        lib.attrsets.mergeAttrsList (map removeDesktopEntry packages);
+
+      genOverlays = { overlayFiles ? [ ], removeDesktops ? [ ] }:
+        (importOverlayFileList overlayFiles)
+        // (removeDesktopEntryList removeDesktops);
     in
-    (genOverlays [
-      ./nixos-artwork-wallpaper.nix
-      # ./blender.nix
-      ./curl-http3.nix
-      ./flatpak.nix
-      ./android-studio.nix
-    ])
-    // (genRemoveDesktopEntries [ "julia" "btop" "htop" "helix"  ])
+    (genOverlays {
+      overlayFiles = [
+        ./nixos-artwork-wallpaper.nix
+        # ./blender.nix
+        ./curl-http3.nix
+        ./flatpak.nix
+        ./android-studio.nix
+      ];
+      removeDesktops = [
+        "julia"
+        "btop"
+        "htop"
+        "helix"
+      ];
+    })
     // {
-      gnome = prev.gnome // (genOverlays [
-        ./gnome-settings-daemon.nix
-      ]);
-      ibus-engines = prev.ibus-engines // (genOverlays [
-        ./mozc.nix
-      ]);
+      gnome = prev.gnome // (genOverlays {
+        overlayFiles = [
+          ./gnome-settings-daemon.nix
+        ];
+      });
+      ibus-engines = prev.ibus-engines // (genOverlays {
+        overlayFiles = [
+          ./mozc.nix
+        ];
+      });
     };
 in
 {

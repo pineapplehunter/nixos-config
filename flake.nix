@@ -23,15 +23,7 @@
 
   outputs = { self, nixpkgs, ... }@inputs:
     {
-      nixosModules = {
-        common = import ./modules/common;
-        overlays = import ./modules/overlays;
-        helix = import ./modules/helix;
-        shell-config = import ./modules/shell-config;
-        japanese = import ./modules/japanese;
-        personal = import ./modules/personal;
-        work = import ./modules/work;
-      };
+      nixosModules = import ./modules;
       nixosConfigurations = {
         mynixhost = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
@@ -74,12 +66,7 @@
         inherit (nixpkgs.legacyPackages.${system})
           nixpkgs-fmt
           callPackage
-          writeShellScriptBin
-          nixos-rebuild
-          nix-output-monitor
-          nvd
           python3
-          mkShellNoCC
           ;
       in
       {
@@ -92,64 +79,7 @@
           gcode-thumbnailer = python3.pkgs.callPackage ./packages/gcode-thumbnailer { };
           typst-thumbnailer = callPackage ./packages/typst-thumbnailer { };
         };
-        devShells.default =
-          let
-            inherit (nixpkgs.lib) getExe;
-            build-script = writeShellScriptBin "build" ''
-              ${getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
-              exit $?
-            '';
-            diff-script = writeShellScriptBin "diff" ''
-              set -e
-              ${getExe build-script} "$@"
-              if [ $(readlink -f ./result) = $(readlink -f /run/current-system) ]; then
-                echo All packges up to date!
-                exit 1
-              fi
-              ${getExe nvd} diff /run/current-system ./result
-            '';
-            switch-script = writeShellScriptBin "switch" ''
-              set -e
-              ${getExe diff-script} "$@"
-              function yes_or_no {
-                  while true; do
-                      read -p "$* [y/n]: " yn
-                      case $yn in
-                          [Yy]*) return 0  ;;
-                          [Nn]*) echo "Aborted" ; return 1 ;;
-                      esac
-                  done
-              }
-              yes_or_no "do you want to commit and update?"
-              sudo echo starting upgrade
-              git commit -am "$(date -Iminutes)" || true
-              sudo ${getExe nixos-rebuild} switch --flake ".#$HOST"
-            '';
-            boot-script = writeShellScriptBin "boot" ''
-              set -e
-              ${getExe build-script} "$@"
-              sudo echo switching boot
-              sudo ${getExe nixos-rebuild} boot --flake ".#$HOST"
-            '';
-            update-script = writeShellScriptBin "update" ''
-              nix flake update
-              ${getExe switch-script} "$@"
-            '';
-          in
-          mkShellNoCC {
-            packages = [
-              build-script
-              switch-script
-              diff-script
-              update-script
-              boot-script
-              nvd
-              nix-output-monitor
-            ];
-            shellHook = ''
-              export HOST=`hostname`
-            '';
-          };
+        devShells.default = callPackage ./shell.nix { };
       }
     ));
 }

@@ -1,3 +1,3 @@
-{ final, ... }: {
-  nixos-artwork-wallpaper = final.callPackage ../../packages/nixos-artwork-wallpaper/package.nix { };
+{ self, final, ... }: {
+  inherit (self.packages.${final.system}) nixos-artwork-wallpaper;
 }
