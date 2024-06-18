@@ -1,8 +1,7 @@
-{ pkgs, lib, config, self, ... }: {
-  environment.systemPackages = (with pkgs; [
+{ pkgs, self, ... }: {
+  environment.systemPackages = with pkgs; [
     tectonic
     blender
-    syncthing
     webcord
     slack
     curl-http3
@@ -38,16 +37,5 @@
     gnome.gnome-terminal
 
     lean4
-  ]) ++
-  # gnome-extensions
-  (lib.optionals config.services.xserver.desktopManager.gnome.enable
-    (with pkgs.gnomeExtensions; [
-      tailscale-status
-      runcat
-      caffeine
-      appindicator
-      just-perfection
-      syncthing-indicator
-      tiling-assistant
-    ]));
+  ];
 }
