@@ -56,6 +56,8 @@
 
   home.packages = with pkgs;[
     julia
+    nixpkgs-review
+    tokei
   ];
 
   home.file.".julia/config/startup.jl".text = ''
