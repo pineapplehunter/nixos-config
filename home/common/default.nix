@@ -1,5 +1,7 @@
 { config, pkgs, lib, ... }:
-
+let
+  empty-package = pkgs.runCommand "empty-package" { } "mkdir $out";
+in
 {
   programs = {
     helix = {
@@ -27,7 +29,7 @@
 
     alacritty = {
       enable = true;
-      package = pkgs.runCommand "empty-package" { } "mkdir $out";
+      package = empty-package;
       settings = import ./alacritty-config.nix;
     };
 
@@ -59,6 +61,7 @@
     julia
     nixpkgs-review
     tokei
+    npins
   ];
 
   home.file.".julia/config/startup.jl".text = ''
