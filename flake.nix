@@ -28,12 +28,13 @@
   outputs = { self, nixpkgs, ... }@inputs:
     {
       nixosModules = import ./modules;
+      homeModules = import ./home;
       homeConfigurations = nixpkgs.lib.attrsets.mapAttrs
         (_: value: inputs.home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
           modules = [ value ];
         })
-        (import ./home);
+        self.homeModules;
       nixosConfigurations = {
         mynixhost = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";

@@ -27,6 +27,7 @@
 
     alacritty = {
       enable = true;
+      package = pkgs.runCommand "empty-package" { } "mkdir $out";
       settings = import ./alacritty-config.nix;
     };
 
