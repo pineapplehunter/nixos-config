@@ -67,6 +67,7 @@
       ip = "ip -c";
     };
   };
+  environment.pathsToLink = [ "/share/zsh" ];
 
   users.defaultUserShell = pkgs.zsh;
   programs.not-found-exec.enable = true;

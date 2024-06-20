@@ -54,7 +54,12 @@ in
       ]);
     };
 
-    zsh.enable = true;
+    zsh = {
+      enable = true;
+      dotDir = ".config/zsh";
+      autosuggestion.enable = true;
+    };
+
     fish.enable = true;
   };
 
