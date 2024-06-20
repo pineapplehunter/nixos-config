@@ -71,6 +71,14 @@ in
     };
 
     fish.enable = true;
+
+    direnv = {
+      enable = true;
+      nix-direnv.enable = true;
+      config = {
+        warn_timeout = "1h";
+      };
+    };
   };
 
   services.syncthing.enable = true;
