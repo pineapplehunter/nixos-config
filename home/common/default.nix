@@ -81,6 +81,10 @@ in
     };
   };
 
+  home.sessionVariables = {
+    DIRENV_LOG_FORMAT = "";
+  };
+
   services.syncthing.enable = true;
 
   home.packages = with pkgs;[
