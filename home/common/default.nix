@@ -90,6 +90,13 @@ in
     end
   '';
 
+  home.shellAliases = {
+    ip = "ip -c";
+    ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";
+    la = "ls -a";
+    ll = "ls -lha";
+  };
+
   home.stateVersion = config.home.version.release;
   programs.home-manager.enable = true;
 }
