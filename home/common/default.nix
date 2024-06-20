@@ -53,6 +53,9 @@ in
         tiling-assistant
       ]);
     };
+
+    zsh.enable = true;
+    fish.enable = true;
   };
 
   services.syncthing.enable = true;
