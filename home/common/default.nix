@@ -11,6 +11,16 @@ in
         inherit lib;
         inherit (pkgs) nixd;
       };
+      settings = {
+        theme = "github-light";
+        editor = {
+          line-number = "relative";
+          lsp.display-messages = true;
+        };
+      };
+      themes = {
+        github-light = builtins.fromTOML (builtins.readFile ./helix-github-light.toml);
+      };
     };
 
     zellij = {
