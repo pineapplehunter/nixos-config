@@ -46,6 +46,7 @@ let
     sudo ${getExe nixos-rebuild} boot --flake ".#$HOST"
   '';
   update-script = writeShellScriptBin "update" ''
+    set -e
     git pull
     nix flake update
     ${getExe switch-script} "$@"
@@ -81,6 +82,7 @@ let
     ${getExe home-manager} switch --flake ".#$USER" "$@"
   '';
   home-update-script = writeShellScriptBin "home-update" ''
+    set -e
     git pull
     nix flake update
     ${getExe home-switch-script} "$@"
