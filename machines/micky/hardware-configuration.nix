@@ -9,6 +9,8 @@
       (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
+  nixpkgs.system = "x86_64-linux";
+
   boot.initrd.availableKernelModules = [ "xhci_pci" "thunderbolt" "vmd" "nvme" "usb_storage" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];

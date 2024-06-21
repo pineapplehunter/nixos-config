@@ -32,18 +32,22 @@
       homeConfigurations = nixpkgs.lib.attrsets.mapAttrs
         (_: value: inputs.home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          modules = [ value ];
+          modules = [
+            { nixpkgs.overlays = [ self.overlays.default ]; }
+            value
+          ];
         })
         self.homeModules;
+      overlays.default = import ./overlay { inherit (nixpkgs) lib; inherit inputs self; };
       nixosConfigurations = {
         mynixhost = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
+          system = null;
           modules = [
             ./machines/qemu/configuration.nix
           ];
         };
         beast = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
+          system = null;
           specialArgs = { inherit inputs self; };
           modules = [
             self.nixosModules.common
@@ -52,7 +56,7 @@
           ];
         };
         action = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
+          system = null;
           specialArgs = { inherit inputs self; };
           modules = [
             inputs.nixos-hardware.nixosModules.dell-xps-13-9310
@@ -63,7 +67,7 @@
           ];
         };
         micky = nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
+          system = null;
           specialArgs = { inherit inputs self; };
           modules = [
             inputs.nixos-hardware.nixosModules.mouse-daiv-z4-i7i01sr-a

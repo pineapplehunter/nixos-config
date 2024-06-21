@@ -4,6 +4,8 @@
 { config, lib, pkgs, modulesPath, ... }: {
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
+  nixpkgs.system = "x86_64-linux";
+
   boot.initrd.availableKernelModules =
     [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
   boot.initrd.kernelModules = [ ];

@@ -1,4 +1,4 @@
-{ inputs, self, lib, ... }:
+{ inputs, self, lib }:
 let
   overlayCombined = final: prev:
     let
@@ -51,9 +51,4 @@ let
       });
     };
 in
-{
-  nixpkgs.overlays = [
-    inputs.nix-xilinx.overlay
-    overlayCombined
-  ];
-}
+overlayCombined
