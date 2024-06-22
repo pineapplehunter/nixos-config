@@ -19,7 +19,7 @@
   boot.binfmt.emulatedSystems = [ "aarch64-linux" "riscv64-linux" ];
 
   nix = {
-    package = pkgs.nixVersions.latest;
+    # package = pkgs.nixVersions.latest;
     distributedBuilds = true;
     buildMachines = [
       {
