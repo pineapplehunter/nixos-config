@@ -79,6 +79,8 @@ in
         warn_timeout = "1h";
       };
     };
+
+    yazi.enable = true;
   };
 
   home.sessionVariables = {
