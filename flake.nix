@@ -50,6 +50,7 @@
           system = null;
           specialArgs = { inherit inputs self; };
           modules = [
+            inputs.home-manager.nixosModules.home-manager
             self.nixosModules.common
             self.nixosModules.personal
             ./machines/beast/configuration.nix
@@ -71,6 +72,7 @@
           specialArgs = { inherit inputs self; };
           modules = [
             inputs.nixos-hardware.nixosModules.mouse-daiv-z4-i7i01sr-a
+            inputs.home-manager.nixosModules.home-manager
             self.nixosModules.common
             self.nixosModules.work
             ./machines/micky/configuration.nix
