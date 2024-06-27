@@ -37,7 +37,7 @@ let
     yes_or_no "do you want to commit and update?"
     sudo echo starting upgrade
     git commit -am "$(date -Iminutes)" || true
-    sudo ${getExe nixos-rebuild} switch --flake ".#$HOST"
+    sudo ${getExe nixos-rebuild} switch --flake ".#$HOST" "$@"
   '';
   boot-script = writeShellScriptBin "boot" ''
     set -e
