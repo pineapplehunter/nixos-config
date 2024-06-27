@@ -38,6 +38,9 @@
       connect-timeout = 10;
       builders-use-substitutes = true;
     };
+    extraOptions = ''
+      !include ${config.sops.secrets.access_tokens.path}
+    '';
     # channel.enable = false;
   };
 

@@ -14,12 +14,14 @@
       home-manager.nixosModules.home-manager
     ];
 
-  nixpkgs.overlays = [
-    self.overlays.default
-    inputs.nix-xilinx.overlay
-  ];
+  nixpkgs = {
+    overlays = [
+      self.overlays.default
+      inputs.nix-xilinx.overlay
+    ];
+    config.allowUnfree = true;
+  };
 
-  nixpkgs.config.allowUnfree = true;
   nix = {
     # package = pkgs.nixVersions.unstable;
     settings = {
@@ -38,9 +40,6 @@
       options = "--delete-older-than 30d";
     };
     optimise.automatic = true;
-    extraOptions = ''
-      !include ${config.sops.secrets.access_tokens.path}
-    '';
   };
 
   sops.defaultSopsFile = ../../secrets/secrets.yml;

@@ -1,6 +1,5 @@
 { pkgs, self, ... }: {
   environment.systemPackages = with pkgs; [
-    tectonic
     blender
     webcord
     slack
@@ -22,9 +21,7 @@
       defaultGuiType = "gtk3";
       withGtk3 = true;
     })
-    self.packages.${pkgs.system}.nautilus-thumbnailer-stl
-    self.packages.${pkgs.system}.nautilus-thumbnailer-3mf
-    self.packages.${pkgs.system}.typst-thumbnailer
+    self.packages.${system}.nautilus-thumbnailer-stl
 
     sqlx-cli
     cargo-tauri

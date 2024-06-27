@@ -1,3 +1,0 @@
-[Thumbnailer Entry]
-Exec=@program@ %i %o
-MimeType=model/3mf;application/vnd.ms-3mfdocument
