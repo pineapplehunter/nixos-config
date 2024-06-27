@@ -34,9 +34,10 @@
         speedFactor = 2;
       }
     ];
-    extraOptions = ''
-      builders-use-substitutes = true
-    '';
+    settings = {
+      connect-timeout = 10;
+      builders-use-substitutes = true;
+    };
     # channel.enable = false;
   };
 
