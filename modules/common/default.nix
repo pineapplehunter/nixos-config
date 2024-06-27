@@ -1,8 +1,8 @@
-{ pkgs, self, inputs, lib, ... }: {
+{ pkgs, config, self, inputs, lib, ... }: {
   imports =
     let
       inherit (self.nixosModules) shell-config japanese;
-      inherit (inputs) sops-nix xremap-flake;
+      inherit (inputs) sops-nix xremap-flake home-manager;
     in
     [
       ./packages.nix
@@ -11,6 +11,7 @@
       japanese
       sops-nix.nixosModules.sops
       xremap-flake.nixosModules.default
+      home-manager.nixosModules.home-manager
     ];
 
   nixpkgs.overlays = [
@@ -37,7 +38,12 @@
       options = "--delete-older-than 30d";
     };
     optimise.automatic = true;
+    extraOptions = ''
+      !include ${config.sops.secrets.access_tokens.path}
+    '';
   };
+
+  sops.defaultSopsFile = ../../secrets/secrets.yml;
 
   services.xremap.enable = lib.mkDefault false;
 

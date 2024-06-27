@@ -41,6 +41,11 @@
     # channel.enable = false;
   };
 
+  sops.secrets.access_tokens = {
+    mode = "0440";
+    group = config.users.groups.keys.name;
+  };
+
   zramSwap.enable = true;
 
   services.xremap = {
