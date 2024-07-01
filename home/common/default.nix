@@ -78,13 +78,10 @@ in
       config = {
         warn_timeout = "1h";
       };
+      silent = true;
     };
 
     yazi.enable = true;
-  };
-
-  home.sessionVariables = {
-    DIRENV_LOG_FORMAT = "";
   };
 
   services.syncthing.enable = true;
