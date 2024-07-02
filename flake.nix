@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-23.11";
+    # nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-24.05";
     nixpkgs-pineapplehunter.url = "github:pineapplehunter/nixpkgs?ref=mozc-updates";
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -81,7 +81,6 @@
         inherit (nixpkgs.legacyPackages.${system})
           nixpkgs-fmt
           callPackage
-          python3
           ;
       in
       {
