@@ -17,6 +17,11 @@ in
           line-number = "relative";
           lsp.display-messages = true;
         };
+        keys = {
+          normal.esc = [ "collapse_selection" ":w" ];
+          select.esc = [ "collapse_selection" "normal_mode" ":w" ];
+          insert.esc = [ "normal_mode" ":w" ];
+        };
       };
       themes = {
         github-light = builtins.fromTOML (builtins.readFile ./helix-github-light.toml);

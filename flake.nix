@@ -78,7 +78,11 @@
       };
     } // (inputs.flake-utils.lib.eachDefaultSystem (system:
       let
-        inherit (nixpkgs.legacyPackages.${system})
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ self.overlays.default ];
+        };
+        inherit (pkgs)
           nixpkgs-fmt
           callPackage
           ;
@@ -91,6 +95,7 @@
           nautilus-thumbnailer-stl = callPackage ./packages/nautilus-thumbnailer-stl { inherit stl2pov; };
         };
         devShells.default = callPackage ./shell.nix { };
+        legacyPackages = pkgs;
       }
     ));
 }
