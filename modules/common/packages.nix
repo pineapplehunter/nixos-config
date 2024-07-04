@@ -14,7 +14,7 @@
     btrfs-assistant
     ripgrep
     nix-output-monitor
-    gnome.gnome-tweaks
+    gnome-tweaks
     nixd
     (symlinkJoin { name = "cachix"; version = cachix.version; paths = [ cachix.bin ]; })
     nixpkgs-fmt
@@ -34,7 +34,7 @@
     alacritty
     # editor
     vscode
-    gnome.dconf-editor
+    dconf-editor
     # lang
     julia
     rustup
@@ -48,5 +48,5 @@
     papers
   ];
 
-  environment.gnome.excludePackages = [ pkgs.gnome.evince ];
+  environment.gnome.excludePackages = [ pkgs.evince ];
 }
