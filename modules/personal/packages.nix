@@ -1,5 +1,5 @@
 { pkgs, self, ... }: {
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = (with pkgs; [
     blender
     webcord
     slack
@@ -21,7 +21,6 @@
       defaultGuiType = "gtk3";
       withGtk3 = true;
     })
-    self.packages.${system}.nautilus-thumbnailer-stl
 
     sqlx-cli
     cargo-tauri
@@ -31,8 +30,9 @@
     cargo-bloat
     cargo-outdated
     trunk
-    gnome.gnome-terminal
 
     lean4
-  ];
+  ]) ++ (with self.packages.${pkgs.system};[
+    nautilus-thumbnailer-stl
+  ]);
 }

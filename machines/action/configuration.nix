@@ -119,7 +119,6 @@
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
-  services.gnome.gnome-keyring.enable = true;
   security.pam.services.login.fprintAuth = false;
   security.pam.services.gdm-fingerprint =
     lib.mkIf (config.services.fprintd.enable) {

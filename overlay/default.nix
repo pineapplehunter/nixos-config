@@ -36,6 +36,7 @@ let
         "btop"
         "htop"
         "helix"
+        "yazi"
       ];
     })
     // {

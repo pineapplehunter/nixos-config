@@ -26,55 +26,46 @@
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
+    let
+      inherit (nixpkgs) lib;
+      inherit (lib) mapAttrs nixosSystem;
+      nixosSystemWrapped = modules: nixosSystem ({
+        system = null;
+        specialArgs = { inherit inputs self; };
+        modules = [ self.nixosModules.common ] ++ modules;
+      });
+    in
     {
       nixosModules = import ./modules;
       homeModules = import ./home;
-      homeConfigurations = nixpkgs.lib.attrsets.mapAttrs
-        (_: value: inputs.home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          modules = [
-            { nixpkgs.overlays = [ self.overlays.default ]; }
-            value
-          ];
+      homeConfigurations = mapAttrs
+        (_: mod: inputs.home-manager.lib.homeManagerConfiguration {
+          pkgs = import nixpkgs {
+            system = "x86_64-linux";
+            overlays = [ self.overlays.default ];
+          };
+          modules = [ mod ];
         })
         self.homeModules;
-      overlays.default = import ./overlay { inherit (nixpkgs) lib; inherit inputs self; };
+      overlays.default = import ./overlay { inherit lib inputs self; };
       nixosConfigurations = {
-        mynixhost = nixpkgs.lib.nixosSystem {
-          system = null;
-          modules = [
-            ./machines/qemu/configuration.nix
-          ];
-        };
-        beast = nixpkgs.lib.nixosSystem {
-          system = null;
-          specialArgs = { inherit inputs self; };
-          modules = [
-            self.nixosModules.common
-            self.nixosModules.personal
-            ./machines/beast/configuration.nix
-          ];
-        };
-        action = nixpkgs.lib.nixosSystem {
-          system = null;
-          specialArgs = { inherit inputs self; };
-          modules = [
-            inputs.nixos-hardware.nixosModules.dell-xps-13-9310
-            self.nixosModules.common
-            self.nixosModules.personal
-            ./machines/action/configuration.nix
-          ];
-        };
-        micky = nixpkgs.lib.nixosSystem {
-          system = null;
-          specialArgs = { inherit inputs self; };
-          modules = [
-            inputs.nixos-hardware.nixosModules.mouse-daiv-z4-i7i01sr-a
-            self.nixosModules.common
-            self.nixosModules.work
-            ./machines/micky/configuration.nix
-          ];
-        };
+        mynixhost = nixosSystemWrapped [
+          ./machines/qemu/configuration.nix
+        ];
+        beast = nixosSystemWrapped [
+          self.nixosModules.personal
+          ./machines/beast/configuration.nix
+        ];
+        action = nixosSystemWrapped [
+          inputs.nixos-hardware.nixosModules.dell-xps-13-9310
+          self.nixosModules.personal
+          ./machines/action/configuration.nix
+        ];
+        micky = nixosSystemWrapped [
+          inputs.nixos-hardware.nixosModules.mouse-daiv-z4-i7i01sr-a
+          self.nixosModules.work
+          ./machines/micky/configuration.nix
+        ];
       };
     } // (inputs.flake-utils.lib.eachDefaultSystem (system:
       let
