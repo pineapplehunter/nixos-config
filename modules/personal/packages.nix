@@ -22,15 +22,6 @@
       withGtk3 = true;
     })
 
-    sqlx-cli
-    cargo-tauri
-    cargo-expand
-    cargo-fuzz
-    cargo-watch
-    cargo-bloat
-    cargo-outdated
-    trunk
-
     lean4
   ]) ++ (with self.packages.${pkgs.system};[
     nautilus-thumbnailer-stl
