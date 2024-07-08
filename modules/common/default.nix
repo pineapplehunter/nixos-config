@@ -26,13 +26,20 @@
     # package = pkgs.nixVersions.unstable;
     settings = {
       experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
-      trusted-users = [ "shogo" "riken" "shogotr" ];
+      trusted-users =
+        let
+          normalUsers = lib.filterAttrs (_: user: user.isNormalUser) config.users.users;
+          normalUserNames = lib.mapAttrsToList (username: _: username) normalUsers;
+        in
+        lib.mkDefault normalUserNames;
       substituters =
         [ "https://cache.nixos.org/" "https://pineapplehunter.cachix.org" ];
       trusted-public-keys = [
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
         "pineapplehunter.cachix.org-1:OwpZtT7lADb4AYYprPubSST9jVs2fLVlgTLnsPyln7U="
       ];
+      warn-dirty = false;
+      auto-optimise-store = true;
     };
     gc = {
       automatic = true;
@@ -119,6 +126,5 @@
 
   environment.variables = {
     BAT_THEME = "GitHub";
-    DIRENV_WARN_TIMEOUT = "1h";
   };
 }

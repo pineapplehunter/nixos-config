@@ -53,12 +53,15 @@
 
     # Enable the GNOME Desktop Environment.
     desktopManager.gnome.enable = true;
-    displayManager.gdm.enable = true;
+    displayManager.gdm = {
+      enable = true;
+      autoSuspend = false;
+    };
   };
-  services.displayManager.autoLogin = {
-    enable = true;
-    user = "shogo";
-  };
+  # services.displayManager.autoLogin = {
+  #   enable = true;
+  #   user = "shogo";
+  # };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.shogo = {
