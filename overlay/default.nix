@@ -6,16 +6,22 @@ let
       importOverlayFileList = files:
         lib.attrsets.mergeAttrsList (map importOverlayFile files);
 
-      removeDesktopEntry = packageName: {
-        ${packageName} = final.symlinkJoin rec {
-          inherit (prev.${packageName}) pname version;
-          name = "${pname}-no-dekstop-${version}";
-          paths = [ prev.${packageName} ];
-          postBuild = ''
-            rm -rfv $out/share/applications
-          '';
+      removeDesktopEntry = packageName:
+        let
+          package = prev.${packageName};
+          inherit (package) pname version;
+        in
+        {
+          ${packageName} = final.runCommand "${pname}-no-desktop-${version}"
+            {
+              passthru.original = package;
+              preferLocalBuild = true;
+            }
+            ''
+              cp -srL --no-preserve=mode ${package} $out
+              rm -rfv $out/share/applications
+            '';
         };
-      };
       removeDesktopEntryList = packages:
         lib.attrsets.mergeAttrsList (map removeDesktopEntry packages);
 

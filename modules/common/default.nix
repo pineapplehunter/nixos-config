@@ -127,4 +127,6 @@
   environment.variables = {
     BAT_THEME = "GitHub";
   };
+
+  home-manager.useGlobalPkgs = true;
 }

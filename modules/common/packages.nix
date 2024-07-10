@@ -36,7 +36,6 @@
     vscode
     dconf-editor
     # lang
-    julia
     rustup
     python3
     stdenv.cc

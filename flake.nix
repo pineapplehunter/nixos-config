@@ -28,65 +28,41 @@
   outputs = { self, nixpkgs, ... }@inputs:
     let
       inherit (nixpkgs) lib;
-      inherit (lib) mapAttrs nixosSystem;
-      nixosSystemWrapped = modules: nixosSystem ({
-        system = null;
-        specialArgs = { inherit inputs self; };
-        modules = [ self.nixosModules.common ] ++ modules;
-      });
     in
     {
       nixosModules = import ./modules;
       homeModules = import ./home;
-      homeConfigurations = mapAttrs
+      homeConfigurations = lib.mapAttrs
         (_: mod: inputs.home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs {
-            system = "x86_64-linux";
-            overlays = [ self.overlays.default ];
-          };
-          modules = [ mod ];
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [
+            { nixpkgs.overlays = [ self.overlays.default ]; }
+            mod
+          ];
         })
         self.homeModules;
       overlays.default = import ./overlay { inherit lib inputs self; };
-      nixosConfigurations = {
-        mynixhost = nixosSystemWrapped [
-          ./machines/qemu/configuration.nix
-        ];
-        beast = nixosSystemWrapped [
-          self.nixosModules.personal
-          ./machines/beast/configuration.nix
-        ];
-        action = nixosSystemWrapped [
-          inputs.nixos-hardware.nixosModules.dell-xps-13-9310
-          self.nixosModules.personal
-          ./machines/action/configuration.nix
-        ];
-        micky = nixosSystemWrapped [
-          inputs.nixos-hardware.nixosModules.mouse-daiv-z4-i7i01sr-a
-          self.nixosModules.work
-          ./machines/micky/configuration.nix
-        ];
-      };
+      nixosConfigurations = import ./machines { inherit lib inputs self; };
     } // (inputs.flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs {
+        legacyPackages = import nixpkgs {
           inherit system;
           overlays = [ self.overlays.default ];
         };
-        inherit (pkgs)
+        inherit (legacyPackages)
           nixpkgs-fmt
-          callPackage
           ;
+        callPackage = lib.callPackageWith (legacyPackages // self.packages.${system});
       in
       {
         formatter = nixpkgs-fmt;
-        packages = rec {
+        packages = {
           nixos-artwork-wallpaper = callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
           stl2pov = callPackage ./packages/stl2pov { };
-          nautilus-thumbnailer-stl = callPackage ./packages/nautilus-thumbnailer-stl { inherit stl2pov; };
+          nautilus-thumbnailer-stl = callPackage ./packages/nautilus-thumbnailer-stl { };
         };
         devShells.default = callPackage ./shell.nix { };
-        legacyPackages = pkgs;
+        inherit legacyPackages;
       }
     ));
 }
