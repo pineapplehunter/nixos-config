@@ -49,6 +49,8 @@
     optimise.automatic = true;
   };
 
+  boot.plymouth.enable = lib.mkDefault true;
+
   sops.defaultSopsFile = ../../secrets/secrets.yml;
 
   services.xremap.enable = lib.mkDefault false;

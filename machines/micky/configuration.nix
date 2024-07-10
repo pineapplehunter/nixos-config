@@ -51,7 +51,6 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
-  boot.plymouth.enable = true;
 
   # https://discourse.nixos.org/t/suspend-then-hibernate/31953/5
   # boot.resumeDevice = "/dev/disk/by-uuid/244fb3a7-4e9c-4707-9427-a33f667a08bd";
