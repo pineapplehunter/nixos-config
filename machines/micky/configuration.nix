@@ -2,7 +2,12 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 {
   imports = [
@@ -94,11 +99,11 @@
       ALLOW_USERS = [ "shogo" ];
       TIMELINE_CREATE = true;
       TIMELINE_CLEANUP = true;
-      TIMELINE_LIMIT_HOURLY = "5";
-      TIMELINE_LIMIT_DAILY = "6";
-      TIMELINE_LIMIT_WEEKLY = "3";
-      TIMELINE_LIMIT_MONTHLY = "2";
-      TIMELINE_LIMIT_YEARLY = "0";
+      TIMELINE_LIMIT_HOURLY = 5;
+      TIMELINE_LIMIT_DAILY = 6;
+      TIMELINE_LIMIT_WEEKLY = 3;
+      TIMELINE_LIMIT_MONTHLY = 2;
+      TIMELINE_LIMIT_YEARLY = 0;
     };
   };
 
@@ -121,7 +126,10 @@
     shogotr = {
       isNormalUser = true;
       description = "Shogo Takata";
-      extraGroups = [ "networkmanager" "wheel" ];
+      extraGroups = [
+        "networkmanager"
+        "wheel"
+      ];
       # packages = with pkgs; [
       # firefox
       #  thunderbird

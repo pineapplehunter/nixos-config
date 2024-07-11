@@ -1,4 +1,10 @@
-{ pkgs, lib, config, inputs, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  inputs,
+  ...
+}:
 let
   ibus-engines-patch = inputs.nixpkgs-pineapplehunter.legacyPackages.x86_64-linux.ibus-engines;
 in
@@ -12,10 +18,15 @@ in
 
   # japanese input managers
   i18n.inputMethod = {
-    ibus.engines = with pkgs.ibus-engines;[ mozc-ut anthy ];
-    fcitx5.addons = with pkgs;[ fcitx5-mozc fcitx5-anthy ];
+    ibus.engines = with pkgs.ibus-engines; [
+      mozc-ut
+      anthy
+    ];
+    fcitx5.addons = with pkgs; [
+      fcitx5-mozc
+      fcitx5-anthy
+    ];
   };
-
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -49,17 +60,17 @@ in
       ibus-version-overlay = final: prev: {
         ibus =
           if prev.ibus.version == "1.5.29" then
-            prev.ibus.overrideAttrs
-              rec {
-                version = "1.5.30";
-                src = prev.fetchFromGitHub {
-                  owner = "ibus";
-                  repo = "ibus";
-                  rev = version;
-                  hash = "sha256-VgSjeKF9DCkDfE9lHEaWpgZb6ibdgoDf/I6qeJf8Ah4=";
-                };
-              }
-          else prev.ibus;
+            prev.ibus.overrideAttrs rec {
+              version = "1.5.30";
+              src = prev.fetchFromGitHub {
+                owner = "ibus";
+                repo = "ibus";
+                rev = version;
+                hash = "sha256-VgSjeKF9DCkDfE9lHEaWpgZb6ibdgoDf/I6qeJf8Ah4=";
+              };
+            }
+          else
+            prev.ibus;
 
         ibus-engines = prev.ibus-engines // {
           inherit (ibus-engines-patch) mozc mozc-ut;

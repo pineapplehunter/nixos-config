@@ -1,15 +1,21 @@
-{ lib, self, inputs }:
+{
+  lib,
+  self,
+  inputs,
+}:
 let
-  nixosSystemWrapped = modules: lib.nixosSystem {
-    system = null;
-    specialArgs = { inherit inputs self; };
-    modules = [ self.nixosModules.common ] ++ modules;
-  };
+  nixosSystemWrapped =
+    modules:
+    lib.nixosSystem {
+      system = null;
+      specialArgs = {
+        inherit inputs self;
+      };
+      modules = [ self.nixosModules.common ] ++ modules;
+    };
 in
 {
-  mynixhost = nixosSystemWrapped [
-    ./qemu/configuration.nix
-  ];
+  mynixhost = nixosSystemWrapped [ ./qemu/configuration.nix ];
   beast = nixosSystemWrapped [
     self.nixosModules.personal
     ./beast/configuration.nix

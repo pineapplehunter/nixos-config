@@ -1,7 +1,14 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
-let cfg = config.programs.not-found-exec;
-in {
+let
+  cfg = config.programs.not-found-exec;
+in
+{
   options = {
     programs.not-found-exec = {
       enable = mkOption {
@@ -48,11 +55,8 @@ in {
     '';
 
     environment.systemPackages = mkIf cfg.which-nix.enable [
-      (pkgs.callPackage ./not-found-exec-shell.nix {
-        inherit (cfg) confirm;
-      })
+      (pkgs.callPackage ./not-found-exec-shell.nix { inherit (cfg) confirm; })
       (pkgs.callPackage ./which-nix.nix { })
     ];
   };
 }
-

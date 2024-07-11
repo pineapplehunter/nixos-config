@@ -10,7 +10,9 @@
     ./hardware-configuration.nix
   ];
 
-  environment.variables = { EDITOR = "vim"; };
+  environment.variables = {
+    EDITOR = "vim";
+  };
 
   # enable nix features
   nix = {
@@ -93,7 +95,10 @@
   users.users.shogo = {
     isNormalUser = true;
     description = "Shogo Takata";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+    ];
   };
 
   # Enable automatic login for the user.
@@ -114,7 +119,10 @@
       vimAlias = true;
       configure = {
         packages.myPlugins = with pkgs.vimPlugins; {
-          start = [ vim-lastplace vim-nix ];
+          start = [
+            vim-lastplace
+            vim-nix
+          ];
           opt = [ ];
         };
       };

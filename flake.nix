@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    # nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-24.05";
+    nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-24.05";
     nixpkgs-pineapplehunter.url = "github:pineapplehunter/nixpkgs?ref=mozc-updates";
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -49,13 +49,10 @@
           inherit system;
           overlays = [ self.overlays.default ];
         };
-        inherit (legacyPackages)
-          nixpkgs-fmt
-          ;
         callPackage = lib.callPackageWith (legacyPackages // self.packages.${system});
       in
       {
-        formatter = nixpkgs-fmt;
+        formatter = legacyPackages.nixpkgs-fmt;
         packages = {
           nixos-artwork-wallpaper = callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
           stl2pov = callPackage ./packages/stl2pov { };

@@ -1,6 +1,4 @@
-{ stdenv
-, fetchFromGitHub
-}:
+{ stdenv, fetchFromGitHub }:
 
 stdenv.mkDerivation {
   pname = "nixos-wallpapers";

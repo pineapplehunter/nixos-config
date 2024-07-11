@@ -1,4 +1,11 @@
-{ buildPythonPackage, fetchFromGitHub, cmake, ninja, scikit-build, swig }:
+{
+  buildPythonPackage,
+  fetchFromGitHub,
+  cmake,
+  ninja,
+  scikit-build,
+  swig,
+}:
 buildPythonPackage rec {
   pname = "py-slvs";
   version = "1.0.6";
@@ -12,7 +19,12 @@ buildPythonPackage rec {
     fetchSubmodules = true;
   };
 
-  nativeBuildInputs = [ cmake ninja swig scikit-build ];
+  nativeBuildInputs = [
+    cmake
+    ninja
+    swig
+    scikit-build
+  ];
   dontUseCmakeConfigure = true;
 
   doCheck = false;

@@ -1,4 +1,12 @@
-{ pkgs, config, self, inputs, lib, ... }: {
+{
+  pkgs,
+  config,
+  self,
+  inputs,
+  lib,
+  ...
+}:
+{
   imports =
     let
       inherit (self.nixosModules) shell-config japanese;
@@ -25,15 +33,21 @@
   nix = {
     # package = pkgs.nixVersions.unstable;
     settings = {
-      experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
+      experimental-features = [
+        "nix-command"
+        "flakes"
+        "ca-derivations"
+      ];
       trusted-users =
         let
           normalUsers = lib.filterAttrs (_: user: user.isNormalUser) config.users.users;
           normalUserNames = lib.mapAttrsToList (username: _: username) normalUsers;
         in
         lib.mkDefault normalUserNames;
-      substituters =
-        [ "https://cache.nixos.org/" "https://pineapplehunter.cachix.org" ];
+      substituters = [
+        "https://cache.nixos.org/"
+        "https://pineapplehunter.cachix.org"
+      ];
       trusted-public-keys = [
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
         "pineapplehunter.cachix.org-1:OwpZtT7lADb4AYYprPubSST9jVs2fLVlgTLnsPyln7U="

@@ -25,9 +25,21 @@ let
       removeDesktopEntryList = packages:
         lib.attrsets.mergeAttrsList (map removeDesktopEntry packages);
 
-      genOverlays = { overlayFiles ? [ ], removeDesktops ? [ ] }:
+      makeStable = packageName:
+        let
+          stablePkgs = inputs.nixpkgs-stable.legacyPackages.${final.system};
+        in
+        {
+          ${packageName} = stablePkgs.${packageName};
+        };
+      makeStableList = packages:
+        lib.attrsets.mergeAttrsList (map makeStable packages);
+
+      genOverlays = { overlayFiles ? [ ], removeDesktops ? [ ], stable ? [ ] }: lib.attrsets.mergeAttrsList [
         (importOverlayFileList overlayFiles)
-        // (removeDesktopEntryList removeDesktops);
+        (removeDesktopEntryList removeDesktops)
+        (makeStableList stable)
+      ];
     in
     (genOverlays {
       overlayFiles = [
@@ -43,6 +55,11 @@ let
         "htop"
         "helix"
         "yazi"
+      ];
+      stable=[
+        "fprintd"
+        "fprintd-tod"
+        "blender"
       ];
     })
     // {

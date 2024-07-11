@@ -1,4 +1,5 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
 
   # system wide packages
   environment.systemPackages = with pkgs; [
@@ -16,7 +17,11 @@
     nix-output-monitor
     gnome-tweaks
     nixd
-    (symlinkJoin { name = "cachix"; version = cachix.version; paths = [ cachix.bin ]; })
+    (symlinkJoin {
+      name = "cachix";
+      version = cachix.version;
+      paths = [ cachix.bin ];
+    })
     nixpkgs-fmt
     tree
     fd
