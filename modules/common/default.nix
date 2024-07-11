@@ -104,11 +104,6 @@
   users.defaultUserShell = pkgs.zsh;
   programs.not-found-exec.enable = true;
 
-  programs.direnv = {
-    enable = true;
-    silent = true;
-  };
-
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
