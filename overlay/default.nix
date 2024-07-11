@@ -59,7 +59,7 @@ let
       stable=[
         "fprintd"
         "fprintd-tod"
-        "blender"
+        # "blender"
       ];
     })
     // {
