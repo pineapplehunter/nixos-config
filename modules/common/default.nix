@@ -112,6 +112,8 @@
 
   services.tailscale.enable = true;
 
+  systemd.services.NetworkManager-wait-online.enable = false;
+
   # Enable sound with pipewire.
   sound.enable = true;
   hardware.pulseaudio.enable = false;
