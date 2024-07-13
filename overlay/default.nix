@@ -56,7 +56,7 @@ let
         "helix"
         "yazi"
       ];
-      stable=[
+      stable = [
         "fprintd"
         "fprintd-tod"
         # "blender"

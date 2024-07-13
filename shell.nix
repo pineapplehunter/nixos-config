@@ -10,7 +10,7 @@
 let
   inherit (lib) getExe;
   build-script = writeShellScriptBin "build" ''
-    ${getExe nix-output-monitor} build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
+    nom build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
     exit $?
   '';
   diff-script = writeShellScriptBin "diff" ''
@@ -20,7 +20,7 @@ let
       echo All packges up to date!
       exit 1
     fi
-    ${getExe nvd} diff /run/current-system ./result
+    nvd diff /run/current-system ./result
   '';
   switch-script = writeShellScriptBin "switch" ''
     set -e
@@ -37,22 +37,22 @@ let
     yes_or_no "do you want to commit and update?"
     sudo echo starting upgrade
     git commit -am "$(date -Iminutes)" || true
-    sudo ${getExe nixos-rebuild} switch --flake ".#$HOST" "$@"
+    sudo nixos-rebuild switch --flake ".#$HOST" "$@"
   '';
   boot-script = writeShellScriptBin "boot" ''
     set -e
     ${getExe build-script} "$@"
     sudo echo switching boot
-    sudo ${getExe nixos-rebuild} boot --flake ".#$HOST"
+    sudo nixos-rebuild boot --flake ".#$HOST"
   '';
   update-script = writeShellScriptBin "update" ''
     set -e
     git pull
     nix flake update
-    ${getExe switch-script} "$@"
+    ${getExe switch-script} "$@" || git checkout HEAD -- flake.lock
   '';
   home-build-script = writeShellScriptBin "home-build" ''
-    ${getExe home-manager} build --flake ".#$USER" "$@"
+    home-manager build --flake ".#$USER" "$@"
     exit $?
   '';
   home-diff-script = writeShellScriptBin "home-diff" ''
@@ -62,7 +62,7 @@ let
       echo All packges up to date!
       exit 1
     fi
-    ${getExe nvd} diff $HOME/.local/state/nix/profiles/home-manager ./result
+    nvd diff $HOME/.local/state/nix/profiles/home-manager ./result
   '';
   home-switch-script = writeShellScriptBin "home-switch" ''
     set -e
@@ -79,13 +79,13 @@ let
     yes_or_no "do you want to commit and update?"
     echo starting switch
     git commit -am "$(date -Iminutes)-home" || true
-    ${getExe home-manager} switch --flake ".#$USER" "$@"
+    home-manager switch --flake ".#$USER" "$@"
   '';
   home-update-script = writeShellScriptBin "home-update" ''
     set -e
     git pull
     nix flake update
-    ${getExe home-switch-script} "$@"
+    ${getExe home-switch-script} "$@" || git checkout HEAD -- flake.lock
   '';
 in
 mkShellNoCC {
@@ -104,6 +104,8 @@ mkShellNoCC {
 
     nvd
     nix-output-monitor
+    home-manager
+    nixos-rebuild
   ];
   shellHook = ''
     export HOST=`hostname`

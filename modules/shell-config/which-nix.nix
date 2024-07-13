@@ -1,7 +1,7 @@
-{
-  writeShellScriptBin,
-  nix,
-  lib,
+{ writeShellScriptBin
+, nix
+, lib
+,
 }:
 writeShellScriptBin "which-nix" ''
   export cmd="$1"
