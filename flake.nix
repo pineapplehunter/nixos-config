@@ -31,16 +31,8 @@
     in
     {
       nixosModules = import ./modules;
-      homeModules = import ./home;
-      homeConfigurations = lib.mapAttrs
-        (_: mod: inputs.home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          modules = [
-            { nixpkgs.overlays = [ self.overlays.default ]; }
-            mod
-          ];
-        })
-        self.homeModules;
+      homeModules = (import ./home { inherit self nixpkgs inputs; }).modules;
+      homeConfigurations = (import ./home { inherit self nixpkgs inputs; }).configurations;
       overlays.default = import ./overlay { inherit lib inputs self; };
       nixosConfigurations = import ./machines { inherit lib inputs self; };
     } // (inputs.flake-utils.lib.eachDefaultSystem (system:

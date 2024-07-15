@@ -3,6 +3,7 @@
 {
   imports = [
     ../common
+    ../common_linux
   ];
 
   home.username = "riken";

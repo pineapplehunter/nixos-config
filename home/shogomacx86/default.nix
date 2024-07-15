@@ -3,11 +3,11 @@
 {
   imports = [
     ../common
-    ../common_linux
+    ../common_mac
   ];
 
   home.username = "shogo";
-  home.homeDirectory = "/home/shogo";
+  home.homeDirectory = "/Users/shogomacx86";
 
   home.packages = with pkgs;[
     sqlx-cli
