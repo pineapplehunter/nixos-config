@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ pkgs, lib, config, ... }:
 let
   empty-package = pkgs.runCommand "empty-package" { } "mkdir $out";
 in
@@ -78,11 +78,27 @@ in
     gh.enable = true;
   };
 
-  services.syncthing.enable = true;
-
   home.packages = with pkgs;[
     nixpkgs-review
     tokei
     npins
+    (if pkgs.stdenv.isDarwin then julia-bin else julia)
   ];
+
+  home.file.".julia/config/startup.jl".text = ''
+    try
+      using OhMyREPL
+    catch e
+      @warn e
+    end
+  '';
+
+  home.shellAliases = {
+    ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";
+    la = "ls -a";
+    ll = "ls -lha";
+  };
+
+  home.stateVersion = config.home.version.release;
+  programs.home-manager.enable = true;
 }

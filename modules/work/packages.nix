@@ -4,7 +4,6 @@
     webcord
     slack
     super-productivity
-    android-studio
     jdk
   ];
 }

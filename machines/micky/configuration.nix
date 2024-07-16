@@ -5,6 +5,7 @@
 { config
 , pkgs
 , lib
+, self
 , ...
 }:
 
@@ -136,7 +137,7 @@
     };
   };
   home-manager.users = {
-    inherit (import ../../home) shogotr;
+    inherit (self.homeModules) shogotr;
   };
 
   # Open ports in the firewall.

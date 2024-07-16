@@ -5,6 +5,7 @@
 { config
 , pkgs
 , lib
+, self
 , ...
 }:
 
@@ -217,7 +218,7 @@
     };
   };
   home-manager.users = {
-    inherit (import ../../home) shogo riken;
+    inherit (self.homeModules) shogo riken;
   };
 
   environment.systemPackages = with pkgs; [
