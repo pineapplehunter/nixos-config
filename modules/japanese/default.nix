@@ -56,26 +56,12 @@ in
 
   nixpkgs.overlays =
     let
-      ibus-version-overlay = final: prev: {
-        ibus =
-          if prev.ibus.version == "1.5.29" then
-            prev.ibus.overrideAttrs
-              rec {
-                version = "1.5.30";
-                src = prev.fetchFromGitHub {
-                  owner = "ibus";
-                  repo = "ibus";
-                  rev = version;
-                  hash = "sha256-VgSjeKF9DCkDfE9lHEaWpgZb6ibdgoDf/I6qeJf8Ah4=";
-                };
-              }
-          else
-            prev.ibus;
-
+      ibus-mozc-overlay = final: prev: {
         ibus-engines = prev.ibus-engines // {
           inherit (ibus-engines-patch) mozc mozc-ut;
         };
       };
+      cfg = config.i18n.inputMethod;
     in
-    lib.optionals (config.i18n.inputMethod.enabled == "ibus") [ ibus-version-overlay ];
+    lib.optionals (cfg.enable && cfg.type == "ibus") [ ibus-mozc-overlay ];
 }

@@ -76,7 +76,10 @@
     enableSSHSupport = true;
   };
 
-  i18n.inputMethod.enabled = "ibus";
+  i18n.inputMethod = {
+    enable = true;
+    type = "ibus";
+  };
 
   # List services that you want to enable:
 
@@ -114,7 +117,6 @@
   systemd.services.NetworkManager-wait-online.enable = false;
 
   # Enable sound with pipewire.
-  sound.enable = true;
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
