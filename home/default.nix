@@ -1,29 +1,44 @@
-{ self, nixpkgs, inputs }:
+{ self
+, nixpkgs
+, inputs
+}:
 let
-  cfg-linux = mods: inputs.home-manager.lib.homeManagerConfiguration {
-    pkgs = nixpkgs.legacyPackages.x86_64-linux;
-    modules = [
-      { nixpkgs.overlays = [ self.overlays.default ]; }
-    ] ++ mods;
-  };
-  cfg-darwin = mods: inputs.home-manager.lib.homeManagerConfiguration {
-    pkgs = nixpkgs.legacyPackages.x86_64-darwin;
-    modules = [
-      { nixpkgs.overlays = [ self.overlays.default ]; }
-    ] ++ mods;
-  };
+  inherit (nixpkgs) lib;
+  multiConfig = name: mods: lib.attrsets.mergeAttrsList (
+    map
+      (system: {
+        "${name}-${system}" = inputs.home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages.${system};
+          modules = mods ++ [
+            self.homeModules.common
+            self.homeModules.pineapplehunter
+            ({ pkgs, ... }: {
+              nixpkgs.overlays = [ self.overlays.default ];
+              pineapplehunter.config-name = "${name}-${system}";
+              home.username = name;
+              home.homeDirectory =
+                let
+                  inherit (pkgs.stdenv) isLinux isDarwin;
+                in
+                if isLinux then "/home/${name}"
+                else if isDarwin then "/Users/${name}" else throw "os not supported";
+            })
+          ];
+        };
+      })
+      (import inputs.systems));
+
 in
 rec {
   modules = {
+    common = import ./common;
+    pineapplehunter = import ./pineapplehunter;
     shogo = import ./shogo;
-    shogotr = import ./shogotr;
     riken = import ./riken;
-    shogomacx86 = import ./shogomacx86;
   };
-  configurations = {
-    shogo = cfg-linux [ modules.shogo ];
-    shogotr = cfg-linux [ modules.shogotr ];
-    riken = cfg-linux [ modules.riken ];
-    shogomacx86 = cfg-darwin [ modules.shogomacx86 ];
-  };
+  configurations = lib.attrsets.mergeAttrsList [
+    (multiConfig "shogo" [ modules.shogo ])
+    (multiConfig "shogotr" [ modules.shogo ])
+    (multiConfig "riken" [ modules.shogo ])
+  ];
 }

@@ -52,7 +52,7 @@ let
     ${getExe switch-script} "$@" || git checkout HEAD -- flake.lock
   '';
   home-build-script = writeShellScriptBin "home-build" ''
-    home-manager build --flake ".#$USER" "$@"
+    home-manager build --flake ".#$HOME_CONFIG_NAME" "$@"
     exit $?
   '';
   home-diff-script = writeShellScriptBin "home-diff" ''
@@ -79,7 +79,7 @@ let
     yes_or_no "do you want to commit and update?"
     echo starting switch
     git commit -am "$(date -Iminutes)-home" || true
-    home-manager switch --flake ".#$USER" "$@"
+    home-manager switch --flake ".#$HOME_CONFIG_NAME" "$@"
   '';
   home-update-script = writeShellScriptBin "home-update" ''
     set -e
@@ -109,6 +109,5 @@ mkShellNoCC {
   ];
   shellHook = ''
     export HOST=`hostname`
-    export USER=`whoami`
   '';
 }

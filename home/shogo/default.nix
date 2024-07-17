@@ -1,14 +1,6 @@
 { pkgs, ... }:
 
 {
-  imports = [
-    ../common
-    ../common_linux
-  ];
-
-  home.username = "shogo";
-  home.homeDirectory = "/home/shogo";
-
   home.packages = with pkgs;[
     sqlx-cli
     cargo-tauri

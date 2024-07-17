@@ -76,7 +76,9 @@
     },
     "flake-utils": {
       "inputs": {
-        "systems": "systems"
+        "systems": [
+          "systems"
+        ]
       },
       "locked": {
         "lastModified": 1710146030,
@@ -294,11 +296,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1721120520,
-        "narHash": "sha256-6+X+4Nxl3B9cFI3c3XYXcBWBYmb41uP1ef/Z77peYwo=",
+        "lastModified": 1721206919,
+        "narHash": "sha256-F/ZsUXep08rxyGceXosljicrkBo9padzK9v9q3hoHQc=",
         "owner": "doronbehar",
         "repo": "nix-xilinx",
-        "rev": "c53093b5a3c7bea045e6167799b323472be6e793",
+        "rev": "be2503139eca72e1cfcb0a9bf51826b9f17a09cf",
         "type": "gitlab"
       },
       "original": {
@@ -472,6 +474,7 @@
         "nixpkgs-pineapplehunter": "nixpkgs-pineapplehunter",
         "nixpkgs-stable": "nixpkgs-stable",
         "sops-nix": "sops-nix",
+        "systems": "systems",
         "xremap-flake": "xremap-flake"
       }
     },

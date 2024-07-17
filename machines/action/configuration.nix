@@ -217,9 +217,14 @@
       ];
     };
   };
-  home-manager.users = {
-    inherit (self.homeModules) shogo riken;
-  };
+  home-manager.users =
+    let
+      inherit (self.homeModules) common shogo riken;
+    in
+    {
+      shogo = { imports = [ common shogo ]; };
+      riken = { imports = [ common riken ]; };
+    };
 
   environment.systemPackages = with pkgs; [
     win-virtio

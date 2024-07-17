@@ -85,9 +85,13 @@
     isNormalUser = true;
     extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
   };
-  home-manager.users = {
-    inherit (self.homeModules) shogo;
-  };
+  home-manager.users =
+    let
+      inherit (self.homeModules) common shogo;
+    in
+    {
+      shogo = { imports = [ common shogo ]; };
+    };
 
   system.stateVersion = config.system.nixos.release;
 }

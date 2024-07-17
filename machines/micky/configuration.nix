@@ -136,9 +136,13 @@
       # shell = pkgs.nushell;
     };
   };
-  home-manager.users = {
-    inherit (self.homeModules) shogotr;
-  };
+  home-manager.users =
+    let
+      inherit (self.homeModules) common riken;
+    in
+    {
+      shogotr = { imports = [ common riken ]; };
+    };
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ 8080 ];
