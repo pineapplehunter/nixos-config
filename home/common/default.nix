@@ -98,6 +98,8 @@ in
     inherit (pkgs)
       nixpkgs-review
       tokei
+      htop
+      nix-output-monitor
       npins;
     julia = (if isDarwin then pkgs.julia-bin else pkgs.julia);
   };
