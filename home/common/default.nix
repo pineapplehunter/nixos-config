@@ -101,6 +101,8 @@ in
       nixpkgs-review
       tokei
       htop
+      nix-tree
+      nixpkgs-fmt
       nix-output-monitor
       starship
       npins;
