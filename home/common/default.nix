@@ -102,6 +102,7 @@ in
       tokei
       htop
       nix-output-monitor
+      starship
       npins;
     julia = (if isDarwin then pkgs.julia-bin else pkgs.julia);
   };
