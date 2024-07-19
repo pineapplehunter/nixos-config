@@ -56,6 +56,7 @@ in
     environment.systemPackages = mkIf cfg.which-nix.enable [
       (pkgs.callPackage ./not-found-exec-shell.nix { inherit (cfg) confirm; })
       (pkgs.callPackage ./which-nix.nix { })
+      (pkgs.callPackage ./sudo-nix.nix { })
     ];
   };
 }
