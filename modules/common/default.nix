@@ -142,5 +142,8 @@
     BAT_THEME = "GitHub";
   };
 
-  home-manager.useGlobalPkgs = true;
+  home-manager = {
+    useGlobalPkgs = true;
+    backupFileExtension = "hm-backup";
+  };
 }

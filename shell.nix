@@ -79,7 +79,7 @@ let
     yes_or_no "do you want to commit and update?"
     echo starting switch
     git commit -am "$(date -Iminutes)-home" || true
-    home-manager switch --flake ".#$HOME_CONFIG_NAME" "$@"
+    home-manager switch -b "hm-backup" --flake ".#$HOME_CONFIG_NAME" "$@"
   '';
   home-update-script = writeShellScriptBin "home-update" ''
     set -e
