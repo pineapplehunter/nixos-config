@@ -57,8 +57,8 @@ let
         "yazi"
       ];
       stable = [
-        "fprintd"
-        "fprintd-tod"
+        # "fprintd"
+        # "fprintd-tod"
         # "blender"
       ];
     })
