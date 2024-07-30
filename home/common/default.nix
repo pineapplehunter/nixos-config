@@ -87,6 +87,7 @@ in
         just-perfection
         syncthing-indicator
         tiling-assistant
+        night-theme-switcher
       ]);
     };
 

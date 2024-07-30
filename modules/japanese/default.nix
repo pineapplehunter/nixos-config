@@ -34,9 +34,6 @@ in
   # Configure console keymap
   console.keyMap = lib.mkDefault "jp106";
 
-  # Set your time zone.
-  time.timeZone = lib.mkDefault "Asia/Tokyo";
-
   # Select internationalisation properties.
   i18n.defaultLocale = lib.mkDefault "ja_JP.UTF-8";
 
