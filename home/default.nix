@@ -8,12 +8,11 @@ let
     map
       (system: {
         "${name}-${system}" = inputs.home-manager.lib.homeManagerConfiguration {
-          pkgs = nixpkgs.legacyPackages.${system};
+          pkgs = self.legacyPackages.${system};
           modules = mods ++ [
             self.homeModules.common
             self.homeModules.pineapplehunter
             ({ pkgs, ... }: {
-              nixpkgs.overlays = [ self.overlays.default ];
               pineapplehunter.config-name = "${name}-${system}";
               home.username = name;
               home.homeDirectory =

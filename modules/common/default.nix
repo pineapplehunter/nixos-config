@@ -23,7 +23,9 @@
 
   nixpkgs = {
     overlays = [
-      self.overlays.default
+      self.overlays.stableOverlay
+      self.overlays.fileOverlay
+      self.overlays.removeDesktopOverlay
       inputs.nix-xilinx.overlay
     ];
     config.allowUnfree = true;

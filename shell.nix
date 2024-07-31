@@ -52,7 +52,7 @@ let
     ${getExe switch-script} "$@" || git checkout HEAD -- flake.lock
   '';
   home-build-script = writeShellScriptBin "home-build" ''
-    home-manager build --flake ".#$HOME_CONFIG_NAME" "$@"
+    nom build ".#homeConfigurations.$HOME_CONFIG_NAME.activationPackage" "$@"
     exit $?
   '';
   home-diff-script = writeShellScriptBin "home-diff" ''

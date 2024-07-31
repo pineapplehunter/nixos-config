@@ -37,13 +37,17 @@
       nixosModules = import ./modules;
       homeModules = (import ./home { inherit self nixpkgs inputs; }).modules;
       homeConfigurations = (import ./home { inherit self nixpkgs inputs; }).configurations;
-      overlays.default = import ./overlay { inherit lib inputs self; };
+      overlays = import ./overlay { inherit lib inputs self; };
       nixosConfigurations = import ./machines { inherit lib inputs self; };
     } // (inputs.flake-utils.lib.eachDefaultSystem (system:
       let
         legacyPackages = import nixpkgs {
           inherit system;
-          overlays = [ self.overlays.default ];
+          overlays = [
+            self.overlays.stableOverlay
+            self.overlays.fileOverlay
+            self.overlays.removeDesktopOverlay
+          ];
         };
         callPackage = lib.callPackageWith (legacyPackages // self.packages.${system});
       in

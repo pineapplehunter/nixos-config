@@ -130,4 +130,5 @@ in
 
   home.stateVersion = config.home.version.release;
   programs.home-manager.enable = true;
+  news.display = "silent";
 }
