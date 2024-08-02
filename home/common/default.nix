@@ -105,6 +105,7 @@ in
       nix-tree
       nixpkgs-fmt
       nix-output-monitor
+      difftastic
       starship
       npins;
     julia = (if isDarwin then pkgs.julia-bin else pkgs.julia);

@@ -17,7 +17,7 @@ let
       # "fprintd-tod"
       # "blender"
       "julia"
-      "snapper"
+      # "snapper"
     ];
 
   fileOverlay = final: prev:
