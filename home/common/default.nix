@@ -107,8 +107,9 @@ in
       nix-output-monitor
       difftastic
       starship
+      zellij
       npins;
-    julia = (if isDarwin then pkgs.julia-bin else pkgs.julia);
+    julia = (if isLinux then pkgs.julia else pkgs.julia-bin);
   };
 
   home.file.".julia/config/startup.jl".text = ''
