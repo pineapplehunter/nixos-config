@@ -35,5 +35,5 @@
       }
     ];
   };
-  window.decorations = "None";
+  # window.decorations = "None";
 }

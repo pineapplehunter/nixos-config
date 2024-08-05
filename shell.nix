@@ -9,22 +9,22 @@
 
 let
   inherit (lib) getExe;
-  build-script = writeShellScriptBin "build" ''
+  os-build-script = writeShellScriptBin "os-build" ''
     nom build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
     exit $?
   '';
-  diff-script = writeShellScriptBin "diff" ''
+  os-diff-script = writeShellScriptBin "os-diff" ''
     set -e
-    ${getExe build-script} "$@"
+    ${getExe os-build-script} "$@"
     if [ $(readlink -f ./result) = $(readlink -f /run/current-system) ]; then
       echo All packges up to date!
       exit 1
     fi
     nvd diff /run/current-system ./result
   '';
-  switch-script = writeShellScriptBin "switch" ''
+  os-switch-script = writeShellScriptBin "os-switch" ''
     set -e
-    ${getExe diff-script} "$@"
+    ${getExe os-diff-script} "$@"
     function yes_or_no {
         while true; do
             read -p "$* [y/n]: " yn
@@ -39,17 +39,17 @@ let
     git commit -am "$(date -Iminutes)" || true
     sudo nixos-rebuild switch --flake ".#$HOST" "$@"
   '';
-  boot-script = writeShellScriptBin "boot" ''
+  os-boot-script = writeShellScriptBin "os-boot" ''
     set -e
-    ${getExe build-script} "$@"
+    ${getExe os-build-script} "$@"
     sudo echo switching boot
     sudo nixos-rebuild boot --flake ".#$HOST"
   '';
-  update-script = writeShellScriptBin "update" ''
+  os-update-script = writeShellScriptBin "os-update" ''
     set -e
     git pull
     nix flake update
-    ${getExe switch-script} "$@" || git checkout HEAD -- flake.lock
+    ${getExe os-switch-script} "$@" || git checkout HEAD -- flake.lock
   '';
   home-build-script = writeShellScriptBin "home-build" ''
     nom build ".#homeConfigurations.$HOME_CONFIG_NAME.activationPackage" "$@"
@@ -91,11 +91,11 @@ in
 mkShellNoCC {
   name = "nixos-config";
   packages = [
-    build-script
-    switch-script
-    diff-script
-    update-script
-    boot-script
+    os-build-script
+    os-switch-script
+    os-diff-script
+    os-update-script
+    os-boot-script
 
     home-build-script
     home-diff-script
