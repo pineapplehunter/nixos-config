@@ -1,8 +1,7 @@
 { pkgs, lib, config, ... }:
 let
   inherit (lib.attrsets) optionalAttrs;
-  inherit (pkgs.stdenv) isLinux isDarwin;
-  empty-package = pkgs.runCommand "empty-package" { } "mkdir $out";
+  inherit (pkgs.stdenv) isLinux;
 in
 {
   programs = {
@@ -46,7 +45,9 @@ in
 
     alacritty = {
       enable = true;
-      package = empty-package;
+      package = pkgs.writeShellScriptBin "alacritty" ''
+        ${lib.getExe pkgs.nixgl.nixGLMesa} ${lib.getExe pkgs.alacritty} "$@"
+      '';
       settings = import ./alacritty-config.nix;
     };
 

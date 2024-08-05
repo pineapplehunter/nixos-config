@@ -27,6 +27,11 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixgl = {
+      url = "github:nix-community/nixGL";
+      inputs.flake-utils.follows = "flake-utils";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
@@ -44,6 +49,8 @@
         legacyPackages = import nixpkgs {
           inherit system;
           overlays = [
+            inputs.nixgl.overlays.default
+            inputs.nix-xilinx.overlay
             self.overlays.stableOverlay
             self.overlays.fileOverlay
             self.overlays.removeDesktopOverlay
