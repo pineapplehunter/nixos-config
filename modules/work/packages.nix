@@ -1,9 +1,10 @@
 { pkgs, ... }:
 {
-  environment.systemPackages = with pkgs; [
-    webcord
-    slack
-    super-productivity
-    jdk
-  ];
+  environment.systemPackages = builtins.attrValues {
+    inherit (pkgs)
+      webcord
+      slack
+      super-productivity
+      unityhub;
+  };
 }
