@@ -15,14 +15,19 @@
       super-productivity
       android-studio
       orca-slicer
-      lean4;
-    ventoy-custom = (pkgs.ventoy-full.override {
-      defaultGuiType = "gtk3";
-      withGtk3 = true;
-    });
+      lean4
+      ;
+    ventoy-custom = (
+      pkgs.ventoy-full.override {
+        defaultGuiType = "gtk3";
+        withGtk3 = true;
+      }
+    );
     inherit (pkgs.jetbrains) idea-ultimate;
     inherit (pkgs.wineWow64Packages) wayland;
-    flatpak-chrome-alias = (pkgs.writeShellScriptBin "flatpak-chrome-alias" "flatpak run com.google.Chrome $@");
+    flatpak-chrome-alias = (
+      pkgs.writeShellScriptBin "flatpak-chrome-alias" "flatpak run com.google.Chrome $@"
+    );
     inherit (self.packages.${pkgs.system}) nautilus-thumbnailer-stl;
   };
 }

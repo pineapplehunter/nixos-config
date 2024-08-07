@@ -1,8 +1,9 @@
-{ pkgs
-, lib
-, config
-, inputs
-, ...
+{
+  pkgs,
+  lib,
+  config,
+  inputs,
+  ...
 }:
 let
   ibus-engines-patch = inputs.nixpkgs-pineapplehunter.legacyPackages.x86_64-linux.ibus-engines;

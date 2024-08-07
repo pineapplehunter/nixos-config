@@ -1,9 +1,9 @@
-{ writeShellScriptBin
-, confirm ? false
-, lib
-, nix
-, jq
-,
+{
+  writeShellScriptBin,
+  confirm ? false,
+  lib,
+  nix,
+  jq,
 }:
 let
   name = "not-found-exec-shell";

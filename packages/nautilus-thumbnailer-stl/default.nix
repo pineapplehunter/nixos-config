@@ -1,11 +1,11 @@
-{ lib
-, fetchFromGitHub
-, stdenv
-, perl
-, povray
-, stl2pov
-, makeWrapper
-,
+{
+  lib,
+  fetchFromGitHub,
+  stdenv,
+  perl,
+  povray,
+  stl2pov,
+  makeWrapper,
 }:
 
 stdenv.mkDerivation {

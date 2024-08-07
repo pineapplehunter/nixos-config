@@ -2,11 +2,12 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config
-, pkgs
-, lib
-, self
-, ...
+{
+  config,
+  pkgs,
+  lib,
+  self,
+  ...
 }:
 
 {
@@ -222,8 +223,18 @@
       inherit (self.homeModules) common shogo riken;
     in
     {
-      shogo = { imports = [ common shogo ]; };
-      riken = { imports = [ common riken ]; };
+      shogo = {
+        imports = [
+          common
+          shogo
+        ];
+      };
+      riken = {
+        imports = [
+          common
+          riken
+        ];
+      };
     };
 
   environment.systemPackages = with pkgs; [

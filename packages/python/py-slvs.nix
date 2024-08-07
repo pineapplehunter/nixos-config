@@ -1,10 +1,10 @@
-{ buildPythonPackage
-, fetchFromGitHub
-, cmake
-, ninja
-, scikit-build
-, swig
-,
+{
+  buildPythonPackage,
+  fetchFromGitHub,
+  cmake,
+  ninja,
+  scikit-build,
+  swig,
 }:
 buildPythonPackage rec {
   pname = "py-slvs";

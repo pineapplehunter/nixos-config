@@ -5,6 +5,7 @@
       webcord
       slack
       super-productivity
-      unityhub;
+      unityhub
+      ;
   };
 }

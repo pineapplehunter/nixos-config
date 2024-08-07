@@ -2,10 +2,11 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config
-, pkgs
-, self
-, ...
+{
+  config,
+  pkgs,
+  self,
+  ...
 }:
 
 {
@@ -90,7 +91,12 @@
       inherit (self.homeModules) common shogo;
     in
     {
-      shogo = { imports = [ common shogo ]; };
+      shogo = {
+        imports = [
+          common
+          shogo
+        ];
+      };
     };
 
   system.stateVersion = config.system.nixos.release;
