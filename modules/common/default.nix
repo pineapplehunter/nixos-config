@@ -44,9 +44,9 @@
       trusted-users =
         let
           normalUsers = lib.filterAttrs (_: user: user.isNormalUser) config.users.users;
-          normalUserNames = lib.mapAttrsToList (username: _: username) normalUsers;
+          normalUserNames = builtins.attrNames normalUsers;
         in
-        lib.mkDefault normalUserNames;
+        normalUserNames;
       substituters = [
         "https://cache.nixos.org/"
         "https://pineapplehunter.cachix.org"
