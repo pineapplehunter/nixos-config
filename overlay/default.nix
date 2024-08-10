@@ -16,7 +16,7 @@ let
       # "fprintd"
       # "fprintd-tod"
       # "blender"
-      "julia"
+      # "julia"
       # "snapper"
     ];
 
