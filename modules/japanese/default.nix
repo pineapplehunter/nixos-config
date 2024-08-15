@@ -6,7 +6,7 @@
   ...
 }:
 let
-  ibus-engines-patch = inputs.nixpkgs-pineapplehunter.legacyPackages.x86_64-linux.ibus-engines;
+  ibus-engines-patch = inputs.nixpkgs-pineapplehunter-mozc.legacyPackages.x86_64-linux.ibus-engines;
 in
 {
   fonts.packages = with pkgs; [

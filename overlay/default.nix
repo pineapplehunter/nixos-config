@@ -29,6 +29,7 @@ let
       ./curl-http3.nix
       ./flatpak.nix
       ./android-studio.nix
+      ./super-productivity.nix
     ]) // {
       gnome = prev.gnome // (importOverlayFileList [
         ./gnome-settings-daemon.nix

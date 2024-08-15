@@ -4,7 +4,8 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-24.05";
-    nixpkgs-pineapplehunter.url = "github:pineapplehunter/nixpkgs?ref=mozc-updates";
+    nixpkgs-pineapplehunter-mozc.url = "github:pineapplehunter/nixpkgs?ref=mozc-updates";
+    nixpkgs-pineapplehunter-supprod.url = "github:pineapplehunter/nixpkgs?ref=supprod-from-source";
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";

@@ -408,7 +408,7 @@
         "url": "https://github.com/NixOS/nixpkgs/archive/5daf0514482af3f97abaefc78a6606365c9108e2.tar.gz"
       }
     },
-    "nixpkgs-pineapplehunter": {
+    "nixpkgs-pineapplehunter-mozc": {
       "locked": {
         "lastModified": 1716550873,
         "narHash": "sha256-5wHZ40a7nWcYPlIO2VYIw7CgeZc+hnpzaxRpWOo2H2M=",
@@ -420,6 +420,22 @@
       "original": {
         "owner": "pineapplehunter",
         "ref": "mozc-updates",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-pineapplehunter-supprod": {
+      "locked": {
+        "lastModified": 1723740735,
+        "narHash": "sha256-WtNfiRgDvXAaOuCuK502LT6NCp61jRYsABNk8NKua0o=",
+        "owner": "pineapplehunter",
+        "repo": "nixpkgs",
+        "rev": "fb5549825aa2815753313eee1d4b8f46cbffdac7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pineapplehunter",
+        "ref": "supprod-from-source",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -528,7 +544,8 @@
         "nixgl": "nixgl",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
-        "nixpkgs-pineapplehunter": "nixpkgs-pineapplehunter",
+        "nixpkgs-pineapplehunter-mozc": "nixpkgs-pineapplehunter-mozc",
+        "nixpkgs-pineapplehunter-supprod": "nixpkgs-pineapplehunter-supprod",
         "nixpkgs-stable": "nixpkgs-stable",
         "sops-nix": "sops-nix",
         "systems": "systems",
