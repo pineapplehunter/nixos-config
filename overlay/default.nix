@@ -13,11 +13,8 @@ let
         lib.attrsets.mergeAttrsList (map makeStable packages);
     in
     makeStableList [
-      # "fprintd"
-      # "fprintd-tod"
-      # "blender"
-      # "julia"
-      # "snapper"
+      "cargo-tauri"
+      "cargo-outdated"
     ];
 
   fileOverlay = final: prev:
