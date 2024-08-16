@@ -46,7 +46,7 @@ in
     alacritty = {
       enable = true;
       package = pkgs.writeShellScriptBin "alacritty" ''
-        ${lib.getExe pkgs.nixgl.nixGLMesa} ${lib.getExe pkgs.alacritty} "$@"
+        XCURSOR_THEME=Adwaita ${lib.getExe pkgs.nixgl.nixGLMesa} ${lib.getExe pkgs.alacritty} "$@"
       '';
       settings = import ./alacritty-config.nix;
     };
