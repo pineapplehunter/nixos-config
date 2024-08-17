@@ -15,7 +15,7 @@ in
       settings = {
         theme = "github-light";
         editor = {
-          line-number = "relative";
+          # line-number = "relative";
           lsp.display-messages = true;
         };
         keys = {
