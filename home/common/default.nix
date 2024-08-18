@@ -16,13 +16,20 @@ in
         theme = "github-light";
         editor = {
           # line-number = "relative";
-          lsp.display-messages = true;
+          lsp = {
+            display-messages = true;
+            display-inlay-hints = true;
+          };
+          auto-save = {
+            focus-lost = true;
+            after-delay.enable = true;
+          };
         };
-        keys = {
-          normal.esc = [ "collapse_selection" ":w" ];
-          select.esc = [ "collapse_selection" "normal_mode" ":w" ];
-          insert.esc = [ "normal_mode" ":w" ];
-        };
+        # keys = {
+        #   normal.esc = [ "collapse_selection" ":w" ];
+        #   select.esc = [ "collapse_selection" "normal_mode" ":w" ];
+        #   insert.esc = [ "normal_mode" ":w" ];
+        # };
       };
       themes = {
         github-light = builtins.fromTOML (builtins.readFile ./helix-github-light.toml);
