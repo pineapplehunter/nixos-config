@@ -130,7 +130,9 @@ in
       difftastic
       starship
       zellij
-      npins;
+      npins
+      rustup
+      ;
     julia = (if isLinux then pkgs.julia else pkgs.julia-bin);
   };
 

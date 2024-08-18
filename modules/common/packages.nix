@@ -41,7 +41,6 @@
     vscode
     dconf-editor
     # lang
-    rustup
     python3
     stdenv.cc
     # other
