@@ -13,7 +13,7 @@ let
         lib.attrsets.mergeAttrsList (map makeStable packages);
     in
     makeStableList [
-      "cargo-tauri"
+      # "cargo-tauri"
       "cargo-outdated"
     ];
 
