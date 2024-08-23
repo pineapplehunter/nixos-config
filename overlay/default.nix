@@ -14,7 +14,7 @@ let
     in
     makeStableList [
       # "cargo-tauri"
-      "cargo-outdated"
+      # "cargo-outdated"
     ];
 
   fileOverlay = final: prev:
