@@ -132,6 +132,7 @@ in
       zellij
       npins
       rustup
+      elan
       ;
     julia = (if isLinux then pkgs.julia else pkgs.julia-bin);
   };

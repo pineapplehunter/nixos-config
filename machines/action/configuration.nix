@@ -106,14 +106,13 @@
     '';
   };
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  # boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.binfmt.emulatedSystems = [
     "aarch64-linux"
     "riscv64-linux"
   ];
   boot.supportedFilesystems = [
     "btrfs"
-    "bcachefs"
   ];
 
   # https://discourse.nixos.org/t/suspend-then-hibernate/31953/5
