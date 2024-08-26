@@ -1,55 +1,62 @@
 { pkgs, ... }:
 {
-
   # system wide packages
-  environment.systemPackages = with pkgs; [
-    # tools
-    vim
-    unzipNLS
-    git
-    nix-index
-    htop
-    nethogs
-    github-cli
-    du-dust
-    btrfs-assistant
-    ripgrep
-    nix-output-monitor
-    gnome-tweaks
-    nixd
-    (symlinkJoin {
-      name = "cachix";
-      version = cachix.version;
-      paths = [ cachix.bin ];
-    })
-    nixpkgs-fmt
-    tree
-    fd
-    btop
-    jq
-    file
-    wl-clipboard
-    binutils
-    nix-tree
-    sops
-    gnumake
-    ncdu
-    niv
-    npins
-    alacritty
-    # editor
-    vscode
-    dconf-editor
-    # lang
-    python3
-    stdenv.cc
-    # other
-    udisks2
-    gnome-firmware
-    usbutils
-    pciutils
-    papers
-  ];
+  environment.systemPackages = builtins.attrValues {
+    inherit (pkgs)
+      # tools
+      vim
+      unzipNLS
+      git
+      nix-index
+      htop
+      nethogs
+      github-cli
+      du-dust
+      btrfs-assistant
+      ripgrep
+      nix-output-monitor
+      gnome-tweaks
+      nixd
+      nixpkgs-fmt
+      tree
+      fd
+      btop
+      jq
+      file
+      wl-clipboard
+      binutils
+      nix-tree
+      sops
+      gnumake
+      ncdu
+      niv
+      npins
+      alacritty
+      # editor
+      vscode
+      dconf-editor
+      # lang
+      python3
+      # other
+      udisks2
+      gnome-firmware
+      usbutils
+      pciutils
+      papers;
+    ventoy-custom = (
+      pkgs.ventoy-full.override {
+        defaultGuiType = "gtk3";
+        withGtk3 = true;
+      }
+    );
+    cachix-no-man =
+      (pkgs.symlinkJoin {
+        name = "cachix";
+        version = pkgs.cachix.version;
+        paths = [ pkgs.cachix.bin ];
+      });
+    inherit (pkgs.stdenv) cc;
+  };
 
   environment.gnome.excludePackages = [ pkgs.evince ];
 }

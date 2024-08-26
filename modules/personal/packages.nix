@@ -17,12 +17,6 @@
       orca-slicer
       lean4
       ;
-    ventoy-custom = (
-      pkgs.ventoy-full.override {
-        defaultGuiType = "gtk3";
-        withGtk3 = true;
-      }
-    );
     inherit (pkgs.jetbrains) idea-ultimate;
     inherit (pkgs.wineWow64Packages) wayland;
     flatpak-chrome-alias = (

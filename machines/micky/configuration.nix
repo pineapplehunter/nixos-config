@@ -87,7 +87,7 @@
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
-  services.desktopManager.plasma6.enable = true;
+  # services.desktopManager.plasma6.enable = true;
   # security.pam.services = {
   #   gdm.fprintAuth = false;
   #   login.fprintAuth = false;
@@ -119,7 +119,7 @@
     };
   };
 
-  programs.seahorse.enable = false;
+  # programs.seahorse.enable = false;
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
