@@ -42,7 +42,9 @@
       gnome-firmware
       usbutils
       pciutils
-      papers;
+      papers
+      openssl
+      ;
     ventoy-custom = (
       pkgs.ventoy-full.override {
         defaultGuiType = "gtk3";
