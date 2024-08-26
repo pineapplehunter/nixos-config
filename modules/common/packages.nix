@@ -18,6 +18,7 @@
       gnome-tweaks
       nixd
       nixpkgs-fmt
+      nixfmt-rfc-style
       tree
       fd
       btop
