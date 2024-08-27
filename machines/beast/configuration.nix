@@ -43,19 +43,6 @@
         hostName = "daniel-njlab-pc";
         speedFactor = 2;
       }
-      {
-        system = "x86_64-linux,aarch64-linux,riscv64-linux";
-        maxJobs = 8;
-        supportedFeatures = [
-          "big-parallel"
-          "kvm"
-          "benchmark"
-          "nixos-test"
-        ];
-        sshUser = "shogo";
-        hostName = "action";
-        speedFactor = 1;
-      }
     ];
     extraOptions = ''
       builders-use-substitutes = true
