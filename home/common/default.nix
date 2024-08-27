@@ -133,6 +133,7 @@ in
       npins
       rustup
       elan
+      bash-language-server
       ;
     julia = (if isLinux then pkgs.julia else pkgs.julia-bin);
   };
