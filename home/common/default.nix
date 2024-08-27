@@ -1,4 +1,9 @@
-{ pkgs, lib, config, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 let
   inherit (lib.attrsets) optionalAttrs;
   inherit (pkgs.stdenv) isLinux;
@@ -7,6 +12,27 @@ in
   programs = {
     helix = {
       enable = true;
+      package =
+        let
+          inherit (pkgs) helix makeWrapper;
+          binPath = builtins.attrValues {
+            inherit (pkgs)
+              rust-analyzer
+              bash-language-server
+              nixd
+              clang-tools
+              ;
+          };
+        in
+        pkgs.symlinkJoin {
+          name = "helix-wrapped";
+          paths = [ helix ];
+          nativeBuildInputs = [ makeWrapper ];
+          postBuild = ''
+            wrapProgram "$out/bin/hx" \
+              --suffix PATH : "${lib.makeBinPath binPath}"
+          '';
+        };
       defaultEditor = true;
       languages = import ./helix-languages.nix {
         inherit lib;
@@ -101,18 +127,20 @@ in
 
     gnome-shell = {
       enable = isLinux;
-      extensions = map (p: { package = p; }) (with pkgs.gnomeExtensions; [
-        tailscale-status
-        runcat
-        caffeine
-        appindicator
-        just-perfection
-        syncthing-indicator
-        tiling-assistant
-        night-theme-switcher
-      ]);
+      extensions = map (p: { package = p; }) (
+        with pkgs.gnomeExtensions;
+        [
+          tailscale-status
+          runcat
+          caffeine
+          appindicator
+          just-perfection
+          syncthing-indicator
+          tiling-assistant
+          night-theme-switcher
+        ]
+      );
     };
-
 
     yazi.enable = true;
 
@@ -133,7 +161,6 @@ in
       npins
       rustup
       elan
-      bash-language-server
       ;
     julia = (if isLinux then pkgs.julia else pkgs.julia-bin);
   };
@@ -146,13 +173,15 @@ in
     end
   '';
 
-  home.shellAliases = {
-    ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";
-    la = "ls -a";
-    ll = "ls -lha";
-  } // optionalAttrs isLinux {
-    ip = "ip -c";
-  };
+  home.shellAliases =
+    {
+      ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";
+      la = "ls -a";
+      ll = "ls -lha";
+    }
+    // optionalAttrs isLinux {
+      ip = "ip -c";
+    };
 
   services.syncthing.enable = pkgs.stdenv.isLinux;
 

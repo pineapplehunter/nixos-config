@@ -16,7 +16,6 @@
       ripgrep
       nix-output-monitor
       gnome-tweaks
-      nixd
       nixpkgs-fmt
       nixfmt-rfc-style
       tree
