@@ -147,6 +147,8 @@ in
     gh.enable = true;
 
     fd.enable = true;
+
+    ripgrep.enable = true;
   };
 
   home.packages = builtins.attrValues {
@@ -163,6 +165,7 @@ in
       npins
       rustup
       elan
+      ncdu
       ;
     julia = (if isLinux then pkgs.julia else pkgs.julia-bin);
   };
