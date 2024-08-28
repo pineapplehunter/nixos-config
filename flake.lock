@@ -329,11 +329,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1724576544,
-        "narHash": "sha256-bDoOSfR7wB7zI6Ttd2qy//pRQGKeuMsMc6uLJtLdnuo=",
+        "lastModified": 1724835715,
+        "narHash": "sha256-6QWQ7VuJ2Xun1X65JgsN7+YIb/9fYMXNpuN9Ok83LrQ=",
         "owner": "doronbehar",
         "repo": "nix-xilinx",
-        "rev": "5f6380ca5fa772db27c7f3501f8cb823b86aaa91",
+        "rev": "5d7d6ba31b1c170e9c0a22dd7a4710f9af2cda3e",
         "type": "gitlab"
       },
       "original": {
@@ -424,6 +424,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-pineapplehunter-mqttx-cli": {
+      "locked": {
+        "lastModified": 1724826368,
+        "narHash": "sha256-lXMCJ6KxpNSCQ1ZWgCWC1m6F3+vDSE1hoqV6kFP0KX0=",
+        "owner": "pineapplehunter",
+        "repo": "nixpkgs",
+        "rev": "a310cc0f8fa0e4c32d6f88b0604375d5b42de570",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pineapplehunter",
+        "ref": "mqttx-cli",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-pineapplehunter-supprod": {
       "locked": {
         "lastModified": 1724425016,
@@ -442,11 +458,11 @@
     },
     "nixpkgs-stable": {
       "locked": {
-        "lastModified": 1724316499,
-        "narHash": "sha256-Qb9MhKBUTCfWg/wqqaxt89Xfi6qTD3XpTzQ9eXi3JmE=",
+        "lastModified": 1724727824,
+        "narHash": "sha256-0XH9MJk54imJm+RHOLTUJ7e+ponLW00tw5ke4MTVa1Y=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "797f7dc49e0bc7fab4b57c021cdf68f595e47841",
+        "rev": "36bae45077667aff5720e5b3f1a5458f51cf0776",
         "type": "github"
       },
       "original": {
@@ -545,6 +561,7 @@
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
         "nixpkgs-pineapplehunter-mozc": "nixpkgs-pineapplehunter-mozc",
+        "nixpkgs-pineapplehunter-mqttx-cli": "nixpkgs-pineapplehunter-mqttx-cli",
         "nixpkgs-pineapplehunter-supprod": "nixpkgs-pineapplehunter-supprod",
         "nixpkgs-stable": "nixpkgs-stable",
         "sops-nix": "sops-nix",

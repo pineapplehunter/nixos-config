@@ -37,7 +37,7 @@ rec {
   };
   configurations = lib.attrsets.mergeAttrsList [
     (multiConfig "shogo" [ modules.shogo ])
-    (multiConfig "shogotr" [ modules.shogo ])
-    (multiConfig "riken" [ modules.shogo ])
+    (multiConfig "shogotr" [ modules.riken ])
+    (multiConfig "riken" [ modules.riken ])
   ];
 }
