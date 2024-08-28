@@ -145,6 +145,8 @@ in
     yazi.enable = true;
 
     gh.enable = true;
+
+    fd.enable = true;
   };
 
   home.packages = builtins.attrValues {
