@@ -77,7 +77,7 @@ in
     starship.enable = true;
 
     alacritty = {
-      enable = true;
+      enable = isLinux;
       package =
         let
           inherit (pkgs) alacritty makeWrapper nixgl;
