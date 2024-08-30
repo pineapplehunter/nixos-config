@@ -20,6 +20,7 @@ in
               rust-analyzer
               bash-language-server
               nixd
+              nixfmt-rfc-style
               clang-tools
               ;
           };
@@ -158,6 +159,7 @@ in
       htop
       nix-tree
       nixpkgs-fmt
+      nixfmt-rfc-style
       nix-output-monitor
       difftastic
       starship
