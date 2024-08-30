@@ -410,11 +410,11 @@
     },
     "nixpkgs-pineapplehunter-mozc": {
       "locked": {
-        "lastModified": 1725026886,
-        "narHash": "sha256-+m9g14ndOUrtA6BQGmtCDGNDUYauED9dQ516jsqxdzs=",
+        "lastModified": 1725028004,
+        "narHash": "sha256-9WUcRXQJHb+iIrcb9gxidr0cfrgRRKv3elc/ZWYEvRw=",
         "owner": "pineapplehunter",
         "repo": "nixpkgs",
-        "rev": "40c65b8259b5dbb3de831a67bf489eb27f959617",
+        "rev": "e3ab57b25ccc1a6d6ce7f1e72b97cd831ef72cf3",
         "type": "github"
       },
       "original": {
