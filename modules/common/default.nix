@@ -86,6 +86,12 @@
     type = "ibus";
   };
 
+  qt = {
+    enable = true;
+    platformTheme = "gnome";
+    style = "adwaita";
+  };
+
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
