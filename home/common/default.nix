@@ -23,6 +23,7 @@ in
               nixfmt-rfc-style
               clang-tools
               tinymist
+              texlab
               ;
             inherit (pkgs.nodePackages) typescript-language-server;
             python-env = pkgs.python3.withPackages (
