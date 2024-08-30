@@ -22,9 +22,14 @@ in
               nixd
               nixfmt-rfc-style
               clang-tools
+              tinymist
               ;
+            inherit (pkgs.nodePackages) typescript-language-server;
             python-env = pkgs.python3.withPackages (
-              ps: builtins.attrValues { inherit (ps) python-lsp-server; }
+              ps:
+              builtins.attrValues {
+                inherit (ps) python-lsp-server;
+              }
             );
           };
         in
