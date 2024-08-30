@@ -23,6 +23,9 @@ in
               nixfmt-rfc-style
               clang-tools
               ;
+            python-env = pkgs.python3.withPackages (
+              ps: builtins.attrValues { inherit (ps) python-lsp-server; }
+            );
           };
         in
         pkgs.symlinkJoin {
