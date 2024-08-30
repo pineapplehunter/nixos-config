@@ -41,7 +41,7 @@
         ];
         sshUser = "shogo";
         hostName = "daniel-njlab-pc";
-        speedFactor = 2;
+        speedFactor = 1;
       }
     ];
     extraOptions = ''
