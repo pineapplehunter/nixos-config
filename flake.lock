@@ -329,11 +329,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1725008519,
-        "narHash": "sha256-rwTcMktC84fXtEmYpxKqm2Pas1f3g0hqvgxWc6CkMDc=",
+        "lastModified": 1725094912,
+        "narHash": "sha256-bOGgLP8YRGJxmZbQH0rZoVRznjp5cbd21J8dmSSFh30=",
         "owner": "doronbehar",
         "repo": "nix-xilinx",
-        "rev": "c2dc236bd00f01ea35353f9fe5dbfc711d7c85fa",
+        "rev": "31cf45547e08d66a5f00cc07e101307a17343028",
         "type": "gitlab"
       },
       "original": {
@@ -408,6 +408,22 @@
         "url": "https://github.com/NixOS/nixpkgs/archive/5daf0514482af3f97abaefc78a6606365c9108e2.tar.gz"
       }
     },
+    "nixpkgs-pineapplehunter-gitify": {
+      "locked": {
+        "lastModified": 1725166709,
+        "narHash": "sha256-yrHI9iyInHUkXNK9NubRVIHugMRs+evlBY01FvS9L2A=",
+        "owner": "pineapplehunter",
+        "repo": "nixpkgs",
+        "rev": "c7cc034473fc58d3968347683598624e2601ab67",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pineapplehunter",
+        "ref": "gitify",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-pineapplehunter-mozc": {
       "locked": {
         "lastModified": 1725028004,
@@ -458,11 +474,11 @@
     },
     "nixpkgs-stable": {
       "locked": {
-        "lastModified": 1724855419,
-        "narHash": "sha256-WXHSyOF4nBX0cvHN3DfmEMcLOVdKH6tnMk9FQ8wTNRc=",
+        "lastModified": 1725001927,
+        "narHash": "sha256-eV+63gK0Mp7ygCR0Oy4yIYSNcum2VQwnZamHxYTNi+M=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "ae2fc9e0e42caaf3f068c1bfdc11c71734125e06",
+        "rev": "6e99f2a27d600612004fbd2c3282d614bfee6421",
         "type": "github"
       },
       "original": {
@@ -560,6 +576,7 @@
         "nixgl": "nixgl",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
+        "nixpkgs-pineapplehunter-gitify": "nixpkgs-pineapplehunter-gitify",
         "nixpkgs-pineapplehunter-mozc": "nixpkgs-pineapplehunter-mozc",
         "nixpkgs-pineapplehunter-mqttx-cli": "nixpkgs-pineapplehunter-mqttx-cli",
         "nixpkgs-pineapplehunter-supprod": "nixpkgs-pineapplehunter-supprod",

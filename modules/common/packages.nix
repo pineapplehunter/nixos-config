@@ -44,6 +44,7 @@
       pciutils
       papers
       openssl
+      gitify
       ;
     ventoy-custom = (
       pkgs.ventoy-full.override {

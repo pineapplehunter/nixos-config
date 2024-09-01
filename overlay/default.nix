@@ -32,6 +32,7 @@ let
       ./android-studio.nix
       ./super-productivity.nix
       ./mqttx-cli.nix
+      ./gitify.nix
     ]) // {
       gnome = prev.gnome // (importOverlayFileList [
         ./gnome-settings-daemon.nix
