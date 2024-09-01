@@ -3,7 +3,6 @@
   confirm ? false,
   lib,
   nix,
-  jq,
 }:
 let
   name = "not-found-exec-shell";
