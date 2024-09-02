@@ -1,3 +1,6 @@
-{ inputs, ... }: {
-  inherit (inputs.nixpkgs-pineapplehunter-supprod.legacyPackages.x86_64-linux) super-productivity;
+{ inputs, final, ... }:
+{
+  super-productivity = final.callPackage (
+    inputs.nixpkgs-pineapplehunter-supprod + /pkgs/by-name/su/super-productivity/package.nix
+  ) { };
 }

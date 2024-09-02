@@ -1,4 +1,4 @@
-{ inputs, prev, ... }:
+{ inputs, final, ... }:
 {
-  inherit (inputs.nixpkgs-pineapplehunter-gitify.legacyPackages.${prev.system}) gitify;
+  gitify = final.callPackage (inputs.nixpkgs-pineapplehunter-gitify + /pkgs/by-name/gi/gitify/package.nix) {};
 }

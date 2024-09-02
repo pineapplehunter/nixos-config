@@ -1,4 +1,6 @@
-{ inputs, prev, ... }:
+{ inputs, final, ... }:
 {
-  mqttx-cli = inputs.nixpkgs-pineapplehunter-mqttx-cli.legacyPackages.${prev.system}.mqttx-cli;
+  mqttx-cli = final.callPackage (
+    inputs.nixpkgs-pineapplehunter-mqttx-cli + /pkgs/by-name/mq/mqttx-cli/package.nix
+  ) { };
 }
