@@ -25,6 +25,7 @@ in
               tinymist
               texlab
               marksman
+              buf-language-server
               ;
             inherit (pkgs.nodePackages) typescript-language-server;
             python-env = pkgs.python3.withPackages (
