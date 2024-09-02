@@ -179,6 +179,13 @@ in
       ncdu
       ;
     julia = (if isLinux then pkgs.julia else pkgs.julia-bin);
+    cachix-no-man = (
+      pkgs.symlinkJoin {
+        name = "cachix";
+        version = pkgs.cachix.version;
+        paths = [ pkgs.cachix.bin ];
+      }
+    );
   };
 
   home.file.".julia/config/startup.jl".text = ''
