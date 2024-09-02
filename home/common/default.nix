@@ -24,6 +24,7 @@ in
               clang-tools
               tinymist
               texlab
+              marksman
               ;
             inherit (pkgs.nodePackages) typescript-language-server;
             python-env = pkgs.python3.withPackages (
