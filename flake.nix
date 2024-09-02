@@ -65,7 +65,7 @@
         callPackage = lib.callPackageWith (legacyPackages // self.packages.${system});
       in
       {
-        formatter = legacyPackages.treefmt;
+        formatter = legacyPackages.treefmt2;
         packages = {
           nixos-artwork-wallpaper = callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
           stl2pov = callPackage ./packages/stl2pov { };
