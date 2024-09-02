@@ -1,10 +1,11 @@
-{ lib
-, writeShellScriptBin
-, nix-output-monitor
-, nvd
-, nixos-rebuild
-, mkShellNoCC
-, home-manager
+{
+  lib,
+  writeShellScriptBin,
+  nix-output-monitor,
+  nvd,
+  nixos-rebuild,
+  mkShellNoCC,
+  home-manager,
 }:
 
 let

@@ -52,12 +52,13 @@
         withGtk3 = true;
       }
     );
-    cachix-no-man =
-      (pkgs.symlinkJoin {
+    cachix-no-man = (
+      pkgs.symlinkJoin {
         name = "cachix";
         version = pkgs.cachix.version;
         paths = [ pkgs.cachix.bin ];
-      });
+      }
+    );
     inherit (pkgs.stdenv) cc;
   };
 

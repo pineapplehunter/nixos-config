@@ -37,7 +37,8 @@
     };
   };
 
-  outputs = { self, nixpkgs, ... }@inputs:
+  outputs =
+    { self, nixpkgs, ... }@inputs:
     let
       inherit (nixpkgs) lib;
     in
@@ -47,7 +48,9 @@
       homeConfigurations = (import ./home { inherit self nixpkgs inputs; }).configurations;
       overlays = import ./overlay { inherit lib inputs self; };
       nixosConfigurations = import ./machines { inherit lib inputs self; };
-    } // (inputs.flake-utils.lib.eachDefaultSystem (system:
+    }
+    // (inputs.flake-utils.lib.eachDefaultSystem (
+      system:
       let
         legacyPackages = import nixpkgs {
           inherit system;
@@ -62,7 +65,7 @@
         callPackage = lib.callPackageWith (legacyPackages // self.packages.${system});
       in
       {
-        formatter = legacyPackages.nixpkgs-fmt;
+        formatter = legacyPackages.treefmt;
         packages = {
           nixos-artwork-wallpaper = callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
           stl2pov = callPackage ./packages/stl2pov { };

@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 {
-  home.packages = with pkgs;[
+  home.packages = with pkgs; [
     sqlx-cli
     cargo-tauri
     cargo-expand

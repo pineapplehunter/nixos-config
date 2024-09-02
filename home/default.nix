@@ -1,31 +1,40 @@
-{ self
-, nixpkgs
-, inputs
+{
+  self,
+  nixpkgs,
+  inputs,
 }:
 let
   inherit (nixpkgs) lib;
-  multiConfig = name: mods: lib.attrsets.mergeAttrsList (
-    map
-      (system: {
+  multiConfig =
+    name: mods:
+    lib.attrsets.mergeAttrsList (
+      map (system: {
         "${name}-${system}" = inputs.home-manager.lib.homeManagerConfiguration {
           pkgs = self.legacyPackages.${system};
           modules = mods ++ [
             self.homeModules.common
             self.homeModules.pineapplehunter
-            ({ pkgs, ... }: {
-              pineapplehunter.config-name = "${name}-${system}";
-              home.username = name;
-              home.homeDirectory =
-                let
-                  inherit (pkgs.stdenv) isLinux isDarwin;
-                in
-                if isLinux then "/home/${name}"
-                else if isDarwin then "/Users/${name}" else throw "os not supported";
-            })
+            (
+              { pkgs, ... }:
+              {
+                pineapplehunter.config-name = "${name}-${system}";
+                home.username = name;
+                home.homeDirectory =
+                  let
+                    inherit (pkgs.stdenv) isLinux isDarwin;
+                  in
+                  if isLinux then
+                    "/home/${name}"
+                  else if isDarwin then
+                    "/Users/${name}"
+                  else
+                    throw "os not supported";
+              }
+            )
           ];
         };
-      })
-      (import inputs.systems));
+      }) (import inputs.systems)
+    );
 
 in
 rec {
