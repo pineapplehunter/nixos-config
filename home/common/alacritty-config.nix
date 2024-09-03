@@ -36,4 +36,5 @@
     ];
   };
   # window.decorations = "None";
+  font.normal.family = "DejaVuSansM Nerd Font Mono";
 }
