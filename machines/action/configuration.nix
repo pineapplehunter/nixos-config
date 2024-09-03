@@ -18,7 +18,7 @@
 
   # nixpkgs.flake.source = lib.mkForce null;
   nix = {
-    package = pkgs.nixVersions.latest;
+    # package = pkgs.nixVersions.latest;
     distributedBuilds = true;
     buildMachines = [
       {

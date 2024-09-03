@@ -2,6 +2,9 @@
 
 {
   home.packages = builtins.attrValues {
-    inherit (pkgs) mqttx-cli;
+    inherit (pkgs)
+      mqttx-cli
+      buf
+      ;
   };
 }
