@@ -46,10 +46,7 @@ in
           '';
         };
       defaultEditor = true;
-      languages = import ./helix-languages.nix {
-        inherit lib;
-        inherit (pkgs) nixd;
-      };
+      languages = import ./helix-languages.nix { };
       settings = {
         theme = "github-light";
         editor = {

@@ -9,5 +9,13 @@
         "nil"
       ];
     }
+    {
+      name = "markdown";
+      soft-wrap.enable = true;
+    }
+    {
+      name = "latex";
+      soft-wrap.enable = true;
+    }
   ];
 }
