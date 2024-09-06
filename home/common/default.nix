@@ -226,6 +226,7 @@ in
       rustup
       elan
       ncdu
+      ueberzugpp
       ;
     julia = (if isLinux then pkgs.julia else pkgs.julia-bin);
     cachix-no-man = (
