@@ -151,7 +151,21 @@ in
       );
     };
 
-    yazi.enable = true;
+    yazi = {
+      enable = true;
+      keymap = {
+        manager.prepend_keymap = [
+          {
+            on = [
+              "g"
+              "e"
+            ];
+            run = "arrow 99999999";
+            desc = "Move cursor to the bottom";
+          }
+        ];
+      };
+    };
 
     gh.enable = true;
 
