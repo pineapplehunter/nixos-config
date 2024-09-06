@@ -175,10 +175,17 @@ in
         ];
         PATH = builtins.attrValues {
           inherit (pkgs)
-            fd
             ripgrep
-            zoxide
+            file
             ueberzugpp
+            ffmpegthumbnailer
+            imagemagick
+            fzf
+            fd
+            chafa
+            zoxide
+            p7zip
+            jq
             ;
         };
       };
