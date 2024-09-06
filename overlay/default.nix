@@ -140,13 +140,17 @@ let
         packageName:
         let
           package = prev.${packageName};
-          inherit (package) pname version;
+          inherit (package) version;
+          pname = "${package.pname}-no-desktop";
         in
         {
           ${packageName} =
-            final.runCommand "${pname}-no-desktop-${version}"
+            final.runCommand "${pname}-${version}"
               {
-                passthru.original = package;
+                passthru = {
+                  inherit version pname;
+                  original = package;
+                };
                 preferLocalBuild = true;
               }
               ''

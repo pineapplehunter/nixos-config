@@ -7,44 +7,58 @@
 let
   inherit (lib.attrsets) optionalAttrs;
   inherit (pkgs.stdenv) isLinux;
+  wrapPackage =
+    {
+      package,
+      programNames ? [ package.pname ],
+      PATH ? null,
+    }:
+    let
+      binPath = lib.optionalString (PATH != null) lib.makeBinPath PATH;
+    in
+    pkgs.symlinkJoin {
+      name = "${if package ? pname then package.pname else package.name}-wrapped";
+      paths = [ package ];
+      nativeBuildInputs = [ pkgs.makeWrapper ];
+      postBuild = lib.strings.concatStrings (
+        map (p: ''
+          wrapProgram "$out/bin/${p}" \
+            --suffix PATH : "${binPath}"
+        '') programNames
+      );
+    };
 in
 {
   programs = {
     helix = {
       enable = true;
-      package =
-        let
-          inherit (pkgs) helix makeWrapper;
-          binPath = builtins.attrValues {
-            inherit (pkgs)
-              rust-analyzer
-              bash-language-server
-              nixd
-              nixfmt-rfc-style
-              clang-tools
-              tinymist
-              texlab
-              marksman
-              buf-language-server
-              ;
-            inherit (pkgs.nodePackages) typescript-language-server;
-            python-env = pkgs.python3.withPackages (
-              ps:
-              builtins.attrValues {
-                inherit (ps) python-lsp-server;
-              }
-            );
-          };
-        in
-        pkgs.symlinkJoin {
-          name = "helix-wrapped";
-          paths = [ helix ];
-          nativeBuildInputs = [ makeWrapper ];
-          postBuild = ''
-            wrapProgram "$out/bin/hx" \
-              --suffix PATH : "${lib.makeBinPath binPath}"
-          '';
+      package = wrapPackage {
+        package = pkgs.helix;
+        programNames = [ "hx" ];
+        PATH = builtins.attrValues {
+          inherit (pkgs)
+            rust-analyzer
+            bash-language-server
+            nixd
+            nixfmt-rfc-style
+            clang-tools
+            tinymist
+            texlab
+            marksman
+            buf-language-server
+            ;
+          inherit (pkgs.nodePackages) typescript-language-server;
+          python-env = pkgs.python3.withPackages (
+            ps:
+            builtins.attrValues {
+              inherit (ps)
+                python-lsp-server
+                black
+                ;
+            }
+          );
         };
+      };
       defaultEditor = true;
       languages = import ./helix-languages.nix { };
       settings = {
@@ -153,6 +167,21 @@ in
 
     yazi = {
       enable = true;
+      package = wrapPackage {
+        package = pkgs.yazi;
+        programNames = [
+          "yazi"
+          "ya"
+        ];
+        PATH = builtins.attrValues {
+          inherit (pkgs)
+            fd
+            ripgrep
+            zoxide
+            ueberzugpp
+            ;
+        };
+      };
       keymap = {
         manager.prepend_keymap = [
           {
