@@ -47,6 +47,12 @@ let
               --replace-fail "add_document_portal_args (bwrap, app_id, &doc_mount_path);" ""
           '';
       });
+      yazi-unwrapped = prev.yazi-unwrapped.overrideAttrs (old: {
+        postPatch = (old.postPatch or "") + ''
+          substituteInPlace yazi-adapter/src/ueberzug.rs \
+            --replace-fail '&adapter.to_string()' '"chafa","--no-opencv"'
+        '';
+      });
       android-studio = prev.android-studio.overrideAttrs {
         preferLocalBuild = true;
       };

@@ -29,6 +29,8 @@ let
     };
 in
 {
+  imports = [ ../programs/kitty.nix ];
+
   programs = {
     helix = {
       enable = true;
@@ -93,7 +95,7 @@ in
     bat = {
       enable = true;
       config = {
-        theme = "GitHub";
+        theme = "Github";
       };
     };
 
@@ -177,7 +179,7 @@ in
           inherit (pkgs)
             ripgrep
             file
-            ueberzugpp
+            # ueberzugpp
             ffmpegthumbnailer
             imagemagick
             fzf
@@ -208,6 +210,14 @@ in
     fd.enable = true;
 
     ripgrep.enable = true;
+
+    kitty' = {
+      enable = true;
+      theme = "GitHub";
+      settings = {
+        confirm_os_window_close = 0;
+      };
+    };
   };
 
   home.packages = builtins.attrValues {
@@ -226,8 +236,9 @@ in
       rustup
       elan
       ncdu
-      ueberzugpp
+      # ueberzugpp
       ;
+    ueberzugppDebug = pkgs.enableDebugging pkgs.ueberzugpp;
     julia = (if isLinux then pkgs.julia else pkgs.julia-bin);
     cachix-no-man = (
       pkgs.symlinkJoin {
