@@ -202,9 +202,16 @@ in
               ${optionalString (cfg.font.size != null) "font_size ${toString cfg.font.size}"}
             '')
 
-            (optionalString (cfg.theme != null) ''
-              include ${pkgs.kitty-themes}/share/kitty-themes/${cfg.theme}.conf
-            '')
+            (optionalString (cfg.theme != null) (
+              let
+                theme-file =
+                  pkgs.runCommand "kitty-theme-file-${cfg.theme}.conf" { }
+                    ''cp "${pkgs.kitty-themes}/share/kitty-themes/themes/${cfg.theme}.conf" $out'';
+              in
+              ''
+                include ${theme-file}
+              ''
+            ))
 
             ''
               # Shell integration is sourced and configured manually

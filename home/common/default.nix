@@ -95,7 +95,7 @@ in
     bat = {
       enable = true;
       config = {
-        theme = "Github";
+        theme = "GitHub";
       };
     };
 
@@ -213,7 +213,7 @@ in
 
     kitty' = {
       enable = true;
-      theme = "GitHub";
+      theme = "Github";
       settings = {
         confirm_os_window_close = 0;
       };
