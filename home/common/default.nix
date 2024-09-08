@@ -213,7 +213,7 @@ in
 
     kitty' = {
       enable = true;
-      theme = "Github";
+      theme = "CLRS";
       settings = {
         confirm_os_window_close = 0;
       };
