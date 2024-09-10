@@ -294,7 +294,7 @@ in
     end
   '';
 
-  xdg.configFile."helix/runtime/queries".source = pkgs.runCommand "kconfig-query" {} ''
+  xdg.configFile."helix/runtime/queries/kconfig".source = pkgs.runCommand "kconfig-query" { } ''
     ln -s ${kconfig-tree-sitter}/queries $out
   '';
 
