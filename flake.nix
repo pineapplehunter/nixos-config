@@ -35,6 +35,10 @@
       inputs.flake-utils.follows = "flake-utils";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -65,7 +69,11 @@
         callPackage = lib.callPackageWith (legacyPackages // self.packages.${system});
       in
       {
-        formatter = legacyPackages.treefmt2;
+        formatter =
+          (inputs.treefmt-nix.lib.evalModule legacyPackages {
+            projectRootFile = "flake.nix";
+            programs.nixfmt.enable = true;
+          }).config.build.wrapper;
         packages = {
           nixos-artwork-wallpaper = callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
           stl2pov = callPackage ./packages/stl2pov { };
