@@ -38,13 +38,6 @@ in
 {
   imports = [
     ../programs/kitty.nix
-    # (
-    #   { config }:let cfg = config.programs.helix;
-    #   in
-    #   {
-    #     config.
-    #   }
-    # )
   ];
 
   programs = {
@@ -284,6 +277,9 @@ in
         paths = [ pkgs.cachix.bin ];
       }
     );
+    cachix-push = pkgs.writeShellScriptBin "cachix-push" ''
+      nix path-info ./result -r -sS --json | jq ".[] | select(.closureSize < ''${$2:=500000000}) | .path" -r | cachix push $1
+    '';
   };
 
   home.file.".julia/config/startup.jl".text = ''
