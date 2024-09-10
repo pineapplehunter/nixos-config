@@ -1,4 +1,4 @@
-{ ... }:
+{ kconfig-tree-sitter, ... }:
 {
   language-server.nixd.command = "nixd";
   language = [
@@ -31,10 +31,7 @@
   grammar = [
     {
       name = "kconfig";
-      source = {
-        git = "https://github.com/tree-sitter-grammars/tree-sitter-kconfig";
-        rev = "486fea71f61ad9f3fd4072a118402e97fe88d26c";
-      };
+      source.file = kconfig-tree-sitter;
     }
   ];
 }

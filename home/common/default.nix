@@ -27,9 +27,25 @@ let
         '') programNames
       );
     };
+
+  kconfig-tree-sitter = pkgs.fetchFromGitHub {
+    owner = "tree-sitter-grammars";
+    repo = "tree-sitter-kconfig";
+    rev = "486fea71f61ad9f3fd4072a118402e97fe88d26c";
+    hash = "sha256-a3uTjtA4KQ8KxEmpva2oHcqp8EwbI5+h9U+qoPSgDd4=";
+  };
 in
 {
-  imports = [ ../programs/kitty.nix ];
+  imports = [
+    ../programs/kitty.nix
+    # (
+    #   { config }:let cfg = config.programs.helix;
+    #   in
+    #   {
+    #     config.
+    #   }
+    # )
+  ];
 
   programs = {
     helix = {
@@ -62,7 +78,7 @@ in
         };
       };
       defaultEditor = true;
-      languages = import ./helix-languages.nix { };
+      languages = import ./helix-languages.nix { inherit kconfig-tree-sitter; };
       settings = {
         theme = "github-light";
         editor = {
@@ -277,6 +293,8 @@ in
       @warn e
     end
   '';
+
+  xdg.configFile."helix/runtime/queries".source = kconfig-tree-sitter;
 
   home.shellAliases =
     {
