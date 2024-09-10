@@ -21,7 +21,11 @@
       name = "kconfig";
       scope = "source.kconfig";
       comment-token = "#";
-      file-types = [ { glob = "Kconfig"; } ];
+      file-types = [
+        { glob = "Kconfig"; }
+        { glob = "kconfig"; }
+      ];
+      injection-regex = "kconfig";
     }
   ];
   grammar = [
