@@ -278,7 +278,7 @@ in
       }
     );
     cachix-push = pkgs.writeShellScriptBin "cachix-push" ''
-      nix path-info ./result -rS --json | jq ".[] | select(.closureSize < ''${2:=500000000}) | .path" -r | cachix push ''${1:=pineapplehunter}
+      nix path-info ./result -rS --json | jq ".[] | select(.closureSize < ''${2:-500000000}) | .path" -r | cachix push ''${1:-pineapplehunter}
     '';
   };
 
