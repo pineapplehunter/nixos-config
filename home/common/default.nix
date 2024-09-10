@@ -191,18 +191,21 @@ in
             ;
         };
       };
-      keymap = {
-        manager.prepend_keymap = [
-          {
-            on = [
-              "g"
-              "e"
-            ];
-            run = "arrow 99999999";
-            desc = "Move cursor to the bottom";
-          }
-        ];
-      };
+      keymap.manager.prepend_keymap = [
+        {
+          on = [
+            "g"
+            "e"
+          ];
+          run = "arrow 99999999";
+          desc = "Move cursor to the bottom";
+        }
+      ];
+      settings.manager.ratio = [
+        1
+        2
+        3
+      ];
     };
 
     gh.enable = true;
