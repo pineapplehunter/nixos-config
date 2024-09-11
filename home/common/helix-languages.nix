@@ -31,7 +31,7 @@
   grammar = [
     {
       name = "kconfig";
-      source.file = kconfig-tree-sitter;
+      source.path = kconfig-tree-sitter;
     }
   ];
 }
