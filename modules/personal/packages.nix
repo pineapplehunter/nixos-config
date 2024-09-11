@@ -9,8 +9,6 @@
       jujutsu
       vivado
       nixos-artwork-wallpaper
-      ghidra
-      winetricks
       jdk
       super-productivity
       android-studio
@@ -18,7 +16,6 @@
       lean4
       ;
     inherit (pkgs.jetbrains) idea-ultimate;
-    inherit (pkgs.wineWow64Packages) wayland;
     flatpak-chrome-alias = (
       pkgs.writeShellScriptBin "flatpak-chrome-alias" "flatpak run com.google.Chrome $@"
     );
