@@ -266,7 +266,7 @@ in
       rustup
       elan
       ncdu
-      # ueberzugpp
+      nix-update
       ;
     ueberzugppDebug = pkgs.enableDebugging pkgs.ueberzugpp;
     julia = (if isLinux then pkgs.julia else pkgs.julia-bin);
