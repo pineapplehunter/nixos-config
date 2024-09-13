@@ -119,11 +119,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1726036828,
-        "narHash": "sha256-ZQHbpyti0jcAKnwQY1lwmooecLmSG6wX1JakQ/eZNeM=",
+        "lastModified": 1726142087,
+        "narHash": "sha256-uT4TRd3PgreUD5sJaNioVfMemdyWFLoPHqN4AFszGmw=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "8a1671642826633586d12ac3158e463c7a50a112",
+        "rev": "da8406a6ff556b86dc368e96ca8bd81b2704a91a",
         "type": "github"
       },
       "original": {
@@ -329,11 +329,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1725958918,
-        "narHash": "sha256-TGmcjc/JsoedOQmEIJ41oRQDn1+uQ33tgqGgyshQ798=",
+        "lastModified": 1726131711,
+        "narHash": "sha256-B9Ndho6FxbVcDGptFVxJANocTGxyBMtAy9XUHXcUWy4=",
         "owner": "doronbehar",
         "repo": "nix-xilinx",
-        "rev": "bae9551acde1b11569a52294d9b05bf2b82cddfe",
+        "rev": "a147a39c50ecec99a6563224f1821359c103dfda",
         "type": "gitlab"
       },
       "original": {
@@ -426,11 +426,11 @@
     },
     "nixpkgs-pineapplehunter-mozc": {
       "locked": {
-        "lastModified": 1725028004,
-        "narHash": "sha256-9WUcRXQJHb+iIrcb9gxidr0cfrgRRKv3elc/ZWYEvRw=",
+        "lastModified": 1726202821,
+        "narHash": "sha256-6AoQ5i9xYse2uGLSoBOunvto+AIH/JQQ97t+MQSUUEE=",
         "owner": "pineapplehunter",
         "repo": "nixpkgs",
-        "rev": "e3ab57b25ccc1a6d6ce7f1e72b97cd831ef72cf3",
+        "rev": "c99947bd69f932d6a3c7f93745be0ccef0e5e551",
         "type": "github"
       },
       "original": {
