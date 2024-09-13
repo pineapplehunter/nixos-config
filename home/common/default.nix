@@ -43,32 +43,28 @@ in
   programs = {
     helix = {
       enable = true;
-      package = wrapPackage {
-        package = pkgs.helix;
-        programNames = [ "hx" ];
-        PATH = builtins.attrValues {
-          inherit (pkgs)
-            rust-analyzer
-            bash-language-server
-            nixd
-            nixfmt-rfc-style
-            clang-tools
-            tinymist
-            texlab
-            marksman
-            buf-language-server
-            ;
-          inherit (pkgs.nodePackages) typescript-language-server;
-          python-env = pkgs.python3.withPackages (
-            ps:
-            builtins.attrValues {
-              inherit (ps)
-                python-lsp-server
-                black
-                ;
-            }
-          );
-        };
+      extraPackages = builtins.attrValues {
+        inherit (pkgs)
+          rust-analyzer
+          bash-language-server
+          nixd
+          nixfmt-rfc-style
+          clang-tools
+          tinymist
+          texlab
+          marksman
+          buf-language-server
+          ;
+        inherit (pkgs.nodePackages) typescript-language-server;
+        python-env = pkgs.python3.withPackages (
+          ps:
+          builtins.attrValues {
+            inherit (ps)
+              python-lsp-server
+              black
+              ;
+          }
+        );
       };
       defaultEditor = true;
       languages = import ./helix-languages.nix { inherit kconfig-tree-sitter; };
@@ -146,6 +142,18 @@ in
       enable = true;
       dotDir = ".config/zsh";
       autosuggestion.enable = true;
+      history = {
+        append = true;
+        ignoreAllDups = true;
+        ignoreDups = true;
+        ignoreSpace = true;
+        path = "${config.xdg.cacheHome}/zsh/zsh_history";
+      };
+      historySubstringSearch = {
+        enable = true;
+        searchUpKey = "$terminfo[kcuu1]";
+        searchDownKey = "$terminfo[kcud1]";
+      };
     };
 
     fish.enable = true;
@@ -188,7 +196,6 @@ in
           inherit (pkgs)
             ripgrep
             file
-            # ueberzugpp
             ffmpegthumbnailer
             imagemagick
             fzf
@@ -248,6 +255,8 @@ in
         font_size = "10.0";
       };
     };
+
+    fzf.enable = true;
   };
 
   home.packages = builtins.attrValues {
@@ -268,7 +277,6 @@ in
       ncdu
       nix-update
       ;
-    ueberzugppDebug = pkgs.enableDebugging pkgs.ueberzugpp;
     julia = (if isLinux then pkgs.julia else pkgs.julia-bin);
     cachix-no-man = (
       pkgs.symlinkJoin {
@@ -278,11 +286,13 @@ in
       }
     );
     cachix-push = pkgs.writeShellScriptBin "cachix-push" ''
-      nix path-info ./result -rS --json | jq ".[] | select(.closureSize < ''${2:-500000000}) | .path" -r | cachix push ''${1:-pineapplehunter}
+      SIZE=$(echo ''${2:-500M} | numfmt --from iec)
+      CACHE=''${1:-pineapplehunter}
+      nix path-info ./result -rS --json | jq "to_entries | sort_by(.value.closureSize) | .[] | select(.value.closureSize < $SIZE) | .key" -r | cachix push $CACHE
     '';
   };
 
-  home.file.".julia/config/startup.jl".text = ''
+  xdg.dataFile."julia/config/startup.jl".text = ''
     try
       using OhMyREPL
     catch e
@@ -299,10 +309,17 @@ in
       ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";
       la = "ls -a";
       ll = "ls -lha";
+      wget = "wget --hsts-file=${config.xdg.dataHome}";
     }
     // optionalAttrs isLinux {
       ip = "ip -c";
     };
+
+  home.sessionVariables = {
+    RUSTUP_HOME = "${config.xdg.dataHome}/rustup";
+    CARGO_HOME = "${config.xdg.dataHome}/cargo";
+    JULIA_DEPOT_PATH = "${config.xdg.dataHome}/julia:$JULIA_DEPOT_PATH";
+  };
 
   services.syncthing.enable = pkgs.stdenv.isLinux;
 

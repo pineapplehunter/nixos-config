@@ -18,7 +18,7 @@
 
   # nixpkgs.flake.source = lib.mkForce null;
   nix = {
-    # package = pkgs.nixVersions.latest;
+    package = pkgs.nixVersions.latest;
     distributedBuilds = true;
     buildMachines = [
       {
@@ -248,5 +248,6 @@
   # networking.firewall.enable = false;
 
   system.stateVersion = config.system.nixos.release;
+  system.switch.enableNg = true;
 
 }
