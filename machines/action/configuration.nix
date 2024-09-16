@@ -236,10 +236,12 @@
       };
     };
 
-  environment.systemPackages = with pkgs; [
-    win-virtio
-    win-spice
-  ];
+  environment.systemPackages = builtins.attrValues {
+    inherit (pkgs)
+      win-virtio
+      win-spice
+      ;
+  };
 
   # Open ports in the firewall.
   networking.firewall.allowedTCPPorts = [ 8080 ];

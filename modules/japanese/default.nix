@@ -9,21 +9,27 @@ let
   ibus-engines-patch = inputs.nixpkgs-pineapplehunter-mozc.legacyPackages.x86_64-linux.ibus-engines;
 in
 {
-  fonts.packages = with pkgs; [
-    noto-fonts-cjk-sans
-    noto-fonts-cjk-serif
-  ];
+  fonts.packages = builtins.attrValues {
+    inherit (pkgs)
+      noto-fonts-cjk-sans
+      noto-fonts-cjk-serif
+      ;
+  };
 
   # japanese input managers
   i18n.inputMethod = {
-    ibus.engines = with pkgs.ibus-engines; [
-      mozc-ut
-      anthy
-    ];
-    fcitx5.addons = with pkgs; [
-      fcitx5-mozc
-      fcitx5-anthy
-    ];
+    ibus.engines = builtins.attrValues {
+      inherit (pkgs.ibus-engines)
+        mozc-ut
+        anthy
+        ;
+    };
+    fcitx5.addons = builtins.attrValues {
+      inherit (pkgs)
+        fcitx5-mozc
+        fcitx5-anthy
+        ;
+    };
   };
 
   # Configure keymap in X11

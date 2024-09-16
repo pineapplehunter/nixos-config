@@ -133,10 +133,6 @@
         "networkmanager"
         "wheel"
       ];
-      # packages = with pkgs; [
-      # firefox
-      #  thunderbird
-      # ];
       # shell = pkgs.nushell;
     };
   };
