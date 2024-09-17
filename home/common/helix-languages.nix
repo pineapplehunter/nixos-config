@@ -1,6 +1,9 @@
 { kconfig-tree-sitter, ... }:
 {
-  language-server.nixd.command = "nixd";
+  language-server = {
+    nixd.command = "nixd";
+    ruff-lsp.command = "ruff-lsp";
+  };
   language = [
     {
       name = "nix";
@@ -26,6 +29,13 @@
         { glob = "kconfig"; }
       ];
       injection-regex = "kconfig";
+    }
+    {
+      name = "python";
+      language-servers = [
+        "ruff-lsp"
+        "pylsp"
+      ];
     }
   ];
   grammar = [
