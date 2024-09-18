@@ -54,17 +54,10 @@ in
           texlab
           marksman
           buf-language-server
+              ruff
+              ruff-lsp
           ;
         inherit (pkgs.nodePackages) typescript-language-server;
-        python-env = pkgs.python3.withPackages (
-          ps:
-          builtins.attrValues {
-            inherit (ps)
-              python-lsp-server
-              black
-              ;
-          }
-        );
       };
       defaultEditor = true;
       languages = import ./helix-languages.nix { inherit kconfig-tree-sitter; };
