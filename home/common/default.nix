@@ -54,8 +54,8 @@ in
           texlab
           marksman
           buf-language-server
-              ruff
-              ruff-lsp
+          ruff
+          ruff-lsp
           ;
         inherit (pkgs.nodePackages) typescript-language-server;
       };

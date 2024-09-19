@@ -84,9 +84,7 @@ let
       mozcdic-ut-neologd = mozc-package "mo" "mozcdic-ut-neologd";
       mozcdic-ut-skk-jisyo = mozc-package "mo" "mozcdic-ut-skk-jisyo";
       ibus-engines = prev.ibus-engines // rec {
-        mozc = final.callPackage (
-          inputs.nixpkgs-pineapplehunter-mozc + /pkgs/tools/inputmethods/ibus-engines/ibus-mozc/default.nix
-        ) { };
+        mozc = mozc-package "mo" "mozc";
         mozc-ut = mozc.override {
           dictionaries = builtins.attrValues {
             inherit (final)
