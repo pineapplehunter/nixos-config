@@ -11,9 +11,7 @@
       nixos-artwork-wallpaper
       jdk
       super-productivity
-      android-studio
       orca-slicer
-      lean4
       ;
     inherit (pkgs.jetbrains) idea-ultimate;
     flatpak-chrome-alias = (
