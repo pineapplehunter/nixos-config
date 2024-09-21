@@ -31,7 +31,6 @@
       ncdu
       niv
       npins
-      alacritty
       # editor
       vscode
       dconf-editor

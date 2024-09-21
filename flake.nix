@@ -45,7 +45,7 @@
         "x86_64-linux"
         "aarch64-linux"
         "x86_64-darwin"
-        "aarch64-linux"
+        "aarch64-darwin"
       ];
       pkgsForSystem =
         system:
@@ -91,5 +91,6 @@
       devShells = eachSystem (system: {
         default = (pkgsForSystem system).callPackage ./shell.nix { };
       });
+      legacyPackages = eachSystem pkgsForSystem;
     };
 }
