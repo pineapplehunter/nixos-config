@@ -1,69 +1,82 @@
 {
   pkgs,
   lib,
+  self,
   config,
-  inputs,
   ...
 }:
 let
-  ibus-engines-patch = inputs.nixpkgs-pineapplehunter-mozc.legacyPackages.x86_64-linux.ibus-engines;
+  cfg = config.pineapplehunter.japanese;
 in
 {
-  fonts.packages = builtins.attrValues {
-    inherit (pkgs)
-      noto-fonts-cjk-sans
-      noto-fonts-cjk-serif
-      ;
-  };
-
-  # japanese input managers
-  i18n.inputMethod = {
-    ibus.engines = builtins.attrValues {
-      inherit (pkgs.ibus-engines)
-        mozc-ut
-        anthy
-        ;
+  options.pineapplehunter.japanese = {
+    enable = lib.mkEnableOption "add japanese things";
+    fonts.enable = lib.mkEnableOption "japanese font packages" // {
+      default = true;
     };
-    fcitx5.addons = builtins.attrValues {
-      inherit (pkgs)
-        fcitx5-mozc
-        fcitx5-anthy
-        ;
+    inputMethod.enable = lib.mkEnableOption "japanese input methods" // {
+      default = true;
+    };
+    environment.enable = lib.mkEnableOption "japanese environment variables" // {
+      default = true;
     };
   };
 
-  # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = lib.mkDefault "jp";
-    variant = lib.mkDefault "";
-  };
-
-  # Configure console keymap
-  console.keyMap = lib.mkDefault "jp106";
-
-  # Select internationalisation properties.
-  i18n.defaultLocale = lib.mkDefault "ja_JP.UTF-8";
-
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = lib.mkDefault "ja_JP.UTF-8";
-    LC_IDENTIFICATION = lib.mkDefault "ja_JP.UTF-8";
-    LC_MEASUREMENT = lib.mkDefault "ja_JP.UTF-8";
-    LC_MONETARY = lib.mkDefault "ja_JP.UTF-8";
-    LC_NAME = lib.mkDefault "ja_JP.UTF-8";
-    LC_NUMERIC = lib.mkDefault "ja_JP.UTF-8";
-    LC_PAPER = lib.mkDefault "ja_JP.UTF-8";
-    LC_TELEPHONE = lib.mkDefault "ja_JP.UTF-8";
-    LC_TIME = lib.mkDefault "ja_JP.UTF-8";
-  };
-
-  nixpkgs.overlays =
-    let
-      ibus-mozc-overlay = final: prev: {
-        ibus-engines = prev.ibus-engines // {
-          inherit (ibus-engines-patch) mozc mozc-ut;
+  config = lib.mkIf cfg.enable (
+    lib.mkMerge [
+      (lib.mkIf cfg.fonts.enable {
+        fonts.packages = builtins.attrValues {
+          inherit (pkgs)
+            noto-fonts-cjk-sans
+            noto-fonts-cjk-serif
+            ;
         };
-      };
-      cfg = config.i18n.inputMethod;
-    in
-    lib.optionals (cfg.enable && cfg.type == "ibus") [ ibus-mozc-overlay ];
+      })
+
+      (lib.mkIf cfg.inputMethod.enable {
+        # japanese input managers
+        nixpkgs.overlays = [ self.overlays.mozc ];
+        i18n.inputMethod = {
+          ibus.engines = builtins.attrValues {
+            inherit (pkgs.ibus-engines)
+              mozc-ut
+              anthy
+              ;
+          };
+          fcitx5.addons = builtins.attrValues {
+            inherit (pkgs)
+              fcitx5-mozc
+              fcitx5-anthy
+              ;
+          };
+        };
+      })
+
+      (lib.mkIf cfg.environment.enable {
+        # Configure keymap in X11
+        services.xserver.xkb = {
+          layout = lib.mkDefault "jp";
+          variant = lib.mkDefault "";
+        };
+
+        # Configure console keymap
+        console.keyMap = lib.mkDefault "jp106";
+
+        # Select internationalisation properties.
+        i18n.defaultLocale = lib.mkDefault "ja_JP.UTF-8";
+
+        i18n.extraLocaleSettings = {
+          LC_ADDRESS = lib.mkDefault "ja_JP.UTF-8";
+          LC_IDENTIFICATION = lib.mkDefault "ja_JP.UTF-8";
+          LC_MEASUREMENT = lib.mkDefault "ja_JP.UTF-8";
+          LC_MONETARY = lib.mkDefault "ja_JP.UTF-8";
+          LC_NAME = lib.mkDefault "ja_JP.UTF-8";
+          LC_NUMERIC = lib.mkDefault "ja_JP.UTF-8";
+          LC_PAPER = lib.mkDefault "ja_JP.UTF-8";
+          LC_TELEPHONE = lib.mkDefault "ja_JP.UTF-8";
+          LC_TIME = lib.mkDefault "ja_JP.UTF-8";
+        };
+      })
+    ]
+  );
 }

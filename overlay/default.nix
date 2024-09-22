@@ -1,90 +1,123 @@
 {
   inputs,
-  self,
   lib,
+  ...
 }:
-let
-  stableOverlay =
+rec {
+  default = lib.composeManyExtensions [
+    stable
+    custom
+    mozc
+    removeDesktop
+  ];
+
+  removeDesktop =
     final: prev:
     let
-      makeStable =
-        packageName:
+      removeDesktopEntry =
+        package:
         let
-          stablePkgs = inputs.nixpkgs-stable.legacyPackages.${final.system};
+          inherit (package) version;
+          pname = "${package.pname}-no-desktop";
         in
-        {
-          ${packageName} = stablePkgs.${packageName};
-        };
-      makeStableList = packages: lib.attrsets.mergeAttrsList (map makeStable packages);
+        final.runCommand "${pname}-${version}"
+          {
+            passthru = {
+              inherit version pname;
+              original = package;
+            };
+            preferLocalBuild = true;
+          }
+          ''
+            cp -srL --no-preserve=mode ${package} $out
+            rm -rfv $out/share/applications
+          '';
     in
-    makeStableList [
-      # "cargo-tauri"
-      # "cargo-outdated"
-      "elan"
-    ];
+    {
+      julia = removeDesktopEntry prev.julia;
+      btop = removeDesktopEntry prev.btop;
+      htop = removeDesktopEntry prev.htop;
+      helix = removeDesktopEntry prev.helix;
+      yazi = removeDesktopEntry prev.yazi;
+    };
 
-  fileOverlay =
+  custom = final: prev: {
+
+    curl-http3 = prev.curl.override {
+      http3Support = true;
+      openssl = prev.quictls;
+    };
+    flatpak = prev.flatpak.overrideAttrs (old: {
+      postPatch =
+        (old.postPatch or "")
+        + ''
+          substituteInPlace common/flatpak-run.c \
+            --replace-fail "if (!sandboxed && !(flags & FLATPAK_RUN_FLAG_NO_DOCUMENTS_PORTAL))" "" \
+            --replace-fail "add_document_portal_args (bwrap, app_id, &doc_mount_path);" ""
+        '';
+    });
+    android-studio = prev.android-studio.overrideAttrs {
+      preferLocalBuild = true;
+    };
+    super-productivity = final.callPackage (
+      inputs.nixpkgs-pineapplehunter-supprod + /pkgs/by-name/su/super-productivity/package.nix
+    ) { };
+    mqttx-cli = final.callPackage (
+      inputs.nixpkgs-pineapplehunter-mqttx-cli + /pkgs/by-name/mq/mqttx-cli/package.nix
+    ) { };
+    gitify = final.callPackage (
+      inputs.nixpkgs-pineapplehunter-gitify + /pkgs/by-name/gi/gitify/package.nix
+    ) { };
+    gnome = prev.gnome // {
+      gnome-settings-daemon = prev.gnome.gnome-settings-daemon.overrideAttrs (old: {
+        # I don't need sleep notifications!
+        postPatch =
+          (old.postPatch or "")
+          + ''
+            substituteInPlace plugins/power/gsd-power-manager.c \
+              --replace-fail "show_sleep_warning (manager);" "if(0) show_sleep_warning (manager);"
+          '';
+      });
+    };
+  };
+
+  stable =
+    final: prev:
+    let
+      pkgs-stable = import inputs.nixpkgs-stable { inherit (final) system; };
+    in
+    {
+      inherit (pkgs-stable) ;
+    };
+
+  mozc =
     final: prev:
     let
       mozc-package =
-        shard: name:
+        name:
+        let
+          shard = builtins.substring 0 2 name;
+        in
         final.callPackage (
           inputs.nixpkgs-pineapplehunter-mozc + /pkgs/by-name/${shard}/${name}/package.nix
         ) { };
     in
     {
-      inherit (self.packages.${final.system}) nixos-artwork-wallpaper;
-      curl-http3 = prev.curl.override {
-        http3Support = true;
-        openssl = prev.quictls;
-      };
-      flatpak = prev.flatpak.overrideAttrs (old: {
-        postPatch =
-          (old.postPatch or "")
-          + ''
-            substituteInPlace common/flatpak-run.c \
-              --replace-fail "if (!sandboxed && !(flags & FLATPAK_RUN_FLAG_NO_DOCUMENTS_PORTAL))" "" \
-              --replace-fail "add_document_portal_args (bwrap, app_id, &doc_mount_path);" ""
-          '';
-      });
-      android-studio = prev.android-studio.overrideAttrs {
-        preferLocalBuild = true;
-      };
-      super-productivity = final.callPackage (
-        inputs.nixpkgs-pineapplehunter-supprod + /pkgs/by-name/su/super-productivity/package.nix
-      ) { };
-      mqttx-cli = final.callPackage (
-        inputs.nixpkgs-pineapplehunter-mqttx-cli + /pkgs/by-name/mq/mqttx-cli/package.nix
-      ) { };
-      gitify = final.callPackage (
-        inputs.nixpkgs-pineapplehunter-gitify + /pkgs/by-name/gi/gitify/package.nix
-      ) { };
-      gnome = prev.gnome // {
-        gnome-settings-daemon = prev.gnome.gnome-settings-daemon.overrideAttrs (old: {
-          # I don't need sleep notifications!
-          postPatch =
-            (old.postPatch or "")
-            + ''
-              substituteInPlace plugins/power/gsd-power-manager.c \
-                --replace-fail "show_sleep_warning (manager);" "if(0) show_sleep_warning (manager);"
-            '';
-        });
-      };
-
       # mozc stuff
-      jp-zip-codes = mozc-package "jp" "jp-zip-codes";
-      merge-ut-dictionaries = mozc-package "me" "merge-ut-dictionaries";
-      jawiki-all-titles-in-ns0 = mozc-package "ja" "jawiki-all-titles-in-ns0";
-      mozcdic-ut-jawiki = mozc-package "mo" "mozcdic-ut-jawiki";
-      mozcdic-ut-personal-names = mozc-package "mo" "mozcdic-ut-personal-names";
-      mozcdic-ut-place-names = mozc-package "mo" "mozcdic-ut-place-names";
-      mozcdic-ut-sudachidict = mozc-package "mo" "mozcdic-ut-sudachidict";
-      mozcdic-ut-alt-cannadic = mozc-package "mo" "mozcdic-ut-alt-cannadic";
-      mozcdic-ut-edict2 = mozc-package "mo" "mozcdic-ut-edict2";
-      mozcdic-ut-neologd = mozc-package "mo" "mozcdic-ut-neologd";
-      mozcdic-ut-skk-jisyo = mozc-package "mo" "mozcdic-ut-skk-jisyo";
+      jp-zip-codes = mozc-package "jp-zip-codes";
+      merge-ut-dictionaries = mozc-package "merge-ut-dictionaries";
+      jawiki-all-titles-in-ns0 = mozc-package "jawiki-all-titles-in-ns0";
+      mozcdic-ut-jawiki = mozc-package "mozcdic-ut-jawiki";
+      mozcdic-ut-personal-names = mozc-package "mozcdic-ut-personal-names";
+      mozcdic-ut-place-names = mozc-package "mozcdic-ut-place-names";
+      mozcdic-ut-sudachidict = mozc-package "mozcdic-ut-sudachidict";
+      mozcdic-ut-alt-cannadic = mozc-package "mozcdic-ut-alt-cannadic";
+      mozcdic-ut-edict2 = mozc-package "mozcdic-ut-edict2";
+      mozcdic-ut-neologd = mozc-package "mozcdic-ut-neologd";
+      mozcdic-ut-skk-jisyo = mozc-package "mozcdic-ut-skk-jisyo";
+      mozc = mozc-package "mozc";
       ibus-engines = prev.ibus-engines // rec {
-        mozc = mozc-package "mo" "mozc";
+        mozc = mozc-package "mozc";
         mozc-ut = mozc.override {
           dictionaries = builtins.attrValues {
             inherit (final)
@@ -101,43 +134,4 @@ let
         };
       };
     };
-
-  removeDesktopOverlay =
-    final: prev:
-    let
-      removeDesktopEntry =
-        packageName:
-        let
-          package = prev.${packageName};
-          inherit (package) version;
-          pname = "${package.pname}-no-desktop";
-        in
-        {
-          ${packageName} =
-            final.runCommand "${pname}-${version}"
-              {
-                passthru = {
-                  inherit version pname;
-                  original = package;
-                };
-                preferLocalBuild = true;
-              }
-              ''
-                cp -srL --no-preserve=mode ${package} $out
-                rm -rfv $out/share/applications
-              '';
-        };
-      removeDesktopEntryList = packages: lib.attrsets.mergeAttrsList (map removeDesktopEntry packages);
-    in
-    removeDesktopEntryList [
-      "julia"
-      "btop"
-      "htop"
-      "helix"
-      "yazi"
-    ];
-
-in
-{
-  inherit stableOverlay fileOverlay removeDesktopOverlay;
 }

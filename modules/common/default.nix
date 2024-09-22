@@ -22,13 +22,13 @@
       home-manager.nixosModules.home-manager
     ];
 
+  pineapplehunter.japanese.enable = true;
+
   nixpkgs = {
     overlays = [
       inputs.nixgl.overlays.default
       inputs.nix-xilinx.overlay
-      self.overlays.stableOverlay
-      self.overlays.fileOverlay
-      self.overlays.removeDesktopOverlay
+      self.overlays.default
     ];
     config.allowUnfree = true;
   };

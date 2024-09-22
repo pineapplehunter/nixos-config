@@ -54,9 +54,7 @@
           overlays = [
             inputs.nixgl.overlays.default
             inputs.nix-xilinx.overlay
-            self.overlays.stableOverlay
-            self.overlays.fileOverlay
-            self.overlays.removeDesktopOverlay
+            self.overlays.default
           ];
         };
     in
