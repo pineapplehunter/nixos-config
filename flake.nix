@@ -83,7 +83,6 @@
           callPackage = lib.callPackageWith (pkgs // self.packages.${system});
         in
         {
-          nixos-artwork-wallpaper = callPackage ./packages/nixos-artwork-wallpaper/package.nix { };
           stl2pov = callPackage ./packages/stl2pov { };
           nautilus-thumbnailer-stl = callPackage ./packages/nautilus-thumbnailer-stl { };
         }

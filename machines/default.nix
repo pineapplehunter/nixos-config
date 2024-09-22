@@ -15,7 +15,6 @@ let
     };
 in
 {
-  mynixhost = nixosSystemWrapped [ ./qemu/configuration.nix ];
   beast = nixosSystemWrapped [
     self.nixosModules.personal
     ./beast/configuration.nix
