@@ -216,7 +216,7 @@ in
           nativeBuildInputs = [ makeWrapper ];
           postBuild = ''
             rm $out/bin/kitty
-            makeWrapper "${getExe nixgl.nixGLMesa}" "$out/bin/kitty" \
+            makeWrapper "${getExe (nixgl.override { enable32bits = false; }).nixGLMesa}" "$out/bin/kitty" \
               --add-flags "${getExe kitty}" \
               --inherit-argv0
           '';
