@@ -9,7 +9,7 @@
 {
   imports =
     let
-      inherit (self.nixosModules) shell-config japanese;
+      inherit (self.nixosModules) shell-config japanese windows-vm;
       inherit (inputs) sops-nix xremap-flake home-manager;
     in
     [
@@ -17,6 +17,7 @@
       ./fonts.nix
       shell-config
       japanese
+      windows-vm
       sops-nix.nixosModules.sops
       xremap-flake.nixosModules.default
       home-manager.nixosModules.home-manager

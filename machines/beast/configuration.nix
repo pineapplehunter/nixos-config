@@ -15,16 +15,7 @@
     ./hardware-configuration.nix
   ];
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
-
-  # Use the systemd-boot EFI boot loader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.systemd-boot.consoleMode = "0";
-  #boot.loader.efi.canTouchEfiVariables = true;
-  boot.binfmt.emulatedSystems = [
-    "aarch64-linux"
-    "riscv64-linux"
-  ];
+  pineapplehunter.windows-vm.enable = true;
 
   nix = {
     # package = pkgs.nixVersions.latest;
@@ -47,6 +38,18 @@
     extraOptions = ''
       builders-use-substitutes = true
     '';
+  };
+
+  # Use the systemd-boot EFI boot loader.
+  boot = {
+    loader.systemd-boot.enable = true;
+    loader.systemd-boot.consoleMode = "0";
+    #boot.loader.efi.canTouchEfiVariables = true;
+    binfmt.emulatedSystems = [
+      "aarch64-linux"
+      "riscv64-linux"
+    ];
+    kernelPackages = pkgs.linuxPackages_latest;
   };
 
   networking.hostName = "beast"; # Define your hostname.

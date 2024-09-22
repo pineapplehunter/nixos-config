@@ -36,10 +36,6 @@ let
   };
 in
 {
-  imports = [
-    ../programs/kitty.nix
-  ];
-
   programs = {
     helix = {
       enable = true;
@@ -203,7 +199,7 @@ in
 
     ripgrep.enable = true;
 
-    kitty' = {
+    kitty = {
       enable = true;
       package =
         let
@@ -221,7 +217,7 @@ in
               --inherit-argv0
           '';
         };
-      theme = "CLRS";
+      themeFile = "CLRS";
       settings = {
         confirm_os_window_close = 0;
         font_family = "DejaVuSansM Nerd Font Mono";
@@ -261,7 +257,9 @@ in
     cachix-push = pkgs.writeShellScriptBin "cachix-push" ''
       SIZE=$(echo ''${2:-500M} | numfmt --from iec)
       CACHE=''${1:-pineapplehunter}
-      nix path-info ./result -rS --json | jq "to_entries | sort_by(.value.closureSize) | .[] | select(.value.closureSize < $SIZE) | .key" -r | cachix push $CACHE
+      nix path-info ./result -rS --json \
+        | ${pkgs.jq}/bin/jq "to_entries | sort_by(.value.closureSize) | .[] | select(.value.closureSize < $SIZE) | .key" -r \
+        | ${pkgs.cachix.bin}/bin/cachix push $CACHE
     '';
   };
 
@@ -277,16 +275,17 @@ in
     ln -s ${kconfig-tree-sitter}/queries $out
   '';
 
-  home.shellAliases =
+  home.shellAliases = lib.mkMerge [
     {
       ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";
       la = "ls -a";
       ll = "ls -lha";
       wget = "wget --hsts-file=${config.xdg.dataHome}";
     }
-    // optionalAttrs isLinux {
+    (optionalAttrs isLinux {
       ip = "ip -c";
-    };
+    })
+  ];
 
   home.sessionVariables = {
     RUSTUP_HOME = "${config.xdg.dataHome}/rustup";
