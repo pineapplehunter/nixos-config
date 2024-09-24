@@ -20,7 +20,7 @@
       name = "nixos-artwork-wallpapers";
       paths = lib.filter lib.isDerivation (builtins.attrValues pkgs.nixos-artwork.wallpapers);
     };
-    inherit (pkgs.jetbrains) idea-ultimate;
+    # inherit (pkgs.jetbrains) idea-ultimate;
     flatpak-chrome-alias = (
       pkgs.writeShellScriptBin "flatpak-chrome-alias" "flatpak run com.google.Chrome $@"
     );
