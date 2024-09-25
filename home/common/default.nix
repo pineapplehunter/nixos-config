@@ -245,6 +245,7 @@ in
       elan
       ncdu
       nix-update
+      nix-search-cli
       ;
     julia = (if isLinux then pkgs.julia else pkgs.julia-bin);
     cachix-no-man = (

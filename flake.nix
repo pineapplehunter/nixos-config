@@ -35,6 +35,10 @@
       url = "github:nix-community/nixGL";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nix-search-cli = {
+      url = "github:peterldowns/nix-search-cli";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

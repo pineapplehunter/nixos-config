@@ -79,6 +79,10 @@ rec {
           '';
       });
     };
+    nix-search-cli = inputs.nix-search-cli.packages.${final.system}.default.overrideAttrs (old: {
+      # fix non-standard version representation
+      version = builtins.head (builtins.match ''[^0-9]*([0-9\.]+).*'' old.version);
+    });
   };
 
   stable =
