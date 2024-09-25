@@ -4,7 +4,7 @@
     nixd.command = "nixd";
     ruff = {
       command = "ruff";
-      args = [ "server" ];
+      config.settings.args = [ "server" ];
     };
   };
   language = [
