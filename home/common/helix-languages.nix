@@ -4,7 +4,11 @@
     nixd.command = "nixd";
     ruff = {
       command = "ruff";
-      config.settings.args = [ "server" ];
+      args = [ "server" ];
+    };
+    pyright = {
+      command = "pyright-langserver";
+      args = [ "--stdio" ];
     };
   };
   language = [
@@ -37,7 +41,7 @@
       name = "python";
       language-servers = [
         "ruff"
-        "pylsp"
+        "pyright"
       ];
     }
   ];

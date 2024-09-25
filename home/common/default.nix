@@ -51,6 +51,7 @@ in
           marksman
           buf-language-server
           ruff
+          pyright
           ;
         inherit (pkgs.nodePackages) typescript-language-server;
       };
