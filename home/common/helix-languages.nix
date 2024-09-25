@@ -2,7 +2,10 @@
 {
   language-server = {
     nixd.command = "nixd";
-    ruff-lsp.command = "ruff-lsp";
+    ruff = {
+      command = "ruff";
+      args = [ "server" ];
+    };
   };
   language = [
     {
@@ -33,7 +36,7 @@
     {
       name = "python";
       language-servers = [
-        "ruff-lsp"
+        "ruff"
         "pylsp"
       ];
     }

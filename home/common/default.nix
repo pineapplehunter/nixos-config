@@ -51,7 +51,6 @@ in
           marksman
           buf-language-server
           ruff
-          ruff-lsp
           ;
         inherit (pkgs.nodePackages) typescript-language-server;
       };
