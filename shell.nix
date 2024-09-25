@@ -37,7 +37,7 @@ let
     }
     yes_or_no "do you want to commit and update?"
     sudo echo starting upgrade
-    git commit -q
+    git commit -p || true
     sudo nixos-rebuild switch --flake ".#$HOST" "$@"
   '';
   os-boot-script = writeShellScriptBin "os-boot" ''
@@ -79,7 +79,7 @@ let
     }
     yes_or_no "do you want to commit and update?"
     echo starting switch
-    git commit -q
+    git commit -p || true
     home-manager switch -b "hm-backup" --flake ".#$HOME_CONFIG_NAME" "$@"
   '';
   home-update-script = writeShellScriptBin "home-update" ''
