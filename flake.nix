@@ -73,6 +73,7 @@
       homeConfigurations = (import ./home { inherit self nixpkgs inputs; }).configurations;
       overlays = import ./overlay { inherit lib inputs self; };
       nixosConfigurations = import ./machines { inherit lib inputs self; };
+      templates = import ./templates;
     }
     // {
       formatter = eachSystem (
