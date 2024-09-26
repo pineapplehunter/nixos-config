@@ -12,14 +12,12 @@
         ubuntu-sans
         ubuntu-sans-mono
         ;
-      nerdfonts = (
-        pkgs.nerdfonts.override {
-          fonts = [
-            "FiraCode"
-            "DejaVuSansMono"
-          ];
-        }
-      );
+      nerdfonts = pkgs.nerdfonts.override {
+        fonts = [
+          "FiraCode"
+          "DejaVuSansMono"
+        ];
+      };
     };
   };
 }

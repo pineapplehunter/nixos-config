@@ -4,6 +4,7 @@
   nix-output-monitor,
   nvd,
   nixos-rebuild,
+  statix,
   mkShellNoCC,
   home-manager,
 }:
@@ -107,6 +108,7 @@ mkShellNoCC {
     nix-output-monitor
     home-manager
     nixos-rebuild
+    statix
   ];
   shellHook = ''
     export HOST=`hostname`

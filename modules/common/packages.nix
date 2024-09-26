@@ -45,19 +45,15 @@
       openssl
       gitify
       ;
-    ventoy-custom = (
-      pkgs.ventoy-full.override {
-        defaultGuiType = "gtk3";
-        withGtk3 = true;
-      }
-    );
-    cachix-no-man = (
-      pkgs.symlinkJoin {
-        name = "cachix";
-        version = pkgs.cachix.version;
-        paths = [ pkgs.cachix.bin ];
-      }
-    );
+    ventoy-custom = pkgs.ventoy-full.override {
+      defaultGuiType = "gtk3";
+      withGtk3 = true;
+    };
+    cachix-no-man = pkgs.symlinkJoin {
+      inherit (pkgs.cachix) version;
+      name = "cachix";
+      paths = [ pkgs.cachix.bin ];
+    };
     inherit (pkgs.stdenv) cc;
   };
 

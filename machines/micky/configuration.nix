@@ -16,46 +16,34 @@
     ./hardware-configuration.nix
   ];
 
-  services.xremap = {
-    enable = true;
-    withGnome = true;
-    config.modmap = [
-      {
-        name = "caps-esc";
-        remap = {
-          "CapsLock" = "Esc";
-        };
-      }
-    ];
-  };
-
   # Bootloader.
-
-  boot.loader.grub = {
-    enable = true;
-    useOSProber = true;
-    efiSupport = true;
-    device = "nodev";
-    configurationLimit = 20;
-    default = "saved";
-    extraEntries = lib.mkAfter ''
-      menuentry "System shutdown" {
-      	echo "System shutting down..."
-      	halt
-      }
-      menuentry "System restart" {
-      	echo "System rebooting..."
-      	reboot
-      }
-      if [ ''${grub_platform} == "efi" ]; then
-      	menuentry 'UEFI Firmware Settings' --id 'uefi-firmware' {
-      		fwsetup
-      	}
-      fi
-    '';
+  boot = {
+    loader.grub = {
+      enable = true;
+      useOSProber = true;
+      efiSupport = true;
+      device = "nodev";
+      configurationLimit = 20;
+      default = "saved";
+      extraEntries = lib.mkAfter ''
+        menuentry "System shutdown" {
+        	echo "System shutting down..."
+        	halt
+        }
+        menuentry "System restart" {
+        	echo "System rebooting..."
+        	reboot
+        }
+        if [ ''${grub_platform} == "efi" ]; then
+        	menuentry 'UEFI Firmware Settings' --id 'uefi-firmware' {
+        		fwsetup
+        	}
+        fi
+      '';
+    };
+    loader.efi.canTouchEfiVariables = true;
+    binfmt.emulatedSystems = [ "aarch64-linux" ];
   };
-  boot.loader.efi.canTouchEfiVariables = true;
-  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
   # https://discourse.nixos.org/t/suspend-then-hibernate/31953/5
   powerManagement.enable = true;
@@ -65,11 +53,53 @@
   systemd.services.docker.enable = false;
   systemd.sockets.docker.enable = false;
 
-  networking.hostName = "micky"; # Define your hostname.
-  services.btrfs.autoScrub = {
-    enable = true;
-    fileSystems = [ "/" ];
+  services = {
+    xremap = {
+      enable = true;
+      withGnome = true;
+      config.modmap = [
+        {
+          name = "caps-esc";
+          remap = {
+            "CapsLock" = "Esc";
+          };
+        }
+      ];
+    };
+    btrfs.autoScrub = {
+      enable = true;
+      fileSystems = [ "/" ];
+    };
+    xserver = {
+      # Enable the X11 windowing system.
+      enable = true;
+
+      # Enable the GNOME Desktop Environment.
+      displayManager.gdm.enable = true;
+      desktopManager.gnome.enable = true;
+      # desktopManager.plasma6.enable = true;
+    };
+    snapper.configs = {
+      home = {
+        SUBVOLUME = "/home";
+        ALLOW_USERS = [ "shogo" ];
+        TIMELINE_CREATE = true;
+        TIMELINE_CLEANUP = true;
+        TIMELINE_LIMIT_HOURLY = 5;
+        TIMELINE_LIMIT_DAILY = 6;
+        TIMELINE_LIMIT_WEEKLY = 3;
+        TIMELINE_LIMIT_MONTHLY = 2;
+        TIMELINE_LIMIT_YEARLY = 0;
+      };
+    };
+
   };
+  # security.pam.services = {
+  #   gdm.fprintAuth = false;
+  #   login.fprintAuth = false;
+  #   passwd.fprintAuth = false;
+  # };
+
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -79,32 +109,7 @@
   # Enable networking
   networking.networkmanager.enable = true;
 
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-
-  # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
-  # services.desktopManager.plasma6.enable = true;
-  # security.pam.services = {
-  #   gdm.fprintAuth = false;
-  #   login.fprintAuth = false;
-  #   passwd.fprintAuth = false;
-  # };
-
-  services.snapper.configs = {
-    home = {
-      SUBVOLUME = "/home";
-      ALLOW_USERS = [ "shogo" ];
-      TIMELINE_CREATE = true;
-      TIMELINE_CLEANUP = true;
-      TIMELINE_LIMIT_HOURLY = 5;
-      TIMELINE_LIMIT_DAILY = 6;
-      TIMELINE_LIMIT_WEEKLY = 3;
-      TIMELINE_LIMIT_MONTHLY = 2;
-      TIMELINE_LIMIT_YEARLY = 0;
-    };
-  };
+  networking.hostName = "micky"; # Define your hostname.
 
   virtualisation = {
     docker = {

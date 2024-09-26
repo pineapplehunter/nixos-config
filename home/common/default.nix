@@ -17,7 +17,7 @@ let
       binPath = lib.optionalString (PATH != null) lib.makeBinPath PATH;
     in
     pkgs.symlinkJoin {
-      name = "${if package ? pname then package.pname else package.name}-wrapped";
+      name = "${package.pname or package.name}-wrapped";
       paths = [ package ];
       nativeBuildInputs = [ pkgs.makeWrapper ];
       postBuild = lib.strings.concatStrings (
@@ -227,42 +227,6 @@ in
     fzf.enable = true;
   };
 
-  home.packages = builtins.attrValues {
-    inherit (pkgs)
-      nixpkgs-review
-      tokei
-      htop
-      nix-tree
-      nixpkgs-fmt
-      nixfmt-rfc-style
-      nix-output-monitor
-      difftastic
-      starship
-      zellij
-      npins
-      rustup
-      elan
-      ncdu
-      nix-update
-      nix-search-cli
-      ;
-    julia = (if isLinux then pkgs.julia else pkgs.julia-bin);
-    cachix-no-man = (
-      pkgs.symlinkJoin {
-        name = "cachix";
-        version = pkgs.cachix.version;
-        paths = [ pkgs.cachix.bin ];
-      }
-    );
-    cachix-push = pkgs.writeShellScriptBin "cachix-push" ''
-      SIZE=$(echo ''${2:-500M} | numfmt --from iec)
-      CACHE=''${1:-pineapplehunter}
-      nix path-info ./result -rS --json \
-        | ${pkgs.jq}/bin/jq "to_entries | sort_by(.value.closureSize) | .[] | select(.value.closureSize < $SIZE) | .key" -r \
-        | ${pkgs.cachix.bin}/bin/cachix push $CACHE
-    '';
-  };
-
   xdg.dataFile."julia/config/startup.jl".text = ''
     try
       using OhMyREPL
@@ -275,22 +239,57 @@ in
     ln -s ${kconfig-tree-sitter}/queries $out
   '';
 
-  home.shellAliases = lib.mkMerge [
-    {
-      ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";
-      la = "ls -a";
-      ll = "ls -lha";
-      wget = "wget --hsts-file=${config.xdg.dataHome}";
-    }
-    (optionalAttrs isLinux {
-      ip = "ip -c";
-    })
-  ];
+  home = {
+    packages = builtins.attrValues {
+      inherit (pkgs)
+        nixpkgs-review
+        tokei
+        htop
+        nix-tree
+        nixpkgs-fmt
+        nixfmt-rfc-style
+        nix-output-monitor
+        difftastic
+        starship
+        zellij
+        npins
+        rustup
+        elan
+        ncdu
+        nix-update
+        nix-search-cli
+        ;
+      julia = if isLinux then pkgs.julia else pkgs.julia-bin;
+      cachix-no-man = pkgs.symlinkJoin {
+        inherit (pkgs.cachix) version;
+        name = "cachix";
+        paths = [ pkgs.cachix.bin ];
+      };
+      cachix-push = pkgs.writeShellScriptBin "cachix-push" ''
+        SIZE=$(echo ''${2:-500M} | numfmt --from iec)
+        CACHE=''${1:-pineapplehunter}
+        nix path-info ./result -rS --json \
+          | ${pkgs.jq}/bin/jq "to_entries | sort_by(.value.closureSize) | .[] | select(.value.closureSize < $SIZE) | .key" -r \
+          | ${pkgs.cachix.bin}/bin/cachix push $CACHE
+      '';
+    };
+    shellAliases = lib.mkMerge [
+      {
+        ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";
+        la = "ls -a";
+        ll = "ls -lha";
+        wget = "wget --hsts-file=${config.xdg.dataHome}";
+      }
+      (optionalAttrs isLinux {
+        ip = "ip -c";
+      })
+    ];
 
-  home.sessionVariables = {
-    RUSTUP_HOME = "${config.xdg.dataHome}/rustup";
-    CARGO_HOME = "${config.xdg.dataHome}/cargo";
-    JULIA_DEPOT_PATH = "${config.xdg.dataHome}/julia:$JULIA_DEPOT_PATH";
+    sessionVariables = {
+      RUSTUP_HOME = "${config.xdg.dataHome}/rustup";
+      CARGO_HOME = "${config.xdg.dataHome}/cargo";
+      JULIA_DEPOT_PATH = "${config.xdg.dataHome}/julia:$JULIA_DEPOT_PATH";
+    };
   };
 
   services.syncthing.enable = pkgs.stdenv.isLinux;

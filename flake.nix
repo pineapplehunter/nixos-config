@@ -25,9 +25,11 @@
     };
     xremap-flake = {
       url = "github:xremap/nix-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.treefmt-nix.follows = "treefmt-nix";
-      inputs.home-manager.follows = "home-manager";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        treefmt-nix.follows = "treefmt-nix";
+        home-manager.follows = "home-manager";
+      };
     };
     nixos-hardware.url = "github:pineapplehunter/nixos-hardware";
     sops-nix = {
