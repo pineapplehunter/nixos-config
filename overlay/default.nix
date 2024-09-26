@@ -7,7 +7,6 @@ rec {
   default = lib.composeManyExtensions [
     stable
     custom
-    mozc
     removeDesktop
   ];
 
@@ -83,6 +82,11 @@ rec {
       # fix non-standard version representation
       version = builtins.head (builtins.match ''[^0-9]*([0-9\.]+).*'' old.version);
     });
+    npm-lockfile-fix = inputs.npm-lockfile-fix.packages.${final.system}.default.overrideAttrs (old: {
+      meta = old.meta // {
+        mainProgram = "npm-lockfile-fix";
+      };
+    });
   };
 
   stable =
@@ -92,50 +96,5 @@ rec {
     in
     {
       inherit (pkgs-stable) ;
-    };
-
-  mozc =
-    final: prev:
-    let
-      mozc-package =
-        name:
-        let
-          shard = builtins.substring 0 2 name;
-        in
-        final.callPackage (
-          inputs.nixpkgs-pineapplehunter-mozc + /pkgs/by-name/${shard}/${name}/package.nix
-        ) { };
-    in
-    {
-      # mozc stuff
-      jp-zip-codes = mozc-package "jp-zip-codes";
-      merge-ut-dictionaries = mozc-package "merge-ut-dictionaries";
-      jawiki-all-titles-in-ns0 = mozc-package "jawiki-all-titles-in-ns0";
-      mozcdic-ut-jawiki = mozc-package "mozcdic-ut-jawiki";
-      mozcdic-ut-personal-names = mozc-package "mozcdic-ut-personal-names";
-      mozcdic-ut-place-names = mozc-package "mozcdic-ut-place-names";
-      mozcdic-ut-sudachidict = mozc-package "mozcdic-ut-sudachidict";
-      mozcdic-ut-alt-cannadic = mozc-package "mozcdic-ut-alt-cannadic";
-      mozcdic-ut-edict2 = mozc-package "mozcdic-ut-edict2";
-      mozcdic-ut-neologd = mozc-package "mozcdic-ut-neologd";
-      mozcdic-ut-skk-jisyo = mozc-package "mozcdic-ut-skk-jisyo";
-      mozc = mozc-package "mozc";
-      ibus-engines = prev.ibus-engines // rec {
-        mozc = mozc-package "mozc";
-        mozc-ut = mozc.override {
-          dictionaries = builtins.attrValues {
-            inherit (final)
-              mozcdic-ut-alt-cannadic
-              mozcdic-ut-edict2
-              mozcdic-ut-jawiki
-              mozcdic-ut-neologd
-              mozcdic-ut-personal-names
-              mozcdic-ut-place-names
-              mozcdic-ut-skk-jisyo
-              mozcdic-ut-sudachidict
-              ;
-          };
-        };
-      };
     };
 }

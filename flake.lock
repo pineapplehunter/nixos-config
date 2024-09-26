@@ -481,22 +481,6 @@
         "type": "github"
       }
     },
-    "nixpkgs-pineapplehunter-mozc": {
-      "locked": {
-        "lastModified": 1726754829,
-        "narHash": "sha256-uAV2L9t1YlBn/HX7yUeP8mbbQ0NaDYjF0VoXkz+KhpI=",
-        "owner": "pineapplehunter",
-        "repo": "nixpkgs",
-        "rev": "5566c5f66615af6e349acf159f49ff9506cd5bba",
-        "type": "github"
-      },
-      "original": {
-        "owner": "pineapplehunter",
-        "ref": "mozc-updates",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs-pineapplehunter-mqttx-cli": {
       "locked": {
         "lastModified": 1725239013,
@@ -593,6 +577,26 @@
         "type": "github"
       }
     },
+    "npm-lockfile-fix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1706304213,
+        "narHash": "sha256-XN9ESRSOANR0iFbEMMY1C1jvgZlYJsXQYVAHxxRmn+c=",
+        "owner": "pineapplehunter",
+        "repo": "npm-lockfile-fix",
+        "rev": "e9851274afa12b04d98e694ed089aa9cde8d7349",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pineapplehunter",
+        "repo": "npm-lockfile-fix",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "home-manager": "home-manager",
@@ -602,10 +606,10 @@
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
         "nixpkgs-pineapplehunter-gitify": "nixpkgs-pineapplehunter-gitify",
-        "nixpkgs-pineapplehunter-mozc": "nixpkgs-pineapplehunter-mozc",
         "nixpkgs-pineapplehunter-mqttx-cli": "nixpkgs-pineapplehunter-mqttx-cli",
         "nixpkgs-pineapplehunter-supprod": "nixpkgs-pineapplehunter-supprod",
         "nixpkgs-stable": "nixpkgs-stable",
+        "npm-lockfile-fix": "npm-lockfile-fix",
         "sops-nix": "sops-nix",
         "treefmt-nix": "treefmt-nix",
         "xremap-flake": "xremap-flake"

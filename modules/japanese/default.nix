@@ -35,7 +35,6 @@ in
 
       (lib.mkIf cfg.inputMethod.enable {
         # japanese input managers
-        nixpkgs.overlays = [ self.overlays.mozc ];
         i18n.inputMethod = {
           ibus.engines = builtins.attrValues {
             inherit (pkgs.ibus-engines)
