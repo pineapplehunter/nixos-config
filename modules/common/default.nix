@@ -94,6 +94,7 @@
         ip = "ip -c";
       };
     };
+    not-found-exec.enable = true;
   };
 
   i18n.inputMethod = {
@@ -107,15 +108,11 @@
     style = "adwaita";
   };
 
-  # List services that you want to enable:
   services = {
     xremap.enable = lib.mkDefault false;
 
     # Enable the OpenSSH daemon.
     openssh.enable = true;
-
-    users.defaultUserShell = pkgs.zsh;
-    programs.not-found-exec.enable = true;
 
     # Enable CUPS to print documents.
     printing.enable = true;
@@ -143,6 +140,8 @@
       openFirewall = true;
     };
   };
+
+  users.defaultUserShell = pkgs.zsh;
 
   systemd.services.NetworkManager-wait-online.enable = false;
 
