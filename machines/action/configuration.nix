@@ -113,6 +113,8 @@
       };
     };
 
+    ollama.enable = true;
+
   };
 
   # Bootloader.
