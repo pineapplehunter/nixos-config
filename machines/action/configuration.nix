@@ -194,6 +194,7 @@
       extraGroups = [
         "networkmanager"
         "wheel"
+        "dialout"
       ];
     };
 
@@ -203,6 +204,7 @@
       extraGroups = [
         "networkmanager"
         "wheel"
+        "dialout"
       ];
     };
   };
