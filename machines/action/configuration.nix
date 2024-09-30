@@ -228,4 +228,9 @@
   system.stateVersion = config.system.nixos.release;
   system.switch.enableNg = true;
 
+  environment.systemPackages = [
+    (pkgs.writeScriptBin "ai" ''
+      ollama run llama3.2
+    '')
+  ];
 }
