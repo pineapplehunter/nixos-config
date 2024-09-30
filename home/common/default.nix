@@ -7,6 +7,7 @@
 let
   inherit (lib.attrsets) optionalAttrs;
   inherit (pkgs.stdenv) isLinux;
+  inherit (config.pineapplehunter) is-nixos;
   wrapPackage =
     {
       package,
@@ -201,21 +202,24 @@ in
     kitty = {
       enable = true;
       package =
-        let
-          inherit (pkgs) kitty makeWrapper nixgl;
-          inherit (lib) getExe;
-        in
-        pkgs.symlinkJoin {
-          name = "kitty-wrapped";
-          paths = [ kitty ];
-          nativeBuildInputs = [ makeWrapper ];
-          postBuild = ''
-            rm $out/bin/kitty
-            makeWrapper "${getExe (nixgl.override { enable32bits = false; }).nixGLMesa}" "$out/bin/kitty" \
-              --add-flags "${getExe kitty}" \
-              --inherit-argv0
-          '';
-        };
+        if is-nixos then
+          pkgs.kitty
+        else
+          let
+            inherit (pkgs) kitty makeWrapper nixgl;
+            inherit (lib) getExe;
+          in
+          pkgs.symlinkJoin {
+            name = "kitty-wrapped";
+            paths = [ kitty ];
+            nativeBuildInputs = [ makeWrapper ];
+            postBuild = ''
+              rm $out/bin/kitty
+              makeWrapper "${getExe (nixgl.override { enable32bits = false; }).nixGLMesa}" "$out/bin/kitty" \
+                --add-flags "${getExe kitty}" \
+                --inherit-argv0
+            '';
+          };
       themeFile = "CLRS";
       settings = {
         confirm_os_window_close = 0;

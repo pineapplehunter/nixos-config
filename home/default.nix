@@ -50,6 +50,9 @@ rec {
     pineapplehunter = import ./pineapplehunter;
     shogo = import ./shogo;
     riken = import ./riken;
+    is-nixos = {
+      config.pineapplehunter.is-nixos = true;
+    };
   };
   configurations = lib.attrsets.mergeAttrsList [
     (multiConfig "shogo" [ modules.shogo ])
