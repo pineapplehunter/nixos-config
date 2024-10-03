@@ -211,27 +211,21 @@
   home-manager.users =
     let
       inherit (self.homeModules)
-        common
+        nixos-common
         shogo
         riken
-        is-nixos
-        pineapplehunter
         ;
     in
     {
       shogo = {
         imports = [
-          pineapplehunter
-          is-nixos
-          common
+          nixos-common
           shogo
         ];
       };
       riken = {
         imports = [
-          pineapplehunter
-          is-nixos
-          common
+          nixos-common
           riken
         ];
       };

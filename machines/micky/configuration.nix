@@ -141,12 +141,12 @@
   };
   home-manager.users =
     let
-      inherit (self.homeModules) common riken;
+      inherit (self.homeModules) nixos-common riken;
     in
     {
       shogotr = {
         imports = [
-          common
+          nixos-common
           riken
         ];
       };

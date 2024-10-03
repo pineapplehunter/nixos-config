@@ -37,6 +37,7 @@ let
   };
 in
 {
+  imports = [ ../pineapplehunter ];
   programs = {
     helix = {
       enable = true;

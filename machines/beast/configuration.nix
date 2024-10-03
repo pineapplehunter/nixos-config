@@ -78,12 +78,12 @@
   };
   home-manager.users =
     let
-      inherit (self.homeModules) common shogo;
+      inherit (self.homeModules) nixos-common shogo;
     in
     {
       shogo = {
         imports = [
-          common
+          nixos-common
           shogo
         ];
       };
