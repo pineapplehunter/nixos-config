@@ -201,7 +201,7 @@ in
     ripgrep.enable = true;
 
     kitty = {
-      enable = true;
+      enable = isLinux;
       package =
         if is-nixos then
           pkgs.kitty
