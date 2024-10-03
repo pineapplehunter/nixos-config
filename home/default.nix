@@ -14,7 +14,6 @@ let
             pkgs = self.legacyPackages.${system};
             modules = mods ++ [
               self.homeModules.common
-              self.homeModules.pineapplehunter
               (
                 { pkgs, ... }:
                 {
