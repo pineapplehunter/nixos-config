@@ -36,23 +36,25 @@ in
   };
 
   config = mkIf cfg.enable {
-    programs.command-not-found.enable = false;
+    programs = {
+      command-not-found.enable = false;
 
-    programs.zsh.interactiveShellInit = ''
-      function command_not_found_handler() {
-        not-found-exec-shell $@
-      }
-    '';
-    programs.fish.interactiveShellInit = ''
-      function fish_command_not_found
-        not-found-exec-shell $argv
-      end
-    '';
-    programs.bash.interactiveShellInit = ''
-      function command_not_found_handler() {
+      zsh.interactiveShellInit = ''
+        function command_not_found_handler() {
           not-found-exec-shell $@
         }
-    '';
+      '';
+      fish.interactiveShellInit = ''
+        function fish_command_not_found
+          not-found-exec-shell $argv
+        end
+      '';
+      bash.interactiveShellInit = ''
+        function command_not_found_handler() {
+            not-found-exec-shell $@
+          }
+      '';
+    };
 
     environment.systemPackages = mkIf cfg.which-nix.enable [
       (pkgs.callPackage ./not-found-exec-shell.nix { inherit (cfg) confirm; })

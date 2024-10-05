@@ -4,10 +4,13 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-24.05";
-    nixpkgs-pineapplehunter-mozc.url = "github:pineapplehunter/nixpkgs?ref=mozc-updates";
     nixpkgs-pineapplehunter-supprod.url = "github:pineapplehunter/nixpkgs?ref=supprod-from-source";
     nixpkgs-pineapplehunter-mqttx-cli.url = "github:pineapplehunter/nixpkgs?ref=mqttx-cli";
     nixpkgs-pineapplehunter-gitify.url = "github:pineapplehunter/nixpkgs?ref=gitify";
+    npm-lockfile-fix = {
+      url = "github:pineapplehunter/npm-lockfile-fix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -22,9 +25,11 @@
     };
     xremap-flake = {
       url = "github:xremap/nix-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.treefmt-nix.follows = "treefmt-nix";
-      inputs.home-manager.follows = "home-manager";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        treefmt-nix.follows = "treefmt-nix";
+        home-manager.follows = "home-manager";
+      };
     };
     nixos-hardware.url = "github:pineapplehunter/nixos-hardware";
     sops-nix = {
@@ -68,6 +73,7 @@
       homeConfigurations = (import ./home { inherit self nixpkgs inputs; }).configurations;
       overlays = import ./overlay { inherit lib inputs self; };
       nixosConfigurations = import ./machines { inherit lib inputs self; };
+      templates = import ./templates;
     }
     // {
       formatter = eachSystem (

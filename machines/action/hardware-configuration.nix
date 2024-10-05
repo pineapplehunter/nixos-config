@@ -13,43 +13,44 @@
 
   nixpkgs.system = "x86_64-linux";
 
-  boot.initrd.availableKernelModules = [
-    "xhci_pci"
-    "thunderbolt"
-    "nvme"
-    "usb_storage"
-    "sd_mod"
-    "rtsx_pci_sdmmc"
-  ];
-  boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ "kvm-intel" ];
-  boot.extraModulePackages = [ ];
-  boot.resumeDevice = "/dev/disk/by-uuid/244fb3a7-4e9c-4707-9427-a33f667a08bd";
-
-  fileSystems."/" = {
-    device = "/dev/disk/by-uuid/c73fb028-c49b-4d3e-8628-39e326535d46";
-    fsType = "btrfs";
-    options = [ "subvol=@,autodefrag,commit=120,compress=zstd,noatime,space_cache=v2" ];
+  boot = {
+    initrd.availableKernelModules = [
+      "xhci_pci"
+      "thunderbolt"
+      "nvme"
+      "usb_storage"
+      "sd_mod"
+      "rtsx_pci_sdmmc"
+    ];
+    initrd.kernelModules = [ ];
+    kernelModules = [ "kvm-intel" ];
+    extraModulePackages = [ ];
+    resumeDevice = "/dev/disk/by-uuid/244fb3a7-4e9c-4707-9427-a33f667a08bd";
   };
 
-  fileSystems."/home" = {
-    device = "/dev/disk/by-uuid/c73fb028-c49b-4d3e-8628-39e326535d46";
-    fsType = "btrfs";
-    options = [ "subvol=@home,autodefrag,commit=120,compress=zstd,noatime,space_cache=v2" ];
-  };
+  fileSystems = {
+    "/" = {
+      device = "/dev/disk/by-uuid/c73fb028-c49b-4d3e-8628-39e326535d46";
+      fsType = "btrfs";
+      options = [ "subvol=@,autodefrag,commit=120,compress=zstd,noatime,space_cache=v2" ];
+    };
 
-  fileSystems."/efi" = {
-    device = "/dev/disk/by-uuid/DA91-D0F6";
-    fsType = "vfat";
-  };
+    "/home" = {
+      device = "/dev/disk/by-uuid/c73fb028-c49b-4d3e-8628-39e326535d46";
+      fsType = "btrfs";
+      options = [ "subvol=@home,autodefrag,commit=120,compress=zstd,noatime,space_cache=v2" ];
+    };
 
-  fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/8057-31F0";
-    fsType = "vfat";
-  };
+    "/efi" = {
+      device = "/dev/disk/by-uuid/DA91-D0F6";
+      fsType = "vfat";
+    };
 
-  #fileSystems."/efi/EFI/Linux" = { device = "/boot/EFI/Linux"; options = [ "bind" ]; };
-  #fileSystems."/efi/EFI/nixos" = { device = "/boot/EFI/nixos"; options = [ "bind" ]; };
+    "/boot" = {
+      device = "/dev/disk/by-uuid/8057-31F0";
+      fsType = "vfat";
+    };
+  };
 
   swapDevices = [ ];
 

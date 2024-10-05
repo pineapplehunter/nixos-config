@@ -5,15 +5,26 @@
 }:
 let
   cfg = config.pineapplehunter;
-  inherit (lib) mkOption mkIf types;
+  inherit (lib)
+    mkOption
+    mkIf
+    types
+    mkEnableOption
+    mkMerge
+    ;
 in
 {
-  options.pineapplehunter.config-name = mkOption {
-    type = types.nullOr types.str;
-    default = null;
-    description = "name of the configuration in flake";
+  options.pineapplehunter = {
+    config-name = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = "name of the configuration in flake";
+    };
+    is-nixos = mkEnableOption "remove nixGL wrapper";
   };
-  config.home.sessionVariables = mkIf (cfg.config-name != null) {
-    HOME_CONFIG_NAME = cfg.config-name;
-  };
+  config.home.sessionVariables = mkMerge [
+    (mkIf (cfg.config-name != null) {
+      HOME_CONFIG_NAME = cfg.config-name;
+    })
+  ];
 }

@@ -72,14 +72,29 @@
 
   sops.defaultSopsFile = ../../secrets/secrets.yml;
 
-  services.xremap.enable = lib.mkDefault false;
-
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
+  programs = {
+    # Some programs need SUID wrappers, can be configured further or are
+    # started in user sessions.
+    # programs.mtr.enable = true;
+    gnupg.agent = {
+      enable = true;
+      enableSSHSupport = true;
+    };
+    starship = {
+      enable = true;
+    };
+    zsh = {
+      enable = true;
+      autosuggestions.enable = true;
+      syntaxHighlighting.enable = true;
+      shellAliases = {
+        ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";
+        la = "ls -a";
+        ll = "ls -lha";
+        ip = "ip -c";
+      };
+    };
+    not-found-exec.enable = true;
   };
 
   i18n.inputMethod = {
@@ -93,59 +108,46 @@
     style = "adwaita";
   };
 
-  # List services that you want to enable:
+  services = {
+    xremap.enable = lib.mkDefault false;
 
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
+    # Enable the OpenSSH daemon.
+    openssh.enable = true;
 
-  programs.starship = {
-    enable = true;
-  };
-  programs.zsh = {
-    enable = true;
-    autosuggestions.enable = true;
-    syntaxHighlighting.enable = true;
-    shellAliases = {
-      ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";
-      la = "ls -a";
-      ll = "ls -lha";
-      ip = "ip -c";
+    # Enable CUPS to print documents.
+    printing.enable = true;
+
+    # Enable flatpak
+    flatpak.enable = true;
+
+    tailscale.enable = true;
+
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      pulse.enable = true;
+      # If you want to use JACK applications, uncomment this
+      #jack.enable = true;
+
+      # use the example session manager (no others are packaged yet so this is enabled by default,
+      # no need to redefine it in your config for now)
+      #media-session.enable = true;
+    };
+
+    avahi = {
+      enable = true;
+      nssmdns4 = true;
+      openFirewall = true;
     };
   };
 
   users.defaultUserShell = pkgs.zsh;
-  programs.not-found-exec.enable = true;
-
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
-
-  # Enable flatpak
-  services.flatpak.enable = true;
-
-  services.tailscale.enable = true;
 
   systemd.services.NetworkManager-wait-online.enable = false;
 
   # Enable sound with pipewire.
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    #jack.enable = true;
-
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
-  };
-
-  services.avahi = {
-    enable = true;
-    nssmdns4 = true;
-    openFirewall = true;
-  };
 
   environment.variables = {
     BAT_THEME = "GitHub";

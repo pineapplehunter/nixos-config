@@ -14,7 +14,6 @@ let
             pkgs = self.legacyPackages.${system};
             modules = mods ++ [
               self.homeModules.common
-              self.homeModules.pineapplehunter
               (
                 { pkgs, ... }:
                 {
@@ -47,6 +46,10 @@ in
 rec {
   modules = {
     common = import ./common;
+    nixos-common = {
+      imports = [ ./common ];
+      config.pineapplehunter.is-nixos = true;
+    };
     pineapplehunter = import ./pineapplehunter;
     shogo = import ./shogo;
     riken = import ./riken;

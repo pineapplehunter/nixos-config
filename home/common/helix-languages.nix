@@ -42,6 +42,7 @@
       language-servers = [
         "ruff"
         "pyright"
+        "pylsp"
       ];
     }
   ];

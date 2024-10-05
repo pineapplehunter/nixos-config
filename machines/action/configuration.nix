@@ -69,17 +69,52 @@
 
   zramSwap.enable = true;
 
-  services.xremap = {
-    enable = true;
-    withGnome = true;
-    config.modmap = [
-      {
-        name = "caps-esc";
-        remap = {
-          "CapsLock" = "Esc";
-        };
-      }
-    ];
+  services = {
+    xremap = {
+      enable = true;
+      withGnome = true;
+      config.modmap = [
+        {
+          name = "caps-esc";
+          remap = {
+            "CapsLock" = "Esc";
+          };
+        }
+      ];
+    };
+
+    thermald.enable = true;
+
+    btrfs.autoScrub = {
+      enable = true;
+      fileSystems = [ "/" ];
+    };
+
+    xserver = {
+      # Enable the X11 windowing system.
+      enable = true;
+
+      # Enable the GNOME Desktop Environment.
+      displayManager.gdm.enable = true;
+      desktopManager.gnome.enable = true;
+    };
+
+    snapper.configs = {
+      home = {
+        SUBVOLUME = "/home";
+        ALLOW_USERS = [ "shogo" ];
+        TIMELINE_CREATE = true;
+        TIMELINE_CLEANUP = true;
+        TIMELINE_LIMIT_HOURLY = 10;
+        TIMELINE_LIMIT_DAILY = 7;
+        TIMELINE_LIMIT_WEEKLY = 4;
+        TIMELINE_LIMIT_MONTHLY = 10;
+        TIMELINE_LIMIT_YEARLY = 2;
+      };
+    };
+
+    ollama.enable = true;
+
   };
 
   # Bootloader.
@@ -121,39 +156,20 @@
   # https://discourse.nixos.org/t/suspend-then-hibernate/31953/5
   powerManagement.enable = true;
   powerManagement.powertop.enable = true;
-  services.thermald.enable = true;
 
   systemd.services.docker.enable = false;
   systemd.sockets.docker.enable = false;
 
-  networking.hostName = "action"; # Define your hostname.
-  services.btrfs.autoScrub = {
-    enable = true;
-    fileSystems = [ "/" ];
-  };
+  networking = {
+    hostName = "action"; # Define your hostname.
+    # Enable networking
+    networkmanager.enable = true;
 
-  # Enable networking
-  networking.networkmanager.enable = true;
-
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-
-  # Enable the GNOME Desktop Environment.
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
-
-  services.snapper.configs = {
-    home = {
-      SUBVOLUME = "/home";
-      ALLOW_USERS = [ "shogo" ];
-      TIMELINE_CREATE = true;
-      TIMELINE_CLEANUP = true;
-      TIMELINE_LIMIT_HOURLY = 10;
-      TIMELINE_LIMIT_DAILY = 7;
-      TIMELINE_LIMIT_WEEKLY = 4;
-      TIMELINE_LIMIT_MONTHLY = 10;
-      TIMELINE_LIMIT_YEARLY = 2;
-    };
+    # Open ports in the firewall.
+    firewall.allowedTCPPorts = [ 8080 ];
+    # firewall.allowedUDPPorts = [ ... ];
+    # Or disable the firewall altogether.
+    # firewall.enable = false;
   };
 
   virtualisation = {
@@ -178,6 +194,7 @@
       extraGroups = [
         "networkmanager"
         "wheel"
+        "dialout"
       ];
     };
 
@@ -187,35 +204,39 @@
       extraGroups = [
         "networkmanager"
         "wheel"
+        "dialout"
       ];
     };
   };
   home-manager.users =
     let
-      inherit (self.homeModules) common shogo riken;
+      inherit (self.homeModules)
+        nixos-common
+        shogo
+        riken
+        ;
     in
     {
       shogo = {
         imports = [
-          common
+          nixos-common
           shogo
         ];
       };
       riken = {
         imports = [
-          common
+          nixos-common
           riken
         ];
       };
     };
 
-  # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 8080 ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-
   system.stateVersion = config.system.nixos.release;
   system.switch.enableNg = true;
 
+  environment.systemPackages = [
+    (pkgs.writeScriptBin "ai" ''
+      ollama run llama3.2
+    '')
+  ];
 }

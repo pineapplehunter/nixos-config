@@ -21,9 +21,7 @@
       paths = lib.filter lib.isDerivation (builtins.attrValues pkgs.nixos-artwork.wallpapers);
     };
     # inherit (pkgs.jetbrains) idea-ultimate;
-    flatpak-chrome-alias = (
-      pkgs.writeShellScriptBin "flatpak-chrome-alias" "flatpak run com.google.Chrome $@"
-    );
+    flatpak-chrome-alias = pkgs.writeShellScriptBin "flatpak-chrome-alias" "flatpak run com.google.Chrome $@";
     inherit (self.packages.${pkgs.system}) nautilus-thumbnailer-stl;
   };
 }

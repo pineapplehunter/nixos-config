@@ -4,7 +4,6 @@
 {
   config,
   lib,
-  pkgs,
   modulesPath,
   ...
 }:
@@ -14,31 +13,35 @@
 
   nixpkgs.system = "x86_64-linux";
 
-  boot.initrd.availableKernelModules = [
-    "xhci_pci"
-    "ahci"
-    "usbhid"
-    "sd_mod"
-  ];
-  boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ "kvm-amd" ];
-  boot.extraModulePackages = [ ];
-
-  fileSystems."/" = {
-    device = "/dev/disk/by-uuid/a95bd03d-e22e-4cfb-8a49-fe79716bda9f";
-    fsType = "btrfs";
-    options = [ "subvol=@nix" ];
+  boot = {
+    initrd.availableKernelModules = [
+      "xhci_pci"
+      "ahci"
+      "usbhid"
+      "sd_mod"
+    ];
+    initrd.kernelModules = [ ];
+    kernelModules = [ "kvm-amd" ];
+    extraModulePackages = [ ];
   };
 
-  fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/D9D2-D657";
-    fsType = "vfat";
-  };
+  fileSystems = {
+    "/" = {
+      device = "/dev/disk/by-uuid/a95bd03d-e22e-4cfb-8a49-fe79716bda9f";
+      fsType = "btrfs";
+      options = [ "subvol=@nix" ];
+    };
 
-  fileSystems."/swap" = {
-    device = "/dev/disk/by-uuid/a95bd03d-e22e-4cfb-8a49-fe79716bda9f";
-    fsType = "btrfs";
-    options = [ "subvol=@swap" ];
+    "/boot" = {
+      device = "/dev/disk/by-uuid/D9D2-D657";
+      fsType = "vfat";
+    };
+
+    "/swap" = {
+      device = "/dev/disk/by-uuid/a95bd03d-e22e-4cfb-8a49-fe79716bda9f";
+      fsType = "btrfs";
+      options = [ "subvol=@swap" ];
+    };
   };
 
   swapDevices = [ { device = "/swap/swapfile"; } ];
