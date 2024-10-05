@@ -84,6 +84,9 @@ rec {
       version = builtins.head (builtins.match ''[^0-9]*([0-9\.]+).*'' old.version);
     });
     npm-lockfile-fix = inputs.npm-lockfile-fix.packages.${final.system}.default.overrideAttrs (old: {
+      patches = (old.patches or []) ++ [
+        ./retry.patch
+      ];
       meta = old.meta // {
         mainProgram = "npm-lockfile-fix";
       };
