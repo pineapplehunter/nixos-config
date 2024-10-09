@@ -56,7 +56,10 @@ in
           pyright
           taplo
           ;
-        inherit (pkgs.nodePackages) typescript-language-server;
+        inherit (pkgs.nodePackages)
+          typescript-language-server
+          vscode-json-languageserver
+          ;
       };
       defaultEditor = true;
       languages = import ./helix-languages.nix { inherit kconfig-tree-sitter; };
