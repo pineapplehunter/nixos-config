@@ -54,6 +54,7 @@ in
           buf-language-server
           ruff
           pyright
+          taplo
           ;
         inherit (pkgs.nodePackages) typescript-language-server;
       };
