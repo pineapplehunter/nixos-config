@@ -56,10 +56,11 @@ in
           pyright
           taplo
           ;
-        inherit (pkgs.nodePackages)
-          typescript-language-server
-          vscode-json-languageserver
-          ;
+        inherit (pkgs.nodePackages) typescript-language-server;
+        # wrap program to change bin-name
+        vscode-json-language-server = pkgs.writeShellScriptBin "vscode-json-language-server" ''
+          ${pkgs.nodePackages.vscode-json-languageserver}/bin/vscode-json-languageserver "$@"
+        '';
       };
       defaultEditor = true;
       languages = import ./helix-languages.nix { inherit kconfig-tree-sitter; };
