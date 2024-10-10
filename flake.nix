@@ -16,7 +16,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-xilinx = {
-      url = "gitlab:doronbehar/nix-xilinx";
+      url = "gitlab:doronbehar/nix-xilinx?ref=25556ef48ca8042f9432fdacbf2c7d330cb88162";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     treefmt-nix = {
