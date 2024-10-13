@@ -232,6 +232,8 @@ in
     };
 
     fzf.enable = true;
+
+    git.enable = true;
   };
 
   xdg.dataFile."julia/config/startup.jl".text = ''
