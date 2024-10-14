@@ -233,7 +233,13 @@ in
 
     fzf.enable = true;
 
-    git.enable = true;
+    git = {
+      enable = true;
+      signing = {
+        key = null;
+        signByDefault = true;
+      };
+    };
   };
 
   xdg.dataFile."julia/config/startup.jl".text = ''
