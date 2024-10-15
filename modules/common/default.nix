@@ -74,9 +74,10 @@
   boot.plymouth.enable = lib.mkDefault true;
 
   sops.defaultSopsFile = ../../secrets/secrets.yml;
+  sops.defaultSopsFormat = "yaml";
   sops.secrets.access_tokens = {
-    mode = "0440";
-    group = config.users.groups.keys.name;
+    # mode = "0440";
+    # group = config.users.groups.keys.name;
   };
 
   programs = {
