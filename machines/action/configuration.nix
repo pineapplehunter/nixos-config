@@ -56,16 +56,9 @@
       connect-timeout = 10;
       builders-use-substitutes = true;
     };
-    extraOptions = ''
-      !include ${config.sops.secrets.access_tokens.path}
-    '';
     # channel.enable = false;
   };
 
-  sops.secrets.access_tokens = {
-    mode = "0440";
-    group = config.users.groups.keys.name;
-  };
 
   zramSwap.enable = true;
 

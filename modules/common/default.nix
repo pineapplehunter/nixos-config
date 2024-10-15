@@ -66,11 +66,18 @@
       options = "--delete-older-than 30d";
     };
     optimise.automatic = true;
+    extraOptions = ''
+      !include ${config.sops.secrets.access_tokens.path}
+    '';
   };
 
   boot.plymouth.enable = lib.mkDefault true;
 
   sops.defaultSopsFile = ../../secrets/secrets.yml;
+  sops.secrets.access_tokens = {
+    mode = "0440";
+    group = config.users.groups.keys.name;
+  };
 
   programs = {
     # Some programs need SUID wrappers, can be configured further or are
