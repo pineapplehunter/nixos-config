@@ -135,6 +135,7 @@
       extraGroups = [
         "networkmanager"
         "wheel"
+        config.users.groups.keys.name
       ];
       # shell = pkgs.nushell;
     };

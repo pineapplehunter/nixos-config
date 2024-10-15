@@ -59,7 +59,6 @@
     # channel.enable = false;
   };
 
-
   zramSwap.enable = true;
 
   services = {
@@ -188,6 +187,7 @@
         "networkmanager"
         "wheel"
         "dialout"
+        config.users.groups.keys.name
       ];
     };
 
@@ -198,6 +198,7 @@
         "networkmanager"
         "wheel"
         "dialout"
+        config.users.groups.keys.name
       ];
     };
   };
