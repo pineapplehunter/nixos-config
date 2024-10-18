@@ -241,6 +241,8 @@ in
         signByDefault = true;
       };
     };
+
+    gpg.enable = true;
   };
 
   xdg.dataFile."julia/config/startup.jl".text = ''
