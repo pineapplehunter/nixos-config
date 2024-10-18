@@ -44,18 +44,14 @@
       url = "github:peterldowns/nix-search-cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    systems.url = "github:nix-systems/default";
   };
 
   outputs =
     { self, nixpkgs, ... }@inputs:
     let
       inherit (nixpkgs) lib;
-      eachSystem = nixpkgs.lib.genAttrs [
-        "x86_64-linux"
-        "aarch64-linux"
-        "x86_64-darwin"
-        "aarch64-darwin"
-      ];
+      eachSystem = nixpkgs.lib.genAttrs (import inputs.systems);
       pkgsForSystem =
         system:
         import nixpkgs {

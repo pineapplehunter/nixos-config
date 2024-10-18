@@ -2,44 +2,32 @@
   self,
   nixpkgs,
   inputs,
+  ...
 }:
 let
   inherit (nixpkgs) lib;
   multiConfig =
     name: mods:
     lib.attrsets.mergeAttrsList (
-      map
-        (system: {
-          "${name}-${system}" = inputs.home-manager.lib.homeManagerConfiguration {
-            pkgs = self.legacyPackages.${system};
-            modules = mods ++ [
-              self.homeModules.common
-              (
-                { pkgs, ... }:
-                {
-                  pineapplehunter.config-name = "${name}-${system}";
-                  home.username = name;
-                  home.homeDirectory =
-                    let
-                      inherit (pkgs.stdenv) isLinux isDarwin;
-                    in
-                    if isLinux then
-                      "/home/${name}"
-                    else if isDarwin then
-                      "/Users/${name}"
-                    else
-                      throw "os not supported";
-                }
-              )
-            ];
+      map (system: {
+        "${name}-${system}" = inputs.home-manager.lib.homeManagerConfiguration {
+          pkgs = self.legacyPackages.${system};
+          extraSpecialArgs = {
+            inherit inputs self;
           };
-        })
-        [
-          "x86_64-linux"
-          "aarch64-linux"
-          "x86_64-darwin"
-          "aarch64-darwin"
-        ]
+          modules = [
+            self.homeModules.common
+            (
+              { pkgs, ... }:
+              {
+                pineapplehunter.config-name = "${name}-${system}";
+                home.username = name;
+                home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${name}" else "/home/${name}";
+              }
+            )
+          ] ++ mods;
+        };
+      }) (import inputs.systems)
     );
 
 in
@@ -47,7 +35,7 @@ rec {
   modules = {
     common = import ./common;
     nixos-common = {
-      imports = [ ./common ];
+      imports = [ self.homeModules.common ];
       config.pineapplehunter.is-nixos = true;
     };
     pineapplehunter = import ./pineapplehunter;

@@ -2,6 +2,7 @@
   pkgs,
   lib,
   config,
+  self,
   ...
 }:
 let
@@ -37,7 +38,8 @@ let
   };
 in
 {
-  imports = [ ../pineapplehunter ];
+  imports = [ self.homeModules.pineapplehunter ];
+
   programs = {
     helix = {
       enable = true;
