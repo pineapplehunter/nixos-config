@@ -43,18 +43,18 @@ in
       enable = true;
       extraPackages = builtins.attrValues {
         inherit (pkgs)
-          rust-analyzer
           bash-language-server
+          buf-language-server
+          clang-tools
+          marksman
           nixd
           nixfmt-rfc-style
-          clang-tools
-          tinymist
-          texlab
-          marksman
-          buf-language-server
-          ruff
           pyright
+          ruff
+          rust-analyzer
           taplo
+          texlab
+          tinymist
           vscode-langservers-extracted
           ;
         inherit (pkgs.nodePackages) typescript-language-server;
@@ -143,15 +143,15 @@ in
       extensions = map (p: { package = p; }) (
         builtins.attrValues {
           inherit (pkgs.gnomeExtensions)
-            tailscale-status
-            runcat
-            caffeine
             appindicator
-            just-perfection
-            syncthing-indicator
-            tiling-assistant
-            night-theme-switcher
             blur-my-shell
+            caffeine
+            just-perfection
+            night-theme-switcher
+            runcat
+            syncthing-indicator
+            tailscale-status
+            tiling-assistant
             ;
         }
       );
@@ -167,16 +167,16 @@ in
         ];
         PATH = builtins.attrValues {
           inherit (pkgs)
-            ripgrep
-            file
-            ffmpegthumbnailer
-            imagemagick
-            fzf
-            fd
             chafa
-            zoxide
-            p7zip
+            fd
+            ffmpegthumbnailer
+            file
+            fzf
+            imagemagick
             jq
+            p7zip
+            ripgrep
+            zoxide
             ;
         };
       };
@@ -258,22 +258,23 @@ in
   home = {
     packages = builtins.attrValues {
       inherit (pkgs)
-        nixpkgs-review
-        tokei
-        htop
-        nix-tree
-        nixpkgs-fmt
-        nixfmt-rfc-style
-        nix-output-monitor
         difftastic
-        starship
-        zellij
+        dust
+        elan
+        htop
+        ncdu
+        nix-output-monitor
+        nix-search-cli
+        nix-tree
+        nix-update
+        nixfmt-rfc-style
+        nixpkgs-fmt
+        nixpkgs-review
         npins
         rustup
-        elan
-        ncdu
-        nix-update
-        nix-search-cli
+        starship
+        tokei
+        zellij
         ;
       julia = if isLinux then pkgs.julia else pkgs.julia-bin;
       cachix-no-man = pkgs.symlinkJoin {
