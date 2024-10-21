@@ -45,5 +45,7 @@
           programs.nixfmt.enable = true;
         }).config.build.wrapper
       );
+
+      legacyPackages = eachSystem pkgsFor;
     };
 }
