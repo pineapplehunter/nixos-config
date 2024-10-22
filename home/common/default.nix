@@ -267,6 +267,7 @@ in
         elan
         htop
         ncdu
+        nix-index
         nix-output-monitor
         nix-search-cli
         nix-tree
