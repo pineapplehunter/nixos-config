@@ -52,7 +52,7 @@
     let
       inherit (nixpkgs) lib;
       eachSystem = nixpkgs.lib.genAttrs (import inputs.systems);
-      pkgsForSystem =
+      pkgsFor =
         system:
         import nixpkgs {
           inherit system;
@@ -74,7 +74,7 @@
     // {
       formatter = eachSystem (
         system:
-        (inputs.treefmt-nix.lib.evalModule (pkgsForSystem system) {
+        (inputs.treefmt-nix.lib.evalModule (pkgsFor system) {
           projectRootFile = "flake.nix";
           programs.nixfmt.enable = true;
         }).config.build.wrapper
@@ -83,7 +83,7 @@
       packages = eachSystem (
         system:
         let
-          pkgs = pkgsForSystem system;
+          pkgs = pkgsFor system;
           callPackage = lib.callPackageWith (pkgs // self.packages.${system});
         in
         {
@@ -92,8 +92,8 @@
         }
       );
       devShells = eachSystem (system: {
-        default = (pkgsForSystem system).callPackage ./shell.nix { };
+        default = import ./shell.nix { pkgs = pkgsFor system; };
       });
-      legacyPackages = eachSystem pkgsForSystem;
+      legacyPackages = eachSystem pkgsFor;
     };
 }

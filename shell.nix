@@ -1,16 +1,18 @@
 {
-  lib,
-  writeShellScriptBin,
-  nix-output-monitor,
-  nvd,
-  nixos-rebuild,
-  statix,
-  mkShellNoCC,
-  home-manager,
+  pkgs ? import <nixpkgs> { },
 }:
 
 let
-  inherit (lib) getExe;
+  inherit (pkgs)
+    writeShellScriptBin
+    mkShellNoCC
+    nvd
+    nix-output-monitor
+    home-manager
+    nixos-rebuild
+    statix
+    ;
+  inherit (pkgs.lib) getExe;
   os-build-script = writeShellScriptBin "os-build" ''
     nom build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
     exit $?
