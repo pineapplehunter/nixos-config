@@ -43,7 +43,7 @@
       pciutils
       papers
       openssl
-      # gitify
+      gitify
       ;
     ventoy-custom = pkgs.ventoy-full.override {
       defaultGuiType = "gtk3";
