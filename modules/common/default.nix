@@ -125,7 +125,17 @@
     openssh.enable = true;
 
     # Enable CUPS to print documents.
-    printing.enable = true;
+    printing = {
+      enable = true;
+      drivers = builtins.attrValues {
+        inherit (pkgs)
+          gutenprint
+          hplip
+          splix
+          epson-escpr
+          ;
+      };
+    };
 
     # Enable flatpak
     flatpak.enable = true;
@@ -149,6 +159,7 @@
       nssmdns4 = true;
       openFirewall = true;
     };
+
   };
 
   users.defaultUserShell = pkgs.zsh;
