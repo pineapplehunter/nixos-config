@@ -4,7 +4,6 @@
     inherit (pkgs)
       webcord
       slack
-      super-productivity
       unityhub
       ;
   };

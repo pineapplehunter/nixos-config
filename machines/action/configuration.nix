@@ -20,7 +20,6 @@
 
   # nixpkgs.flake.source = lib.mkForce null;
   nix = {
-    package = pkgs.nixVersions.latest;
     distributedBuilds = true;
     buildMachines = [
       {
@@ -136,7 +135,6 @@
       '';
     };
     loader.efi.canTouchEfiVariables = true;
-    kernelPackages = pkgs.linuxPackages_latest;
     extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
     binfmt.emulatedSystems = [
       "aarch64-linux"

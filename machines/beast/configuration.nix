@@ -18,7 +18,6 @@
   pineapplehunter.windows-vm.enable = true;
 
   nix = {
-    # package = pkgs.nixVersions.latest;
     distributedBuilds = true;
     buildMachines = [
       {
@@ -49,7 +48,6 @@
       "aarch64-linux"
       "riscv64-linux"
     ];
-    kernelPackages = pkgs.linuxPackages_latest;
   };
 
   networking.hostName = "beast"; # Define your hostname.

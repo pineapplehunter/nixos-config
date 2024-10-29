@@ -13,7 +13,6 @@
       curl-http3
       jujutsu
       vivado
-      super-productivity
       orca-slicer
       ;
     artwork-wallpapers = pkgs.symlinkJoin {

@@ -35,7 +35,7 @@
   };
 
   nix = {
-    # package = pkgs.nixVersions.unstable;
+    package = pkgs.nixVersions.latest;
     settings = {
       experimental-features = [
         "nix-command"
@@ -72,6 +72,7 @@
   };
 
   boot.plymouth.enable = lib.mkDefault true;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   sops = {
     defaultSopsFile = ../../secrets/secrets.yml;

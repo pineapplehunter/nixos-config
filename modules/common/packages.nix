@@ -44,6 +44,7 @@
       papers
       openssl
       gitify
+      super-productivity
       ;
     ventoy-custom = pkgs.ventoy-full.override {
       defaultGuiType = "gtk3";
