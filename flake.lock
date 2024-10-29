@@ -484,11 +484,11 @@
     },
     "nixpkgs-pineapplehunter-mqttx-cli": {
       "locked": {
-        "lastModified": 1725239013,
-        "narHash": "sha256-HM2HEHY/Otfj7YdmN8nMRCRaF5seBwoYBNrB+JKo5Xw=",
+        "lastModified": 1730188748,
+        "narHash": "sha256-Z26kzs07tgIomSWaRkpovtgRKNYvbyc+ifNtoiKcEog=",
         "owner": "pineapplehunter",
         "repo": "nixpkgs",
-        "rev": "f5a59bb60bb35e433182c85a16721f2c2f05384c",
+        "rev": "b6a8ac5d1b4287fc348ef6aad5873f8a7d4b9000",
         "type": "github"
       },
       "original": {
@@ -675,11 +675,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1730025913,
-        "narHash": "sha256-Y9NtFmP8ciLyRsopcCx1tyoaaStKeq+EndwtGCgww7I=",
+        "lastModified": 1730120726,
+        "narHash": "sha256-LqHYIxMrl/1p3/kvm2ir925tZ8DkI0KA10djk8wecSk=",
         "owner": "numtide",
         "repo": "treefmt-nix",
-        "rev": "bae131e525cc8718da22fbeb8d8c7c43c4ea502a",
+        "rev": "9ef337e492a5555d8e17a51c911ff1f02635be15",
         "type": "github"
       },
       "original": {
