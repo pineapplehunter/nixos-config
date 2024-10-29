@@ -7,6 +7,11 @@
     nixpkgs-pineapplehunter-supprod.url = "github:pineapplehunter/nixpkgs?ref=supprod-from-source";
     nixpkgs-pineapplehunter-mqttx-cli.url = "github:pineapplehunter/nixpkgs?ref=mqttx-cli";
     nixpkgs-pineapplehunter-gitify.url = "github:pineapplehunter/nixpkgs?ref=gitify";
+    emacs-overlay = {
+      url = "github:nix-community/emacs-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs-stable.follows = "nixpkgs-stable";
+    };
     npm-lockfile-fix = {
       url = "github:pineapplehunter/npm-lockfile-fix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -35,6 +40,7 @@
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs-stable.follows = "nixpkgs-stable";
     };
     nixgl = {
       url = "github:nix-community/nixGL";
@@ -59,6 +65,7 @@
           overlays = [
             inputs.nixgl.overlays.default
             inputs.nix-xilinx.overlay
+            inputs.emacs-overlay.overlays.default
             self.overlays.default
           ];
         };

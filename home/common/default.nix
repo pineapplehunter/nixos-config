@@ -245,6 +245,15 @@ in
     };
 
     gpg.enable = true;
+
+    emacs = {
+      enable = true;
+      package = pkgs.emacs-unstable-pgtk;
+      extraPackages = epkgs: [
+        epkgs.nix-mode
+        epkgs.evil
+     ];
+    };
   };
 
   xdg.dataFile."julia/config/startup.jl".text = ''
@@ -315,6 +324,7 @@ in
   };
 
   services.syncthing.enable = pkgs.stdenv.isLinux;
+  services.emacs.enable = true;
 
   home.stateVersion = config.home.version.release;
   programs.home-manager.enable = true;
