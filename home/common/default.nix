@@ -7,7 +7,7 @@
 }:
 let
   inherit (lib.attrsets) optionalAttrs;
-  inherit (pkgs.stdenv.hostPlatform) isLinux;
+  inherit (pkgs.stdenv.hostPlatform) isLinux isDarwin;
   inherit (config.pineapplehunter) is-nixos;
   wrapPackage =
     {
@@ -269,42 +269,47 @@ in
   '';
 
   home = {
-    packages = builtins.attrValues {
-      inherit (pkgs)
-        difftastic
-        dust
-        elan
-        htop
-        ncdu
-        nix-index
-        nix-output-monitor
-        nix-search-cli
-        nix-tree
-        nix-update
-        nixfmt-rfc-style
-        nixpkgs-fmt
-        nixpkgs-review
-        npins
-        rustup
-        starship
-        tokei
-        tree
-        zellij
-        ;
-      julia = if isLinux then pkgs.julia else pkgs.julia-bin;
-      cachix-no-man = pkgs.symlinkJoin {
-        inherit (pkgs.cachix) version;
-        name = "cachix";
-        paths = [ pkgs.cachix.bin ];
-      };
-      cachix-push = pkgs.writeShellScriptBin "cachix-push" ''
-        SIZE=$(echo ''${2:-500M} | numfmt --from iec)
-        CACHE=''${1:-pineapplehunter}
-        nix path-info ./result -rS --json \
-          | ${pkgs.jq}/bin/jq "to_entries | sort_by(.value.closureSize) | .[] | select(.value.closureSize < $SIZE) | .key" -r \
-          | ${pkgs.cachix.bin}/bin/cachix push $CACHE
-      '';
-    };
+    packages = builtins.attrValues (
+      {
+        inherit (pkgs)
+          difftastic
+          dust
+          elan
+          htop
+          ncdu
+          nix-index
+          nix-output-monitor
+          nix-search-cli
+          nix-tree
+          nix-update
+          nixfmt-rfc-style
+          nixpkgs-fmt
+          nixpkgs-review
+          npins
+          rustup
+          starship
+          tokei
+          tree
+          zellij
+          ;
+        julia = if isLinux then pkgs.julia else pkgs.julia-bin;
+        cachix-no-man = pkgs.symlinkJoin {
+          inherit (pkgs.cachix) version;
+          name = "cachix";
+          paths = [ pkgs.cachix.bin ];
+        };
+        cachix-push = pkgs.writeShellScriptBin "cachix-push" ''
+          SIZE=$(echo ''${2:-500M} | numfmt --from iec)
+          CACHE=''${1:-pineapplehunter}
+          nix path-info ./result -rS --json \
+            | ${pkgs.jq}/bin/jq "to_entries | sort_by(.value.closureSize) | .[] | select(.value.closureSize < $SIZE) | .key" -r \
+            | ${pkgs.cachix.bin}/bin/cachix push $CACHE
+        '';
+      }
+      // lib.optionalAttrs isDarwin {
+        inherit (pkgs) iterm2;
+      }
+    );
     shellAliases = lib.mkMerge [
       {
         ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";
