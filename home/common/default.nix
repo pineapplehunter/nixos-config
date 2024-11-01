@@ -7,7 +7,7 @@
 }:
 let
   inherit (lib.attrsets) optionalAttrs;
-  inherit (pkgs.stdenv) isLinux;
+  inherit (pkgs.stdenv.hostPlatform) isLinux;
   inherit (config.pineapplehunter) is-nixos;
   wrapPackage =
     {
@@ -248,11 +248,11 @@ in
 
     emacs = {
       enable = true;
-      package = pkgs.emacs-unstable-pgtk;
+      package = if isLinux then pkgs.emacs-unstable-pgtk else pkgs.emacs;
       extraPackages = epkgs: [
         epkgs.nix-mode
         epkgs.evil
-     ];
+      ];
     };
   };
 
@@ -288,6 +288,7 @@ in
         rustup
         starship
         tokei
+        tree
         zellij
         ;
       julia = if isLinux then pkgs.julia else pkgs.julia-bin;
@@ -323,8 +324,8 @@ in
     };
   };
 
-  services.syncthing.enable = pkgs.stdenv.isLinux;
-  services.emacs.enable = true;
+  services.syncthing.enable = isLinux;
+  services.emacs.enable = isLinux;
 
   home.stateVersion = config.home.version.release;
   programs.home-manager.enable = true;

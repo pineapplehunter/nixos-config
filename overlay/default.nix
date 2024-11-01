@@ -99,6 +99,8 @@ rec {
       pkgs-stable = import inputs.nixpkgs-stable { inherit (final) system; };
     in
     {
-      inherit (pkgs-stable) ;
+      inherit (pkgs-stable)
+        julia-bin
+        ;
     };
 }
