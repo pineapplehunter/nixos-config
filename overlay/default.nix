@@ -100,8 +100,7 @@ rec {
     in
     {
       inherit (pkgs-stable)
-        _7zz
-        julia-bin
+        orca-slicer
         blender
         ;
     };
