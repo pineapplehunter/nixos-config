@@ -28,6 +28,10 @@
       soft-wrap.enable = true;
     }
     {
+      name = "typst";
+      soft-wrap.enable = true;
+    }
+    {
       name = "kconfig";
       scope = "source.kconfig";
       comment-token = "#";
