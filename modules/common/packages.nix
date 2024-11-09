@@ -11,7 +11,6 @@
       htop
       nethogs
       github-cli
-      du-dust
       btrfs-assistant
       ripgrep
       nix-output-monitor

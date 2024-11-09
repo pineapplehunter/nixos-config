@@ -5,7 +5,8 @@
 }:
 rec {
   default = lib.composeManyExtensions [
-    stable
+    darwinOverlay
+    linuxOverlay
     custom
     removeDesktop
   ];
@@ -93,15 +94,28 @@ rec {
     });
   };
 
-  stable =
+  linuxOverlay =
     final: prev:
     let
       pkgs-stable = import inputs.nixpkgs-stable { inherit (final) system; };
     in
-    {
+    lib.optionalAttrs prev.stdenv.hostPlatform.isLinux {
       inherit (pkgs-stable)
         orca-slicer
         blender
+        ;
+    };
+
+  darwinOverlay =
+    final: prev:
+    let
+      pkgs-stable = import inputs.nixpkgs-stable { inherit (final) system; };
+    in
+    lib.optionalAttrs prev.stdenv.hostPlatform.isDarwin {
+      inherit (pkgs-stable)
+        trunk
+        dust
+        ncdu
         ;
     };
 }
