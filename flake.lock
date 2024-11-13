@@ -80,11 +80,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1731401995,
-        "narHash": "sha256-znB/vZLqh69rMncsIritz6cty204n8xknzeHiTsvVI0=",
+        "lastModified": 1731489158,
+        "narHash": "sha256-xxhjjRBM9P6536SATfoGkKcMBKPZxcgs3yx/cyQxbb0=",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "7a8b2d8879986e79d9271f85f6559e8a74f5b6cf",
+        "rev": "98672e8948813f132851fb6768fa1265a8cab324",
         "type": "github"
       },
       "original": {
@@ -507,11 +507,11 @@
     },
     "nixpkgs-pineapplehunter-mqttx-cli": {
       "locked": {
-        "lastModified": 1731395160,
-        "narHash": "sha256-Y+WA/C8MkaYQnvKdM7n8bsKJN7DYYYOnJdECVxmrNME=",
+        "lastModified": 1731489818,
+        "narHash": "sha256-wZ/YVGY9TWuvo+G5qX3MVScSUdBikWaTy/tW5HSOdFM=",
         "owner": "pineapplehunter",
         "repo": "nixpkgs",
-        "rev": "438b40efe2bfa55ceb71b35f2cc5af8db9b7cf62",
+        "rev": "2b71ca95bac9f5bb1e7d51ec256473f7398b40b6",
         "type": "github"
       },
       "original": {
