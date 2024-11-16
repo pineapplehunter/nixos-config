@@ -158,7 +158,4 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
-
-  system.stateVersion = config.system.nixos.release;
-
 }

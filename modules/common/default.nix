@@ -183,4 +183,6 @@
       inherit inputs self;
     };
   };
+
+  system.stateVersion = config.system.nixos.release;
 }
