@@ -332,6 +332,26 @@ in
   services.syncthing.enable = isLinux;
   services.emacs.enable = isLinux;
 
+  # flatpak auto update
+  systemd.user = {
+    services.flatpak-update = {
+      Unit.Description = "Update flatpak";
+      Service = {
+        Type = "oneshot";
+        ExecStart = "flatpak update --noninteractive -y";
+      };
+    };
+    timers.flatpak-update = {
+      Unit.Description = "Timer for periodic flatpak updates";
+      Timer = {
+        OnCalendar = "daily";
+        AccuracySec = "12h";
+        Persistent = true;
+      };
+      Install.WantedBy = [ "timers.target" ];
+    };
+  };
+
   home.stateVersion = config.home.version.release;
   programs.home-manager.enable = true;
   news.display = "silent";
