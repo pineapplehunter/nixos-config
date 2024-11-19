@@ -41,6 +41,7 @@ rec {
     pineapplehunter = import ./pineapplehunter;
     shogo = import ./shogo;
     riken = import ./riken;
+    flatpak-update = import ./flatpak-update;
   };
   configurations = lib.attrsets.mergeAttrsList [
     (multiConfig "shogo" [ modules.shogo ])
