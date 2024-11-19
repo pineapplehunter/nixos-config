@@ -39,7 +39,6 @@ rec {
       htop = removeDesktopEntry prev.htop;
       helix = removeDesktopEntry prev.helix;
       yazi = removeDesktopEntry prev.yazi;
-      fish = removeDesktopEntry prev.fish;
     };
 
   custom = final: prev: {
