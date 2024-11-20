@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-24.05";
+    empty.url = "github:pineapplehunter/nix-empty";
     supprod-nix = {
       url = "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/supprod-from-source/pkgs/by-name/su/super-productivity/package.nix";
       flake = false;
@@ -39,6 +40,7 @@
         nixpkgs.follows = "nixpkgs";
         treefmt-nix.follows = "treefmt-nix";
         home-manager.follows = "home-manager";
+        hyprland.follows = "empty";
       };
     };
     nixos-hardware.url = "github:pineapplehunter/nixos-hardware";
