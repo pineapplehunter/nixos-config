@@ -5,8 +5,7 @@
 }:
 rec {
   default = lib.composeManyExtensions [
-    darwinOverlay
-    linuxOverlay
+    platformSpecificOverlay
     custom
     removeDesktop
   ];
@@ -79,26 +78,10 @@ rec {
     });
   };
 
-  linuxOverlay =
+  platformSpecificOverlay =
     final: prev:
-    let
-      pkgs-stable = import inputs.nixpkgs-stable { inherit (final) system; };
-    in
-    lib.optionalAttrs prev.stdenv.hostPlatform.isLinux {
-      inherit (pkgs-stable)
-        ;
-    };
-
-  darwinOverlay =
-    final: prev:
-    let
-      pkgs-stable = import inputs.nixpkgs-stable { inherit (final) system; };
-    in
-    lib.optionalAttrs prev.stdenv.hostPlatform.isDarwin {
-      inherit (pkgs-stable)
-        trunk
-        dust
-        ncdu
-        ;
-    };
+    lib.mkMerge [
+      (lib.optionalAttrs (prev.hostPlatform == "x86_64-linux") { })
+      (lib.optionalAttrs (prev.hostPlatform == "x86_64-darwin") { })
+    ];
 }
