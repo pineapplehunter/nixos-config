@@ -3,6 +3,7 @@ keys:
   - &micky age14f25vp3y5z3k8qc7u52srq67jhxzftclgw3c9xsu0avczprh3ykqkjc5ln
   - &action-root age1atv2fjy4n4ch9vfh0aaa7v9muvhdmy263uxpytjnskwll46d7gasnnxr36
   - &micky-root age1xmqe62j5kwhzlgyernmynpkpy5fhk0tqea3sseh94j056gke3smqj8h3ap
+  - &beast-root age1a7zrep0wnftyujc4y097xs4reff22fmvund39hanajt75x4uzsdq60qdfz
 creation_rules:
   - path_regex: secrets/secrets.yml$
     key_groups:
@@ -11,3 +12,4 @@ creation_rules:
           - *micky
           - *action-root
           - *micky-root
+          - *beast-root
