@@ -64,16 +64,16 @@
       autoSuspend = false;
     };
   };
-  # services.displayManager.autoLogin = {
-  #   enable = true;
-  #   user = "shogo";
-  # };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.shogo = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [
+      "wheel" # Enable ‘sudo’ for the user.
+      config.users.groups.keys.name
+    ];
   };
+
   home-manager.users =
     let
       inherit (self.homeModules) nixos-common shogo;
