@@ -173,6 +173,18 @@
         "type": "github"
       }
     },
+    "gitify-nix": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-9jCz6G0KGKcEv7AQANkCc57tjbk4hXJJHxv8xrTcua4=",
+        "type": "file",
+        "url": "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/gitify/pkgs/by-name/gi/gitify/package.nix"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/gitify/pkgs/by-name/gi/gitify/package.nix"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -365,6 +377,18 @@
         "type": "github"
       }
     },
+    "mqttx-cli-nix": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-0amL80Jg9CIkb+ewpTUNgw62BywyDVbZyXhozjL7sQs=",
+        "type": "file",
+        "url": "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/mqttx-cli/pkgs/by-name/mq/mqttx-cli/package.nix"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/mqttx-cli/pkgs/by-name/mq/mqttx-cli/package.nix"
+      }
+    },
     "nix-filter": {
       "locked": {
         "lastModified": 1710156097,
@@ -489,54 +513,6 @@
         "url": "https://github.com/NixOS/nixpkgs/archive/356624c12086a18f2ea2825fed34523d60ccc4e3.tar.gz"
       }
     },
-    "nixpkgs-pineapplehunter-gitify": {
-      "locked": {
-        "lastModified": 1729840849,
-        "narHash": "sha256-3/iHq1BvANBCPXPrg7pmEAVl64mMor2niI0l+cpWFXI=",
-        "owner": "pineapplehunter",
-        "repo": "nixpkgs",
-        "rev": "13069f8572770f2e323b84910e618a52544f47cd",
-        "type": "github"
-      },
-      "original": {
-        "owner": "pineapplehunter",
-        "ref": "gitify",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs-pineapplehunter-mqttx-cli": {
-      "locked": {
-        "lastModified": 1731489818,
-        "narHash": "sha256-wZ/YVGY9TWuvo+G5qX3MVScSUdBikWaTy/tW5HSOdFM=",
-        "owner": "pineapplehunter",
-        "repo": "nixpkgs",
-        "rev": "2b71ca95bac9f5bb1e7d51ec256473f7398b40b6",
-        "type": "github"
-      },
-      "original": {
-        "owner": "pineapplehunter",
-        "ref": "mqttx-cli",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs-pineapplehunter-supprod": {
-      "locked": {
-        "lastModified": 1731412997,
-        "narHash": "sha256-6bwIS3njc+vSNBCMnQ+X1Rt4jI/hiWAjceGjZaQjvTQ=",
-        "owner": "pineapplehunter",
-        "repo": "nixpkgs",
-        "rev": "1562b310ee25dec1e698b2a6b994a55fa7871766",
-        "type": "github"
-      },
-      "original": {
-        "owner": "pineapplehunter",
-        "ref": "supprod-from-source",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs-stable": {
       "locked": {
         "lastModified": 1731797254,
@@ -588,17 +564,17 @@
     "root": {
       "inputs": {
         "emacs-overlay": "emacs-overlay",
+        "gitify-nix": "gitify-nix",
         "home-manager": "home-manager",
+        "mqttx-cli-nix": "mqttx-cli-nix",
         "nix-search-cli": "nix-search-cli",
         "nix-xilinx": "nix-xilinx",
         "nixgl": "nixgl",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
-        "nixpkgs-pineapplehunter-gitify": "nixpkgs-pineapplehunter-gitify",
-        "nixpkgs-pineapplehunter-mqttx-cli": "nixpkgs-pineapplehunter-mqttx-cli",
-        "nixpkgs-pineapplehunter-supprod": "nixpkgs-pineapplehunter-supprod",
         "nixpkgs-stable": "nixpkgs-stable",
         "sops-nix": "sops-nix",
+        "supprod-nix": "supprod-nix",
         "systems": "systems",
         "treefmt-nix": "treefmt-nix",
         "xremap-flake": "xremap-flake"
@@ -622,6 +598,18 @@
         "owner": "Mic92",
         "repo": "sops-nix",
         "type": "github"
+      }
+    },
+    "supprod-nix": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-6eyzU/6wEnwv/zBQjHE9Chd9aamG0Dw1nOKpgoou3Fo=",
+        "type": "file",
+        "url": "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/supprod-from-source/pkgs/by-name/su/super-productivity/package.nix"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/supprod-from-source/pkgs/by-name/su/super-productivity/package.nix"
       }
     },
     "systems": {

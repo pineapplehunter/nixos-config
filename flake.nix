@@ -4,9 +4,18 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-24.05";
-    nixpkgs-pineapplehunter-supprod.url = "github:pineapplehunter/nixpkgs?ref=supprod-from-source";
-    nixpkgs-pineapplehunter-mqttx-cli.url = "github:pineapplehunter/nixpkgs?ref=mqttx-cli";
-    nixpkgs-pineapplehunter-gitify.url = "github:pineapplehunter/nixpkgs?ref=gitify";
+    supprod-nix = {
+      url = "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/supprod-from-source/pkgs/by-name/su/super-productivity/package.nix";
+      flake = false;
+    };
+    mqttx-cli-nix = {
+      url = "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/mqttx-cli/pkgs/by-name/mq/mqttx-cli/package.nix";
+      flake = false;
+    };
+    gitify-nix = {
+      url = "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/gitify/pkgs/by-name/gi/gitify/package.nix";
+      flake = false;
+    };
     emacs-overlay = {
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "nixpkgs";

@@ -59,15 +59,9 @@ rec {
     android-studio = prev.android-studio.overrideAttrs {
       preferLocalBuild = true;
     };
-    super-productivity = final.callPackage (
-      inputs.nixpkgs-pineapplehunter-supprod + /pkgs/by-name/su/super-productivity/package.nix
-    ) { };
-    mqttx-cli = final.callPackage (
-      inputs.nixpkgs-pineapplehunter-mqttx-cli + /pkgs/by-name/mq/mqttx-cli/package.nix
-    ) { };
-    gitify = final.callPackage (
-      inputs.nixpkgs-pineapplehunter-gitify + /pkgs/by-name/gi/gitify/package.nix
-    ) { };
+    super-productivity = final.callPackage inputs.supprod-nix { };
+    mqttx-cli = final.callPackage inputs.mqttx-cli-nix { };
+    gitify = final.callPackage inputs.gitify-nix { };
     gnome = prev.gnome // {
       gnome-settings-daemon = prev.gnome.gnome-settings-daemon.overrideAttrs (old: {
         # I don't need sleep notifications!
