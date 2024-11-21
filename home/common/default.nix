@@ -53,7 +53,7 @@ in
       extraPackages = builtins.attrValues {
         inherit (pkgs)
           bash-language-server
-          buf-language-server
+          buf
           clang-tools
           marksman
           nixd

@@ -10,6 +10,13 @@
       command = "pyright-langserver";
       args = [ "--stdio" ];
     };
+    buf = {
+      command = "buf";
+      args = [
+        "beta"
+        "lsp"
+      ];
+    };
   };
   language = [
     {
@@ -48,6 +55,10 @@
         "pyright"
         "pylsp"
       ];
+    }
+    {
+      name = "protobuf";
+      language-servers = [ "buf" ];
     }
   ];
   grammar = [
