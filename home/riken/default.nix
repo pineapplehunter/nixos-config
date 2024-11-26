@@ -5,6 +5,7 @@
     inherit (pkgs)
       mqttx-cli
       buf
+      uv
       ;
   };
 
