@@ -339,7 +339,7 @@ in
   services = {
     syncthing.enable = isLinux;
     emacs.enable = isLinux;
-    flatpak-update.enable = isLinux;
+    flatpak-update.enable = isLinux && !is-nixos;
   };
 
   home.stateVersion = config.home.version.release;
