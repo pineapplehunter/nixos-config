@@ -80,8 +80,17 @@ rec {
 
   platformSpecificOverlay =
     final: prev:
-    lib.mkMerge [
-      (lib.optionalAttrs (prev.hostPlatform == "x86_64-linux") { })
-      (lib.optionalAttrs (prev.hostPlatform == "x86_64-darwin") { })
+    let
+      # from https://discourse.nixos.org/t/nix-function-to-merge-attributes-records-recursively-and-concatenate-arrays/2030?u=pineapplehunter
+      recursiveMergeAttrs =
+        listOfAttrsets: lib.fold (attrset: acc: lib.recursiveUpdate attrset acc) { } listOfAttrsets;
+    in
+    recursiveMergeAttrs [
+      (lib.optionalAttrs prev.stdenv.hostPlatform.isLinux {
+        inherit (import inputs.nixpkgs-stable { inherit (prev) system; })
+          orca-slicer
+          ;
+      })
+      (lib.optionalAttrs prev.stdenv.hostPlatform.isDarwin { })
     ];
 }
