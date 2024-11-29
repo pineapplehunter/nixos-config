@@ -13,10 +13,6 @@
       url = "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/mqttx-cli/pkgs/by-name/mq/mqttx-cli/package.nix";
       flake = false;
     };
-    gitify-nix = {
-      url = "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/gitify/pkgs/by-name/gi/gitify/package.nix";
-      flake = false;
-    };
     emacs-overlay = {
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "nixpkgs";

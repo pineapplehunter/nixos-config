@@ -151,18 +151,6 @@
         "type": "github"
       }
     },
-    "gitify-nix": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-9jCz6G0KGKcEv7AQANkCc57tjbk4hXJJHxv8xrTcua4=",
-        "type": "file",
-        "url": "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/gitify/pkgs/by-name/gi/gitify/package.nix"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/gitify/pkgs/by-name/gi/gitify/package.nix"
-      }
-    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -355,7 +343,6 @@
       "inputs": {
         "emacs-overlay": "emacs-overlay",
         "empty": "empty",
-        "gitify-nix": "gitify-nix",
         "home-manager": "home-manager",
         "mqttx-cli-nix": "mqttx-cli-nix",
         "nix-search-cli": "nix-search-cli",
