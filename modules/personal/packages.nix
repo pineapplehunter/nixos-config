@@ -13,7 +13,7 @@
       curl-http3
       jujutsu
       vivado
-      orca-slicer
+      # orca-slicer
       ;
     artwork-wallpapers = pkgs.symlinkJoin {
       name = "nixos-artwork-wallpapers";

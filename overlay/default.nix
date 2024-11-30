@@ -87,7 +87,6 @@ rec {
     recursiveMergeAttrs [
       (lib.optionalAttrs prev.stdenv.hostPlatform.isLinux {
         inherit (import inputs.nixpkgs-stable { inherit (prev) system; })
-          orca-slicer
           ;
       })
       (lib.optionalAttrs prev.stdenv.hostPlatform.isDarwin { })
