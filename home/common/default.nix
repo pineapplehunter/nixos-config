@@ -259,6 +259,7 @@ in
       extraPackages = epkgs: [
         epkgs.nix-mode
         epkgs.evil
+        epkgs.slime
       ];
     };
   };
