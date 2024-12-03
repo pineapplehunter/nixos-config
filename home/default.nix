@@ -42,6 +42,7 @@ rec {
     shogo = import ./shogo;
     riken = import ./riken;
     flatpak-update = import ./flatpak-update;
+    emacs = import ./emacs;
   };
   configurations = lib.attrsets.mergeAttrsList [
     (multiConfig "shogo" [ modules.shogo ])

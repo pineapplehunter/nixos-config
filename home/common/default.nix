@@ -40,11 +40,12 @@ in
 {
   imports =
     let
-      inherit (self.homeModules) pineapplehunter flatpak-update;
+      inherit (self.homeModules) pineapplehunter flatpak-update emacs;
     in
     [
       pineapplehunter
       flatpak-update
+      emacs
     ];
 
   programs = {
@@ -253,15 +254,6 @@ in
 
     gpg.enable = true;
 
-    emacs = {
-      enable = true;
-      package = if isLinux then pkgs.emacs-unstable-pgtk else pkgs.emacs;
-      extraPackages = epkgs: [
-        epkgs.nix-mode
-        epkgs.evil
-        epkgs.slime
-      ];
-    };
   };
 
   xdg.dataFile."julia/config/startup.jl".text = ''
@@ -339,7 +331,6 @@ in
 
   services = {
     syncthing.enable = isLinux;
-    emacs.enable = isLinux;
     flatpak-update.enable = isLinux && !is-nixos;
   };
 
