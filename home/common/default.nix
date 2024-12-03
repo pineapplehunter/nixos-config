@@ -254,6 +254,10 @@ in
 
     gpg.enable = true;
 
+    home-manager = {
+      enable = true;
+      path = lib.mkForce null;
+    };
   };
 
   xdg.dataFile."julia/config/startup.jl".text = ''
@@ -335,6 +339,5 @@ in
   };
 
   home.stateVersion = config.home.version.release;
-  programs.home-manager.enable = true;
   news.display = "silent";
 }
