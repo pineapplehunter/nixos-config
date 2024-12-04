@@ -21,3 +21,8 @@
   :config
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode))
+
+;; indent
+(setq-default indent-tabs-mode nil)  ;; indent with space
+(setq-default tab-width 4)           ;; set width to 4
+(setq indent-line-function 'insert-tab)
