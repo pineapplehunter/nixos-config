@@ -6,6 +6,7 @@
       mqttx-cli
       buf
       uv
+      mosquitto
       ;
   };
 
