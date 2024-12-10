@@ -280,6 +280,7 @@ in
           dust
           elan
           htop
+          lazygit
           ncdu
           nix-index
           nix-output-monitor
