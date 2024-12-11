@@ -139,6 +139,7 @@
     binfmt.emulatedSystems = [
       "aarch64-linux"
       "riscv64-linux"
+      "riscv32-linux"
     ];
     supportedFilesystems = [ "btrfs" ];
   };
