@@ -26,11 +26,8 @@ in
 
     services.emacs.enable = isLinux;
 
-    home.file.sbclrc = {
-      target = ".sbclrc";
-      text = ''
-        (load (posix-getenv "ASDF"))
-      '';
-    };
+    home.file.".sbclrc".text = ''
+      (load (posix-getenv "ASDF"))
+    '';
   };
 }
