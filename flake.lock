@@ -381,7 +381,7 @@
     "supprod-nix": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-6eyzU/6wEnwv/zBQjHE9Chd9aamG0Dw1nOKpgoou3Fo=",
+        "narHash": "sha256-jYiyFTAp6hhwasRl5a4NoOlcbOrWdOxdMgryJaLO8TE=",
         "type": "file",
         "url": "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/supprod-from-source/pkgs/by-name/su/super-productivity/package.nix"
       },
