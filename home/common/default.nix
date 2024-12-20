@@ -213,33 +213,26 @@ in
 
     ripgrep.enable = true;
 
-    kitty = {
+    alacritty = {
       enable = isLinux;
       package =
-        if is-nixos then
-          pkgs.kitty
-        else
-          let
-            inherit (pkgs) kitty makeWrapper nixgl;
-            inherit (lib) getExe;
-          in
-          pkgs.symlinkJoin {
-            name = "kitty-wrapped";
-            paths = [ kitty ];
-            nativeBuildInputs = [ makeWrapper ];
-            postBuild = ''
-              rm $out/bin/kitty
-              makeWrapper "${getExe (nixgl.override { enable32bits = false; }).nixGLMesa}" "$out/bin/kitty" \
-                --add-flags "${getExe kitty}" \
-                --inherit-argv0
-            '';
-          };
-      themeFile = "CLRS";
-      settings = {
-        confirm_os_window_close = 0;
-        font_family = "DejaVuSansM Nerd Font Mono";
-        font_size = "10.0";
-      };
+        let
+          inherit (pkgs) alacritty makeWrapper nixgl;
+          inherit (lib) getExe;
+        in
+        pkgs.symlinkJoin {
+          name = "alacritty-wrapped";
+          paths = [ alacritty ];
+          nativeBuildInputs = [ makeWrapper ];
+          postBuild = ''
+            rm $out/bin/alacritty
+            makeWrapper "${getExe (nixgl.override { enable32bits = false; }).nixGLMesa}" "$out/bin/alacritty" \
+              --set-default XCURSOR_THEME Adwaita \
+              --add-flags "${getExe alacritty}" \
+              --inherit-argv0
+          '';
+        };
+      settings = import ./alacritty-config.nix;
     };
 
     fzf.enable = true;
