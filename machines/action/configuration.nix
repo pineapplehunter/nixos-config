@@ -206,7 +206,7 @@
       inherit (self.homeModules)
         nixos-common
         shogo
-        riken
+        work
         ;
     in
     {
@@ -219,7 +219,7 @@
       riken = {
         imports = [
           nixos-common
-          riken
+          work
         ];
       };
     };
