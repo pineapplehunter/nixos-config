@@ -9,6 +9,7 @@
     pyright = {
       command = "pyright-langserver";
       args = [ "--stdio" ];
+      config.pyright.disableTaggedHints = true;
     };
     buf = {
       command = "buf";
