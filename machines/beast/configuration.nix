@@ -49,6 +49,7 @@
       "riscv64-linux"
       "riscv32-linux"
     ];
+    plymouth.enable = false;
   };
 
   networking.hostName = "beast"; # Define your hostname.

@@ -29,7 +29,7 @@
     "/" = {
       device = "/dev/disk/by-uuid/2b3d5eaa-2d53-4ef3-b7b9-dd5d4b48d335";
       fsType = "btrfs";
-      options = [ "subvol=@nix" ];
+      options = [ "subvol=@,autodefrag,commit=120,compress=zstd,noatime,space_cache=v2" ];
     };
 
     "/boot" = {
