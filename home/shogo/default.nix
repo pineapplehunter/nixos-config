@@ -3,15 +3,16 @@
 {
   home.packages = builtins.attrValues {
     inherit (pkgs)
-      sqlx-cli
-      cargo-tauri
-      cargo-expand
-      cargo-fuzz
-      cargo-watch
-      cargo-bloat
-      cargo-outdated
       cargo-asm
       cargo-binutils
+      cargo-bloat
+      cargo-expand
+      cargo-fuzz
+      cargo-outdated
+      cargo-tauri
+      cargo-watch
+      racket
+      sqlx-cli
       trunk
       ;
   };
