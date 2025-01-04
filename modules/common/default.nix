@@ -169,7 +169,6 @@
   systemd.services.NetworkManager-wait-online.enable = false;
 
   # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
 
   environment.variables = {
