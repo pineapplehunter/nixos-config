@@ -134,7 +134,7 @@
           gutenprint
           hplip
           splix
-          # epson-escpr
+          epson-escpr
           ;
       };
     };
