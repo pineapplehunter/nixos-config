@@ -339,6 +339,18 @@
         "type": "github"
       }
     },
+    "povray-nix": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-DJj/usAOG1TAuGeQ+JmBEl35vhKwoWAduwRty+ra97c=",
+        "type": "file",
+        "url": "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/povray/fixbuild/pkgs/by-name/po/povray/package.nix"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/povray/fixbuild/pkgs/by-name/po/povray/package.nix"
+      }
+    },
     "root": {
       "inputs": {
         "emacs-overlay": "emacs-overlay",
@@ -351,6 +363,7 @@
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
         "nixpkgs-stable": "nixpkgs-stable",
+        "povray-nix": "povray-nix",
         "sops-nix": "sops-nix",
         "supprod-nix": "supprod-nix",
         "systems": "systems",

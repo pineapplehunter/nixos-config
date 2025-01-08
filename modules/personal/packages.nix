@@ -21,6 +21,6 @@
     };
     # inherit (pkgs.jetbrains) idea-ultimate;
     flatpak-chrome-alias = pkgs.writeShellScriptBin "flatpak-chrome-alias" "flatpak run com.google.Chrome $@";
-    # inherit (self.packages.${pkgs.system}) nautilus-thumbnailer-stl;
+    inherit (self.packages.${pkgs.system}) nautilus-thumbnailer-stl;
   };
 }
