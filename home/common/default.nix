@@ -243,6 +243,15 @@ in
         key = null;
         signByDefault = true;
       };
+      aliases = {
+        pushf = "push --force-with-lease";
+      };
+      extraConfig = {
+        rerere.enabled = true;
+        column.ui = "auto";
+        branch.sort = "-committerdate";
+        fetch.writeCommitGraph = true;
+      };
     };
 
     gpg.enable = true;
