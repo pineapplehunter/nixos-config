@@ -243,14 +243,22 @@ in
         key = null;
         signByDefault = true;
       };
-      aliases = {
-        pushf = "push --force-with-lease";
-      };
+      aliases =
+        let
+          difft = lib.getExe pkgs.difftastic;
+        in
+        {
+          pushf = "push --force-with-lease";
+          dlog = "-c diff.external=${difft} log --ext-diff";
+          dshow = "-c diff.external=${difft} show --ext-diff";
+          ddiff = "-c diff.external=${difft} diff";
+        };
       extraConfig = {
-        rerere.enabled = true;
-        column.ui = "auto";
         branch.sort = "-committerdate";
+        column.ui = "auto";
         fetch.writeCommitGraph = true;
+        init.defaultBranch = "main";
+        rerere.enabled = true;
       };
     };
 
