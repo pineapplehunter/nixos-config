@@ -305,6 +305,7 @@ in
           starship
           tokei
           tree
+          typst
           zellij
           ;
         julia = if isLinux then pkgs.julia else pkgs.julia-bin;
