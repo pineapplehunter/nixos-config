@@ -52,22 +52,6 @@ in
     helix = {
       enable = true;
       extraPackages = builtins.attrValues {
-        inherit (pkgs)
-          bash-language-server
-          buf
-          clang-tools
-          marksman
-          nixd
-          nixfmt-rfc-style
-          pyright
-          ruff
-          rust-analyzer
-          taplo
-          texlab
-          tinymist
-          vscode-langservers-extracted
-          ;
-        inherit (pkgs.nodePackages) typescript-language-server;
       };
       defaultEditor = true;
       languages = import ./helix-languages.nix { inherit kconfig-tree-sitter; };
@@ -321,6 +305,24 @@ in
             | ${pkgs.jq}/bin/jq "to_entries | sort_by(.value.closureSize) | .[] | select(.value.closureSize < $SIZE) | .key" -r \
             | ${pkgs.cachix.bin}/bin/cachix push $CACHE
         '';
+      }
+      // {
+        inherit (pkgs)
+          # for editors
+          bash-language-server
+          buf
+          clang-tools
+          marksman
+          nixd
+          pyright
+          ruff
+          taplo
+          texlab
+          tinymist
+          vscode-langservers-extracted
+          ;
+        inherit (pkgs.nodePackages) typescript-language-server;
+
       }
       // lib.optionalAttrs isDarwin {
         inherit (pkgs) iterm2;
