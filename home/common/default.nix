@@ -67,6 +67,8 @@ in
             focus-lost = true;
             after-delay.enable = true;
           };
+          end-of-line-diagnostics = "hint";
+          inline-diagnostics.cursor-line = "error";
         };
         # keys = {
         #   normal.esc = [ "collapse_selection" ":w" ];
