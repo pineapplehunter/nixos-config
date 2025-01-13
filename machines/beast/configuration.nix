@@ -67,16 +67,9 @@
     };
   };
 
-  systemd.services.docker.enable = false;
-  systemd.sockets.docker.enable = false;
-
   virtualisation = {
     docker = {
       enable = true;
-      rootless = {
-        enable = true;
-        setSocketVariable = true;
-      };
       storageDriver = "btrfs";
     };
   };
@@ -86,6 +79,7 @@
     isNormalUser = true;
     extraGroups = [
       "wheel" # Enable ‘sudo’ for the user.
+      "docker"
       config.users.groups.keys.name
     ];
   };
