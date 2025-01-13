@@ -67,6 +67,20 @@
     };
   };
 
+  systemd.services.docker.enable = false;
+  systemd.sockets.docker.enable = false;
+
+  virtualisation = {
+    docker = {
+      enable = true;
+      rootless = {
+        enable = true;
+        setSocketVariable = true;
+      };
+      storageDriver = "btrfs";
+    };
+  };
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.shogo = {
     isNormalUser = true;

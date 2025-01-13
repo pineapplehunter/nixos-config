@@ -21,9 +21,16 @@
       "sd_mod"
     ];
     initrd.kernelModules = [ ];
-    kernelModules = [ "kvm-amd" ];
+    kernelModules = [
+      "kvm-amd"
+      "dm-raid"
+      "dm-cache"
+      "dm-cache-default"
+    ];
     extraModulePackages = [ ];
   };
+
+  services.lvm.boot.thin.enable = true;
 
   fileSystems = {
     "/" = {
