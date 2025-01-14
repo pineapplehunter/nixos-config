@@ -43,6 +43,11 @@
       device = "/dev/disk/by-uuid/5B2D-4C85";
       fsType = "vfat";
     };
+    "/garage" = {
+      "device" = "/dev/vg0/main";
+      fsType = "btrfs";
+      options = [ "subvol=@garage,autodefrag,commit=120,compress=zstd,noatime,space_cache=v2" ];
+    };
   };
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
