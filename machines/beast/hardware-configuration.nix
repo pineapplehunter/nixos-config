@@ -22,10 +22,14 @@
     ];
     initrd.kernelModules = [ ];
     kernelModules = [
-      "kvm-amd"
-      "dm-raid"
       "dm-cache"
       "dm-cache-default"
+      "dm-crypt"
+      "dm-mirror"
+      "dm-mod"
+      "dm-raid"
+      "dm-snapshot"
+      "kvm-amd"
     ];
     extraModulePackages = [ ];
   };
