@@ -20,8 +20,7 @@
       "usbhid"
       "sd_mod"
     ];
-    initrd.kernelModules = [ ];
-    kernelModules = [
+    initrd.kernelModules = [
       "dm-cache"
       "dm-cache-default"
       "dm-crypt"
@@ -29,6 +28,8 @@
       "dm-mod"
       "dm-raid"
       "dm-snapshot"
+    ];
+    kernelModules = [
       "kvm-amd"
     ];
     extraModulePackages = [ ];
