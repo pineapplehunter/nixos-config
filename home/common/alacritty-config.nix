@@ -35,6 +35,12 @@
       }
     ];
   };
-  # window.decorations = "None";
   font.normal.family = "DejaVuSansM Nerd Font Mono";
+  keyboard.bindings = [
+    {
+      key = "+";
+      mods = "Control|Shift";
+      action = "IncreaseFontSize";
+    }
+  ];
 }
