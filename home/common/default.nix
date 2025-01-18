@@ -278,6 +278,7 @@ in
     packages = builtins.attrValues (
       {
         inherit (pkgs)
+          attic-client
           difftastic
           dust
           elan
