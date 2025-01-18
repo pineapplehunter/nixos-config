@@ -52,12 +52,12 @@
       substituters = [
         "https://cache.nixos.org/"
         "https://pineapplehunter.cachix.org"
-        "https://nix-cache.gweb.ihavenojob.work"
+        "https://attic.s.ihavenojob.work/shogo"
       ];
       trusted-public-keys = [
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
         "pineapplehunter.cachix.org-1:OwpZtT7lADb4AYYprPubSST9jVs2fLVlgTLnsPyln7U="
-        "my-cache-key:MUvBmgVSZUkIcvLGIJy7bpbdJddIRo0dDlvN+JpZJa0="
+        "shogo:dzOG75ufKKljdUzTbGDpTuBmup3/K5RDmr28jb0jHCg="
       ];
       warn-dirty = false;
       auto-optimise-store = true;
