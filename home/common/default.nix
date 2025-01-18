@@ -36,6 +36,12 @@ let
     rev = "486fea71f61ad9f3fd4072a118402e97fe88d26c";
     hash = "sha256-a3uTjtA4KQ8KxEmpva2oHcqp8EwbI5+h9U+qoPSgDd4=";
   };
+  caddy-tree-sitter = pkgs.fetchFromGitHub {
+    owner = "Samonitari";
+    repo = "tree-sitter-caddy";
+    rev = "65b60437983933d00809c8927e7d8a29ca26dfa3";
+    hash = "sha256-IDDz/2kC1Dslgrdv13q9NrCgrVvdzX1kQE6cld4+g2o=";
+  };
 in
 {
   imports =
@@ -54,7 +60,7 @@ in
       extraPackages = builtins.attrValues {
       };
       defaultEditor = true;
-      languages = import ./helix-languages.nix { inherit kconfig-tree-sitter; };
+      languages = import ./helix-languages.nix { inherit kconfig-tree-sitter caddy-tree-sitter; };
       settings = {
         theme = "github-light";
         editor = {

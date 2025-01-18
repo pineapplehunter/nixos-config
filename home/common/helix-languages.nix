@@ -1,4 +1,4 @@
-{ kconfig-tree-sitter, ... }:
+{ kconfig-tree-sitter, caddy-tree-sitter, ... }:
 {
   language-server = {
     nixd.command = "nixd";
@@ -50,6 +50,15 @@
       injection-regex = "kconfig";
     }
     {
+      name = "caddy";
+      scope = "source.caddy";
+      comment-token = "#";
+      file-types = [
+        { glob = "Caddyfile"; }
+      ];
+      injection-regex = "caddy";
+    }
+    {
       name = "python";
       language-servers = [
         "ruff"
@@ -66,6 +75,10 @@
     {
       name = "kconfig";
       source.path = kconfig-tree-sitter;
+    }
+    {
+      name = "caddy";
+      source.path = caddy-tree-sitter;
     }
   ];
 }
