@@ -39,7 +39,7 @@
 
   fileSystems = {
     "/" = {
-      device = "/dev/disk/by-uuid/2b3d5eaa-2d53-4ef3-b7b9-dd5d4b48d335";
+      device = "/dev/disk/by-uuid/20f60216-a9ad-46c7-bbc5-fd6cc4a17a39";
       fsType = "btrfs";
       options = [ "subvol=@,autodefrag,commit=120,compress=zstd,noatime,space_cache=v2" ];
     };
@@ -47,11 +47,6 @@
     "/boot" = {
       device = "/dev/disk/by-uuid/5B2D-4C85";
       fsType = "vfat";
-    };
-    "/garage" = {
-      device = "/dev/disk/by-uuid/20f60216-a9ad-46c7-bbc5-fd6cc4a17a39";
-      fsType = "btrfs";
-      options = [ "subvol=@garage,autodefrag,commit=120,compress=zstd,noatime,space_cache=v2" ];
     };
   };
 
