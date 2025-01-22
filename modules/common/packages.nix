@@ -4,47 +4,48 @@
   environment.systemPackages = builtins.attrValues {
     inherit (pkgs)
       # tools
-      vim
-      unzipNLS
-      git
-      nix-index
-      htop
-      nethogs
-      github-cli
-      btrfs-assistant
-      ripgrep
-      nix-output-monitor
-      gnome-tweaks
-      nixpkgs-fmt
-      nixfmt-rfc-style
-      tree
-      fd
-      btop
-      jq
-      file
-      wl-clipboard
       binutils
-      nix-tree
-      sops
+      btop
+      btrfs-assistant
+      fd
+      file
+      git
+      github-cli
+      gnome-tweaks
       gnumake
+      htop
+      jq
       ncdu
+      nethogs
       niv
+      nix-index
+      nix-output-monitor
+      nix-tree
+      nixfmt-rfc-style
+      nixpkgs-fmt
       npins
+      reptyr
+      ripgrep
+      sops
+      tree
+      unzipNLS
+      vim
+      wl-clipboard
       # editor
-      vscode
       dconf-editor
+      vscode
       # lang
       python3
       # other
-      udisks2
-      gnome-firmware
-      usbutils
-      pciutils
-      papers
-      openssl
       gitify
-      super-productivity
+      gnome-firmware
       man-pages
+      openssl
+      papers
+      pciutils
+      super-productivity
+      udisks2
+      usbutils
       ;
     ventoy-custom = pkgs.ventoy-full.override {
       defaultGuiType = "gtk3";
