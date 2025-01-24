@@ -93,6 +93,8 @@
     };
   };
 
+  services.prometheus.exporters.node.enable = true;
+
   virtualisation = {
     docker = {
       enable = true;
