@@ -67,6 +67,11 @@
     };
   };
 
+  services.btrfs.autoScrub = {
+    enable = true;
+    fileSystems = [ "/" ];
+  };
+
   services.snapper.configs = {
     garage = {
       SUBVOLUME = "/garage";
