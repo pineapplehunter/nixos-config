@@ -4,6 +4,7 @@
   environment.systemPackages = builtins.attrValues {
     inherit (pkgs)
       # tools
+      atop
       binutils
       btop
       btrfs-assistant
