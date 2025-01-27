@@ -135,7 +135,7 @@
       '';
     };
     loader.efi.canTouchEfiVariables = true;
-    # extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
+    extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
     binfmt.emulatedSystems = [
       "aarch64-linux"
       "riscv64-linux"
