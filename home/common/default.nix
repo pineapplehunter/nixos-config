@@ -282,6 +282,7 @@ in
       {
         inherit (pkgs)
           attic-client
+          babashka
           difftastic
           dust
           elan
