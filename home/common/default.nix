@@ -283,6 +283,7 @@ in
         inherit (pkgs)
           attic-client
           babashka
+          clojure-lsp
           difftastic
           dust
           elan
