@@ -228,7 +228,7 @@
 
   environment.systemPackages = [
     (pkgs.writeScriptBin "ai" ''
-      ollama run llama3.2
+      ollama run deepseek-r1:8b
     '')
   ];
 }
