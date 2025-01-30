@@ -100,12 +100,6 @@
 
   services.prometheus.exporters.node.enable = true;
 
-  services.nextjs-ollama-llm-ui = {
-    port = 4000;
-    enable = true;
-  };
-  services.ollama.enable = true;
-
   virtualisation = {
     docker = {
       enable = true;
