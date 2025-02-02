@@ -3,7 +3,7 @@
 {
   home.packages = builtins.attrValues {
     inherit (pkgs)
-      cargo-asm
+      cargo-show-asm
       cargo-binutils
       cargo-bloat
       cargo-expand
