@@ -90,6 +90,10 @@ in
     zellij = {
       enable = true;
       settings = import ./zellij-config.nix;
+      # disable auto startup
+      enableZshIntegration = false;
+      enableFishIntegration = false;
+      enableBashIntegration = false;
     };
 
     bat = {
