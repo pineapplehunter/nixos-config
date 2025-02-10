@@ -75,6 +75,19 @@ rec {
       # fix non-standard version representation
       version = builtins.head (builtins.match ''[^0-9]*([0-9\.]+).*'' old.version);
     });
+    pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+      (python-final: python-prev: {
+        materialx = python-prev.materialx.overridePythonAttrs (old: rec {
+          version = "1.38.10";
+          src = final.fetchFromGitHub {
+            owner = "AcademySoftwareFoundation";
+            repo = "MaterialX";
+            rev = "v${version}";
+            hash = "sha256-/kMHmW2dptZNtjuhE5s+jvPRIdtY+FRiVtMU+tiBgQo=";
+          };
+        });
+      })
+    ];
   };
 
   platformSpecificOverlay =
