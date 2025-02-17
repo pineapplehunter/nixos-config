@@ -238,6 +238,7 @@ in
       signing = {
         signByDefault = true;
         key = "${config.home.homeDirectory}/.ssh/id_ed25519.pub";
+        format = "ssh";
       };
       aliases =
         let
@@ -255,9 +256,6 @@ in
         fetch.writeCommitGraph = true;
         init.defaultBranch = "main";
         rerere.enabled = true;
-
-        # sign with ssh
-        gpg.format = "ssh";
       };
     };
 
