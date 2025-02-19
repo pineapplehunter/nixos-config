@@ -61,8 +61,6 @@
   zramSwap.enable = true;
 
   services = {
-    kmscon.enable = true;
-
     xremap = {
       enable = true;
       withGnome = true;
