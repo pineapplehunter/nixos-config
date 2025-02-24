@@ -16,30 +16,6 @@
     ./hardware-configuration.nix
   ];
 
-  nix = {
-    distributedBuilds = true;
-    buildMachines = [
-      {
-        system = "x86_64-linux";
-        maxJobs = 40;
-        supportedFeatures = [
-          "big-parallel"
-          "kvm"
-          "benchmark"
-          "nixos-test"
-        ];
-        sshUser = "cbat";
-        hostName = "100.98.144.77";
-        speedFactor = 2;
-      }
-    ];
-    settings = {
-      connect-timeout = 10;
-      builders-use-substitutes = true;
-    };
-    # channel.enable = false;
-  };
-
   # Bootloader.
   boot = {
     loader.grub = {
