@@ -35,6 +35,7 @@
         hostName = "daniel-njlab-pc";
         # sshKey = "/home/shogo/.ssh/id_ecdsa.1";
         speedFactor = 2;
+        protocol = "ssh-ng";
       }
       {
         system = "x86_64-linux,aarch64-linux,riscv64-linux";
@@ -49,6 +50,7 @@
         hostName = "beast";
         # sshKey = "/home/shogo/.ssh/id_ecdsa.1";
         speedFactor = 2;
+        protocol = "ssh-ng";
       }
     ];
     settings = {
