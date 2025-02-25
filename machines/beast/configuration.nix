@@ -40,6 +40,8 @@
     '';
   };
 
+  environment.systemPackages = [ pkgs.podman-compose ];
+
   # Use the systemd-boot EFI boot loader.
   boot = {
     loader.systemd-boot.enable = true;
@@ -106,6 +108,7 @@
       enable = true;
       storageDriver = "btrfs";
     };
+    podman.enable = true;
   };
 
   services.localtimed.enable = true;
