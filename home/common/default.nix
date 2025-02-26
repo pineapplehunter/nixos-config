@@ -46,12 +46,11 @@ in
 {
   imports =
     let
-      inherit (self.homeModules) pineapplehunter flatpak-update emacs;
+      inherit (self.homeModules) pineapplehunter flatpak-update;
     in
     [
       pineapplehunter
       flatpak-update
-      emacs
     ];
 
   programs = {
@@ -145,7 +144,7 @@ in
     };
 
     gnome-shell = {
-      enable = isLinux;
+      enable = isLinux && is-nixos;
       extensions = map (p: { package = p; }) (
         builtins.attrValues {
           inherit (pkgs.gnomeExtensions)
@@ -284,8 +283,6 @@ in
       {
         inherit (pkgs)
           attic-client
-          babashka
-          clojure-lsp
           difftastic
           dust
           elan

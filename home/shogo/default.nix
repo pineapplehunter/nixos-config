@@ -11,7 +11,6 @@
       cargo-outdated
       cargo-tauri
       cargo-watch
-      racket
       sqlx-cli
       trunk
       ;
