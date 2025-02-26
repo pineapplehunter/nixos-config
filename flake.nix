@@ -103,6 +103,10 @@
       devShells = eachSystem (system: {
         default = import ./shell.nix { pkgs = pkgsFor system; };
       });
+      checks.x86_64-linux = {
+        action = self.nixosConfigurations.action.config.system.build.toplevel;
+        beast = self.nixosConfigurations.beast.config.system.build.toplevel;
+      };
       legacyPackages = eachSystem pkgsFor;
     };
 }
