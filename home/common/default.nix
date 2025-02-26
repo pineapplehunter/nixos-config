@@ -192,7 +192,7 @@ in
             "g"
             "e"
           ];
-          run = "arrow 99999999";
+          run = "arrow bot";
           desc = "Move cursor to the bottom";
         }
       ];
