@@ -21,4 +21,4 @@ jobs:
           cache: ${{ secrets.ATTIC_CACHE }}
           token: ${{ secrets.ATTIC_TOKEN }}
       - name: Run checks
-        run: nix flake check --quiet --keep-going
+        run: nix flake check --keep-going
