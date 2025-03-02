@@ -32,7 +32,6 @@
         sshUser = "shogo";
         hostName = "daniel-njlab-pc";
         speedFactor = 1;
-        protocol = "ssh-ng";
       }
     ];
     extraOptions = ''
