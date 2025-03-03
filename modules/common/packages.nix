@@ -8,6 +8,7 @@
       binutils
       btop
       btrfs-assistant
+      curl-http3
       fd
       file
       git
@@ -32,11 +33,14 @@
       unzipNLS
       vim
       wl-clipboard
+
       # editor
       dconf-editor
       vscode
+
       # lang
       python3
+
       # other
       gitify
       gnome-firmware

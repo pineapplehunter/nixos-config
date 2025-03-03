@@ -10,7 +10,6 @@
       blender
       webcord
       slack
-      curl-http3
       jujutsu
       vivado
       # orca-slicer
