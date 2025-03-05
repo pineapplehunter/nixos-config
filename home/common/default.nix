@@ -116,8 +116,9 @@ in
 
     zsh = {
       enable = true;
-      dotDir = ".config/zsh";
       autosuggestion.enable = true;
+      dotDir = ".config/zsh";
+      syntaxHighlighting.enable = true;
       history = {
         append = true;
         ignoreAllDups = true;
