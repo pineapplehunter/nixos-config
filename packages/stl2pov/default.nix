@@ -1,5 +1,4 @@
 {
-  lib,
   fetchFromGitHub,
   stdenv,
 }:
@@ -22,7 +21,6 @@ stdenv.mkDerivation {
   ];
 
   makeFlags = [
-    "PREFIX=${placeholder "out"}"
     "BINDIR=${placeholder "out"}/bin"
     "MANDIR=${placeholder "man"}/man"
     "DOCSDIR=${placeholder "doc"}/share/doc/stl2pov"
@@ -33,5 +31,5 @@ stdenv.mkDerivation {
       --replace-fail "id -u" "echo 0"
   '';
 
-  # NIX_DEBUG = 7;
+  meta.mainProgram = "stl2pov";
 }
