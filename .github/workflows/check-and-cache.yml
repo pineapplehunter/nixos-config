@@ -12,6 +12,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # https://carlosbecker.com/posts/github-actions-disk-space/
+      - name: df before cleanup
+        run: df -h
+      - name: "cleanup unused dirs"
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+          sudo docker builder prune -a
+      - name: df after cleanup
+        run: df -h
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v30
       - name: Setup Attic cache
@@ -22,3 +32,5 @@ jobs:
           token: ${{ secrets.ATTIC_TOKEN }}
       - name: Run checks
         run: nix flake check --keep-going
+      - name: df after build
+        run: df -h
