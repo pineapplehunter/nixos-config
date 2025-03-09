@@ -99,12 +99,17 @@
       devShells = eachSystem (system: {
         default = import ./shell.nix { pkgs = pkgsFor system; };
       });
-      checks.x86_64-linux = {
-        action = self.nixosConfigurations.action.config.system.build.toplevel;
-        beast = self.nixosConfigurations.beast.config.system.build.toplevel;
-        user-shogo = self.homeConfigurations.shogo-x86_64-linux.activationPackage;
-        user-riken = self.homeConfigurations.riken-x86_64-linux.activationPackage;
-      };
+      checks.x86_64-linux =
+        let
+          pkgs = import nixpkgs { system = "x86_64-linux"; };
+          check-build = drv: pkgs.runCommand "${drv.name}-check" { dummy = "${drv}"; } "touch $out";
+        in
+        {
+          action = check-build self.nixosConfigurations.action.config.system.build.toplevel;
+          beast = check-build self.nixosConfigurations.beast.config.system.build.toplevel;
+          user-shogo = check-build self.homeConfigurations.shogo-x86_64-linux.activationPackage;
+          user-riken = check-build self.homeConfigurations.riken-x86_64-linux.activationPackage;
+        };
       legacyPackages = eachSystem pkgsFor;
     };
 }
