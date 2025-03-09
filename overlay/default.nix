@@ -59,7 +59,6 @@ rec {
       preferLocalBuild = true;
     };
     super-productivity = final.callPackage inputs.supprod-nix { };
-    mqttx-cli = final.callPackage inputs.mqttx-cli-nix { };
     gnome = prev.gnome // {
       gnome-settings-daemon = prev.gnome.gnome-settings-daemon.overrideAttrs (old: {
         # I don't need sleep notifications!

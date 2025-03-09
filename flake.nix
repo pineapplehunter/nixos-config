@@ -6,11 +6,7 @@
     nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-24.11";
     empty.url = "github:pineapplehunter/nix-empty";
     supprod-nix = {
-      url = "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/supprod-from-source/pkgs/by-name/su/super-productivity/package.nix";
-      flake = false;
-    };
-    mqttx-cli-nix = {
-      url = "https://raw.githubusercontent.com/pineapplehunter/nixpkgs/refs/heads/mqttx-cli/pkgs/by-name/mq/mqttx-cli/package.nix";
+      url = "https://raw.githubusercontent.com/nixos/nixpkgs/refs/heads/master/pkgs/by-name/su/super-productivity/package.nix";
       flake = false;
     };
     emacs-overlay = {
