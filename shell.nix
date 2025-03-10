@@ -13,6 +13,17 @@ let
     statix
     ;
   inherit (pkgs.lib) getExe;
+  expire-home-manager = writeShellScriptBin "expire-home-manager" ''
+    users(){
+      nix eval ".#nixosConfigurations.$HOST.config.users.users" \
+        --apply 'users: builtins.mapAttrs (u: v: {inherit (v) isNormalUser; name=u;}) users' --json \
+      | jq '.[] | select(.isNormalUser) | .name' -r
+    }
+    users | while read -r u; do
+      cd /
+      sudo su $u -c "${getExe home-manager} expire-generations 0" |& tail -n1
+    done
+  '';
   os-build-script = writeShellScriptBin "os-build" ''
     set -eou pipefail
     nom build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "$@"
@@ -43,6 +54,7 @@ let
     sudo echo starting upgrade
     git commit -p || true
     sudo nixos-rebuild switch --flake ".#$HOST" "$@"
+    ${getExe expire-home-manager}
   '';
   os-boot-script = writeShellScriptBin "os-boot" ''
     set -eou pipefail
@@ -88,6 +100,7 @@ let
     echo starting switch
     git commit -p || true
     home-manager switch -b "hm-backup" --flake ".#$HOME_CONFIG_NAME" "$@"
+    home-manager expire-generations 0 |& tail -n1
   '';
   home-update-script = writeShellScriptBin "home-update" ''
     set -eou pipefail
@@ -111,6 +124,8 @@ mkShellNoCC {
     home-diff-script
     home-switch-script
     home-update-script
+
+    expire-home-manager
 
     nvd
     nix-output-monitor
