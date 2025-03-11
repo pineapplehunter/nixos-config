@@ -29,7 +29,6 @@
     overlays = [
       inputs.nixgl.overlays.default
       inputs.nix-xilinx.overlay
-      inputs.emacs-overlay.overlays.default
       self.overlays.default
     ];
     config.allowUnfree = true;

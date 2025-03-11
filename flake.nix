@@ -5,15 +5,6 @@
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-24.11";
     empty.url = "github:pineapplehunter/nix-empty";
-    supprod-nix = {
-      url = "https://raw.githubusercontent.com/nixos/nixpkgs/refs/heads/master/pkgs/by-name/su/super-productivity/package.nix";
-      flake = false;
-    };
-    emacs-overlay = {
-      url = "github:nix-community/emacs-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.nixpkgs-stable.follows = "nixpkgs-stable";
-    };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -63,7 +54,6 @@
           overlays = [
             inputs.nixgl.overlays.default
             inputs.nix-xilinx.overlay
-            inputs.emacs-overlay.overlays.default
             self.overlays.default
           ];
         };
