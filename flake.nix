@@ -81,7 +81,7 @@
           pkgs = pkgsFor system;
           callPackage = lib.callPackageWith (pkgs // self.packages.${system});
         in
-        {
+        lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
           stl2pov = callPackage ./packages/stl2pov { };
           nautilus-thumbnailer-stl = callPackage ./packages/nautilus-thumbnailer-stl { };
         }
@@ -113,17 +113,21 @@
           };
         }
       );
-      checks.x86_64-linux =
+      checks = eachSystem (
+        system:
         let
-          pkgs = import nixpkgs { system = "x86_64-linux"; };
+          pkgs = pkgsFor system;
           check-build = drv: pkgs.runCommand "${drv.name}-check" { dummy = "${drv}"; } "touch $out";
         in
         {
+          user-shogo = check-build self.homeConfigurations.${"shogo-${system}"}.activationPackage;
+          user-riken = check-build self.homeConfigurations.${"riken-${system}"}.activationPackage;
+        }
+        // lib.optionalAttrs (system == "x86_64-linux") {
           action = check-build self.nixosConfigurations.action.config.system.build.toplevel;
           beast = check-build self.nixosConfigurations.beast.config.system.build.toplevel;
-          user-shogo = check-build self.homeConfigurations.shogo-x86_64-linux.activationPackage;
-          user-riken = check-build self.homeConfigurations.riken-x86_64-linux.activationPackage;
-        };
+        }
+      );
       legacyPackages = eachSystem pkgsFor;
     };
 }
