@@ -86,9 +86,33 @@
           nautilus-thumbnailer-stl = callPackage ./packages/nautilus-thumbnailer-stl { };
         }
       );
-      devShells = eachSystem (system: {
-        default = import ./shell.nix { pkgs = pkgsFor system; };
-      });
+      devShells = eachSystem (
+        system:
+        let
+          pkgs = pkgsFor system;
+          management-tools = pkgs.runCommand "management-tools" { } ''
+            mkdir -p $out/bin
+            ln -s ${./update.sh} $out/bin/os
+            ln -s ${./update.sh} $out/bin/home
+          '';
+        in
+        {
+          default = pkgs.mkShellNoCC {
+            name = "nixos-config";
+            packages = [
+              management-tools
+              pkgs.home-manager
+              pkgs.nix-output-monitor
+              pkgs.nixos-rebuild
+              pkgs.nvd
+              pkgs.statix
+            ];
+            shellHook = ''
+              export HOST=`hostname`
+            '';
+          };
+        }
+      );
       checks.x86_64-linux =
         let
           pkgs = import nixpkgs { system = "x86_64-linux"; };
