@@ -2,8 +2,8 @@
 set -eou pipefail
 
 usage(){
-  echo "usage:   os build|switch|boot [args...]"
-  echo "       home build|switch|boot [args...]"
+  echo "usage: os   build|switch|boot|diff|expire [args...]"
+  echo "       home build|switch|boot|diff        [args...]"
   exit 1
 }
 
@@ -74,11 +74,14 @@ function os-boot {
 }
 
 function os-update {
+  set -x
   git pull
-    nix flake update nixpkgs
-    git diff --exit-code --quiet HEAD -- flake.lock && exit 1
+  nix flake update nixpkgs
+  if ! git diff --exit-code --quiet HEAD -- flake.lock; then
     nix flake update
-    os-switch || git checkout HEAD -- flake.lock
+  fi
+  os-switch || git checkout HEAD -- flake.lock
+  set +x
 }
 
 ## home ############################################
@@ -117,8 +120,9 @@ function home-switch {
 function home-update {
   git pull
   nix flake update nixpkgs
-  git diff --exit-code --quiet HEAD -- flake.lock && exit 1
-  nix flake update
+  if ! git diff --exit-code --quiet HEAD -- flake.lock; then
+    nix flake update
+  fi
   home-switch || git checkout HEAD -- flake.lock
 }
 
@@ -146,8 +150,12 @@ function home-cmd {
   esac
 }
 
-case $kind in
-  os) os-cmd;;
-  home) home-cmd;;
-  *) echo unknown kind && usage;;
-esac
+function main {
+  case $kind in
+    os) os-cmd;;
+    home) home-cmd;;
+    *) echo unknown kind && usage;;
+  esac
+}
+
+main
