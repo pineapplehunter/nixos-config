@@ -306,7 +306,6 @@ in
           typst
           zellij
           ;
-        julia = if isLinux then pkgs.julia else pkgs.julia-bin;
         cachix-no-man = pkgs.symlinkJoin {
           inherit (pkgs.cachix) version;
           name = "cachix";
@@ -340,6 +339,9 @@ in
       }
       // lib.optionalAttrs isDarwin {
         inherit (pkgs) iterm2;
+      }
+      // lib.optionalAttrs isLinux {
+        inherit (pkgs) julia;
       }
     );
     shellAliases = lib.mkMerge [
