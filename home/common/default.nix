@@ -56,8 +56,6 @@ in
   programs = {
     helix = {
       enable = true;
-      extraPackages = builtins.attrValues {
-      };
       defaultEditor = true;
       languages = import ./helix-languages.nix { inherit kconfig-tree-sitter caddy-tree-sitter; };
       settings = {
