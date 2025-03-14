@@ -73,6 +73,9 @@ rec {
       # fix non-standard version representation
       version = builtins.head (builtins.match ''[^0-9]*([0-9\.]+).*'' old.version);
     });
+    libfprint-tod = prev.libfprint-tod.overrideAttrs (old: {
+      buildInputs = (old.buildInputs or [ ]) ++ [ final.nss ];
+    });
   };
 
   platformSpecificOverlay =
