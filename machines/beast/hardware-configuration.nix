@@ -50,6 +50,8 @@
     };
   };
 
+  swapDevices = [ { device = "/swapfile"; } ];
+
   zramSwap.enable = true;
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
