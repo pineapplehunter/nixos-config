@@ -74,14 +74,12 @@ function os-boot {
 }
 
 function os-update {
-  set -x
   git pull
   nix flake update nixpkgs
   if ! git diff --exit-code --quiet HEAD -- flake.lock; then
     nix flake update
   fi
   os-switch || git checkout HEAD -- flake.lock
-  set +x
 }
 
 ## home ############################################
