@@ -73,9 +73,27 @@ rec {
       # fix non-standard version representation
       version = builtins.head (builtins.match ''[^0-9]*([0-9\.]+).*'' old.version);
     });
-    libfprint-tod = prev.libfprint-tod.overrideAttrs (old: {
-      buildInputs = (old.buildInputs or [ ]) ++ [ final.nss ];
-    });
+    libfprint-tod =
+      assert prev.libfprint-tod.version == "1.90.7+git20210222+tod1";
+      prev.libfprint-tod.overrideAttrs (old: rec {
+        version = "1.94.9+tod1";
+        src = final.fetchFromGitLab {
+          domain = "gitlab.freedesktop.org";
+          owner = "3v1n0";
+          repo = "libfprint";
+          rev = "v${version}";
+          hash = "sha256-xkywuFbt8EFJOlIsSN2hhZfMUhywdgJ/uT17uiO3YV4=";
+        };
+        mesonFlags = old.mesonFlags ++ [
+          "-Dudev_rules_dir=${placeholder "out"}/lib/udev/rules.d"
+        ];
+        postPatch = ''
+          patchShebangs \
+            ./libfprint/tod/tests/*.sh \
+            ./tests/*.py \
+            ./tests/*.sh \
+        '';
+      });
   };
 
   platformSpecificOverlay =
