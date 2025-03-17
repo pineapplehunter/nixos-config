@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -eou pipefail
 
+# check commands
+for cmd in nix nixos-rebuild home-manager nvd; do
+  command -v $cmd > /dev/null || echo command $cmd does not exist
+done
+
+HOMEMANAGER=$(which home-manager)
+
 usage(){
   echo "usage: os   build|switch|boot|diff|expire [args...]"
   echo "       home build|switch|boot|diff        [args...]"
@@ -30,9 +37,9 @@ function os-users {
 }
 
 function os-home-expire {
-  users | while read -r u; do
+  os-users | while read -r u; do
     cd /
-    sudo su "$u" -c "home-manager expire-generations 0" |& tail -n1
+    sudo su "$u" -c "$HOMEMANAGER expire-generations 0" |& tail -n1
   done
 }
 
@@ -111,8 +118,8 @@ function home-switch {
   yes_or_no "do you want to commit and update?"
   echo starting switch
   git commit -p || true
-  home-manager switch -b "hm-backup" --flake ".#$HOME_CONFIG_NAME" "${args[@]}"
-  home-manager expire-generations 0 |& tail -n1
+  $HOMEMANAGER switch -b "hm-backup" --flake ".#$HOME_CONFIG_NAME" "${args[@]}"
+  $HOMEMANAGER expire-generations 0 |& tail -n1
 }
 
 function home-update {
