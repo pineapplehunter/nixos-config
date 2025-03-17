@@ -6,6 +6,7 @@
     pkgs.buf
     pkgs.mosquitto
     pkgs.mqttx-cli
+    pkgs.poetry
     pkgs.uv
   ];
 
