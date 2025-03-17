@@ -1,14 +1,13 @@
 { pkgs, ... }:
 
 {
-  home.packages = builtins.attrValues {
-    inherit (pkgs)
-      mqttx-cli
-      buf
-      uv
-      mosquitto
-      ;
-  };
+  home.packages = [
+    pkgs.awscli2
+    pkgs.buf
+    pkgs.mosquitto
+    pkgs.mqttx-cli
+    pkgs.uv
+  ];
 
   programs.git = {
     userName = "Shogo Takata";
