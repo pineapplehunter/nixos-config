@@ -79,11 +79,12 @@
         system:
         let
           pkgs = pkgsFor system;
-          callPackage = lib.callPackageWith (pkgs // self.packages.${system});
         in
         lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
-          stl2pov = callPackage ./packages/stl2pov { };
-          nautilus-thumbnailer-stl = callPackage ./packages/nautilus-thumbnailer-stl { };
+          inherit (pkgs)
+            stl2pov
+            nautilus-thumbnailer-stl
+            ;
         }
       );
       devShells = eachSystem (

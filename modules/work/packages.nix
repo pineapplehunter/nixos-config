@@ -1,10 +1,8 @@
 { pkgs, ... }:
 {
-  environment.systemPackages = builtins.attrValues {
-    inherit (pkgs)
-      webcord
-      slack
-      unityhub
-      ;
-  };
+  environment.systemPackages = [
+    pkgs.webcord
+    pkgs.slack
+    pkgs.unityhub
+  ];
 }

@@ -94,6 +94,9 @@ rec {
             ./tests/*.sh \
         '';
       });
+
+    stl2pov = final.callPackage ../packages/stl2pov { };
+    nautilus-thumbnailer-stl = final.callPackage ../packages/nautilus-thumbnailer-stl { };
   };
 
   platformSpecificOverlay =

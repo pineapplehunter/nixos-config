@@ -1,68 +1,71 @@
 { pkgs, ... }:
+let
+  ventoy-custom = pkgs.ventoy-full.override {
+    defaultGuiType = "gtk3";
+    withGtk3 = true;
+  };
+  cachix-no-man = pkgs.symlinkJoin {
+    inherit (pkgs.cachix) version;
+    name = "cachix";
+    paths = [ pkgs.cachix.bin ];
+  };
+in
 {
   # system wide packages
-  environment.systemPackages = builtins.attrValues {
-    inherit (pkgs)
-      # tools
-      atop
-      binutils
-      btop
-      btrfs-assistant
-      curl-http3
-      fd
-      file
-      git
-      github-cli
-      gnome-tweaks
-      gnumake
-      htop
-      jq
-      ncdu
-      nethogs
-      niv
-      nix-index
-      nix-output-monitor
-      nix-tree
-      nixfmt-rfc-style
-      nixpkgs-fmt
-      npins
-      reptyr
-      ripgrep
-      sops
-      tree
-      unzipNLS
-      vim
-      wl-clipboard
+  environment.systemPackages = [
+    # tools
+    pkgs.atop
+    pkgs.binutils
+    pkgs.btop
+    pkgs.btrfs-assistant
+    pkgs.curl-http3
+    pkgs.fd
+    pkgs.file
+    pkgs.git
+    pkgs.github-cli
+    pkgs.gnome-tweaks
+    pkgs.gnumake
+    pkgs.htop
+    pkgs.jq
+    pkgs.ncdu
+    pkgs.nethogs
+    pkgs.niv
+    pkgs.nix-index
+    pkgs.nix-output-monitor
+    pkgs.nix-tree
+    pkgs.nixfmt-rfc-style
+    pkgs.nixpkgs-fmt
+    pkgs.npins
+    pkgs.reptyr
+    pkgs.ripgrep
+    pkgs.sops
+    pkgs.tree
+    pkgs.unzipNLS
+    pkgs.vim
+    pkgs.wl-clipboard
 
-      # editor
-      dconf-editor
-      vscode
+    # editor
+    pkgs.dconf-editor
+    pkgs.vscode
 
-      # lang
-      python3
+    # lang
+    pkgs.python3
 
-      # other
-      gitify
-      gnome-firmware
-      man-pages
-      openssl
-      papers
-      pciutils
-      super-productivity
-      udisks2
-      usbutils
-      ;
-    ventoy-custom = pkgs.ventoy-full.override {
-      defaultGuiType = "gtk3";
-      withGtk3 = true;
-    };
-    cachix-no-man = pkgs.symlinkJoin {
-      inherit (pkgs.cachix) version;
-      name = "cachix";
-      paths = [ pkgs.cachix.bin ];
-    };
-    inherit (pkgs.stdenv) cc;
-  };
+    # other
+    pkgs.gitify
+    pkgs.gnome-firmware
+    pkgs.man-pages
+    pkgs.openssl
+    pkgs.papers
+    pkgs.pciutils
+    pkgs.stdenv.cc
+    pkgs.super-productivity
+    pkgs.udisks2
+    pkgs.usbutils
+
+    cachix-no-man
+    ventoy-custom
+  ];
 
   environment.gnome.excludePackages = [ pkgs.evince ];
 }
