@@ -40,6 +40,7 @@ function os-home-expire {
   os-users | while read -r u; do
     cd /
     sudo su "$u" -c "$HOMEMANAGER expire-generations 0" |& tail -n1
+    sudo su "$u" -c "nix profile wipe-history" |& tail -n1
   done
 }
 
@@ -120,6 +121,7 @@ function home-switch {
   git commit -p || true
   $HOMEMANAGER switch -b "hm-backup" --flake ".#$HOME_CONFIG_NAME" "${args[@]}"
   $HOMEMANAGER expire-generations 0 |& tail -n1
+  nix profile wipe-history |& tail -n1
 }
 
 function home-update {
