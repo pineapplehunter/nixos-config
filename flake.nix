@@ -127,6 +127,7 @@
         // lib.optionalAttrs (system == "x86_64-linux") {
           action = check-build self.nixosConfigurations.action.config.system.build.toplevel;
           beast = check-build self.nixosConfigurations.beast.config.system.build.toplevel;
+          micky = check-build self.nixosConfigurations.micky.config.system.build.toplevel;
         }
       );
       legacyPackages = eachSystem pkgsFor;
