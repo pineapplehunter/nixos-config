@@ -1,14 +1,10 @@
 {
   description = "A basic package";
 
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    systems.url = "github:nix-systems/default";
-    treefmt-nix = {
-      url = "github:numtide/treefmt-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-  };
+  inputs.nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+  inputs.systems.url = "github:nix-systems/default";
+  inputs.treefmt-nix.url = "github:numtide/treefmt-nix";
+  inputs.treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
 
   outputs =
     {
@@ -18,37 +14,35 @@
       treefmt-nix,
     }:
     let
-      eachSystem = nixpkgs.lib.genAttrs (import systems);
-      pkgsFor =
-        system:
-        import nixpkgs {
-          inherit system;
-          overlays = [ self.overlays.default ];
-        };
+      eachSystem =
+        f:
+        nixpkgs.lib.genAttrs (import systems) (
+          system:
+          f (
+            import nixpkgs {
+              inherit system;
+              overlays = [ self.overlays.default ];
+            }
+          )
+        );
     in
     {
       overlays.default = final: prev: {
         some-package = final.callPackage ./package.nix { };
       };
 
-      packages = eachSystem (
-        system:
-        let
-          pkgs = pkgsFor system;
-        in
-        {
-          default = pkgs.some-package;
-        }
-      );
+      packages = eachSystem (pkgs: {
+        default = pkgs.some-package;
+      });
 
       formatter = eachSystem (
-        system:
-        (treefmt-nix.lib.evalModule (pkgsFor system) {
+        pkgs:
+        (treefmt-nix.lib.evalModule pkgs {
           projectRootFile = "flake.nix";
           programs.nixfmt.enable = true;
         }).config.build.wrapper
       );
 
-      legacyPackages = eachSystem pkgsFor;
+      legacyPackages = eachSystem (i: i);
     };
 }

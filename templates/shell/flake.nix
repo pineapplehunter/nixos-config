@@ -1,14 +1,10 @@
 {
   description = "A basic shell";
 
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    systems.url = "github:nix-systems/default";
-    treefmt-nix = {
-      url = "github:numtide/treefmt-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-  };
+  inputs.nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+  inputs.systems.url = "github:nix-systems/default";
+  inputs.treefmt-nix.url = "github:numtide/treefmt-nix";
+  inputs.treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
 
   outputs =
     {
@@ -18,34 +14,26 @@
       treefmt-nix,
     }:
     let
-      eachSystem = nixpkgs.lib.genAttrs (import systems);
-      pkgsFor = system: import nixpkgs { inherit system; };
+      eachSystem =
+        f: nixpkgs.lib.genAttrs (import systems) (system: f (import nixpkgs { inherit system; }));
     in
     {
-      devShells = eachSystem (
-        system:
-        let
-          pkgs = pkgsFor system;
-        in
-        {
-          default = pkgs.mkShell {
-            packages = builtins.attrValues {
-              inherit (pkgs)
-                hello
-                ;
-            };
-          };
-        }
-      );
+      devShells = eachSystem (pkgs: {
+        default = pkgs.mkShell {
+          packages = [
+            pkgs.hello
+          ];
+        };
+      });
 
       formatter = eachSystem (
-        system:
-        (treefmt-nix.lib.evalModule (pkgsFor system) {
+        pkgs:
+        (treefmt-nix.lib.evalModule pkgs {
           projectRootFile = "flake.nix";
           programs.nixfmt.enable = true;
         }).config.build.wrapper
       );
 
-      legacyPackages = eachSystem pkgsFor;
+      legacyPackages = eachSystem (i: i);
     };
 }
