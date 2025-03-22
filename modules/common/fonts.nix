@@ -1,20 +1,16 @@
 { pkgs, ... }:
 {
   fonts = {
-    packages = builtins.attrValues {
-      inherit (pkgs)
-        noto-fonts
-        noto-fonts-color-emoji
-        fira-code-symbols
-        vistafonts
-        ubuntu-classic
-        ubuntu-sans
-        ubuntu-sans-mono
-        ;
-      inherit (pkgs.nerd-fonts)
-        fira-code
-        dejavu-sans-mono
-        ;
-    };
+    packages = [
+      pkgs.noto-fonts
+      pkgs.noto-fonts-color-emoji
+      pkgs.fira-code-symbols
+      pkgs.vistafonts
+      pkgs.ubuntu-classic
+      pkgs.ubuntu-sans
+      pkgs.ubuntu-sans-mono
+      pkgs.nerd-fonts.fira-code
+      pkgs.nerd-fonts.dejavu-sans-mono
+    ];
   };
 }

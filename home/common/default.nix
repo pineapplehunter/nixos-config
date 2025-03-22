@@ -144,21 +144,21 @@ in
 
     gnome-shell = {
       enable = isLinux && is-nixos;
-      extensions = map (p: { package = p; }) (
-        builtins.attrValues {
-          inherit (pkgs.gnomeExtensions)
-            appindicator
-            blur-my-shell
-            caffeine
-            just-perfection
-            night-theme-switcher
-            runcat
-            syncthing-indicator
-            tailscale-status
-            tiling-assistant
-            ;
-        }
-      );
+      extensions =
+        let
+          ge = pkgs.gnomeExtensions;
+        in
+        map (p: { package = p; }) [
+          ge.appindicator
+          ge.blur-my-shell
+          ge.caffeine
+          ge.just-perfection
+          ge.night-theme-switcher
+          ge.runcat
+          ge.syncthing-indicator
+          ge.tailscale-status
+          ge.tiling-assistant
+        ];
     };
 
     yazi = {
@@ -169,20 +169,18 @@ in
           "yazi"
           "ya"
         ];
-        PATH = builtins.attrValues {
-          inherit (pkgs)
-            chafa
-            fd
-            ffmpegthumbnailer
-            file
-            fzf
-            imagemagick
-            jq
-            p7zip
-            ripgrep
-            zoxide
-            ;
-        };
+        PATH = [
+          pkgs.chafa
+          pkgs.fd
+          pkgs.ffmpegthumbnailer
+          pkgs.file
+          pkgs.fzf
+          pkgs.imagemagick
+          pkgs.jq
+          pkgs.p7zip
+          pkgs.ripgrep
+          pkgs.zoxide
+        ];
       };
       keymap.manager.prepend_keymap = [
         {
@@ -278,32 +276,8 @@ in
   '';
 
   home = {
-    packages = builtins.attrValues (
-      {
-        inherit (pkgs)
-          attic-client
-          difftastic
-          dust
-          elan
-          htop
-          lazygit
-          ncdu
-          nix-index
-          nix-output-monitor
-          nix-search-cli
-          nix-tree
-          nix-update
-          nixfmt-rfc-style
-          nixpkgs-fmt
-          nixpkgs-review
-          npins
-          rustup
-          starship
-          tokei
-          tree
-          typst
-          zellij
-          ;
+    packages =
+      let
         cachix-no-man = pkgs.symlinkJoin {
           inherit (pkgs.cachix) version;
           name = "cachix";
@@ -316,32 +290,50 @@ in
             | ${pkgs.jq}/bin/jq "to_entries | sort_by(.value.closureSize) | .[] | select(.value.closureSize < $SIZE) | .key" -r \
             | ${pkgs.cachix.bin}/bin/cachix push $CACHE
         '';
-      }
-      // {
-        inherit (pkgs)
-          # for editors
-          bash-language-server
-          buf
-          clang-tools
-          marksman
-          nixd
-          pyright
-          ruff
-          taplo
-          texlab
-          tinymist
-          vscode-langservers-extracted
-          ;
-        inherit (pkgs.nodePackages) typescript-language-server;
+      in
+      [
+        pkgs.attic-client
+        pkgs.difftastic
+        pkgs.dust
+        pkgs.elan
+        pkgs.htop
+        pkgs.lazygit
+        pkgs.ncdu
+        pkgs.nix-index
+        pkgs.nix-output-monitor
+        pkgs.nix-search-cli
+        pkgs.nix-tree
+        pkgs.nix-update
+        pkgs.nixfmt-rfc-style
+        pkgs.nixpkgs-fmt
+        pkgs.nixpkgs-review
+        pkgs.npins
+        pkgs.rustup
+        pkgs.starship
+        pkgs.tokei
+        pkgs.tree
+        pkgs.typst
+        pkgs.zellij
 
-      }
-      // lib.optionalAttrs isDarwin {
-        inherit (pkgs) iterm2;
-      }
-      // lib.optionalAttrs isLinux {
-        inherit (pkgs) julia;
-      }
-    );
+        cachix-no-man
+        cachix-push
+
+        # for editors
+        pkgs.bash-language-server
+        pkgs.buf
+        pkgs.clang-tools
+        pkgs.marksman
+        pkgs.nixd
+        pkgs.pyright
+        pkgs.ruff
+        pkgs.taplo
+        pkgs.texlab
+        pkgs.tinymist
+        pkgs.vscode-langservers-extracted
+        pkgs.nodePackages.typescript-language-server
+      ]
+      ++ lib.optionals isDarwin [ pkgs.iterm2 ]
+      ++ lib.optionals isLinux [ pkgs.julia ];
     shellAliases = lib.mkMerge [
       {
         ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";

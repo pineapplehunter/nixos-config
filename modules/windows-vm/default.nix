@@ -23,11 +23,9 @@ in
     };
     programs.virt-manager.enable = true;
 
-    environment.systemPackages = builtins.attrValues {
-      inherit (pkgs)
-        win-virtio
-        win-spice
-        ;
-    };
+    environment.systemPackages = [
+      pkgs.win-virtio
+      pkgs.win-spice
+    ];
   };
 }

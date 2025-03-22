@@ -25,29 +25,23 @@ in
   config = lib.mkIf cfg.enable (
     lib.mkMerge [
       (lib.mkIf cfg.fonts.enable {
-        fonts.packages = builtins.attrValues {
-          inherit (pkgs)
-            noto-fonts-cjk-sans
-            noto-fonts-cjk-serif
-            ;
-        };
+        fonts.packages = [
+          pkgs.noto-fonts-cjk-sans
+          pkgs.noto-fonts-cjk-serif
+        ];
       })
 
       (lib.mkIf cfg.inputMethod.enable {
         # japanese input managers
         i18n.inputMethod = {
-          ibus.engines = builtins.attrValues {
-            inherit (pkgs.ibus-engines)
-              mozc-ut
-              anthy
-              ;
-          };
-          fcitx5.addons = builtins.attrValues {
-            inherit (pkgs)
-              fcitx5-mozc
-              fcitx5-anthy
-              ;
-          };
+          ibus.engines = [
+            pkgs.ibus-engines.mozc-ut
+            pkgs.ibus-engines.anthy
+          ];
+          fcitx5.addons = [
+            pkgs.fcitx5-mozc
+            pkgs.fcitx5-anthy
+          ];
         };
       })
 

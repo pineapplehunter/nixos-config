@@ -128,14 +128,12 @@
     # Enable CUPS to print documents.
     printing = {
       enable = true;
-      drivers = builtins.attrValues {
-        inherit (pkgs)
-          gutenprint
-          hplip
-          splix
-          epson-escpr
-          ;
-      };
+      drivers = [
+        pkgs.gutenprint
+        pkgs.hplip
+        pkgs.splix
+        pkgs.epson-escpr
+      ];
     };
 
     # Enable flatpak
