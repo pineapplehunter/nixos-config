@@ -7,10 +7,10 @@
 let
   inherit (nixpkgs) lib;
   multiConfig =
-    name: mods:
+    cfgname: username: mods:
     lib.attrsets.mergeAttrsList (
       map (system: {
-        "${name}-${system}" = inputs.home-manager.lib.homeManagerConfiguration {
+        "${cfgname}-${system}" = inputs.home-manager.lib.homeManagerConfiguration {
           pkgs = self.legacyPackages.${system};
           extraSpecialArgs = {
             inherit inputs self;
@@ -20,9 +20,9 @@ let
             (
               { pkgs, ... }:
               {
-                pineapplehunter.config-name = "${name}-${system}";
-                home.username = name;
-                home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${name}" else "/home/${name}";
+                pineapplehunter.config-name = "${cfgname}-${system}";
+                home.username = username;
+                home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/${username}" else "/home/${username}";
               }
             )
           ] ++ mods;
@@ -45,8 +45,9 @@ rec {
     emacs = import ./emacs;
   };
   configurations = lib.attrsets.mergeAttrsList [
-    (multiConfig "shogo" [ modules.shogo ])
-    (multiConfig "shogotr" [ modules.work ])
-    (multiConfig "riken" [ modules.work ])
+    (multiConfig "shogo" "shogo" [ modules.shogo ])
+    (multiConfig "shogo-work" "shogo" [ modules.work ])
+    (multiConfig "shogotr-work" "shogotr" [ modules.work ])
+    (multiConfig "work" "riken" [ modules.work ])
   ];
 }
