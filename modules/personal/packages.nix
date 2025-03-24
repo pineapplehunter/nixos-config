@@ -20,9 +20,7 @@ in
     pkgs.blender
     pkgs.jujutsu
     pkgs.nautilus-thumbnailer-stl
-    pkgs.slack
     pkgs.vivado
-    pkgs.webcord
 
     artwork-wallpapers
     flatpak-chrome-alias

@@ -58,10 +58,12 @@ in
     pkgs.openssl
     pkgs.papers
     pkgs.pciutils
+    pkgs.slack
     pkgs.stdenv.cc
     pkgs.super-productivity
     pkgs.udisks2
     pkgs.usbutils
+    pkgs.webcord
 
     cachix-no-man
     ventoy-custom

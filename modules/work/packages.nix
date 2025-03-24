@@ -1,8 +1,8 @@
 { pkgs, ... }:
 {
   environment.systemPackages = [
-    pkgs.webcord
-    pkgs.slack
+    pkgs.act
+    pkgs.gitlab-ci-local
     pkgs.unityhub
   ];
 }
