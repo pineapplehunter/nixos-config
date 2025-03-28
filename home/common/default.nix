@@ -319,12 +319,12 @@ in
         cachix-push
 
         # for editors
+        pkgs.basedpyright
         pkgs.bash-language-server
         pkgs.buf
         pkgs.clang-tools
         pkgs.marksman
         pkgs.nixd
-        pkgs.pyright
         pkgs.ruff
         pkgs.taplo
         pkgs.texlab

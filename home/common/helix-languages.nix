@@ -4,10 +4,14 @@
     nixd.command = "nixd";
     ruff = {
       command = "ruff";
-      args = [ "server" ];
+      args = [
+        "server"
+        "-q"
+        "--preview"
+      ];
     };
-    pyright = {
-      command = "pyright-langserver";
+    basedpyright = {
+      command = "basedpyright-langserver";
       args = [ "--stdio" ];
       config.pyright.disableTaggedHints = true;
     };
@@ -62,8 +66,7 @@
       name = "python";
       language-servers = [
         "ruff"
-        "pyright"
-        "pylsp"
+        "basedpyright"
       ];
     }
     {
