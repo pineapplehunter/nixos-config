@@ -6,7 +6,7 @@
     nixpkgs-stable.url = "github:nixos/nixpkgs?ref=nixos-24.11";
     empty.url = "github:pineapplehunter/nix-empty";
     home-manager = {
-      url = "github:pineapplehunter/home-manager?ref=helix-avoid-ifd";
+      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-xilinx = {
