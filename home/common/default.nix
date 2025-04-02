@@ -261,6 +261,13 @@ in
       enable = true;
       path = lib.mkForce null;
     };
+
+    lazygit = {
+      enable = true;
+      settings = {
+        git.overrideGpg = true;
+      };
+    };
   };
 
   xdg.dataFile."julia/config/startup.jl".text = ''
@@ -297,7 +304,6 @@ in
         pkgs.dust
         pkgs.elan
         pkgs.htop
-        pkgs.lazygit
         pkgs.ncdu
         pkgs.nix-index
         pkgs.nix-output-monitor
