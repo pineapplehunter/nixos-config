@@ -93,6 +93,7 @@
           pkgs = pkgsFor system;
           management-tools = pkgs.runCommand "management-tools" { } ''
             mkdir -p $out/bin
+            ${pkgs.stdenv.shellDryRun} ${./update.sh}
             ln -s ${./update.sh} $out/bin/os
             ln -s ${./update.sh} $out/bin/home
           '';
