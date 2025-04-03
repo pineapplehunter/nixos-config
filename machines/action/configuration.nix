@@ -113,12 +113,18 @@
   boot = {
     loader.grub = {
       enable = true;
-      useOSProber = true;
       efiSupport = true;
       device = "nodev";
       configurationLimit = 20;
       default = "saved";
       extraEntries = lib.mkAfter ''
+        menuentry 'Windows Boot Manager' --class windows --class os $menuentry_id_option 'osprober-efi-DA91-D0F6' {
+          savedefault
+          insmod part_gpt
+          insmod fat
+          search --no-floppy --fs-uuid --set=root DA91-D0F6
+          chainloader /EFI/Microsoft/Boot/bootmgfw.efi
+        }
         menuentry "System shutdown" {
         	echo "System shutting down..."
         	halt
