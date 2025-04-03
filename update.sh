@@ -102,7 +102,12 @@ function home-diff {
     echo All packges up to date!
     exit 1
   fi
-  nvd diff "$HOME/.local/state/nix/profiles/home-manager" ./result
+
+  if [ -e "$HOME/.local/state/nix/profiles/home-manager" ]; then
+    nvd diff "$HOME/.local/state/nix/profiles/home-manager" ./result
+  else
+    echo no previous home-manager output. skipping diff.
+  fi
 }
 
 function home-switch {
