@@ -46,17 +46,21 @@
     { self, nixpkgs, ... }@inputs:
     let
       inherit (nixpkgs) lib;
-      eachSystem = nixpkgs.lib.genAttrs (import inputs.systems);
-      pkgsFor =
-        system:
-        import nixpkgs {
-          inherit system;
-          overlays = [
-            inputs.nixgl.overlays.default
-            inputs.nix-xilinx.overlay
-            self.overlays.default
-          ];
-        };
+      eachSystem =
+        withPkgs:
+        lib.genAttrs (import inputs.systems) (
+          system:
+          withPkgs (
+            import nixpkgs {
+              inherit system;
+              overlays = [
+                inputs.nixgl.overlays.default
+                inputs.nix-xilinx.overlay
+                self.overlays.default
+              ];
+            }
+          )
+        );
     in
     {
       nixosModules = import ./modules;
@@ -68,18 +72,14 @@
     }
     // {
       formatter = eachSystem (
-        system:
-        (inputs.treefmt-nix.lib.evalModule (pkgsFor system) {
+        pkgs:
+        (inputs.treefmt-nix.lib.evalModule pkgs {
           projectRootFile = "flake.nix";
           programs.nixfmt.enable = true;
         }).config.build.wrapper
-
       );
       packages = eachSystem (
-        system:
-        let
-          pkgs = pkgsFor system;
-        in
+        pkgs:
         lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
           inherit (pkgs)
             stl2pov
@@ -88,9 +88,8 @@
         }
       );
       devShells = eachSystem (
-        system:
+        pkgs:
         let
-          pkgs = pkgsFor system;
           management-tools = pkgs.runCommand "management-tools" { } ''
             mkdir -p $out/bin
             ${pkgs.stdenv.shellDryRun} ${./update.sh}
@@ -116,10 +115,10 @@
         }
       );
       checks = eachSystem (
-        system:
+        pkgs:
         let
-          pkgs = pkgsFor system;
           check-build = drv: pkgs.runCommand "${drv.name}-check" { dummy = "${drv}"; } "touch $out";
+          inherit (pkgs.hostPlatform) system;
         in
         {
           user-riken = check-build self.homeConfigurations.${"work-${system}"}.activationPackage;
@@ -131,7 +130,8 @@
           beast = check-build self.nixosConfigurations.beast.config.system.build.toplevel;
           micky = check-build self.nixosConfigurations.micky.config.system.build.toplevel;
         }
+        // self.packages.${system}
       );
-      legacyPackages = eachSystem pkgsFor;
+      legacyPackages = eachSystem lib.id;
     };
 }

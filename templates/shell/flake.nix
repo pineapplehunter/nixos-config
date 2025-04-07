@@ -7,15 +7,10 @@
   inputs.treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
 
   outputs =
-    {
-      self,
-      nixpkgs,
-      systems,
-      treefmt-nix,
-    }:
+    { nixpkgs, systems, ... }@inputs:
     let
-      eachSystem =
-        f: nixpkgs.lib.genAttrs (import systems) (system: f (import nixpkgs { inherit system; }));
+      inherit (nixpkgs) lib;
+      eachSystem = f: lib.genAttrs (import systems) (system: f (import nixpkgs { inherit system; }));
     in
     {
       devShells = eachSystem (pkgs: {
@@ -28,12 +23,12 @@
 
       formatter = eachSystem (
         pkgs:
-        (treefmt-nix.lib.evalModule pkgs {
+        (inputs.treefmt-nix.lib.evalModule pkgs {
           projectRootFile = "flake.nix";
           programs.nixfmt.enable = true;
         }).config.build.wrapper
       );
 
-      legacyPackages = eachSystem (i: i);
+      legacyPackages = eachSystem lib.id;
     };
 }
