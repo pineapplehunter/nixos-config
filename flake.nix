@@ -32,7 +32,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixgl = {
-      url = "github:nix-community/nixGL";
+      url = "github:pineapplehunter/nixGL";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-search-cli = {
