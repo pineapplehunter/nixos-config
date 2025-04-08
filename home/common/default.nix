@@ -61,7 +61,6 @@ in
       settings = {
         theme = "github-light";
         editor = {
-          # line-number = "relative";
           lsp = {
             display-messages = true;
             display-inlay-hints = true;
@@ -71,13 +70,9 @@ in
             after-delay.enable = true;
           };
           end-of-line-diagnostics = "hint";
-          inline-diagnostics.cursor-line = "error";
+          inline-diagnostics.cursor-line = "warning";
+          file-picker.hidden = false;
         };
-        # keys = {
-        #   normal.esc = [ "collapse_selection" ":w" ];
-        #   select.esc = [ "collapse_selection" "normal_mode" ":w" ];
-        #   insert.esc = [ "normal_mode" ":w" ];
-        # };
       };
       themes = {
         github-light = builtins.fromTOML (builtins.readFile ./helix-github-light.toml);
