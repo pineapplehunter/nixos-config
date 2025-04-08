@@ -150,7 +150,6 @@ in
           ge.just-perfection
           ge.night-theme-switcher
           ge.runcat
-          ge.syncthing-indicator
           ge.tailscale-status
           ge.tiling-assistant
         ];
@@ -354,10 +353,7 @@ in
     };
   };
 
-  services = {
-    syncthing.enable = isLinux;
-    flatpak-update.enable = isLinux && !is-nixos;
-  };
+  services.flatpak-update.enable = isLinux && !is-nixos;
 
   home.stateVersion = config.home.version.release;
   news.display = "silent";
