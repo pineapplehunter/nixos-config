@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eou pipefail
 
-# check commands
+# check commands ################################
 for cmd in nix nixos-rebuild home-manager nvd; do
   command -v $cmd > /dev/null || echo command $cmd does not exist
 done
@@ -12,6 +12,24 @@ usage(){
   echo "usage: os   build|switch|boot|diff|expire [args...]"
   echo "       home build|switch|boot|diff        [args...]"
   exit 1
+}
+
+# utils ###########################################
+
+function yes_or_exit {
+  prompt="$*"
+  while true; do
+    read -rp "$prompt [y/n]: " yn
+    case $yn in
+      [Yy]*)
+        return 0
+        ;;
+      [Nn]*)
+        echo "Aborted"
+        exit 1
+        ;;
+    esac
+  done
 }
 
 # parse args #######################################
@@ -59,16 +77,7 @@ function os-diff {
 
 function os-switch {
   os-diff
-  function yes_or_no {
-    while true; do
-      read -rp "$* [y/n]: " yn
-      case $yn in
-        [Yy]*) return 0  ;;
-        [Nn]*) echo "Aborted" ; return 1 ;;
-      esac
-    done
-  }
-  yes_or_no "do you want to commit and update?"
+  yes_or_exit "do you want to commit and update?"
   sudo echo starting upgrade
   git commit -p || true
   sudo nixos-rebuild switch --flake ".#$HOST" "${args[@]}"
@@ -112,16 +121,7 @@ function home-diff {
 
 function home-switch {
   home-diff
-  function yes_or_no {
-    while true; do
-      read -rp "$* [y/n]: " yn
-      case $yn in
-        [Yy]*) return 0  ;;
-        [Nn]*) echo "Aborted" ; return 1 ;;
-      esac
-    done
-  }
-  yes_or_no "do you want to commit and update?"
+  yes_or_exit "do you want to commit and update?"
   echo starting switch
   git commit -p || true
   $HOMEMANAGER switch -b "hm-backup" --flake ".#$HOME_CONFIG_NAME" "${args[@]}"
