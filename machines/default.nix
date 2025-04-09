@@ -25,9 +25,4 @@ in
     self.nixosModules.work
     ./action/configuration.nix
   ];
-  micky = nixosSystemWrapped [
-    inputs.nixos-hardware.nixosModules.mouse-daiv-z4-i7i01sr-a
-    self.nixosModules.work
-    ./micky/configuration.nix
-  ];
 }
