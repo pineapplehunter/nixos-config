@@ -6,11 +6,11 @@ for cmd in nix nixos-rebuild home-manager nvd; do
   command -v $cmd > /dev/null || echo command $cmd does not exist
 done
 
-HOMEMANAGER=$(which home-manager)
+HOMEMANAGER=$(which home-manager || echo NOT_FOUND)
 
 usage(){
-  echo "usage: os   build|switch|boot|diff|expire [args...]"
-  echo "       home build|switch|boot|diff        [args...]"
+  echo "usage: os   build|switch|boot|diff|expire     [args...]"
+  echo "       home build|switch|boot|diff|fix-darwin [args...]"
   exit 1
 }
 
@@ -57,8 +57,8 @@ function os-users {
 function os-home-expire {
   os-users | while read -r u; do
     cd /
-    sudo su "$u" -c "$HOMEMANAGER expire-generations 0" |& tail -n1
-    sudo su "$u" -c "nix profile wipe-history" |& tail -n1
+    sudo su "$u" -c "$HOMEMANAGER expire-generations 0" 2>&1 | tail -n1
+    sudo su "$u" -c "nix profile wipe-history" 2>&1 | tail -n1
   done
 }
 
@@ -125,8 +125,8 @@ function home-switch {
   echo starting switch
   git commit -p || true
   $HOMEMANAGER switch -b "hm-backup" --flake ".#$HOME_CONFIG_NAME" "${args[@]}"
-  $HOMEMANAGER expire-generations 0 |& tail -n1
-  nix profile wipe-history |& tail -n1
+  $HOMEMANAGER expire-generations 0 2>&1 | tail -n1
+  nix profile wipe-history 2>&1 | tail -n1
 }
 
 function home-update {
@@ -136,6 +136,18 @@ function home-update {
     nix flake update
   fi
   home-switch || git checkout HEAD -- flake.lock
+}
+
+function home-fix-darwin {
+  echo Fixing darwin paths
+  echo adding nix daemon to /etc/zshrc
+  cat << EOF | sudo tee -a /etc/zshrc
+# Nix
+if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+  . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+fi
+# End Nix
+EOF
 }
 
 # main ###############################################
@@ -158,6 +170,7 @@ function home-cmd {
     diff) home-diff;;
     switch) home-switch;;
     update) home-update;;
+    fix-darwin) home-fix-darwin;;
     *) echo unknown command && usage;;
   esac
 }
