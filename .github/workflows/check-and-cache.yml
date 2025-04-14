@@ -31,6 +31,6 @@ jobs:
           cache: ${{ secrets.ATTIC_CACHE }}
           token: ${{ secrets.ATTIC_TOKEN }}
       - name: Run checks
-        run: nix flake check --keep-going --all-systems
+        run: nix flake check --keep-going --all-systems --accept-flake-config
       - name: df after build
         run: df -h
