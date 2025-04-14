@@ -308,7 +308,6 @@ in
         pkgs.nixpkgs-fmt
         pkgs.nixpkgs-review
         pkgs.npins
-        pkgs.rustup
         pkgs.starship
         pkgs.tokei
         pkgs.tree
@@ -347,7 +346,6 @@ in
     ];
 
     sessionVariables = {
-      RUSTUP_HOME = "${config.xdg.dataHome}/rustup";
       CARGO_HOME = "${config.xdg.dataHome}/cargo";
       JULIA_DEPOT_PATH = "${config.xdg.dataHome}/julia:$JULIA_DEPOT_PATH";
     };
