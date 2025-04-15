@@ -14,6 +14,7 @@ in
   # system wide packages
   environment.systemPackages = [
     # tools
+    cachix-no-man
     pkgs.atop
     pkgs.binutils
     pkgs.btop
@@ -36,11 +37,15 @@ in
     pkgs.nixfmt-rfc-style
     pkgs.nixpkgs-fmt
     pkgs.npins
+    pkgs.openssl
+    pkgs.papers
+    pkgs.pciutils
     pkgs.reptyr
     pkgs.ripgrep
     pkgs.sops
     pkgs.tree
     pkgs.unzipNLS
+    pkgs.usbutils
     pkgs.vim
     pkgs.wl-clipboard
 
@@ -51,21 +56,18 @@ in
     # lang
     pkgs.python3
 
-    # other
+    # office
+    pkgs.errands
     pkgs.gitify
-    pkgs.gnome-firmware
-    pkgs.man-pages
-    pkgs.openssl
-    pkgs.papers
-    pkgs.pciutils
+    pkgs.pdfslicer
     pkgs.slack
-    pkgs.stdenv.cc
     pkgs.super-productivity
-    pkgs.udisks2
-    pkgs.usbutils
     pkgs.webcord
 
-    cachix-no-man
+    # other
+    pkgs.gnome-firmware
+    pkgs.man-pages
+    pkgs.udisks2
     ventoy-custom
   ];
 
