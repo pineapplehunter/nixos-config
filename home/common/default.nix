@@ -72,6 +72,7 @@ in
           end-of-line-diagnostics = "hint";
           inline-diagnostics.cursor-line = "warning";
           file-picker.hidden = false;
+          bufferline = "multiple";
         };
       };
       themes = {
