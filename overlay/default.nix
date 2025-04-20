@@ -7,38 +7,7 @@ rec {
   default = lib.composeManyExtensions [
     platformSpecificOverlay
     custom
-    removeDesktop
   ];
-
-  removeDesktop =
-    final: prev:
-    let
-      removeDesktopEntry =
-        package:
-        let
-          inherit (package) version;
-          pname = "${package.pname}-no-desktop";
-        in
-        final.runCommand "${pname}-${version}"
-          {
-            passthru = {
-              inherit version pname;
-              original = package;
-            };
-            preferLocalBuild = true;
-          }
-          ''
-            cp -srL --no-preserve=mode ${package} $out
-            rm -rfv $out/share/applications
-          '';
-    in
-    {
-      julia = removeDesktopEntry prev.julia;
-      btop = removeDesktopEntry prev.btop;
-      htop = removeDesktopEntry prev.htop;
-      helix = removeDesktopEntry prev.helix;
-      yazi = removeDesktopEntry prev.yazi;
-    };
 
   custom = final: prev: {
 
