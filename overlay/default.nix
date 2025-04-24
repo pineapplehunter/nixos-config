@@ -44,16 +44,16 @@ rec {
     });
 
     # https://github.com/NixOS/nixpkgs/pull/397276
-    gitlab-ci-local = prev.gitlab-ci-local.overrideAttrs {
-      postInstall = ''
-        NODE_MODULES=$out/lib/node_modules/gitlab-ci-local/node_modules
-        cp $NODE_MODULES/re2/build/Release/re2.node re2.node
-        strip -x re2.node
-        rm -rf $NODE_MODULES/re2/build
-        install -Dt $NODE_MODULES/re2/build/Release re2.node
-        rm -rf $NODE_MODULES/{node-gyp/gyp,re2/vendor}
-      '';
-    };
+    gitlab-ci-local = prev.gitlab-ci-local.overrideAttrs (old: {
+      postInstall =
+        (old.postInstall or "")
+        + ''
+          NODE_MODULES=$out/lib/node_modules/gitlab-ci-local/node_modules
+          find $NODE_MODULES/re2/build -type f ! -path "*/Release/re2.node" -delete
+          strip -x $NODE_MODULES/re2/build/Release/re2.node
+          rm -rf $NODE_MODULES/{node-gyp/gyp,re2/vendor}
+        '';
+    });
 
     stl2pov = final.callPackage ../packages/stl2pov { };
     nautilus-thumbnailer-stl = final.callPackage ../packages/nautilus-thumbnailer-stl { };
