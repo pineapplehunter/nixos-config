@@ -57,8 +57,8 @@ function os-users {
 function os-home-expire {
   os-users | while read -r u; do
     cd /
-    sudo su "$u" -c "$HOMEMANAGER expire-generations 0" 2>&1 | tail -n1
-    sudo su "$u" -c "nix profile wipe-history" 2>&1 | tail -n1
+    sudo sudo -u "$u" LANG=C "$HOMEMANAGER" expire-generations 0 2>&1 | grep -v No
+    sudo sudo -u "$u" LANG=C nix profile wipe-history
   done
 }
 
