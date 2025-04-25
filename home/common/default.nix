@@ -153,6 +153,7 @@ in
           ge.runcat
           ge.tailscale-status
           ge.tiling-assistant
+          ge.gsconnect
         ];
     };
 
