@@ -41,7 +41,9 @@
         "nix-command"
         "flakes"
         "ca-derivations"
+        "auto-allocate-uids"
       ];
+      auto-allocate-uids = true;
       trusted-users =
         let
           normalUsers = lib.filterAttrs (_: user: user.isNormalUser) config.users.users;
