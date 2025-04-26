@@ -57,6 +57,10 @@ rec {
 
     stl2pov = final.callPackage ../packages/stl2pov { };
     nautilus-thumbnailer-stl = final.callPackage ../packages/nautilus-thumbnailer-stl { };
+
+    htop = prev.htop.overrideAttrs (old: {
+      patches = (old.patches or [ ]) ++ [ ./htop.patch ];
+    });
   };
 
   platformSpecificOverlay =
