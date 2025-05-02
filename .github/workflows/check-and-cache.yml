@@ -12,6 +12,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: enable unprivileged userns clone
+        run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          sudo sysctl -w kernel.unprivileged_userns_clone=1
       # https://carlosbecker.com/posts/github-actions-disk-space/
       - name: df before cleanup
         run: df -h
