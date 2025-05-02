@@ -204,22 +204,25 @@ in
     alacritty = {
       enable = isLinux;
       package =
-        let
-          inherit (pkgs) alacritty makeWrapper nixgl;
-          inherit (lib) getExe;
-        in
-        pkgs.symlinkJoin {
-          name = "alacritty-wrapped";
-          paths = [ alacritty ];
-          nativeBuildInputs = [ makeWrapper ];
-          postBuild = ''
-            rm $out/bin/alacritty
-            makeWrapper "${getExe (nixgl.override { enable32bits = false; }).nixGLMesa}" "$out/bin/alacritty" \
-              --set-default XCURSOR_THEME Adwaita \
-              --add-flags "${getExe alacritty}" \
-              --inherit-argv0
-          '';
-        };
+        if is-nixos then
+          pkgs.alacritty
+        else
+          let
+            inherit (pkgs) alacritty makeWrapper nixgl;
+            inherit (lib) getExe;
+          in
+          pkgs.symlinkJoin {
+            name = "alacritty-wrapped";
+            paths = [ alacritty ];
+            nativeBuildInputs = [ makeWrapper ];
+            postBuild = ''
+              rm $out/bin/alacritty
+              makeWrapper "${getExe (nixgl.override { enable32bits = false; }).nixGLMesa}" "$out/bin/alacritty" \
+                --set-default XCURSOR_THEME Adwaita \
+                --add-flags "${getExe alacritty}" \
+                --inherit-argv0
+            '';
+          };
       settings = import ./alacritty-config.nix;
     };
 
