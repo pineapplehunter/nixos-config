@@ -19,11 +19,12 @@ jobs:
       # https://carlosbecker.com/posts/github-actions-disk-space/
       - name: cleanup unused dirs
         run: |
-          echo Before && df -h
+          echo Before && df -h /
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
           sudo docker image prune --all --force
-          sudo docker builder prune -a
-          echo After && df -h
+          sudo docker builder prune --all --force
+          sudo docker system prune --all --force
+          echo After && df -h /
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v31
       - name: Setup Attic cache
@@ -35,4 +36,4 @@ jobs:
       - name: Run checks
         run: |
           nix flake check --keep-going --all-systems --accept-flake-config
-          df -h
+          df -h /
