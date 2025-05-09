@@ -22,7 +22,6 @@ in
   action = nixosSystemWrapped [
     inputs.nixos-hardware.nixosModules.dell-xps-13-9310
     self.nixosModules.personal
-    self.nixosModules.work
     ./action/configuration.nix
   ];
 }

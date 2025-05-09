@@ -121,9 +121,7 @@
           inherit (pkgs.hostPlatform) system;
         in
         {
-          user-riken = check-build self.homeConfigurations.${"work-${system}"}.activationPackage;
           user-shogo = check-build self.homeConfigurations.${"shogo-${system}"}.activationPackage;
-          user-shogo-work = check-build self.homeConfigurations.${"shogo-work-${system}"}.activationPackage;
         }
         // lib.optionalAttrs (system == "x86_64-linux") {
           action = check-build self.nixosConfigurations.action.config.system.build.toplevel;

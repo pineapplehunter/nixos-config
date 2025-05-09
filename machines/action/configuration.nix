@@ -198,34 +198,18 @@
 
     riken = {
       isNormalUser = true;
-      description = "Shogo at Riken";
-      extraGroups = [
-        "networkmanager"
-        "wheel"
-        "dialout"
-        config.users.groups.keys.name
-      ];
+      description = "deprecated only left to view data";
     };
   };
   home-manager.users =
     let
-      inherit (self.homeModules)
-        nixos-common
-        shogo
-        work
-        ;
+      inherit (self.homeModules) nixos-common shogo;
     in
     {
       shogo = {
         imports = [
           nixos-common
           shogo
-        ];
-      };
-      riken = {
-        imports = [
-          nixos-common
-          work
         ];
       };
     };

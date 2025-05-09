@@ -40,14 +40,10 @@ rec {
     };
     pineapplehunter = import ./pineapplehunter;
     shogo = import ./shogo;
-    work = import ./work;
     flatpak-update = import ./flatpak-update;
     emacs = import ./emacs;
   };
   configurations = lib.attrsets.mergeAttrsList [
     (multiConfig "shogo" "shogo" [ modules.shogo ])
-    (multiConfig "shogo-work" "shogo" [ modules.work ])
-    (multiConfig "shogotr-work" "shogotr" [ modules.work ])
-    (multiConfig "work" "riken" [ modules.work ])
   ];
 }
