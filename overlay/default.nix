@@ -27,17 +27,15 @@ rec {
     android-studio = prev.android-studio.overrideAttrs {
       preferLocalBuild = true;
     };
-    gnome = prev.gnome // {
-      gnome-settings-daemon = prev.gnome.gnome-settings-daemon.overrideAttrs (old: {
-        # I don't need sleep notifications!
-        postPatch =
-          (old.postPatch or "")
-          + ''
-            substituteInPlace plugins/power/gsd-power-manager.c \
-              --replace-fail "show_sleep_warning (manager);" "if(0) show_sleep_warning (manager);"
-          '';
-      });
-    };
+    gnome-settings-daemon = prev.gnome-settings-daemon.overrideAttrs (old: {
+      # I don't need sleep notifications!
+      postPatch =
+        (old.postPatch or "")
+        + ''
+          substituteInPlace plugins/power/gsd-power-manager.c \
+            --replace-fail "show_sleep_warnings = TRUE" "show_sleep_warnings = FALSE"
+        '';
+    });
     nix-search-cli = inputs.nix-search-cli.packages.${final.system}.default.overrideAttrs (old: {
       # fix non-standard version representation
       version = builtins.head (builtins.match ''[^0-9]*([0-9\.]+).*'' old.version);
