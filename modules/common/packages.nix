@@ -1,9 +1,5 @@
 { pkgs, ... }:
 let
-  ventoy-custom = pkgs.ventoy-full.override {
-    defaultGuiType = "gtk3";
-    withGtk3 = true;
-  };
   cachix-no-man = pkgs.symlinkJoin {
     inherit (pkgs.cachix) version;
     name = "cachix";
@@ -68,7 +64,6 @@ in
     pkgs.gnome-firmware
     pkgs.man-pages
     pkgs.udisks2
-    ventoy-custom
   ];
 
   environment.gnome.excludePackages = [ pkgs.evince ];
