@@ -47,6 +47,8 @@ rec {
     htop = prev.htop.overrideAttrs (old: {
       patches = (old.patches or [ ]) ++ [ ./htop.patch ];
     });
+
+    helix = inputs.helix.packages.${final.system}.default;
   };
 
   platformSpecificOverlay =
