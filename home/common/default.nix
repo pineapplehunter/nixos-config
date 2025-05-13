@@ -48,23 +48,75 @@ let
     rev = "01e82271a315d57be424392a3e46b2d929649a20";
     hash = "sha256-ZvOs0kAd6fqM+N8mmxBgKRlMrSRAXgy61Cwai6NQglU=";
   };
+  linkerscript = pkgs.fetchFromGitHub {
+    owner = "tree-sitter-grammars";
+    repo = "tree-sitter-linkerscript";
+    rev = "f99011a3554213b654985a4b0a65b3b032ec4621";
+    hash = "sha256-Do8MIcl5DJo00V4wqIbdVC0to+2YYwfy08QWqSLMkQA=";
+  };
 in
 {
   imports =
     let
-      inherit (self.homeModules) pineapplehunter flatpak-update;
+      inherit (self.homeModules)
+        pineapplehunter
+        flatpak-update
+        helix-tree-sitter-module
+        ;
     in
     [
       pineapplehunter
       flatpak-update
+      helix-tree-sitter-module
     ];
 
   programs = {
     helix = {
       enable = true;
       defaultEditor = true;
+      extraTreesitter = [
+        {
+          name = "kconfig";
+          source = kconfig-tree-sitter;
+          comment-token = "#";
+          file-types = [
+            { glob = "Kconfig"; }
+            { glob = "kconfig"; }
+          ];
+        }
+        {
+          name = "caddy";
+          source = caddy-tree-sitter;
+          comment-token = "#";
+          file-types = [
+            { glob = "Caddyfile"; }
+          ];
+        }
+        {
+          name = "riscvasm";
+          source = riscvasm;
+          comment-token = "#";
+          file-types = [
+            { glob = "Caddyfile"; }
+          ];
+        }
+        {
+          name = "linkerscript";
+          source = linkerscript;
+          comment-token = "#";
+          file-types = [
+            { glob = "*.ld"; }
+            { glob = "*.lds"; }
+          ];
+        }
+      ];
       languages = import ./helix-languages.nix {
-        inherit kconfig-tree-sitter caddy-tree-sitter riscvasm;
+        inherit
+          kconfig-tree-sitter
+          caddy-tree-sitter
+          riscvasm
+          linkerscript
+          ;
       };
       settings = {
         theme = "github-light";
@@ -298,15 +350,6 @@ in
       @warn e
     end
   '';
-
-  xdg.configFile = {
-    "helix/runtime/queries/kconfig".source = pkgs.runCommand "kconfig-query" { } ''
-      ln -s ${kconfig-tree-sitter}/queries $out
-    '';
-    "helix/runtime/queries/riscvasm".source = pkgs.runCommand "riscv-asm-query" { } ''
-      ln -s ${riscvasm}/queries $out
-    '';
-  };
 
   home = {
     packages =
