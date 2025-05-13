@@ -42,6 +42,12 @@ let
     rev = "65b60437983933d00809c8927e7d8a29ca26dfa3";
     hash = "sha256-IDDz/2kC1Dslgrdv13q9NrCgrVvdzX1kQE6cld4+g2o=";
   };
+  riscvasm = pkgs.fetchFromGitHub {
+    owner = "erihsu";
+    repo = "tree-sitter-riscvasm";
+    rev = "01e82271a315d57be424392a3e46b2d929649a20";
+    hash = "sha256-ZvOs0kAd6fqM+N8mmxBgKRlMrSRAXgy61Cwai6NQglU=";
+  };
 in
 {
   imports =
@@ -57,7 +63,9 @@ in
     helix = {
       enable = true;
       defaultEditor = true;
-      languages = import ./helix-languages.nix { inherit kconfig-tree-sitter caddy-tree-sitter; };
+      languages = import ./helix-languages.nix {
+        inherit kconfig-tree-sitter caddy-tree-sitter riscvasm;
+      };
       settings = {
         theme = "github-light";
         editor = {
@@ -74,6 +82,14 @@ in
           file-picker.hidden = false;
           bufferline = "multiple";
         };
+        keys.normal."C-g" = [
+          ":write-all"
+          ":new"
+          ":insert-output lazygit"
+          ":buffer-close!"
+          ":redraw"
+          ":reload-all"
+        ];
       };
       themes = {
         github-light = builtins.fromTOML (builtins.readFile ./helix-github-light.toml);
@@ -283,9 +299,14 @@ in
     end
   '';
 
-  xdg.configFile."helix/runtime/queries/kconfig".source = pkgs.runCommand "kconfig-query" { } ''
-    ln -s ${kconfig-tree-sitter}/queries $out
-  '';
+  xdg.configFile = {
+    "helix/runtime/queries/kconfig".source = pkgs.runCommand "kconfig-query" { } ''
+      ln -s ${kconfig-tree-sitter}/queries $out
+    '';
+    "helix/runtime/queries/riscvasm".source = pkgs.runCommand "riscv-asm-query" { } ''
+      ln -s ${riscvasm}/queries $out
+    '';
+  };
 
   home = {
     packages =
