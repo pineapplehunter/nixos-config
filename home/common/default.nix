@@ -300,6 +300,21 @@ in
       settings = import ./alacritty-config.nix;
     };
 
+    ghostty = {
+      enable = isLinux;
+      settings = {
+        theme = "Adwaita";
+        window-theme = "ghostty";
+        font-size = 10;
+        gtk-titlebar = false;
+        keybind = [
+          "ctrl+shift+plus=increase_font_size:1"
+          "ctrl+shift+equal=decrease_font_size:1"
+          "ctrl+shift+0=reset_font_size"
+        ];
+      };
+    };
+
     fzf.enable = true;
 
     git = {
