@@ -304,7 +304,7 @@ in
       enable = isLinux;
       settings = {
         theme = "Adwaita";
-        window-theme = "ghostty";
+        window-theme = "light";
         font-size = 10;
         gtk-titlebar = false;
         keybind = [
