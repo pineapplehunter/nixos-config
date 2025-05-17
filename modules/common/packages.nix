@@ -55,7 +55,7 @@ in
     # office
     pkgs.errands
     pkgs.gitify
-    pkgs.pdfslicer
+    pkgs.pdfarranger
     pkgs.slack
     pkgs.super-productivity
     pkgs.webcord
