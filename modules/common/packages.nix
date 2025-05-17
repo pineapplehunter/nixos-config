@@ -63,6 +63,7 @@ in
     # other
     pkgs.gnome-firmware
     pkgs.man-pages
+    pkgs.orca-slicer
     pkgs.udisks2
   ];
 
