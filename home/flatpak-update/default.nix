@@ -12,7 +12,7 @@ in
         Unit.Description = "Update flatpak";
         Service = {
           Type = "oneshot";
-          ExecStart = "flatpak update --noninteractive -y || true";
+          ExecStart = "-flatpak update --noninteractive -y";
         };
       };
 
