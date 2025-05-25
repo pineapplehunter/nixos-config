@@ -54,5 +54,15 @@
       name = "protobuf";
       language-servers = [ "buf" ];
     }
+    {
+      name = "meson";
+      formatter = {
+        command = "meson";
+        args = [
+          "fmt"
+          "-"
+        ];
+      };
+    }
   ];
 }
