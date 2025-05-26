@@ -106,7 +106,7 @@
               management-tools
               pkgs.home-manager
               pkgs.nix-output-monitor
-              pkgs.nixos-rebuild
+              pkgs.nixos-rebuild-ng
               pkgs.nvd
               pkgs.statix
             ];
