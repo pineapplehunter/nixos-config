@@ -18,6 +18,9 @@
 
   pineapplehunter.windows-vm.enable = true;
 
+  services.howdy.enable = true;
+  services.linux-enable-ir-emitter.enable = true;
+
   # nixpkgs.flake.source = lib.mkForce null;
   nix = {
     distributedBuilds = true;

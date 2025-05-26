@@ -10,7 +10,12 @@
   imports =
     let
       inherit (self.nixosModules) shell-config japanese windows-vm;
-      inherit (inputs) sops-nix xremap-flake home-manager;
+      inherit (inputs)
+        sops-nix
+        xremap-flake
+        home-manager
+        howdy-module
+        ;
     in
     [
       ./packages.nix
@@ -19,6 +24,7 @@
       japanese
       windows-vm
       sops-nix.nixosModules.sops
+      howdy-module.nixosModules.default
       xremap-flake.nixosModules.default
       home-manager.nixosModules.home-manager
     ];

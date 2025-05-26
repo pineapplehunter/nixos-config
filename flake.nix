@@ -39,6 +39,7 @@
       url = "github:peterldowns/nix-search-cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    howdy-module.url = "github:pineapplehunter/howdy-module";
     systems.url = "github:nix-systems/default";
   };
 
@@ -54,6 +55,7 @@
             import nixpkgs {
               inherit system;
               overlays = [
+                inputs.howdy-module.overlays.default
                 inputs.nixgl.overlays.default
                 inputs.nix-xilinx.overlay
                 self.overlays.default

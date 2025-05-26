@@ -151,6 +151,21 @@
         "type": "github"
       }
     },
+    "howdy-module": {
+      "locked": {
+        "lastModified": 1748227326,
+        "narHash": "sha256-F82kC9L7l/+NG1jyGwwL/PLOsVNPrBMGowPv1Y4/D7w=",
+        "owner": "pineapplehunter",
+        "repo": "howdy-module",
+        "rev": "a8a09d017fa10b52f1e2989f2f62fb4270e2a62c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pineapplehunter",
+        "repo": "howdy-module",
+        "type": "github"
+      }
+    },
     "nix-filter": {
       "locked": {
         "lastModified": 1710156097,
@@ -314,6 +329,7 @@
       "inputs": {
         "empty": "empty",
         "home-manager": "home-manager",
+        "howdy-module": "howdy-module",
         "nix-search-cli": "nix-search-cli",
         "nix-xilinx": "nix-xilinx",
         "nixgl": "nixgl",
