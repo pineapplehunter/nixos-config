@@ -19,6 +19,7 @@
   pineapplehunter.windows-vm.enable = true;
 
   services.howdy.enable = true;
+  services.howdy.settings.video.dark_threshold = 90;
   services.linux-enable-ir-emitter.enable = true;
 
   # nixpkgs.flake.source = lib.mkForce null;
