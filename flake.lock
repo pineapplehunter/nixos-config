@@ -153,11 +153,11 @@
     },
     "howdy-module": {
       "locked": {
-        "lastModified": 1748227326,
-        "narHash": "sha256-F82kC9L7l/+NG1jyGwwL/PLOsVNPrBMGowPv1Y4/D7w=",
+        "lastModified": 1748233637,
+        "narHash": "sha256-pMH7NqD/FXnaA+aUFGe81EnIIAj9VZcqrmCmJO2CLLE=",
         "owner": "pineapplehunter",
         "repo": "howdy-module",
-        "rev": "a8a09d017fa10b52f1e2989f2f62fb4270e2a62c",
+        "rev": "98aef680518eb7d1e872a50bb938748bf959d2c8",
         "type": "github"
       },
       "original": {
