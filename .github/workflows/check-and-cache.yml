@@ -10,7 +10,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runner: ["ubuntu-latest", "ubuntu-latest-arm"]
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: enable unprivileged userns clone
         run: |
