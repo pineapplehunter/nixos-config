@@ -189,5 +189,7 @@
     };
   };
 
+  security.sudo-rs.enable = true;
+
   system.stateVersion = config.system.nixos.release;
 }
