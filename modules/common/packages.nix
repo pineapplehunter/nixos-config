@@ -26,7 +26,6 @@ in
     pkgs.jq
     pkgs.ncdu
     pkgs.nethogs
-    pkgs.niv
     pkgs.nix-index
     pkgs.nix-output-monitor
     pkgs.nix-tree
