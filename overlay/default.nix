@@ -6,15 +6,16 @@
 rec {
   default = lib.composeManyExtensions [
     platformSpecificOverlay
-    custom
+    global
+    custom-packages
   ];
 
-  custom = final: prev: {
-
+  global = final: prev: {
     curl-http3 = prev.curl.override {
       http3Support = true;
       openssl = prev.quictls;
     };
+
     flatpak = prev.flatpak.overrideAttrs (old: {
       postPatch =
         (old.postPatch or "")
@@ -24,9 +25,11 @@ rec {
             --replace-fail "add_document_portal_args (bwrap, app_id, &doc_mount_path);" ""
         '';
     });
+
     android-studio = prev.android-studio.overrideAttrs {
       preferLocalBuild = true;
     };
+
     gnome-settings-daemon = prev.gnome-settings-daemon.overrideAttrs (old: {
       # I don't need sleep notifications!
       postPatch =
@@ -36,6 +39,7 @@ rec {
             --replace-fail "show_sleep_warnings = TRUE" "show_sleep_warnings = FALSE"
         '';
     });
+
     nix-search-cli = inputs.nix-search-cli.packages.${final.system}.default.overrideAttrs (old: {
       # fix non-standard version representation
       version = builtins.head (builtins.match ''[^0-9]*([0-9\.]+).*'' old.version);
@@ -43,15 +47,19 @@ rec {
       inherit (old) src;
     });
 
-    stl2pov = final.callPackage ../packages/stl2pov { };
-    nautilus-thumbnailer-stl = final.callPackage ../packages/nautilus-thumbnailer-stl { };
-
     htop = prev.htop.overrideAttrs (old: {
       patches = (old.patches or [ ]) ++ [ ./htop.patch ];
     });
 
     super-productivity = final.callPackage ./supprod.nix { };
   };
+
+  custom-packages =
+    final: prev:
+    prev.lib.packagesFromDirectoryRecursive {
+      inherit (final) callPackage;
+      directory = ../packages;
+    };
 
   platformSpecificOverlay =
     final: prev:
