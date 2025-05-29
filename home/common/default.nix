@@ -133,6 +133,7 @@ in
           inline-diagnostics.cursor-line = "warning";
           file-picker.hidden = false;
           bufferline = "multiple";
+          insert-final-newline = false;
         };
         keys.normal."C-g" = [
           ":write-all"
