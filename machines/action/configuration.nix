@@ -145,7 +145,8 @@
       '';
     };
     loader.efi.canTouchEfiVariables = true;
-    extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
+    # disable until https://github.com/NixOS/nixpkgs/pull/411777
+    # extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
     binfmt.emulatedSystems = [
       "aarch64-linux"
       "riscv64-linux"
