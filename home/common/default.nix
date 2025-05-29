@@ -442,6 +442,7 @@ in
         pkgs.tokei
         pkgs.tree
         pkgs.typst
+        pkgs.xh
         pkgs.zellij
 
         cachix-no-man
