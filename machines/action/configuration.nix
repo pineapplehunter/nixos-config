@@ -85,14 +85,9 @@
       fileSystems = [ "/" ];
     };
 
-    xserver = {
-      # Enable the X11 windowing system.
-      enable = true;
-
-      # Enable the GNOME Desktop Environment.
-      displayManager.gdm.enable = true;
-      desktopManager.gnome.enable = true;
-    };
+    # Enable the GNOME Desktop Environment.
+    displayManager.gdm.enable = true;
+    desktopManager.gnome.enable = true;
 
     snapper.configs = {
       home = {
@@ -185,9 +180,6 @@
       storageDriver = "btrfs";
     };
   };
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users = {
