@@ -197,7 +197,7 @@ in
 
     yazi = {
       enable = true;
-      keymap.manager.prepend_keymap = [
+      keymap.mgr.prepend_keymap = [
         {
           on = [
             "g"
@@ -207,7 +207,7 @@ in
           desc = "Move cursor to the bottom";
         }
       ];
-      settings.manager.ratio = [
+      settings.mgr.ratio = [
         1
         2
         3
