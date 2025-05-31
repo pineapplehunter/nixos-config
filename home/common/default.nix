@@ -30,30 +30,6 @@ let
       );
     };
 
-  kconfig-tree-sitter = pkgs.fetchFromGitHub {
-    owner = "tree-sitter-grammars";
-    repo = "tree-sitter-kconfig";
-    rev = "486fea71f61ad9f3fd4072a118402e97fe88d26c";
-    hash = "sha256-a3uTjtA4KQ8KxEmpva2oHcqp8EwbI5+h9U+qoPSgDd4=";
-  };
-  caddy-tree-sitter = pkgs.fetchFromGitHub {
-    owner = "Samonitari";
-    repo = "tree-sitter-caddy";
-    rev = "65b60437983933d00809c8927e7d8a29ca26dfa3";
-    hash = "sha256-IDDz/2kC1Dslgrdv13q9NrCgrVvdzX1kQE6cld4+g2o=";
-  };
-  riscvasm = pkgs.fetchFromGitHub {
-    owner = "erihsu";
-    repo = "tree-sitter-riscvasm";
-    rev = "01e82271a315d57be424392a3e46b2d929649a20";
-    hash = "sha256-ZvOs0kAd6fqM+N8mmxBgKRlMrSRAXgy61Cwai6NQglU=";
-  };
-  linkerscript = pkgs.fetchFromGitHub {
-    owner = "tree-sitter-grammars";
-    repo = "tree-sitter-linkerscript";
-    rev = "f99011a3554213b654985a4b0a65b3b032ec4621";
-    hash = "sha256-Do8MIcl5DJo00V4wqIbdVC0to+2YYwfy08QWqSLMkQA=";
-  };
 in
 {
   imports =
@@ -77,7 +53,12 @@ in
       extraTreesitter = [
         {
           name = "kconfig";
-          source = kconfig-tree-sitter;
+          source = pkgs.fetchFromGitHub {
+            owner = "tree-sitter-grammars";
+            repo = "tree-sitter-kconfig";
+            rev = "486fea71f61ad9f3fd4072a118402e97fe88d26c";
+            hash = "sha256-a3uTjtA4KQ8KxEmpva2oHcqp8EwbI5+h9U+qoPSgDd4=";
+          };
           comment-token = "#";
           file-types = [
             { glob = "Kconfig"; }
@@ -86,7 +67,12 @@ in
         }
         {
           name = "caddy";
-          source = caddy-tree-sitter;
+          source = pkgs.fetchFromGitHub {
+            owner = "Samonitari";
+            repo = "tree-sitter-caddy";
+            rev = "65b60437983933d00809c8927e7d8a29ca26dfa3";
+            hash = "sha256-IDDz/2kC1Dslgrdv13q9NrCgrVvdzX1kQE6cld4+g2o=";
+          };
           comment-token = "#";
           file-types = [
             { glob = "Caddyfile"; }
@@ -94,7 +80,12 @@ in
         }
         {
           name = "riscvasm";
-          source = riscvasm;
+          source = pkgs.fetchFromGitHub {
+            owner = "erihsu";
+            repo = "tree-sitter-riscvasm";
+            rev = "01e82271a315d57be424392a3e46b2d929649a20";
+            hash = "sha256-ZvOs0kAd6fqM+N8mmxBgKRlMrSRAXgy61Cwai6NQglU=";
+          };
           comment-token = "#";
           file-types = [
             { glob = "Caddyfile"; }
@@ -102,7 +93,12 @@ in
         }
         {
           name = "linkerscript";
-          source = linkerscript;
+          source = pkgs.fetchFromGitHub {
+            owner = "tree-sitter-grammars";
+            repo = "tree-sitter-linkerscript";
+            rev = "f99011a3554213b654985a4b0a65b3b032ec4621";
+            hash = "sha256-Do8MIcl5DJo00V4wqIbdVC0to+2YYwfy08QWqSLMkQA=";
+          };
           comment-token = "#";
           file-types = [
             { glob = "*.ld"; }
@@ -110,14 +106,7 @@ in
           ];
         }
       ];
-      languages = import ./helix-languages.nix {
-        inherit
-          kconfig-tree-sitter
-          caddy-tree-sitter
-          riscvasm
-          linkerscript
-          ;
-      };
+      languages = import ./helix-languages.nix;
       settings = {
         theme = "github-light";
         editor = {

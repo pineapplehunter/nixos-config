@@ -1,4 +1,3 @@
-{ ... }:
 {
   language-server = {
     nixd.command = "nixd";
