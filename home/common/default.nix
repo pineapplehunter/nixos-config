@@ -281,6 +281,7 @@ in
           "ctrl+shift+plus=increase_font_size:1"
           "ctrl+shift+equal=decrease_font_size:1"
           "ctrl+shift+0=reset_font_size"
+          "ctrl+enter=unbind"
         ];
       };
     };
