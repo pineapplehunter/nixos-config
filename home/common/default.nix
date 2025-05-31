@@ -9,26 +9,6 @@ let
   inherit (lib.attrsets) optionalAttrs;
   inherit (pkgs.stdenv.hostPlatform) isLinux isDarwin;
   inherit (config.pineapplehunter) is-nixos;
-  wrapPackage =
-    {
-      package,
-      programNames ? [ package.pname ],
-      PATH ? null,
-    }:
-    let
-      binPath = lib.optionalString (PATH != null) lib.makeBinPath PATH;
-    in
-    pkgs.symlinkJoin {
-      name = "${package.pname or package.name}-wrapped";
-      paths = [ package ];
-      nativeBuildInputs = [ pkgs.makeWrapper ];
-      postBuild = lib.strings.concatStrings (
-        map (p: ''
-          wrapProgram "$out/bin/${p}" \
-            --suffix PATH : "${binPath}"
-        '') programNames
-      );
-    };
 
 in
 {
@@ -217,25 +197,6 @@ in
 
     yazi = {
       enable = true;
-      package = wrapPackage {
-        package = pkgs.yazi;
-        programNames = [
-          "yazi"
-          "ya"
-        ];
-        PATH = [
-          pkgs.chafa
-          pkgs.fd
-          pkgs.ffmpegthumbnailer
-          pkgs.file
-          pkgs.fzf
-          pkgs.imagemagick
-          pkgs.jq
-          pkgs.p7zip
-          pkgs.ripgrep
-          pkgs.zoxide
-        ];
-      };
       keymap.manager.prepend_keymap = [
         {
           on = [
@@ -413,10 +374,17 @@ in
       in
       [
         pkgs.attic-client
+        pkgs.chafa
         pkgs.difftastic
         pkgs.dust
         pkgs.elan
+        pkgs.fd
+        pkgs.ffmpegthumbnailer
+        pkgs.file
+        pkgs.fzf
         pkgs.htop
+        pkgs.imagemagick
+        pkgs.jq
         pkgs.ncdu
         pkgs.nix-index
         pkgs.nix-output-monitor
@@ -427,12 +395,15 @@ in
         pkgs.nixpkgs-fmt
         pkgs.nixpkgs-review
         pkgs.npins
+        pkgs.p7zip
+        pkgs.ripgrep
         pkgs.starship
         pkgs.tokei
         pkgs.tree
         pkgs.typst
         pkgs.xh
         pkgs.zellij
+        pkgs.zoxide
 
         cachix-no-man
         cachix-push
