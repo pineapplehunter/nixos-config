@@ -47,10 +47,6 @@ rec {
       inherit (old) src;
     });
 
-    htop = prev.htop.overrideAttrs (old: {
-      patches = (old.patches or [ ]) ++ [ ./htop.patch ];
-    });
-
     super-productivity = final.callPackage ./supprod.nix { };
   };
 
