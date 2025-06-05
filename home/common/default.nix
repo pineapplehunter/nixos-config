@@ -189,6 +189,7 @@ in
           ge.gsconnect
           ge.just-perfection
           ge.night-theme-switcher
+          ge.quick-lang-switch
           ge.runcat
           ge.tailscale-status
           ge.tiling-assistant
