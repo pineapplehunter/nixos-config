@@ -186,12 +186,12 @@ in
           ge.appindicator
           ge.blur-my-shell
           ge.caffeine
+          ge.gsconnect
           ge.just-perfection
           ge.night-theme-switcher
           ge.runcat
           ge.tailscale-status
           ge.tiling-assistant
-          ge.gsconnect
         ];
     };
 
