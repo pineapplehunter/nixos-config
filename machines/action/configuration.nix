@@ -68,6 +68,7 @@
     xremap = {
       enable = true;
       withGnome = true;
+      watch = true;
       config.modmap = [
         {
           name = "caps-esc";
