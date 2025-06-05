@@ -355,6 +355,10 @@ in
       command = "ghostty";
       binding = "<Super>Return";
     };
+    "com/github/stunkymonkey/nautilus-open-any-terminal" = {
+      terminal = "ghostty";
+      lockAll = true;
+    };
   };
 
   home = {

@@ -64,6 +64,8 @@ in
     pkgs.man-pages
     pkgs.orca-slicer
     pkgs.udisks2
+    pkgs.nautilus-open-any-terminal
+    pkgs.nautilus-python
   ];
 
   environment.gnome.excludePackages = [ pkgs.evince ];
