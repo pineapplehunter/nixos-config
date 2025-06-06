@@ -13,15 +13,10 @@
       url = "gitlab:doronbehar/nix-xilinx?ref=25556ef48ca8042f9432fdacbf2c7d330cb88162";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    treefmt-nix = {
-      url = "github:numtide/treefmt-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     xremap-flake = {
       url = "github:xremap/nix-flake";
       inputs = {
         nixpkgs.follows = "nixpkgs";
-        treefmt-nix.follows = "treefmt-nix";
         home-manager.follows = "home-manager";
         hyprland.follows = "empty";
       };
@@ -73,13 +68,7 @@
       templates = import ./templates;
     }
     // {
-      formatter = eachSystem (
-        pkgs:
-        (inputs.treefmt-nix.lib.evalModule pkgs {
-          projectRootFile = "flake.nix";
-          programs.nixfmt.enable = true;
-        }).config.build.wrapper
-      );
+      formatter = eachSystem (pkgs: pkgs.nixfmt-tree);
       packages = eachSystem (
         pkgs:
         lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
