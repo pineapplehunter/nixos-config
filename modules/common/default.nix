@@ -67,12 +67,10 @@
         normalUserNames;
       substituters = [
         "https://cache.nixos.org/"
-        "https://pineapplehunter.cachix.org"
         "https://attic.s.ihavenojob.work/shogo"
       ];
       trusted-public-keys = [
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        "pineapplehunter.cachix.org-1:OwpZtT7lADb4AYYprPubSST9jVs2fLVlgTLnsPyln7U="
         "shogo:dzOG75ufKKljdUzTbGDpTuBmup3/K5RDmr28jb0jHCg="
       ];
       warn-dirty = false;

@@ -1,16 +1,8 @@
 { pkgs, ... }:
-let
-  cachix-no-man = pkgs.symlinkJoin {
-    inherit (pkgs.cachix) version;
-    name = "cachix";
-    paths = [ pkgs.cachix.bin ];
-  };
-in
 {
   # system wide packages
   environment.systemPackages = [
     # tools
-    cachix-no-man
     pkgs.atop
     pkgs.binutils
     pkgs.btop

@@ -364,20 +364,6 @@ in
 
   home = {
     packages =
-      let
-        cachix-no-man = pkgs.symlinkJoin {
-          inherit (pkgs.cachix) version;
-          name = "cachix";
-          paths = [ pkgs.cachix.bin ];
-        };
-        cachix-push = pkgs.writeShellScriptBin "cachix-push" ''
-          SIZE=$(echo ''${2:-500M} | numfmt --from iec)
-          CACHE=''${1:-pineapplehunter}
-          nix path-info ./result -rS --json \
-            | ${pkgs.jq}/bin/jq "to_entries | sort_by(.value.closureSize) | .[] | select(.value.closureSize < $SIZE) | .key" -r \
-            | ${pkgs.cachix.bin}/bin/cachix push $CACHE
-        '';
-      in
       [
         pkgs.attic-client
         pkgs.chafa
@@ -410,9 +396,6 @@ in
         pkgs.xh
         pkgs.zellij
         pkgs.zoxide
-
-        cachix-no-man
-        cachix-push
 
         # for editors
         pkgs.basedpyright
