@@ -154,7 +154,6 @@
 
   # https://discourse.nixos.org/t/suspend-then-hibernate/31953/5
   powerManagement.enable = true;
-  powerManagement.powertop.enable = true;
 
   systemd.services.docker.enable = false;
   systemd.sockets.docker.enable = false;
