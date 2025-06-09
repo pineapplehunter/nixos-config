@@ -85,6 +85,19 @@ in
             { glob = "*.lds"; }
           ];
         }
+        {
+          name = "ninja";
+          source = pkgs.fetchFromGitHub {
+            owner = "alemuller";
+            repo = "tree-sitter-ninja";
+            rev = "0a95cfdc0745b6ae82f60d3a339b37f19b7b9267";
+            hash = "sha256-e/LpQUL3UHHko4QvMeT40LCvPZRT7xTGZ9z1Zaboru4=";
+          };
+          comment-token = "#";
+          file-types = [
+            { glob = "*.ninja"; }
+          ];
+        }
       ];
       languages = import ./helix-languages.nix;
       settings = {
