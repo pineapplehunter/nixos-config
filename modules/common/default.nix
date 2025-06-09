@@ -79,10 +79,15 @@
     };
     gc = {
       automatic = true;
-      dates = "weekly";
+      dates = "monthly";
       options = "--delete-older-than 30d";
+      randomizedDelaySec = "1h";
     };
-    optimise.automatic = true;
+    optimise = {
+      automatic = true;
+      dates = "monthly";
+      randomizedDelaySec = "1h";
+    };
     extraOptions = ''
       !include ${config.sops.secrets.access_tokens.path}
     '';
