@@ -220,4 +220,6 @@
       ollama run deepseek-r1:8b
     '')
   ];
+  # debug info for ease of debug
+  environment.enableDebugInfo = true;
 }
