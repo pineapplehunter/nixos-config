@@ -2,6 +2,7 @@
 {
   config = {
     environment.systemPackages = with pkgs; [
+      brightnessctl
       fuzzel
       xwayland-satellite
       waybar
