@@ -4,12 +4,12 @@
     environment.systemPackages = with pkgs; [
       brightnessctl
       fuzzel
-      xwayland-satellite
-      waybar
-      pavucontrol
       mako
-      swaylock
+      pavucontrol
       swayidle
+      swaylock
+      waybar
+      xwayland-satellite
     ];
     programs.niri.enable = lib.mkDefault true;
     security.pam.services.swaylock.text = ''
