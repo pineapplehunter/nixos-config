@@ -4,4 +4,5 @@
   japanese = import ./japanese;
   personal = import ./personal;
   windows-vm = import ./windows-vm;
+  niri = import ./niri;
 }
