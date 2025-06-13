@@ -46,8 +46,6 @@ rec {
       # to supress warning
       inherit (old) src;
     });
-
-    super-productivity = final.callPackage ./supprod.nix { };
   };
 
   custom-packages =
