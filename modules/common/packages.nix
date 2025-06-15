@@ -14,6 +14,7 @@
     pkgs.github-cli
     pkgs.gnome-tweaks
     pkgs.gnumake
+    pkgs.helix
     pkgs.htop
     pkgs.jq
     pkgs.ncdu
