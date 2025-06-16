@@ -21,13 +21,11 @@
       "sd_mod"
     ];
     initrd.kernelModules = [
+      "bcache"
       "dm-cache"
       "dm-cache-default"
-      "dm-crypt"
-      "dm-mirror"
       "dm-mod"
       "dm-raid"
-      "dm-snapshot"
     ];
     kernelModules = [
       "kvm-amd"
