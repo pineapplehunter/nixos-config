@@ -159,8 +159,6 @@
     # Enable flatpak
     flatpak.enable = true;
 
-    tailscale.enable = true;
-
     pipewire = {
       enable = true;
       alsa.enable = true;

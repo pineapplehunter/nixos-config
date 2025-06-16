@@ -17,6 +17,11 @@
 
   pineapplehunter.windows-vm.enable = true;
 
+  services.tailscale = {
+    enable = true;
+    useRoutingFeatures = "both";
+  };
+
   nix = {
     distributedBuilds = true;
     buildMachines = [

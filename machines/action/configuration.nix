@@ -22,6 +22,11 @@
   services.howdy.settings.video.dark_threshold = 90;
   services.linux-enable-ir-emitter.enable = true;
 
+  services.tailscale = {
+    enable = true;
+    useRoutingFeatures = "client";
+  };
+
   # nixpkgs.flake.source = lib.mkForce null;
   nix = {
     distributedBuilds = true;
