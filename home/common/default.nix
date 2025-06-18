@@ -410,6 +410,9 @@ in
         pkgs.zellij
         pkgs.zoxide
 
+        # multilib for bintools
+        (pkgs.wrapBintoolsWith { bintools = pkgs.binutils-unwrapped-all-targets; })
+
         # for editors
         pkgs.basedpyright
         pkgs.bash-language-server
