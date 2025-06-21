@@ -31,8 +31,6 @@
 
   pineapplehunter.japanese.enable = true;
 
-  system.rebuild.enableNg = true;
-
   nixpkgs = {
     overlays = [
       inputs.nixgl.overlays.default

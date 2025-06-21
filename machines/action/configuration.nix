@@ -218,8 +218,6 @@
       };
     };
 
-  system.switch.enableNg = true;
-
   environment.systemPackages = [
     (pkgs.writeScriptBin "ai" ''
       ollama run deepseek-r1:8b
