@@ -9,7 +9,12 @@
 {
   imports =
     let
-      inherit (self.nixosModules) shell-config japanese windows-vm;
+      inherit (self.nixosModules)
+        shell-config
+        japanese
+        windows-vm
+        gstreamer
+        ;
       inherit (inputs)
         sops-nix
         xremap-flake
@@ -23,6 +28,7 @@
       shell-config
       japanese
       windows-vm
+      gstreamer
       sops-nix.nixosModules.sops
       howdy-module.nixosModules.default
       xremap-flake.nixosModules.default

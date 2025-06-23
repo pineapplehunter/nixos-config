@@ -5,4 +5,5 @@
   personal = import ./personal;
   windows-vm = import ./windows-vm;
   niri = import ./niri;
+  gstreamer = import ./gstreamer;
 }
