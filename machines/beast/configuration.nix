@@ -44,7 +44,10 @@
     '';
   };
 
-  environment.systemPackages = [ pkgs.podman-compose ];
+  environment.systemPackages = [
+    pkgs.podman-compose
+    pkgs.geesefs
+  ];
 
   # Use the systemd-boot EFI boot loader.
   boot = {
