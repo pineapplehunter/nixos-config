@@ -196,7 +196,6 @@
         "networkmanager"
         "wheel"
         "dialout"
-        config.users.groups.keys.name
       ];
     };
 

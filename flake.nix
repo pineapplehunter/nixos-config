@@ -22,9 +22,10 @@
       };
     };
     nixos-hardware.url = "github:nixos/nixos-hardware";
-    sops-nix = {
-      url = "github:Mic92/sops-nix";
+    agenix = {
+      url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
     };
     nixgl = {
       url = "github:pineapplehunter/nixGL";
@@ -53,6 +54,7 @@
                 inputs.howdy-module.overlays.default
                 inputs.nixgl.overlays.default
                 inputs.nix-xilinx.overlay
+                inputs.agenix.overlays.default
                 self.overlays.default
               ];
             }

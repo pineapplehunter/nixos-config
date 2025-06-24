@@ -121,7 +121,6 @@
     extraGroups = [
       "wheel" # Enable ‘sudo’ for the user.
       "docker"
-      config.users.groups.keys.name
     ];
   };
 

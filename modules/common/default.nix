@@ -16,7 +16,7 @@
         gstreamer
         ;
       inherit (inputs)
-        sops-nix
+        agenix
         xremap-flake
         home-manager
         howdy-module
@@ -29,7 +29,7 @@
       japanese
       windows-vm
       gstreamer
-      sops-nix.nixosModules.sops
+      agenix.nixosModules.default
       howdy-module.nixosModules.default
       xremap-flake.nixosModules.default
       home-manager.nixosModules.home-manager
@@ -41,6 +41,7 @@
     overlays = [
       inputs.nixgl.overlays.default
       inputs.nix-xilinx.overlay
+      inputs.agenix.overlays.default
       self.overlays.default
     ];
     config.allowUnfreePredicate =
@@ -93,19 +94,18 @@
       randomizedDelaySec = "1h";
     };
     extraOptions = ''
-      !include ${config.sops.secrets.access_tokens.path}
+      !include ${config.age.secrets.access_tokens.path}
     '';
   };
 
   boot.plymouth.enable = lib.mkDefault true;
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
-  sops = {
-    defaultSopsFile = ../../secrets/secrets.yml;
-    defaultSopsFormat = "yaml";
+  age = {
     secrets.access_tokens = {
+      file = ../../secrets/access-tokens.age;
       mode = "0440";
-      group = config.users.groups.keys.name;
+      group = "wheel";
     };
   };
 

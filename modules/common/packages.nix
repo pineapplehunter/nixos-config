@@ -3,6 +3,8 @@
   # system wide packages
   environment.systemPackages = [
     # tools
+    pkgs.age
+    pkgs.agenix
     pkgs.atop
     pkgs.binutils
     pkgs.btop
@@ -30,7 +32,6 @@
     pkgs.pciutils
     pkgs.reptyr
     pkgs.ripgrep
-    pkgs.sops
     pkgs.tree
     pkgs.unzipNLS
     pkgs.usbutils
