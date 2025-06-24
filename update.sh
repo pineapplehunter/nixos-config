@@ -9,8 +9,8 @@ done
 HOMEMANAGER=$(which home-manager || echo NOT_FOUND)
 
 usage(){
-  echo "usage: os   build|switch|boot|diff|expire     [args...]"
-  echo "       home build|switch|boot|diff|fix-darwin [args...]"
+  echo "usage: os   build|switch|boot|diff|expire            [args...]"
+  echo "       home build|switch|boot|diff|expire|fix-darwin [args...]"
   exit 1
 }
 
@@ -57,8 +57,8 @@ function os-users {
 function os-home-expire {
   os-users | while read -r u; do
     cd /
-    sudo sudo -u "$u" LANG=C "$HOMEMANAGER" expire-generations 0 2>&1 | grep -v No | grep -v Cannot
-    sudo sudo -u "$u" LANG=C nix profile wipe-history
+    sudo sudo -u "$u" LANG=C "$HOMEMANAGER" expire-generations 0 2>&1 | grep -v No | grep -v Cannot || true
+    sudo sudo -u "$u" LANG=C nix profile wipe-history || true
   done
 }
 
@@ -101,6 +101,11 @@ function os-update {
 
 ## home ############################################
 
+function home-expire {
+  LANG=C $HOMEMANAGER expire-generations 0 2>&1 | grep -v No | grep -v Cannot || true
+  LANG=C nix profile wipe-history || true
+}
+
 function home-build {
   nom build ".#homeConfigurations.$HOME_CONFIG_NAME.activationPackage" "${args[@]}"
 }
@@ -125,8 +130,7 @@ function home-switch {
   echo starting switch
   git commit -p || true
   $HOMEMANAGER switch -b "hm-backup" --flake ".#$HOME_CONFIG_NAME" "${args[@]}"
-  $HOMEMANAGER expire-generations 0 2>&1 | tail -n1
-  nix profile wipe-history 2>&1 | tail -n1
+  home-expire
 }
 
 function home-update {
@@ -170,6 +174,7 @@ function home-cmd {
     diff) home-diff;;
     switch) home-switch;;
     update) home-update;;
+    expire) home-expire;;
     fix-darwin) home-fix-darwin;;
     *) echo unknown command && usage;;
   esac
