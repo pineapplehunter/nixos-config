@@ -36,6 +36,7 @@ jobs:
           endpoint: ${{ secrets.ATTIC_ENDPOINT }}
           cache: ${{ secrets.ATTIC_CACHE }}
           token: ${{ secrets.ATTIC_TOKEN }}
+          inputs-from: .
       - name: Run checks
         run: |
           nix flake check --keep-going --all-systems --accept-flake-config
