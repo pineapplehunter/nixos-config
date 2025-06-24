@@ -1,7 +1,7 @@
-#!/usr/bin/env @shell@
+#!/usr/bin/env bash
 
 cmd="$1"
-nixpkgs=$(@cat@ /etc/nix/registry.json | @jq@ '.flakes[] | select(.from.id | contains("nixpkgs")) | .to.path' -r)
+nixpkgs=$(@jq@ '.flakes[] | select(.from.id | contains("nixpkgs")) | .to.path' -r < /etc/nix/registry.json)
 export NIXPKGS_ALLOW_UNFREE=1
 
 if [ -z "$cmd" ]; then
@@ -10,9 +10,11 @@ if [ -z "$cmd" ]; then
 fi
 
 if [[ $cmd = *@* ]]; then
-  cmd_no_at=$(echo "$cmd" | cut -d "@" -f 1)
+  cmd_name=$(echo "$cmd" | cut -d "@" -f 1)
   cmd_package=$(echo "$cmd" | cut -d "@" -f 2)
-  PATH="" @nix@ shell "$nixpkgs#$cmd_package" --impure -c @which@ "$cmd_no_at"
 else
-  PATH="" @nix@ shell "$nixpkgs#$cmd" --impure -c @which@ "$cmd"
+  cmd_name="$cmd"
+  cmd_package="$cmd"
 fi
+
+PATH="" @nix@ shell "$nixpkgs#$cmd_package" --impure -c @which@ "$cmd_name"

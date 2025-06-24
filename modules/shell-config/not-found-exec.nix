@@ -11,9 +11,8 @@ let
   not-found-exec = pkgs.replaceVarsWith {
     src = ./not-found-exec.sh;
     replacements = {
-      shell = pkgs.stdenv.shell;
       confirm = cfg.confirm;
-      cat = "${pkgs.coreutils}/bin/cat";
+      cut = "${pkgs.coreutils}/bin/cut";
       jq = getExe pkgs.jq;
       nix = getExe config.nix.package;
     };
@@ -26,8 +25,6 @@ let
   which-nix = pkgs.replaceVarsWith {
     src = ./which-nix.sh;
     replacements = {
-      shell = pkgs.stdenv.shell;
-      cat = "${pkgs.coreutils}/bin/cat";
       jq = getExe pkgs.jq;
       nix = getExe config.nix.package;
       which = getExe pkgs.which;
@@ -40,10 +37,7 @@ let
 
   sudo-nix = pkgs.replaceVarsWith {
     src = ./sudo-nix.sh;
-    replacements = {
-      shell = pkgs.stdenv.shell;
-      which-nix = getExe which-nix;
-    };
+    replacements.which-nix = getExe which-nix;
     name = "sudo-nix";
     dir = "bin";
     isExecutable = true;
