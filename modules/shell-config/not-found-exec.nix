@@ -4,14 +4,20 @@
   pkgs,
   ...
 }:
-with lib;
 let
-  cfg = config.programs.not-found-exec;
+  inherit (lib)
+    getExe
+    mkEnableOption
+    mkIf
+    optionals
+    ;
+
+  cfg = config.programs;
 
   not-found-exec = pkgs.replaceVarsWith {
     src = ./not-found-exec.sh;
     replacements = {
-      confirm = cfg.confirm;
+      confirm = cfg.not-found-exec.confirm;
       cut = "${pkgs.coreutils}/bin/cut";
       jq = getExe pkgs.jq;
       nix = getExe config.nix.package;
@@ -46,32 +52,18 @@ let
 in
 {
   options = {
-    programs.not-found-exec = {
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Enable the not-found-exec plugin.
-        '';
+    programs = {
+      not-found-exec = {
+        enable = mkEnableOption "not-found-exec plugin";
+        confirm = mkEnableOption "Confirm before running the command";
+        addToPath = mkEnableOption "add to path";
       };
-      confirm = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Confirm before running the command.
-        '';
-      };
-      which-nix.enable = mkOption {
-        type = types.bool;
-        default = true;
-        description = ''
-          Enable the which-nix function.
-        '';
-      };
+      which-nix.enable = mkEnableOption "which-nix program";
+      sudo-nix.enable = mkEnableOption "sudo-nix program";
     };
   };
 
-  config = mkIf cfg.enable {
+  config = mkIf cfg.not-found-exec.enable {
     programs = {
       command-not-found.enable = false;
 
@@ -92,9 +84,9 @@ in
       '';
     };
 
-    environment.systemPackages = mkIf cfg.which-nix.enable [
-      which-nix
-      sudo-nix
-    ];
+    environment.systemPackages =
+      optionals cfg.not-found-exec.addToPath [ not-found-exec ]
+      ++ optionals cfg.which-nix.enable [ which-nix ]
+      ++ optionals cfg.sudo-nix.enable [ sudo-nix ];
   };
 }
