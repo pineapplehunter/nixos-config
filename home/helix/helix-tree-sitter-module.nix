@@ -25,14 +25,7 @@ in
               type = types.str;
             };
             file-types = mkOption {
-              type = types.listOf (
-                types.submodule (
-                  { ... }:
-                  {
-                    options.glob = mkOption { type = types.str; };
-                  }
-                )
-              );
+              type = types.listOf (types.attrsOf types.anything);
             };
           };
         }
