@@ -17,7 +17,7 @@ let
   not-found-exec = pkgs.replaceVarsWith {
     src = ./not-found-exec.sh;
     replacements = {
-      confirm = cfg.not-found-exec.confirm;
+      inherit (cfg.not-found-exec) confirm;
       cut = "${pkgs.coreutils}/bin/cut";
       jq = getExe pkgs.jq;
       nix = getExe config.nix.package;
