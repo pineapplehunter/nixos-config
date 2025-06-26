@@ -34,6 +34,7 @@ in
       tokei
       tree
       typst
+      wabt
       wasmtime
       xh
       zellij
