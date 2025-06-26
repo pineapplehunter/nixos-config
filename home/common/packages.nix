@@ -35,6 +35,7 @@ in
       tree
       typst
       wabt
+      wasm-tools
       wasmtime
       xh
       zellij
