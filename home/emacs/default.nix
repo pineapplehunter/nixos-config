@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 let
   inherit (pkgs.stdenv.hostPlatform) isLinux;
 in
@@ -17,7 +17,7 @@ in
         epkgs.tree-sitter-langs
         epkgs.treesit-auto
       ];
-      extraConfig = builtins.readFile ./init.el;
+      extraConfig = lib.readFile ./init.el;
     };
 
     services.emacs.enable = isLinux;

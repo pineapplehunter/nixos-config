@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   imports = [ ./helix-tree-sitter-module.nix ];
 
@@ -102,7 +102,7 @@
       ];
     };
     themes = {
-      github-light = builtins.fromTOML (builtins.readFile ./helix-github-light.toml);
+      github-light = lib.importTOML ./helix-github-light.toml;
     };
   };
 

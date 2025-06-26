@@ -54,7 +54,7 @@ in
         scope = "source.${name}";
         injection-regex = name;
       }
-      // (builtins.removeAttrs c [ "source" ])
+      // (lib.removeAttrs c [ "source" ])
     ) cfg;
   };
 }

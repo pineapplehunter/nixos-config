@@ -46,7 +46,7 @@
     ];
     config.allowUnfreePredicate =
       pkg:
-      builtins.elem (pkgs.lib.getName pkg) [
+      lib.elem (pkgs.lib.getName pkg) [
         "libfprint-2-tod1-goodix"
         "slack"
         "vista-fonts"
@@ -67,7 +67,7 @@
       trusted-users =
         let
           normalUsers = lib.filterAttrs (_: user: user.isNormalUser) config.users.users;
-          normalUserNames = builtins.attrNames normalUsers;
+          normalUserNames = lib.attrNames normalUsers;
         in
         normalUserNames;
       substituters = [
