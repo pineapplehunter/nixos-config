@@ -4,40 +4,42 @@ let
 in
 {
   config.home.packages =
+    with pkgs;
     [
-      pkgs.attic-client
-      pkgs.chafa
-      pkgs.difftastic
-      pkgs.dust
-      pkgs.elan
-      pkgs.fd
-      pkgs.ffmpegthumbnailer
-      pkgs.file
-      pkgs.fzf
-      pkgs.htop
-      pkgs.imagemagick
-      pkgs.jq
-      pkgs.ncdu
-      pkgs.nix-index
-      pkgs.nix-output-monitor
-      pkgs.nix-search-cli
-      pkgs.nix-tree
-      pkgs.nix-update
-      pkgs.nixfmt-rfc-style
-      pkgs.nixpkgs-fmt
-      pkgs.nixpkgs-review
-      pkgs.npins
-      pkgs.p7zip
-      pkgs.ripgrep
-      pkgs.starship
-      pkgs.tokei
-      pkgs.tree
-      pkgs.typst
-      pkgs.wasmtime
-      pkgs.xh
-      pkgs.zellij
-      pkgs.zoxide
-
+      attic-client
+      chafa
+      difftastic
+      dust
+      elan
+      fd
+      ffmpegthumbnailer
+      file
+      fzf
+      htop
+      imagemagick
+      jq
+      ncdu
+      nix-index
+      nix-output-monitor
+      nix-search-cli
+      nix-tree
+      nix-update
+      nixfmt-rfc-style
+      nixpkgs-fmt
+      nixpkgs-review
+      npins
+      p7zip
+      ripgrep
+      starship
+      tokei
+      tree
+      typst
+      wasmtime
+      xh
+      zellij
+      zoxide
+    ]
+    ++ [
       # multilib for bintools
       (pkgs.wrapBintoolsWith { bintools = pkgs.binutils-unwrapped-all-targets; })
     ]
