@@ -42,7 +42,8 @@ rec {
     shogo = import ./shogo;
     flatpak-update = import ./flatpak-update;
     emacs = import ./emacs;
-    inherit (import ./helix) helix-tree-sitter-module;
+    alacritty = import ./alacritty;
+    helix = import ./helix;
   };
   configurations = lib.attrsets.mergeAttrsList [
     (multiConfig "shogo" "shogo" [ modules.shogo ])
