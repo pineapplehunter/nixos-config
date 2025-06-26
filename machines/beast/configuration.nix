@@ -17,11 +17,6 @@
 
   pineapplehunter.windows-vm.enable = true;
 
-  services.tailscale = {
-    enable = true;
-    useRoutingFeatures = "both";
-  };
-
   nix = {
     distributedBuilds = true;
     buildMachines = [
@@ -65,7 +60,6 @@
   networking.hostName = "beast"; # Define your hostname.
   networking.networkmanager.enable = true;
 
-  # Enable the X11 windowing system.
   services = {
     # Enable the GNOME Desktop Environment.
     desktopManager.gnome.enable = true;
@@ -73,40 +67,43 @@
       enable = true;
       autoSuspend = false;
     };
-  };
-
-  services.btrfs.autoScrub = {
-    enable = true;
-    fileSystems = [ "/" ];
-  };
-
-  services.snapper.configs = {
-    garage = {
-      SUBVOLUME = "/garage";
-      ALLOW_USERS = [ "shogo" ];
-      TIMELINE_CREATE = true;
-      TIMELINE_CLEANUP = true;
-      TIMELINE_LIMIT_HOURLY = 10;
-      TIMELINE_LIMIT_DAILY = 7;
-      TIMELINE_LIMIT_WEEKLY = 4;
-      TIMELINE_LIMIT_MONTHLY = 10;
-      TIMELINE_LIMIT_YEARLY = 2;
+    tailscale = {
+      enable = true;
+      useRoutingFeatures = "both";
     };
-
-    home = {
-      SUBVOLUME = "/home";
-      ALLOW_USERS = [ "shogo" ];
-      TIMELINE_CREATE = true;
-      TIMELINE_CLEANUP = true;
-      TIMELINE_LIMIT_HOURLY = 10;
-      TIMELINE_LIMIT_DAILY = 7;
-      TIMELINE_LIMIT_WEEKLY = 4;
-      TIMELINE_LIMIT_MONTHLY = 10;
-      TIMELINE_LIMIT_YEARLY = 2;
+    btrfs.autoScrub = {
+      enable = true;
+      fileSystems = [ "/" ];
     };
-  };
+    snapper.configs = {
+      garage = {
+        SUBVOLUME = "/garage";
+        ALLOW_USERS = [ "shogo" ];
+        TIMELINE_CREATE = true;
+        TIMELINE_CLEANUP = true;
+        TIMELINE_LIMIT_HOURLY = 10;
+        TIMELINE_LIMIT_DAILY = 7;
+        TIMELINE_LIMIT_WEEKLY = 4;
+        TIMELINE_LIMIT_MONTHLY = 10;
+        TIMELINE_LIMIT_YEARLY = 2;
+      };
 
-  services.prometheus.exporters.node.enable = true;
+      home = {
+        SUBVOLUME = "/home";
+        ALLOW_USERS = [ "shogo" ];
+        TIMELINE_CREATE = true;
+        TIMELINE_CLEANUP = true;
+        TIMELINE_LIMIT_HOURLY = 10;
+        TIMELINE_LIMIT_DAILY = 7;
+        TIMELINE_LIMIT_WEEKLY = 4;
+        TIMELINE_LIMIT_MONTHLY = 10;
+        TIMELINE_LIMIT_YEARLY = 2;
+      };
+    };
+    prometheus.exporters.node.enable = true;
+
+    localtimed.enable = true;
+  };
 
   virtualisation = {
     docker = {
@@ -115,8 +112,6 @@
     };
     podman.enable = true;
   };
-
-  services.localtimed.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.shogo = {

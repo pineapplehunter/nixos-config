@@ -3,7 +3,6 @@
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
 {
-  config,
   pkgs,
   lib,
   self,
@@ -17,15 +16,6 @@
   ];
 
   pineapplehunter.windows-vm.enable = true;
-
-  services.howdy.enable = true;
-  services.howdy.settings.video.dark_threshold = 90;
-  services.linux-enable-ir-emitter.enable = true;
-
-  services.tailscale = {
-    enable = true;
-    useRoutingFeatures = "client";
-  };
 
   # nixpkgs.flake.source = lib.mkForce null;
   nix = {
@@ -111,6 +101,13 @@
 
     ollama.enable = true;
 
+    howdy.enable = true;
+    howdy.settings.video.dark_threshold = 90;
+    linux-enable-ir-emitter.enable = true;
+    tailscale = {
+      enable = true;
+      useRoutingFeatures = "client";
+    };
   };
 
   # Bootloader.
