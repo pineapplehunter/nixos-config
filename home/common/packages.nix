@@ -33,6 +33,7 @@ in
       pkgs.tokei
       pkgs.tree
       pkgs.typst
+      pkgs.wasmtime
       pkgs.xh
       pkgs.zellij
       pkgs.zoxide
