@@ -1,9 +1,9 @@
 {
-  common = import ./common;
-  shell-config = import ./shell-config;
-  japanese = import ./japanese;
-  personal = import ./personal;
-  windows-vm = import ./windows-vm;
-  niri = import ./niri;
-  gstreamer = import ./gstreamer;
+  common = ./common/default.nix;
+  gstreamer = ./gstreamer/default.nix;
+  japanese = ./japanese/default.nix;
+  niri = ./niri/default.nix;
+  personal = ./personal/default.nix;
+  shell-config = ./shell-config/default.nix;
+  windows-vm = ./windows-vm/default.nix;
 }
