@@ -49,16 +49,15 @@ args=("$@")
 ## os ##############################################
 
 function os-users {
-  nix eval ".#nixosConfigurations.$HOST.config.users.users" \
-    --apply 'users: builtins.mapAttrs (u: v: {inherit (v) isNormalUser; name=u;}) users' --json \
-  | jq '.[] | select(.isNormalUser) | .name' -r
+  nix eval ".#nixosConfigurations.$HOST.config.users.users" --json \
+  | jq 'map_values(select(.isNormalUser)) | keys[]' -r
 }
 
 function os-home-expire {
   os-users | while read -r u; do
     cd /
-    sudo sudo -u "$u" LANG=C "$HOMEMANAGER" expire-generations 0 2>&1 | grep -v No | grep -v Cannot || true
-    sudo sudo -u "$u" LANG=C nix profile wipe-history || true
+    sudo -u "$u" LANG=C "$HOMEMANAGER" expire-generations 0 2>&1 | grep -v No | grep -v Cannot || true
+    sudo -u "$u" LANG=C nix profile wipe-history || true
   done
 }
 
