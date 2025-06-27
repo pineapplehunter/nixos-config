@@ -14,30 +14,27 @@ in
   imports =
     let
       inherit (self.homeModules)
-        pineapplehunter
-        flatpak-update
-        helix
         alacritty
+        dconf
+        flatpak-update
+        ghostty
+        helix
+        pineapplehunter
+        zellij
         ;
     in
     [
-      pineapplehunter
-      flatpak-update
-      helix
       alacritty
+      dconf
+      flatpak-update
+      ghostty
+      helix
+      pineapplehunter
+      zellij
       ./packages.nix
     ];
 
   programs = {
-    zellij = {
-      enable = true;
-      settings = import ./zellij-config.nix;
-      # disable auto startup
-      enableZshIntegration = false;
-      enableFishIntegration = false;
-      enableBashIntegration = false;
-    };
-
     bat = {
       enable = true;
       config = {
@@ -132,41 +129,6 @@ in
 
     ripgrep.enable = true;
 
-    ghostty = {
-      enable = isLinux;
-      package =
-        if is-nixos then
-          pkgs.ghostty
-        else
-          let
-            inherit (lib) getExe;
-            inherit (pkgs) ghostty makeWrapper nixgl;
-          in
-          pkgs.symlinkJoin {
-            name = "ghostty-wrapped-${ghostty.version}";
-            paths = [ ghostty ];
-            nativeBuildInputs = [ makeWrapper ];
-            meta.mainProgram = "ghostty";
-            postBuild = ''
-              rm $out/bin/ghostty
-              makeWrapper "${getExe (nixgl.override { enable32bits = false; }).nixGLMesa}" "$out/bin/ghostty" \
-                --add-flags "${getExe ghostty}" \
-            '';
-          };
-      settings = {
-        theme = "Adwaita";
-        window-theme = "light";
-        font-size = 10;
-        gtk-titlebar = false;
-        keybind = [
-          "ctrl+shift+plus=increase_font_size:1"
-          "ctrl+shift+equal=decrease_font_size:1"
-          "ctrl+shift+0=reset_font_size"
-          "ctrl+enter=unbind"
-        ];
-      };
-    };
-
     fzf.enable = true;
 
     git = {
@@ -217,30 +179,6 @@ in
       @warn e
     end
   '';
-
-  dconf.settings = {
-    "org/gnome/desktop/applications/terminal" = {
-      exec = "ghostty";
-      exec-arg = "";
-    };
-    "org/gnome/desktop/wm/keybindings" = {
-      close = [ "<Shift><Super>q" ];
-    };
-    "org/gnome/settings-daemon/plugins/media-keys" = {
-      custom-keybindings = [
-        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
-      ];
-    };
-    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
-      name = "Terminal";
-      command = "ghostty";
-      binding = "<Super>Return";
-    };
-    "com/github/stunkymonkey/nautilus-open-any-terminal" = {
-      terminal = "ghostty";
-      lockAll = true;
-    };
-  };
 
   home = {
     shellAliases = lib.mkMerge [

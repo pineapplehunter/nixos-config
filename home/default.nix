@@ -38,12 +38,15 @@ rec {
       imports = [ self.homeModules.common ];
       config.pineapplehunter.is-nixos = true;
     };
-    pineapplehunter = import ./pineapplehunter;
-    shogo = import ./shogo;
-    flatpak-update = import ./flatpak-update;
-    emacs = import ./emacs;
-    alacritty = import ./alacritty;
-    helix = import ./helix;
+    alacritty = ./alacritty/default.nix;
+    dconf = ./dconf/default.nix;
+    emacs = ./emacs/default.nix;
+    flatpak-update = ./flatpak-update/default.nix;
+    ghostty = ./ghostty/default.nix;
+    helix = ./helix/default.nix;
+    pineapplehunter = ./pineapplehunter/default.nix;
+    shogo = ./shogo/default.nix;
+    zellij = ./zellij/default.nix;
   };
   configurations = lib.attrsets.mergeAttrsList [
     (multiConfig "shogo" "shogo" [ modules.shogo ])

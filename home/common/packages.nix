@@ -7,7 +7,6 @@ in
     with pkgs;
     [
       attic-client
-      chafa
       difftastic
       dust
       elan
@@ -16,7 +15,6 @@ in
       file
       fzf
       htop
-      imagemagick
       jq
       ncdu
       nix-index
@@ -28,7 +26,6 @@ in
       nixpkgs-fmt
       nixpkgs-review
       npins
-      p7zip
       ripgrep
       starship
       tokei
@@ -39,7 +36,6 @@ in
       wasmtime
       xh
       zellij
-      zoxide
     ]
     ++ [
       # multilib for bintools
