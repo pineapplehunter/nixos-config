@@ -49,7 +49,6 @@
     pkgs.errands
     pkgs.gitify
     pkgs.pdfarranger
-    pkgs.slack
     pkgs.super-productivity
     pkgs.webcord
 

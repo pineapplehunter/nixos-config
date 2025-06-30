@@ -48,7 +48,6 @@
       pkg:
       lib.elem (pkgs.lib.getName pkg) [
         "libfprint-2-tod1-goodix"
-        "slack"
         "vista-fonts"
         "vscode"
       ];
