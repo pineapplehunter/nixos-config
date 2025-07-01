@@ -57,6 +57,17 @@
     plymouth.enable = false;
   };
 
+  # for bcache writeback
+  # https://wiki.archlinux.org/title/Bcache#Situation:_Prevent_all_write_access_to_a_HDD
+  systemd.tmpfiles.settings."bcache" = {
+    "/sys/block/bcache0/bcache/cache_mode".w.argument = "writeback";
+    "/sys/block/bcache0/bcache/writeback_percent".w.argument = "0";
+    "/sys/block/bcache0/bcache/sequential_cutoff".w.argument = "0";
+    "/sys/block/bcache0/bcache/writeback_delay".w.argument = toString (7 * 24 * 60 * 60);
+    "/sys/fs/bcache/eca17911-1262-439c-bcb0-aff2495bce28/congested_read_threshold_us".w.argument = "0";
+    "/sys/fs/bcache/eca17911-1262-439c-bcb0-aff2495bce28/congested_write_threshold_us".w.argument = "0";
+  };
+
   networking.hostName = "beast"; # Define your hostname.
   networking.networkmanager.enable = true;
 
