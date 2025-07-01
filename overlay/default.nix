@@ -11,11 +11,13 @@ rec {
   ];
 
   global = final: prev: {
+    # add support for http3
     curl-http3 = prev.curl.override {
       http3Support = true;
       openssl = prev.quictls;
     };
 
+    # Fix issue: slow startup time.  Reason unknown (did not search).
     flatpak = prev.flatpak.overrideAttrs (old: {
       postPatch =
         (old.postPatch or "")
@@ -26,10 +28,13 @@ rec {
         '';
     });
 
+    # Faster builds when using remote builds
     android-studio = prev.android-studio.overrideAttrs {
       preferLocalBuild = true;
     };
 
+    # Remove sleep notification.  The notification wakes up the screen
+    # after dimming.
     gnome-settings-daemon = prev.gnome-settings-daemon.overrideAttrs (old: {
       # I don't need sleep notifications!
       postPatch =
@@ -40,10 +45,10 @@ rec {
         '';
     });
 
+    # Fix issue: non-standard version representation
     nix-search-cli = inputs.nix-search-cli.packages.${final.system}.default.overrideAttrs (old: {
-      # fix non-standard version representation
       version = lib.head (lib.match ''[^0-9]*([0-9\.]+).*'' old.version);
-      # to supress warning
+      # supress warning
       inherit (old) src;
     });
 
