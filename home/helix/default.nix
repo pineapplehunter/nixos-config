@@ -73,6 +73,19 @@
           { glob = "*.ninja"; }
         ];
       }
+      {
+        name = "tamarin";
+        source = pkgs.fetchFromGitHub {
+          owner = "aeyno";
+          repo = "tree-sitter-tamarin";
+          rev = "07e2f32c1e9f68e8b813b8eca924a61f2c4b94d8";
+          hash = "sha256-J2LoV0mu1PDMrwGoK671naWpT50dv3muR/WJ3MyRQOI=";
+        };
+        comment-token = "//";
+        file-types = [
+          { glob = "*.spthy"; }
+        ];
+      }
     ];
     languages = import ./helix-languages.nix;
     settings = {
