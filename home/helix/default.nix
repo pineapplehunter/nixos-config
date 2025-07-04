@@ -87,7 +87,7 @@
         ];
       }
     ];
-    languages = import ./helix-languages.nix;
+    languages = lib.importTOML ./helix-languages.toml;
     settings = {
       theme = "github-light";
       editor = {

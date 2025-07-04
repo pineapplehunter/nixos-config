@@ -1,0 +1,39 @@
+[colors.bright]
+black = "#959da5"
+blue = "#005cc5"
+cyan = "#3192aa"
+green = "#22863a"
+magenta = "#5a32a3"
+red = "#cb2431"
+white = "#d1d5da"
+yellow = "#b08800"
+
+[[colors.indexed_colors]]
+color = "#d18616"
+index = 16
+
+[[colors.indexed_colors]]
+color = "#cb2431"
+index = 17
+
+[colors.normal]
+black = "#24292e"
+blue = "#0366d6"
+cyan = "#0598bc"
+green = "#28a745"
+magenta = "#5a32a3"
+red = "#d73a49"
+white = "#6a737d"
+yellow = "#dbab09"
+
+[colors.primary]
+background = "#ffffff"
+foreground = "#24292f"
+
+[font.normal]
+family = "DejaVuSansM Nerd Font Mono"
+
+[[keyboard.bindings]]
+action = "IncreaseFontSize"
+key = "+"
+mods = "Control|Shift"

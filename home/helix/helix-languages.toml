@@ -1,0 +1,54 @@
+[[language]]
+language-servers = ["nixd", "nil"]
+name = "nix"
+
+[[language]]
+name = "markdown"
+
+[language.soft-wrap]
+enable = true
+
+[[language]]
+name = "latex"
+
+[language.soft-wrap]
+enable = true
+
+[[language]]
+name = "typst"
+
+[language.soft-wrap]
+enable = true
+
+[[language]]
+language-servers = ["ruff", "basedpyright"]
+name = "python"
+
+[[language]]
+language-servers = ["buf"]
+name = "protobuf"
+
+[[language]]
+name = "meson"
+
+[language.formatter]
+args = ["fmt", "-"]
+command = "meson"
+
+[language-server.basedpyright]
+args = ["--stdio"]
+command = "basedpyright-langserver"
+
+[language-server.basedpyright.config.pyright]
+disableTaggedHints = true
+
+[language-server.buf]
+args = ["beta", "lsp"]
+command = "buf"
+
+[language-server.nixd]
+command = "nixd"
+
+[language-server.ruff]
+args = ["server", "-q", "--preview"]
+command = "ruff"

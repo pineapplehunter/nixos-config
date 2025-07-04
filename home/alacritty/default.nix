@@ -37,7 +37,7 @@ in
                 --inherit-argv0
             '';
       };
-    settings = import ./alacritty-config.nix;
+    settings = lib.importTOML ./alacritty-config.toml;
   };
 
 }
