@@ -35,6 +35,7 @@ in
       window-theme = "light";
       font-size = 10;
       gtk-titlebar = false;
+      font-feature = "-dlig";
       keybind = [
         "ctrl+shift+plus=increase_font_size:1"
         "ctrl+shift+equal=decrease_font_size:1"
