@@ -86,6 +86,24 @@
           { glob = "*.spthy"; }
         ];
       }
+      {
+        name = "proverif";
+        source = pkgs.fetchFromGitHub {
+          owner = "pqcfox";
+          repo = "tree-sitter-proverif";
+          rev = "bd9222e7bab33a6b22b4ecfa8e0a618683487935";
+          hash = "sha256-YFB1eXVjTzSMSzKyaLsiQZJykfMvv6JOgi71zs4w9vU=";
+        };
+        block-comment-tokens = [
+          {
+            start = "(*";
+            end = "*)";
+          }
+        ];
+        file-types = [
+          { glob = "*.pv"; }
+        ];
+      }
     ];
     languages = lib.importTOML ./helix-languages.toml;
     settings = {
