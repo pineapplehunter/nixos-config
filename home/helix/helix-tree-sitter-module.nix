@@ -19,11 +19,24 @@ in
           source = mkOption {
             type = types.package;
           };
-          comment-token = mkOption {
-            type = types.str;
+          comment-tokens = mkOption {
+            type = types.listOf types.str;
+            default = [ ];
+          };
+          block-comment-tokens = mkOption {
+            type = types.listOf (
+              types.submodule {
+                options = {
+                  start = mkOption { type = types.str; };
+                  end = mkOption { type = types.str; };
+                };
+              }
+            );
+            default = [ ];
           };
           file-types = mkOption {
             type = types.listOf (types.attrsOf types.anything);
+            default = [ ];
           };
         };
       }

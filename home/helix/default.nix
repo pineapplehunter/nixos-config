@@ -14,7 +14,7 @@
           rev = "486fea71f61ad9f3fd4072a118402e97fe88d26c";
           hash = "sha256-a3uTjtA4KQ8KxEmpva2oHcqp8EwbI5+h9U+qoPSgDd4=";
         };
-        comment-token = "#";
+        comment-tokens = [ "#" ];
         file-types = [
           { glob = "Kconfig"; }
           { glob = "kconfig"; }
@@ -28,7 +28,7 @@
           rev = "65b60437983933d00809c8927e7d8a29ca26dfa3";
           hash = "sha256-IDDz/2kC1Dslgrdv13q9NrCgrVvdzX1kQE6cld4+g2o=";
         };
-        comment-token = "#";
+        comment-tokens = [ "#" ];
         file-types = [
           { glob = "Caddyfile"; }
         ];
@@ -41,7 +41,7 @@
           rev = "01e82271a315d57be424392a3e46b2d929649a20";
           hash = "sha256-ZvOs0kAd6fqM+N8mmxBgKRlMrSRAXgy61Cwai6NQglU=";
         };
-        comment-token = "#";
+        comment-tokens = [ "#" ];
         file-types = [
           { glob = "Caddyfile"; }
         ];
@@ -54,7 +54,7 @@
           rev = "f99011a3554213b654985a4b0a65b3b032ec4621";
           hash = "sha256-Do8MIcl5DJo00V4wqIbdVC0to+2YYwfy08QWqSLMkQA=";
         };
-        comment-token = "#";
+        comment-tokens = [ "#" ];
         file-types = [
           { glob = "*.ld"; }
           { glob = "*.lds"; }
@@ -68,7 +68,7 @@
           rev = "0a95cfdc0745b6ae82f60d3a339b37f19b7b9267";
           hash = "sha256-e/LpQUL3UHHko4QvMeT40LCvPZRT7xTGZ9z1Zaboru4=";
         };
-        comment-token = "#";
+        comment-tokens = [ "#" ];
         file-types = [
           { glob = "*.ninja"; }
         ];
@@ -81,7 +81,7 @@
           rev = "07e2f32c1e9f68e8b813b8eca924a61f2c4b94d8";
           hash = "sha256-J2LoV0mu1PDMrwGoK671naWpT50dv3muR/WJ3MyRQOI=";
         };
-        comment-token = "//";
+        comment-tokens = [ "//" ];
         file-types = [
           { glob = "*.spthy"; }
         ];
