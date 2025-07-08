@@ -21,9 +21,12 @@
         );
     in
     {
-      overlays.default = final: prev: {
-        some-package = final.callPackage ./package.nix { };
-      };
+      overlays.default =
+        final: prev:
+        lib.packagesFromDirectoryRecursive {
+          inherit (final) callPackage;
+          directory = ./pkgs;
+        };
 
       packages = eachSystem (pkgs: {
         default = pkgs.some-package;
