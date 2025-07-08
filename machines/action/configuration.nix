@@ -193,6 +193,7 @@
         "networkmanager"
         "wheel"
         "dialout"
+        "tss" # for tpm
       ];
     };
 
@@ -221,4 +222,6 @@
   ];
   # debug info for ease of debug
   environment.enableDebugInfo = true;
+
+  security.tpm2.enable = true;
 }

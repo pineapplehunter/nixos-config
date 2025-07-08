@@ -4,6 +4,7 @@
   environment.systemPackages = with pkgs; [
     # tools
     age
+    age-plugin-tpm
     agenix
     atop
     binutils
