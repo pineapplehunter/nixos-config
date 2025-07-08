@@ -1,65 +1,65 @@
 { pkgs, ... }:
 {
   # system wide packages
-  environment.systemPackages = [
+  environment.systemPackages = with pkgs; [
     # tools
-    pkgs.age
-    pkgs.agenix
-    pkgs.atop
-    pkgs.binutils
-    pkgs.btop
-    pkgs.btrfs-assistant
-    pkgs.curl-http3
-    pkgs.fd
-    pkgs.file
-    pkgs.git
-    pkgs.github-cli
-    pkgs.gnome-tweaks
-    pkgs.gnumake
-    pkgs.helix
-    pkgs.htop
-    pkgs.jq
-    pkgs.ncdu
-    pkgs.nethogs
-    pkgs.nix-index
-    pkgs.nix-output-monitor
-    pkgs.nix-tree
-    pkgs.nixfmt-rfc-style
-    pkgs.nixpkgs-fmt
-    pkgs.npins
-    pkgs.openssl
-    pkgs.papers
-    pkgs.pciutils
-    pkgs.reptyr
-    pkgs.ripgrep
-    pkgs.tree
-    pkgs.unzipNLS
-    pkgs.usbutils
-    pkgs.vim
-    pkgs.wl-clipboard
+    age
+    agenix
+    atop
+    binutils
+    btop
+    btrfs-assistant
+    curl-http3
+    fd
+    file
+    git
+    github-cli
+    gnome-tweaks
+    gnumake
+    helix
+    htop
+    jq
+    ncdu
+    nethogs
+    nix-index
+    nix-output-monitor
+    nix-tree
+    nixfmt-rfc-style
+    nixpkgs-fmt
+    npins
+    openssl
+    papers
+    pciutils
+    reptyr
+    ripgrep
+    tree
+    unzipNLS
+    usbutils
+    vim
+    wl-clipboard
 
     # editor
-    pkgs.dconf-editor
-    pkgs.vscode
+    dconf-editor
+    vscode
 
     # lang
-    pkgs.python3
+    python3
 
     # office
-    pkgs.errands
-    pkgs.gitify
-    pkgs.pdfarranger
-    pkgs.slack
-    pkgs.super-productivity
-    pkgs.webcord
+    errands
+    gitify
+    pdfarranger
+    slack
+    super-productivity
+    webcord
 
     # other
-    pkgs.gnome-firmware
-    pkgs.man-pages
-    pkgs.orca-slicer
-    pkgs.udisks2
-    pkgs.nautilus-open-any-terminal
-    pkgs.nautilus-python
+    gnome-firmware
+    man-pages
+    orca-slicer
+    udisks2
+    nautilus-open-any-terminal
+    nautilus-python
   ];
 
   environment.gnome.excludePackages = [ pkgs.evince ];
