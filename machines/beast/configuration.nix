@@ -129,7 +129,6 @@
     isNormalUser = true;
     extraGroups = [
       "wheel" # Enable ‘sudo’ for the user.
-      "tss" # tpm support
     ];
   };
 
@@ -146,5 +145,4 @@
       };
     };
 
-  security.tpm2.enable = true;
 }
