@@ -37,6 +37,8 @@
     };
     howdy-module.url = "github:pineapplehunter/howdy-module";
     systems.url = "github:nix-systems/default";
+    proverif-grammar.url = "github:pineapplehunter/tree-sitter-proverif";
+    proverif-grammar.flake = false;
   };
 
   outputs =

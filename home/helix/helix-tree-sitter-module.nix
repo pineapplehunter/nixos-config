@@ -35,7 +35,7 @@ in
             default = [ ];
           };
           file-types = mkOption {
-            type = types.listOf (types.attrsOf types.anything);
+            type = types.listOf types.anything;
             default = [ ];
           };
         };

@@ -1,4 +1,9 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
 {
   imports = [ ./helix-tree-sitter-module.nix ];
 
@@ -42,9 +47,7 @@
           hash = "sha256-ZvOs0kAd6fqM+N8mmxBgKRlMrSRAXgy61Cwai6NQglU=";
         };
         comment-tokens = [ "#" ];
-        file-types = [
-          { glob = "Caddyfile"; }
-        ];
+        file-types = [ "S" ];
       }
       {
         name = "linkerscript";
@@ -56,8 +59,8 @@
         };
         comment-tokens = [ "#" ];
         file-types = [
-          { glob = "*.ld"; }
-          { glob = "*.lds"; }
+          "ld"
+          "lds"
         ];
       }
       {
@@ -69,9 +72,7 @@
           hash = "sha256-e/LpQUL3UHHko4QvMeT40LCvPZRT7xTGZ9z1Zaboru4=";
         };
         comment-tokens = [ "#" ];
-        file-types = [
-          { glob = "*.ninja"; }
-        ];
+        file-types = [ "ninja" ];
       }
       {
         name = "tamarin";
@@ -82,27 +83,18 @@
           hash = "sha256-J2LoV0mu1PDMrwGoK671naWpT50dv3muR/WJ3MyRQOI=";
         };
         comment-tokens = [ "//" ];
-        file-types = [
-          { glob = "*.spthy"; }
-        ];
+        file-types = [ "spthy" ];
       }
       {
         name = "proverif";
-        source = pkgs.fetchFromGitHub {
-          owner = "pqcfox";
-          repo = "tree-sitter-proverif";
-          rev = "bd9222e7bab33a6b22b4ecfa8e0a618683487935";
-          hash = "sha256-YFB1eXVjTzSMSzKyaLsiQZJykfMvv6JOgi71zs4w9vU=";
-        };
+        source = inputs.proverif-grammar;
         block-comment-tokens = [
           {
             start = "(*";
             end = "*)";
           }
         ];
-        file-types = [
-          { glob = "*.pv"; }
-        ];
+        file-types = [ "pv" ];
       }
     ];
     languages = lib.importTOML ./helix-languages.toml;
