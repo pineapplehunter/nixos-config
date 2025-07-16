@@ -12,15 +12,17 @@ jobs:
   build:
     strategy:
       matrix:
-        runner: ["ubuntu-latest", "ubuntu-24.04-arm"]
+        runner: ["ubuntu-24.04", "ubuntu-24.04-arm", "macos-15", "macos-13"]
     runs-on: ${{ matrix.runner }}
     steps:
       - name: enable unprivileged userns clone
+        if: runner.os == 'Linux'
         run: |
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           sudo sysctl -w kernel.unprivileged_userns_clone=1
       # https://carlosbecker.com/posts/github-actions-disk-space/
       - name: cleanup unused dirs
+        if: runner.os == 'Linux'
         run: |
           echo Before && df -h /
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
@@ -33,6 +35,7 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@v11
       - name: Setup Attic cache
         uses: ryanccn/attic-action@v0
+        continue-on-error: true
         with:
           endpoint: ${{ secrets.ATTIC_ENDPOINT }}
           cache: ${{ secrets.ATTIC_CACHE }}
