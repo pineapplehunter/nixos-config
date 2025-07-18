@@ -10,6 +10,7 @@ in
       fd
       ffmpegthumbnailer
       file
+      helix
       htop
       jq
       ncdu
