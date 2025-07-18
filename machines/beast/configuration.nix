@@ -180,6 +180,7 @@
         Type = "notify";
         WorkingDirectory = "/home/shogo/immich";
         Restart = "always";
+        TimeoutSec = 600;
       };
       wantedBy = [ "default.target" ];
     };
