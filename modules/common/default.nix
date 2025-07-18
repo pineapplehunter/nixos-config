@@ -149,7 +149,10 @@
     xremap.enable = lib.mkDefault false;
 
     # Enable the OpenSSH daemon.
-    openssh.enable = true;
+    openssh = {
+      enable = true;
+      startWhenNeeded = true;
+    };
 
     # Enable CUPS to print documents.
     printing = {
