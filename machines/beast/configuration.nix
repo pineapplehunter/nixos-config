@@ -64,10 +64,6 @@
     "/sys/block/bcache0/bcache/writeback_percent".w.argument = "0";
     "/sys/block/bcache0/bcache/sequential_cutoff".w.argument = "0";
     "/sys/block/bcache0/bcache/writeback_delay".w.argument = toString (7 * 24 * 60 * 60);
-    "/sys/block/bcache1/bcache/cache_mode".w.argument = "writeback";
-    "/sys/block/bcache1/bcache/writeback_percent".w.argument = "0";
-    "/sys/block/bcache1/bcache/sequential_cutoff".w.argument = "0";
-    "/sys/block/bcache1/bcache/writeback_delay".w.argument = toString (7 * 24 * 60 * 60);
     "/sys/fs/bcache/eca17911-1262-439c-bcb0-aff2495bce28/congested_read_threshold_us".w.argument = "0";
     "/sys/fs/bcache/eca17911-1262-439c-bcb0-aff2495bce28/congested_write_threshold_us".w.argument = "0";
   };
