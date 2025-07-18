@@ -166,7 +166,7 @@
     networkmanager.enable = true;
 
     # Open ports in the firewall.
-    firewall.allowedTCPPorts = [ 8080 ];
+    # firewall.allowedTCPPorts = [ 8080 ];
     # firewall.allowedUDPPorts = [ ... ];
     # Or disable the firewall altogether.
     # firewall.enable = false;
