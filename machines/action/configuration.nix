@@ -224,4 +224,5 @@
   environment.enableDebugInfo = true;
 
   security.tpm2.enable = true;
+  services.openssh.settings.PasswordAuthentication = false;
 }
