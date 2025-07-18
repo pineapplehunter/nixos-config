@@ -16,7 +16,7 @@ let
             inherit inputs self;
           };
           modules = [
-            self.homeModules.common
+            self.homeModules.pineapplehunter
             (
               { pkgs, ... }:
               {
@@ -45,11 +45,19 @@ rec {
     flatpak-update = ./flatpak-update/default.nix;
     ghostty = ./ghostty/default.nix;
     helix = ./helix/default.nix;
+    minimal = ./minimal/default.nix;
     pineapplehunter = ./pineapplehunter/default.nix;
     shogo = ./shogo/default.nix;
     zellij = ./zellij/default.nix;
   };
   configurations = lib.attrsets.mergeAttrsList [
-    (multiConfig "shogo" "shogo" [ modules.shogo ])
+    (multiConfig "shogo" "shogo" [
+      modules.common
+      modules.shogo
+    ])
+    (multiConfig "minimal-shogo" "shogo" [
+      modules.minimal
+      modules.shogo
+    ])
   ];
 }
