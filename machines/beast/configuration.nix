@@ -72,6 +72,13 @@
     "/sys/fs/bcache/eca17911-1262-439c-bcb0-aff2495bce28/congested_write_threshold_us".w.argument = "0";
   };
 
+  age = {
+    secrets.geesefs-creds = {
+      file = ../../secrets/geesefs-creds.age;
+      mode = "0400";
+    };
+  };
+
   networking.hostName = "beast"; # Define your hostname.
   networking.networkmanager.enable = true;
 
