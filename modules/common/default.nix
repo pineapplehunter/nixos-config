@@ -79,7 +79,6 @@
         "shogo:dzOG75ufKKljdUzTbGDpTuBmup3/K5RDmr28jb0jHCg="
       ];
       warn-dirty = false;
-      auto-optimise-store = true;
       allow-import-from-derivation = false;
     };
     gc = {
