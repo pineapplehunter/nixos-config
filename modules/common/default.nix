@@ -207,5 +207,7 @@
 
   security.sudo-rs.enable = true;
 
+  networking.nftables.enable = true;
+
   system.stateVersion = config.system.nixos.release;
 }
