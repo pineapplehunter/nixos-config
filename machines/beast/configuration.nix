@@ -225,12 +225,34 @@
         TIMELINE_LIMIT_YEARLY = 2;
       };
     };
-    prometheus.exporters.node = {
-      enable = true;
-      openFirewall = true;
-    };
+    prometheus.exporters.node.enable = true;
 
     localtimed.enable = true;
+  };
+
+  networking.firewall.interfaces."tailscale0" = {
+    allowedTCPPorts = [
+      # prometheus node-exporter
+      9100
+      # ollama
+      4000
+      # immich
+      2283
+      # prometheus switchbot-exporter
+      3725
+    ];
+    allowedTCPPortRanges = [
+      # garage original
+      {
+        from = 3900;
+        to = 3905;
+      }
+      #garage proxied
+      {
+        from = 3950;
+        to = 3955;
+      }
+    ];
   };
 
   virtualisation = {
