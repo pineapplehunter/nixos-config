@@ -225,7 +225,10 @@
         TIMELINE_LIMIT_YEARLY = 2;
       };
     };
-    prometheus.exporters.node.enable = true;
+    prometheus.exporters.node = {
+      enable = true;
+      openFirewall = true;
+    };
 
     localtimed.enable = true;
   };
