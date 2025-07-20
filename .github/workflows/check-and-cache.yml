@@ -32,15 +32,21 @@ jobs:
           echo After && df -h /
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v31
-      - name: Setup Attic cache
-        uses: ryanccn/attic-action@v0
+
+        # Latest version of attic is not working correctly on x86_64-darwin
+        # https://github.com/zhaofengli/attic/issues/264
+      - name: Setup Attic Cache
         continue-on-error: true
-        with:
-          endpoint: ${{ secrets.ATTIC_ENDPOINT }}
-          cache: ${{ secrets.ATTIC_CACHE }}
-          token: ${{ secrets.ATTIC_TOKEN }}
-          inputs-from: .
+        run: |
+          nix profile install "github:nixos/nixpkgs?ref=nixos-24.11#attic-client"
+          attic login attic-server ${{ secrets.ATTIC_ENDPOINT }} ${{ secrets.ATTIC_TOKEN }}
+          attic use ${{ secrets.ATTIC_CACHE }}
+
       - name: Run checks
         run: |
           nix flake check --keep-going --all-systems --accept-flake-config
           df -h /
+
+      - name: Upload Cache
+        continue-on-error: true
+        run: nix path-info --all | grep -v ".drv" | attic push ${{ secrets.ATTIC_CACHE }} --stdin -j 1
