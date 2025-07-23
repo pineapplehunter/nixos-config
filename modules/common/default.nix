@@ -131,6 +131,7 @@
     not-found-exec.enable = true;
     which-nix.enable = true;
     sudo-nix.enable = true;
+    man-nix.enable = true;
   };
 
   i18n.inputMethod = {

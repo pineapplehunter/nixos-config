@@ -49,6 +49,19 @@ let
     isExecutable = true;
     meta.mainProgram = "sudo-nix";
   };
+
+  man-nix = pkgs.replaceVarsWith {
+    src = ./man-nix.sh;
+    replacements = {
+      jq = getExe pkgs.jq;
+      nix = getExe config.nix.package;
+      man = getExe pkgs.man;
+    };
+    name = "man-nix";
+    dir = "bin";
+    isExecutable = true;
+    meta.mainProgram = "man-nix";
+  };
 in
 {
   options = {
@@ -60,6 +73,7 @@ in
       };
       which-nix.enable = mkEnableOption "which-nix program";
       sudo-nix.enable = mkEnableOption "sudo-nix program";
+      man-nix.enable = mkEnableOption "man-nix program";
     };
   };
 
@@ -87,6 +101,7 @@ in
     environment.systemPackages =
       optionals cfg.not-found-exec.addToPath [ not-found-exec ]
       ++ optionals cfg.which-nix.enable [ which-nix ]
-      ++ optionals cfg.sudo-nix.enable [ sudo-nix ];
+      ++ optionals cfg.sudo-nix.enable [ sudo-nix ]
+      ++ optionals cfg.man-nix.enable [ man-nix ];
   };
 }
