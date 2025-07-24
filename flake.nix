@@ -116,7 +116,10 @@
           inherit (pkgs.hostPlatform) system;
         in
         {
-          user-shogo = check-build self.homeConfigurations.${"shogo-${system}"}.activationPackage;
+          user-shogo = check-build self.homeConfigurations."shogo-${system}".activationPackage;
+          user-minimal-shogo =
+            check-build
+              self.homeConfigurations."minimal-shogo-${system}".activationPackage;
         }
         // lib.optionalAttrs (system == "x86_64-linux") {
           action = check-build self.nixosConfigurations.action.config.system.build.toplevel;
