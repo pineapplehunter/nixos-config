@@ -5,6 +5,7 @@
     # tools
     age
     age-plugin-tpm
+    age-plugin-yubikey
     agenix
     atop
     binutils

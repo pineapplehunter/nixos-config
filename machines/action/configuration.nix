@@ -108,6 +108,8 @@
       enable = true;
       useRoutingFeatures = "client";
     };
+
+    pcscd.enable = true;
   };
 
   # Bootloader.
@@ -224,6 +226,7 @@
     (pkgs.writeScriptBin "ai" ''
       ollama run deepseek-r1:8b
     '')
+    pkgs.yubikey-manager
   ];
   # debug info for ease of debug
   environment.enableDebugInfo = true;
