@@ -157,8 +157,13 @@
   # https://discourse.nixos.org/t/suspend-then-hibernate/31953/5
   powerManagement.enable = true;
 
-  systemd.services.docker.enable = false;
-  systemd.sockets.docker.enable = false;
+  # speedup boot
+  systemd.services = {
+    docker.wantedBy = lib.mkForce [ "default.target" ];
+    ollama.wantedBy = lib.mkForce [ "default.target" ];
+    libvirtd.wantedBy = lib.mkForce [ "default.target" ];
+    libvirt-guests.wantedBy = lib.mkForce [ "default.target" ];
+  };
 
   networking = {
     hostName = "action"; # Define your hostname.
