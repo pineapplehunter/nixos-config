@@ -25,6 +25,7 @@
     initrd.kernelModules = [ ];
     kernelModules = [ "kvm-intel" ];
     extraModulePackages = [ ];
+    resumeDevice = "/dev/disk/by-uuid/087b3e39-7001-4677-b290-8dd45c64bb37";
   };
 
   fileSystems = {
@@ -51,7 +52,7 @@
     };
   };
 
-  swapDevices = [ { device = "/swapfile"; } ];
+  swapDevices = [ { device = "/dev/disk/by-uuid/087b3e39-7001-4677-b290-8dd45c64bb37"; } ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's
