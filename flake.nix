@@ -36,7 +36,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     howdy-module.url = "github:pineapplehunter/howdy-module";
-    systems.url = "github:nix-systems/default";
     proverif-grammar.url = "github:pineapplehunter/tree-sitter-proverif";
     proverif-grammar.flake = false;
   };
@@ -45,23 +44,20 @@
     { self, nixpkgs, ... }@inputs:
     let
       inherit (nixpkgs) lib;
-      eachSystem =
-        withPkgs:
-        lib.genAttrs (import inputs.systems) (
-          system:
-          withPkgs (
-            import nixpkgs {
-              inherit system;
-              overlays = [
-                inputs.howdy-module.overlays.default
-                inputs.nixgl.overlays.default
-                inputs.nix-xilinx.overlay
-                inputs.agenix.overlays.default
-                self.overlays.default
-              ];
-            }
-          )
-        );
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
+      ];
+      overlays = [
+        inputs.howdy-module.overlays.default
+        inputs.nixgl.overlays.default
+        inputs.nix-xilinx.overlay
+        inputs.agenix.overlays.default
+        self.overlays.default
+      ];
+      eachSystem = f: lib.genAttrs systems (system: f (import nixpkgs { inherit system overlays; }));
     in
     {
       nixosModules = import ./modules;

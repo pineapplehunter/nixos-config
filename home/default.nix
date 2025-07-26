@@ -6,33 +6,12 @@
 }:
 let
   inherit (nixpkgs) lib;
-  multiConfig =
-    cfgname: username: mods:
-    lib.attrsets.mergeAttrsList (
-      map (system: {
-        "${cfgname}-${system}" = inputs.home-manager.lib.homeManagerConfiguration {
-          pkgs = self.legacyPackages.${system};
-          extraSpecialArgs = {
-            inherit inputs self;
-          };
-          modules = [
-            self.homeModules.pineapplehunter
-            (
-              { pkgs, ... }:
-              {
-                pineapplehunter.config-name = "${cfgname}-${system}";
-                home.username = username;
-                home.homeDirectory =
-                  if pkgs.stdenv.hostPlatform.isDarwin then "/Users/${username}" else "/home/${username}";
-              }
-            )
-          ] ++ mods;
-        };
-      }) (import inputs.systems)
-    );
-
-in
-rec {
+  systems = [
+    "x86_64-linux"
+    "aarch64-linux"
+    "x86_64-darwin"
+    "aarch64-darwin"
+  ];
   modules = {
     common = import ./common;
     nixos-common = {
@@ -50,14 +29,57 @@ rec {
     shogo = ./shogo/default.nix;
     zellij = ./zellij/default.nix;
   };
-  configurations = lib.attrsets.mergeAttrsList [
-    (multiConfig "shogo" "shogo" [
-      modules.common
-      modules.shogo
-    ])
-    (multiConfig "minimal-shogo" "shogo" [
-      modules.minimal
-      modules.shogo
-    ])
+  config-template = [
+    {
+      configname = "shogo";
+      username = "shogo";
+      modules = [
+        modules.common
+        modules.shogo
+      ];
+    }
+    {
+      configname = "minimal-shogo";
+      username = "shogo";
+      modules = [
+        modules.minimal
+        modules.shogo
+      ];
+    }
   ];
+  all-configs = lib.cartesianProduct {
+    system = systems;
+    config = config-template;
+  };
+  configurations = lib.listToAttrs (
+    map (
+      { system, config }:
+      {
+        name = "${config.configname}-${system}";
+        value = inputs.home-manager.lib.homeManagerConfiguration {
+          pkgs = self.legacyPackages.${system};
+          extraSpecialArgs = { inherit inputs self; };
+          modules = [
+            self.homeModules.pineapplehunter
+            (
+              { pkgs, ... }:
+              {
+                pineapplehunter.config-name = "${config.configname}-${system}";
+                home.username = config.username;
+                home.homeDirectory =
+                  if pkgs.stdenv.hostPlatform.isDarwin then
+                    "/Users/${config.username}"
+                  else
+                    "/home/${config.username}";
+              }
+            )
+          ]
+          ++ config.modules;
+        };
+      }
+    ) all-configs
+  );
+in
+{
+  inherit modules configurations;
 }
