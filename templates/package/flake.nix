@@ -2,25 +2,22 @@
   description = "A basic package";
 
   inputs.nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-  inputs.systems.url = "github:nix-systems/default";
 
   outputs =
-    { self, nixpkgs, ... }@inputs:
+    { self, nixpkgs, ... }:
     let
       inherit (nixpkgs) lib;
-      eachSystem =
-        f:
-        lib.genAttrs (import inputs.systems) (
-          system:
-          f (
-            import nixpkgs {
-              inherit system;
-              overlays = [ self.overlays.default ];
-            }
-          )
-        );
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
+      ];
+      overlays = [ self.overlays.default ];
+      eachSystem = f: lib.genAttrs systems (system: f (import nixpkgs { inherit system overlays; }));
     in
     {
+      # add packages from `pkgs` directory
       overlays.default =
         final: prev:
         lib.packagesFromDirectoryRecursive {
@@ -29,11 +26,14 @@
         };
 
       packages = eachSystem (pkgs: {
+        # change name to the added package
         default = pkgs.some-package;
       });
 
+      # use nixfmt for all nix files
       formatter = eachSystem (pkgs: pkgs.nixfmt-tree);
 
+      # make all packages accecible with `nix build`
       legacyPackages = eachSystem lib.id;
     };
 }

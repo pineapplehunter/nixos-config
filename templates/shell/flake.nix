@@ -2,25 +2,33 @@
   description = "A basic shell";
 
   inputs.nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-  inputs.systems.url = "github:nix-systems/default";
 
   outputs =
-    { nixpkgs, systems, ... }:
+    { nixpkgs, ... }:
     let
       inherit (nixpkgs) lib;
-      eachSystem = f: lib.genAttrs (import systems) (system: f (import nixpkgs { inherit system; }));
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
+      ];
+      overlays = [ ];
+      eachSystem = f: lib.genAttrs systems (system: f (import nixpkgs { inherit system overlays; }));
     in
     {
       devShells = eachSystem (pkgs: {
         default = pkgs.mkShell {
-          packages = [
-            pkgs.hello
+          packages = with pkgs; [
+            hello
           ];
         };
       });
 
-      formatter = eachSystem (p: p.nixfmt-tree);
+      # use nixfmt for all nix files
+      formatter = eachSystem (pkgs: pkgs.nixfmt-tree);
 
+      # make all packages accecible with `nix build`
       legacyPackages = eachSystem lib.id;
     };
 }
