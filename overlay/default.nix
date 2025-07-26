@@ -19,13 +19,11 @@ rec {
 
     # Fix issue: slow startup time.  Reason unknown (did not search).
     flatpak = prev.flatpak.overrideAttrs (old: {
-      postPatch =
-        (old.postPatch or "")
-        + ''
-          substituteInPlace common/flatpak-run.c \
-            --replace-fail "if (!sandboxed && !(flags & FLATPAK_RUN_FLAG_NO_DOCUMENTS_PORTAL))" "" \
-            --replace-fail "add_document_portal_args (bwrap, app_id, &doc_mount_path);" ""
-        '';
+      postPatch = (old.postPatch or "") + ''
+        substituteInPlace common/flatpak-run.c \
+          --replace-fail "if (!sandboxed && !(flags & FLATPAK_RUN_FLAG_NO_DOCUMENTS_PORTAL))" "" \
+          --replace-fail "add_document_portal_args (bwrap, app_id, &doc_mount_path);" ""
+      '';
     });
 
     # Faster builds when using remote builds
@@ -37,12 +35,10 @@ rec {
     # after dimming.
     gnome-settings-daemon = prev.gnome-settings-daemon.overrideAttrs (old: {
       # I don't need sleep notifications!
-      postPatch =
-        (old.postPatch or "")
-        + ''
-          substituteInPlace plugins/power/gsd-power-manager.c \
-            --replace-fail "show_sleep_warnings = TRUE" "show_sleep_warnings = FALSE"
-        '';
+      postPatch = (old.postPatch or "") + ''
+        substituteInPlace plugins/power/gsd-power-manager.c \
+          --replace-fail "show_sleep_warnings = TRUE" "show_sleep_warnings = FALSE"
+      '';
     });
 
     # Fix issue: non-standard version representation
