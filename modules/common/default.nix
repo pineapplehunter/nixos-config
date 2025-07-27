@@ -190,7 +190,6 @@
 
   users.defaultUserShell = pkgs.zsh;
 
-  systemd.services.NetworkManager-wait-online.enable = false;
 
   # Enable sound with pipewire.
   security.rtkit.enable = true;
