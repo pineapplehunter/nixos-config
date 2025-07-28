@@ -47,17 +47,6 @@ rec {
       # supress warning
       inherit (old) src;
     });
-
-    # Fix issue: slow input
-    # https://github.com/ghostty-org/ghostty/issues/7724
-    # https://github.com/ghostty-org/ghostty/discussions/7720#discussioncomment-13608668
-    ghostty = prev.ghostty.overrideAttrs {
-      preBuild = ''
-        shopt -s globstar
-        sed -i 's/^const xev = @import("xev");$/const xev = @import("xev").Epoll;/' **/*.zig
-        shopt -u globstar
-      '';
-    };
   };
 
   custom-packages =
