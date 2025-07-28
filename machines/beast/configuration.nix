@@ -13,6 +13,7 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
+    ./immich-related.nix
   ];
 
   pineapplehunter.windows-vm.enable = true;
@@ -68,122 +69,6 @@
     "/sys/fs/bcache/eca17911-1262-439c-bcb0-aff2495bce28/congested_write_threshold_us".w.argument = "0";
   };
 
-  age = {
-    secrets.geesefs-creds = {
-      file = ../../secrets/geesefs-creds.age;
-      mode = "0400";
-    };
-  };
-
-  # to startup immich at boot
-  systemd.services = {
-    garage-docker = {
-      enable = true;
-      restartIfChanged = false;
-      path = with pkgs; [
-        curl
-        docker
-        docker-compose
-      ];
-      requires = [
-        "network.target"
-        "docker.socket"
-      ];
-      after = [
-        "network.target"
-        "docker.socket"
-      ];
-      script = ''
-        docker compose down
-        docker compose up &
-        # Wait for health check
-        sleep 1
-        while ! curl -f http://localhost:3903/health; do
-            sleep 1
-        done
-
-        # Tell systemd we're ready
-        systemd-notify --ready
-        wait
-      '';
-      preStop = "docker compose down";
-      serviceConfig = {
-        Type = "notify";
-        WorkingDirectory = "/home/shogo/garage";
-        Restart = "always";
-        NotifyAccess = "all";
-      };
-      wantedBy = [ "default.target" ];
-    };
-    geesefs-mount = {
-      restartIfChanged = false;
-      path = with pkgs; [
-        fuse
-        geesefs
-        util-linux
-      ];
-      requires = [ "garage-docker.service" ];
-      after = [ "garage-docker.service" ];
-      script = ''
-        findmnt mnt && umount mnt || true
-        geesefs \
-          --endpoint http://localhost:3950 \
-          --region garage \
-          --list-type 2 \
-          --memory-limit $((1024*4)) \
-          --stat-cache-ttl 10m \
-          --cache mnt-cache \
-          --shared-config ${config.age.secrets.geesefs-creds.path} \
-          -o allow_other \
-          immich: \
-          mnt
-        ls mnt
-      '';
-      serviceConfig = {
-        Type = "forking";
-        WorkingDirectory = "/home/shogo/immich";
-        TimeoutSec = 600;
-        Restart = "always";
-      };
-    };
-    immich-up = {
-      enable = true;
-      restartIfChanged = false;
-      path = with pkgs; [
-        curl
-        docker
-        docker-compose
-      ];
-      requires = [
-        "geesefs-mount.service"
-        "docker.socket"
-      ];
-      after = [
-        "geesefs-mount.service"
-        "docker.socket"
-      ];
-      script = ''
-        docker compose down
-        docker compose up &
-        # Wait for health check
-        while ! curl -f http://localhost:2283 -o /dev/null; do
-            sleep 1
-        done
-
-        # Tell systemd we're ready
-        systemd-notify --ready
-        wait
-      '';
-      preStop = "docker compose down";
-      serviceConfig = {
-        Type = "notify";
-        WorkingDirectory = "/home/shogo/immich";
-        Restart = "always";
-        TimeoutSec = 600;
-      };
-      wantedBy = [ "default.target" ];
-    };
-  };
 
   networking.hostName = "beast"; # Define your hostname.
   networking.networkmanager.enable = true;

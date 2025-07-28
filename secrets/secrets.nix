@@ -16,4 +16,5 @@ in
 {
   "access-tokens.age".publicKeys = users ++ systems;
   "geesefs-creds.age".publicKeys = users ++ [ beast-system ];
+  "garage-secret.age".publicKeys = users ++ systems;
 }
