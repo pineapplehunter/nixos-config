@@ -79,6 +79,7 @@
   systemd.services = {
     garage-docker = {
       enable = true;
+      restartIfChanged = false;
       path = with pkgs; [
         curl
         docker
@@ -115,6 +116,7 @@
       wantedBy = [ "default.target" ];
     };
     geesefs-mount = {
+      restartIfChanged = false;
       path = with pkgs; [
         fuse
         geesefs
@@ -146,6 +148,7 @@
     };
     immich-up = {
       enable = true;
+      restartIfChanged = false;
       path = with pkgs; [
         curl
         docker
