@@ -58,7 +58,7 @@
     # other
     gnome-firmware
     man-pages
-    orca-slicer
+    # orca-slicer
     udisks2
     nautilus-open-any-terminal
     nautilus-python

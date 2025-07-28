@@ -12,7 +12,6 @@ let
 in
 {
   environment.systemPackages = [
-    # pkgs.orca-slicer
     pkgs.blender
     pkgs.jujutsu
     pkgs.nautilus-thumbnailer-stl
