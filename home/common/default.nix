@@ -1,12 +1,10 @@
 {
   pkgs,
-  lib,
   config,
   self,
   ...
 }:
 let
-  inherit (lib.attrsets) optionalAttrs;
   inherit (pkgs.stdenv.hostPlatform) isLinux;
   inherit (config.pineapplehunter) is-nixos;
 in
@@ -22,6 +20,7 @@ in
         pineapplehunter
         zellij
         minimal
+        ssh
         ;
     in
     [
@@ -33,6 +32,7 @@ in
       pineapplehunter
       zellij
       minimal
+      ssh
       ./packages.nix
     ];
 

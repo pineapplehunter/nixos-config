@@ -28,6 +28,7 @@ let
     pineapplehunter = ./pineapplehunter/default.nix;
     shogo = ./shogo/default.nix;
     zellij = ./zellij/default.nix;
+    ssh = ./ssh/default.nix;
   };
   config-template = [
     {
