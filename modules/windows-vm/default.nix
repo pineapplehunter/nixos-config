@@ -27,5 +27,7 @@ in
       pkgs.win-virtio
       pkgs.win-spice
     ];
+
+    networking.firewall.trustedInterfaces = [ "virbr0" ];
   };
 }
