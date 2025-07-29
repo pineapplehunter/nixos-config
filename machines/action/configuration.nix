@@ -211,13 +211,14 @@
   };
   home-manager.users =
     let
-      inherit (self.homeModules) nixos-common shogo;
+      inherit (self.homeModules) nixos-common shogo cradsec;
     in
     {
       shogo = {
         imports = [
           nixos-common
           shogo
+          cradsec
         ];
       };
     };
