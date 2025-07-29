@@ -19,7 +19,7 @@ in
 
       zsh = {
         enable = true;
-        dotDir = ".config/zsh";
+        dotDir = "${config.home.homeDirectory}/.config/zsh";
         history = {
           append = true;
           ignoreAllDups = true;
