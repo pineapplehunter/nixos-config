@@ -23,7 +23,6 @@
     systemd.user.services.julia-precompile = {
       Unit.Description = "Precompile julia packages for fast repl";
       Service = {
-        Type = "oneshot";
         ExecStart = pkgs.writeShellScript "julia-precompile" ''
           julia -e "using Pkg; Pkg.precompile()"
         '';
