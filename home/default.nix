@@ -30,6 +30,7 @@ let
     zellij = ./zellij/default.nix;
     cradsec = ./cradsec/default.nix;
     ssh = ./ssh/default.nix;
+    julia = ./julia/default.nix;
   };
   config-template = [
     {

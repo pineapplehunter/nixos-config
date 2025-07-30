@@ -1,7 +1,4 @@
-{ pkgs, lib, ... }:
-let
-  inherit (pkgs.stdenv.hostPlatform) isLinux;
-in
+{ pkgs, ... }:
 {
   config.home.packages =
     with pkgs;
@@ -27,6 +24,5 @@ in
     ++ [
       # multilib for bintools
       (pkgs.wrapBintoolsWith { bintools = pkgs.binutils-unwrapped-all-targets; })
-    ]
-    ++ lib.optionals isLinux [ pkgs.julia ];
+    ];
 }

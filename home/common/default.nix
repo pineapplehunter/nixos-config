@@ -21,6 +21,7 @@ in
         zellij
         minimal
         ssh
+        julia
         ;
     in
     [
@@ -33,6 +34,7 @@ in
       zellij
       minimal
       ssh
+      julia
       ./packages.nix
     ];
 
@@ -94,14 +96,6 @@ in
 
   };
 
-  xdg.dataFile."julia/config/startup.jl".text = ''
-    try
-      using OhMyREPL
-    catch e
-      @warn e
-    end
-  '';
-
   home = {
     shellAliases = {
       wget = "wget --hsts-file=${config.xdg.dataHome}";
@@ -109,7 +103,6 @@ in
 
     sessionVariables = {
       CARGO_HOME = "${config.xdg.dataHome}/cargo";
-      JULIA_DEPOT_PATH = "${config.xdg.dataHome}/julia:$JULIA_DEPOT_PATH";
     };
   };
 
