@@ -1,4 +1,10 @@
-{ config, lib, ... }:
+{
+  pkgs,
+  config,
+  lib,
+  ...
+}:
+
 let
   inherit (lib) mkIf mkEnableOption;
   cfg = config.services.flatpak-update;
@@ -10,10 +16,13 @@ in
     systemd.user = {
       services.flatpak-update = {
         Unit.Description = "Update flatpak";
-        Service = {
-          Type = "oneshot";
-          ExecStart = "-flatpak update --noninteractive -y";
-        };
+        Service.ExecStart = pkgs.writeShellScript "update-flatpak" ''
+          if ! command -v flatpak > /dev/null; then
+            echo flatpak not found. skipping.
+            exit 0
+          fi
+          flatpak update --noninteractive -y
+        '';
       };
 
       timers.flatpak-update = {
