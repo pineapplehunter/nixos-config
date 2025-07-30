@@ -106,5 +106,6 @@ in
     };
   };
 
+  services.flatpak-repo.enable = isLinux;
   services.flatpak-update.enable = isLinux && !is-nixos;
 }
