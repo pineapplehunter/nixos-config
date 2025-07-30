@@ -190,16 +190,6 @@
 
   users.defaultUserShell = pkgs.zsh;
 
-  # initialize flathub for system
-  # https://wiki.nixos.org/wiki/Flatpak
-  systemd.services.flatpak-repo = {
-    wantedBy = [ "multi-user.target" ];
-    path = [ pkgs.flatpak ];
-    script = ''
-      flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-    '';
-  };
-
   # Enable sound with pipewire.
   security.rtkit.enable = true;
 
