@@ -6,6 +6,7 @@
   pkgs,
   lib,
   self,
+  config,
   ...
 }:
 
@@ -234,4 +235,92 @@
 
   security.tpm2.enable = true;
   services.openssh.settings.PasswordAuthentication = false;
+
+  security.pam.services.login.text =
+    let
+      inherit (pkgs)
+        fprintd
+        gnome-keyring
+        howdy
+        linux-pam
+        systemd
+        ;
+      check-timeout = pkgs.writeShellScript "check-timeout.sh" ''
+        PATH=${lib.makeBinPath [ pkgs.coreutils ]}
+        # FIXME: this uses a plain text file that stores the time of
+        # last login.  Check if this is fine with my threat model.
+        # Hint for me: I assume no one except me has access to root user.
+        STAMP_FILE="/run/user/$(id -u)/password_login_time"
+        MAX_AGE=$((12 * 60 * 60))  # 12 hours
+
+        if [[ ! -f "$STAMP_FILE" ]]; then
+          exit 1  # Require password
+        fi
+
+        last_time=$(< "$STAMP_FILE")
+        now=$(date +%s)
+
+        if (( now - last_time < MAX_AGE )); then
+          exit 0  # OK to use fingerprint
+        else
+          exit 1  # Too old, force password
+        fi
+      '';
+
+      update-timeout = pkgs.writeShellScript "update-timeout.sh" ''
+        PATH=${lib.makeBinPath [ pkgs.coreutils ]}
+        STAMP_DIR="/run/user/$(id -u)"
+        mkdir -p "$STAMP_DIR"
+        date +%s > "$STAMP_DIR/password_login_time"
+      '';
+
+      # copied from nixpkgs
+      # https://github.com/NixOS/nixpkgs/blob/caf5a7d2d10c4cc33d02cf16f540ba79d6ccd004/nixos/modules/security/pam.nix#L1502-L1514
+      makeLimitsConf =
+        limits:
+        pkgs.writeText "limits.conf" (
+          lib.concatMapStrings (
+            {
+              domain,
+              type,
+              item,
+              value,
+            }:
+            "${domain} ${type} ${item} ${toString value}\n"
+          ) limits
+        );
+    in
+    ''
+      # Account management.
+      account required ${linux-pam}/lib/security/pam_unix.so
+
+      # Authentication management.
+      # This check introduces timeout on unix login.  It will only
+      # allow fingerprint or other means of login it unix has not
+      # timed out.  The control flow is created by skipping lines.
+      # It calls check-timeout twice to prevent toctou attacks
+      # !!! PLEASE CHECK SKIP LINES WHEN MODIFYING !!!
+      auth [success=ignore default=3] ${linux-pam}/lib/security/pam_exec.so quiet ${check-timeout}
+      auth [success=1 default=ignore] ${howdy}/lib/security/pam_howdy.so
+      auth [success=ignore default=ignore] ${fprintd}/lib/security/pam_fprintd.so
+      auth [success=4 default=ignore] ${linux-pam}/lib/security/pam_exec.so quiet ${check-timeout}
+      auth [success=1 default=ignore] ${linux-pam}/lib/security/pam_unix.so likeauth nullok try_first_pass
+      auth required ${linux-pam}/lib/security/pam_deny.so
+      auth optional ${linux-pam}/lib/security/pam_exec.so quiet ${update-timeout}
+      auth optional ${gnome-keyring}/lib/security/pam_gnome_keyring.so
+      auth required ${linux-pam}/lib/security/pam_permit.so
+
+      # Password management.
+      password sufficient ${linux-pam}/lib/security/pam_unix.so nullok yescrypt
+      password optional ${gnome-keyring}/lib/security/pam_gnome_keyring.so use_authtok
+
+      # Session management.
+      session required ${linux-pam}/lib/security/pam_env.so conffile=/etc/pam/environment readenv=0
+      session required ${linux-pam}/lib/security/pam_unix.so
+      session required ${linux-pam}/lib/security/pam_loginuid.so
+      session required ${linux-pam}/lib/security/pam_lastlog.so silent
+      session optional ${systemd}/lib/security/pam_systemd.so
+      session required ${linux-pam}/lib/security/pam_limits.so conf=${makeLimitsConf config.security.pam.services.login.limits}
+      session optional ${gnome-keyring}/lib/security/pam_gnome_keyring.so auto_start
+    '';
 }
