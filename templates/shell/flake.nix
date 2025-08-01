@@ -8,21 +8,17 @@
     let
       inherit (nixpkgs) lib;
       systems = [
-        "x86_64-linux"
+        "aarch64-darwin"
         "aarch64-linux"
         "x86_64-darwin"
-        "aarch64-darwin"
+        "x86_64-linux"
       ];
       overlays = [ ];
       eachSystem = f: lib.genAttrs systems (system: f (import nixpkgs { inherit system overlays; }));
     in
     {
       devShells = eachSystem (pkgs: {
-        default = pkgs.mkShell {
-          packages = with pkgs; [
-            hello
-          ];
-        };
+        default = pkgs.mkShell { packages = with pkgs; [ hello ]; };
       });
 
       # use nixfmt for all nix files
