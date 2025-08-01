@@ -250,7 +250,11 @@
         # FIXME: this uses a plain text file that stores the time of
         # last login.  Check if this is fine with my threat model.
         # Hint for me: I assume no one except me has access to root user.
-        STAMP_FILE="/run/user/$(id -u)/password_login_time"
+        if [ -z "$PAM_USER" ]; then
+          echo no user is set
+          exit 1
+        fi
+        STAMP_FILE="/var/lib/pam-timeout/$PAM_USER/password_login_time"
         MAX_AGE=$((12 * 60 * 60))  # 12 hours
 
         if [[ ! -f "$STAMP_FILE" ]]; then
@@ -269,7 +273,12 @@
 
       update-timeout = pkgs.writeShellScript "update-timeout.sh" ''
         PATH=${lib.makeBinPath [ pkgs.coreutils ]}
-        STAMP_DIR="/run/user/$(id -u)"
+        umask 077
+        if [ -z "$PAM_USER" ]; then
+          echo no user is set
+          exit 1
+        fi
+        STAMP_DIR="/var/lib/pam-timeout/$PAM_USER"
         mkdir -p "$STAMP_DIR"
         date +%s > "$STAMP_DIR/password_login_time"
       '';
