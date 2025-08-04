@@ -1,4 +1,9 @@
-{ pkgs, lib, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 {
   config = {
     environment.systemPackages = with pkgs; [
@@ -12,8 +17,6 @@
       xwayland-satellite
     ];
     programs.niri.enable = lib.mkDefault true;
-    security.pam.services.swaylock.text = ''
-      auth include login
-    '';
+    security.pam.services.swaylock.text = config.security.pam.services.gdm-password.text;
   };
 }
