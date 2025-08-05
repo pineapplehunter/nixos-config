@@ -3,10 +3,6 @@
   # system wide packages
   environment.systemPackages = with pkgs; [
     # tools
-    age
-    age-plugin-tpm
-    age-plugin-yubikey
-    agenix
     atop
     binutils
     btop

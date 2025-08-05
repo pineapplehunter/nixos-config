@@ -3,6 +3,10 @@
   config.home.packages =
     with pkgs;
     [
+      age
+      age-plugin-tpm
+      age-plugin-yubikey
+      agenix
       difftastic
       dust
       elan
