@@ -332,4 +332,17 @@
       session required ${linux-pam}/lib/security/pam_limits.so conf=${makeLimitsConf config.security.pam.services.login.limits}
       session optional ${gnome-keyring}/lib/security/pam_gnome_keyring.so auto_start
     '';
+
+  programs.dconf = {
+    enable = true;
+    profiles.gdm = {
+      enableUserDb = true;
+      databases = [
+        {
+          # disable finger print in /etc/pam.d/gdm-fingerprint
+          settings."org/gnome/login-screen".enable-fingerprint-authentication = false;
+        }
+      ];
+    };
+  };
 }
