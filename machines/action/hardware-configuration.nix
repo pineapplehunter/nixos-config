@@ -32,13 +32,27 @@
     "/" = {
       device = "/dev/disk/by-uuid/c73fb028-c49b-4d3e-8628-39e326535d46";
       fsType = "btrfs";
-      options = [ "subvol=@,autodefrag,commit=120,compress=zstd,noatime,space_cache=v2" ];
+      options = [
+        "subvol=@"
+        "commit=120"
+        "compress=zstd"
+        "noatime"
+        "space_cache=v2"
+        "autodefrag"
+      ];
     };
 
     "/home" = {
       device = "/dev/disk/by-uuid/c73fb028-c49b-4d3e-8628-39e326535d46";
       fsType = "btrfs";
-      options = [ "subvol=@home,autodefrag,commit=120,compress=zstd,noatime,space_cache=v2" ];
+      options = [
+        "subvol=@"
+        "commit=120"
+        "compress=zstd"
+        "noatime"
+        "space_cache=v2"
+        "autodefrag"
+      ];
     };
 
     "/efi" = {

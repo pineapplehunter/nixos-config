@@ -39,7 +39,14 @@
     "/" = {
       device = "/dev/disk/by-uuid/20f60216-a9ad-46c7-bbc5-fd6cc4a17a39";
       fsType = "btrfs";
-      options = [ "subvol=@,commit=120,compress=zstd,noatime,space_cache=v2" ];
+      options = [
+        "subvol=@"
+        "commit=60"
+        "compress=zstd"
+        "noatime"
+        "space_cache=v2"
+        "autodefrag"
+      ];
     };
 
     "/boot" = {
