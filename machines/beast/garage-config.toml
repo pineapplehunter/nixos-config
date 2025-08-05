@@ -6,7 +6,8 @@ metadata_auto_snapshot_interval = "6h"
 
 replication_factor = 3
 
-# compression_level = 1
+# handle compression in the filesystem
+compression_level = "none"
 
 rpc_bind_addr = "[::]:3901"
 rpc_public_addr = "100.122.7.56:3901"
