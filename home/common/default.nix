@@ -64,8 +64,6 @@ in
       };
     };
 
-    fish.enable = true;
-
     gnome-shell = {
       enable = isLinux && is-nixos;
       extensions =
