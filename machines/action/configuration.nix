@@ -317,10 +317,10 @@
           auth [success=ignore default=ignore] ${fprintd}/lib/security/pam_fprintd.so
           auth [success=4 default=ignore] ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${check-timeout}
           auth [success=1 default=ignore] ${linux-pam}/lib/security/pam_unix.so likeauth nullok try_first_pass
-          auth required ${linux-pam}/lib/security/pam_deny.so
+          auth requisite ${linux-pam}/lib/security/pam_deny.so
           auth optional ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${update-timeout}
           auth optional ${gnome-keyring}/lib/security/pam_gnome_keyring.so
-          auth required ${linux-pam}/lib/security/pam_permit.so
+          auth requisite ${linux-pam}/lib/security/pam_permit.so
 
           # Password management.
           password sufficient ${linux-pam}/lib/security/pam_unix.so nullok yescrypt
@@ -381,4 +381,23 @@
     mode = "0700";
     age = "0";
   };
+  security.polkit.extraConfig = ''
+    /*
+      hibernation
+      https://ubuntuhandbook.org/index.php/2021/08/enable-hibernate-ubuntu-21-10/
+    */
+    polkit.addRule(function(action, subject) {
+        if (action.id == "org.freedesktop.login1.hibernate" ||
+            action.id == "org.freedesktop.login1.hibernate-multiple-sessions" ||
+            action.id == "org.freedesktop.upower.hibernate" ||
+            action.id == "org.freedesktop.login1.handle-hibernate-key" ||
+            action.id == "org.freedesktop.login1.hibernate-ignore-inhibit")
+        {
+            return polkit.Result.YES;
+        }
+    });
+  '';
+  services.logind.lidSwitch = "suspend-then-hibernate";
+  services.logind.lidSwitchDocked = "suspend-then-hibernate";
+  services.logind.lidSwitchExternalPower = "suspend-then-hibernate";
 }
