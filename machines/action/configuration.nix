@@ -247,6 +247,8 @@
             linux-pam
             systemd
             ;
+          # this directory will be wiped on every boot
+          stamp-dir = "/var/run/pam-timeout";
           check-timeout = pkgs.writeShellScript "check-timeout.sh" ''
             PATH=${lib.makeBinPath [ pkgs.coreutils ]}
             # FIXME: this uses a plain text file that stores the time of
@@ -256,7 +258,7 @@
               echo no user is set
               exit 1
             fi
-            STAMP_FILE="/var/lib/pam-timeout/$PAM_USER/password_login_time"
+            STAMP_FILE="${stamp-dir}/$PAM_USER/password_login_time"
             MAX_AGE=$((12 * 60 * 60))  # 12 hours
 
             if [[ ! -f "$STAMP_FILE" ]]; then
@@ -281,7 +283,7 @@
               echo no user is set
               exit 1
             fi
-            STAMP_DIR="/var/lib/pam-timeout/$PAM_USER"
+            STAMP_DIR="${stamp-dir}/$PAM_USER"
             mkdir -p "$STAMP_DIR"
             date +%s > "$STAMP_DIR/password_login_time"
           '';
@@ -374,12 +376,6 @@
         }
       ];
     };
-  };
-  systemd.tmpfiles.settings.pam-timeout."/var/lib/pam-timeout"."D!" = {
-    user = "root";
-    group = "root";
-    mode = "0700";
-    age = "0";
   };
   security.polkit.extraConfig = ''
     /*
