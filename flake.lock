@@ -372,22 +372,6 @@
         "type": "github"
       }
     },
-    "proverif-grammar": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1752034576,
-        "narHash": "sha256-a94HxBkP4MwsfRtIY9q7niMo5XP62W0RgNJ+jxHvO3A=",
-        "owner": "pineapplehunter",
-        "repo": "tree-sitter-proverif",
-        "rev": "307ea52dc6d36a907a54190b744bdbc8d68b1c33",
-        "type": "github"
-      },
-      "original": {
-        "owner": "pineapplehunter",
-        "repo": "tree-sitter-proverif",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "agenix": "agenix",
@@ -399,7 +383,6 @@
         "nixgl": "nixgl",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
-        "proverif-grammar": "proverif-grammar",
         "xremap-flake": "xremap-flake"
       }
     },

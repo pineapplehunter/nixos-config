@@ -1,7 +1,6 @@
 {
   pkgs,
   lib,
-  inputs,
   ...
 }:
 {
@@ -84,17 +83,6 @@
         };
         comment-tokens = [ "//" ];
         file-types = [ "spthy" ];
-      }
-      {
-        name = "proverif";
-        source = inputs.proverif-grammar;
-        block-comment-tokens = [
-          {
-            start = "(*";
-            end = "*)";
-          }
-        ];
-        file-types = [ "pv" ];
       }
     ];
     languages = lib.importTOML ./helix-languages.toml;

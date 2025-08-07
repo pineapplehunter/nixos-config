@@ -35,8 +35,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     howdy-module.url = "github:pineapplehunter/howdy-module";
-    proverif-grammar.url = "github:pineapplehunter/tree-sitter-proverif";
-    proverif-grammar.flake = false;
   };
 
   outputs =
