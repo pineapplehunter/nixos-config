@@ -358,6 +358,12 @@
         password  substack      default-auth
         session   include       default-auth
       '';
+      use-only-unix-rule = ''
+        auth      substack      only-unix-auth
+        account   include       only-unix-auth
+        password  substack      only-unix-auth
+        session   include       only-unix-auth
+      '';
       deny-all-rule = ''
         auth      requisite ${linux-pam}/lib/security/pam_deny.so
         account   requisite ${linux-pam}/lib/security/pam_deny.so
@@ -367,27 +373,28 @@
     in
     {
       default-auth.text = default-rule;
+      only-unix-auth.text = only-unix-rule;
 
-      chfn.text = only-unix-rule;
-      chpasswd.text = only-unix-rule;
-      chsh.text = only-unix-rule;
-      cups.text = use-default-rule;
+      chfn.text = lib.mkForce use-only-unix-rule;
+      chpasswd.text = lib.mkForce use-only-unix-rule;
+      chsh.text = lib.mkForce use-only-unix-rule;
+      cups.text = lib.mkForce use-default-rule;
       gdm-fingerprint.text = lib.mkForce deny-all-rule;
-      gdm-password.text = use-default-rule;
-      groupadd.text = use-default-rule;
-      groupdel.text = only-unix-rule;
-      groupmems.text = use-default-rule;
-      groupmod.text = only-unix-rule;
-      login.text = use-default-rule;
-      passwd.text = only-unix-rule;
-      polkit-1.text = use-default-rule;
-      su.text = use-default-rule;
-      sudo-i.text = use-default-rule;
-      sudo.text = use-default-rule;
-      systemd-run0.text = use-default-rule;
-      useradd.text = use-default-rule;
-      userdel.text = only-unix-rule;
-      usermod.text = only-unix-rule;
+      gdm-password.text = lib.mkForce use-default-rule;
+      groupadd.text = lib.mkForce use-default-rule;
+      groupdel.text = lib.mkForce use-only-unix-rule;
+      groupmems.text = lib.mkForce use-default-rule;
+      groupmod.text = lib.mkForce use-only-unix-rule;
+      login.text = lib.mkForce use-default-rule;
+      passwd.text = lib.mkForce use-only-unix-rule;
+      polkit-1.text = lib.mkForce use-default-rule;
+      su.text = lib.mkForce use-default-rule;
+      sudo-i.text = lib.mkForce use-default-rule;
+      sudo.text = lib.mkForce use-default-rule;
+      systemd-run0.text = lib.mkForce use-default-rule;
+      useradd.text = lib.mkForce use-default-rule;
+      userdel.text = lib.mkForce use-only-unix-rule;
+      usermod.text = lib.mkForce use-only-unix-rule;
     };
 
   programs.dconf = {
