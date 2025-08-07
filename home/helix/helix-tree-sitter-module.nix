@@ -43,31 +43,44 @@ in
     );
   };
 
-  config = {
-    xdg.configFile = lib.mkMerge (
-      map (
+  config =
+    let
+      cfg-with-parser = map (
+        { name, source, ... }@inputs:
+        {
+          parser = pkgs.tree-sitter.buildGrammar {
+            src = source;
+            version = "0-unknown";
+            language = name;
+          };
+        }
+        // inputs
+      ) cfg;
+    in
+    {
+      xdg.configFile = lib.mkMerge (
+        map (
+          { name, parser, ... }:
+          {
+            "helix/runtime/queries/${name}".source = "${parser}/queries";
+            "helix/runtime/grammars/${name}.so".source = "${parser}/parser";
+          }
+        ) cfg-with-parser
+      );
+      programs.helix.languages.grammar = map (
         { name, source, ... }:
         {
-          "helix/runtime/queries/${name}".source = pkgs.runCommand "${name}-query" { } ''
-            ln -s ${source}/queries $out
-          '';
+          inherit name;
+          source.git = source.url;
         }
-      ) cfg
-    );
-    programs.helix.languages.grammar = map (
-      { name, source, ... }:
-      {
-        inherit name;
-        source.path = source;
-      }
-    ) cfg;
-    programs.helix.languages.language = map (
-      { name, ... }@c:
-      {
-        scope = "source.${name}";
-        injection-regex = name;
-      }
-      // (lib.removeAttrs c [ "source" ])
-    ) cfg;
-  };
+      ) cfg;
+      programs.helix.languages.language = map (
+        { name, ... }@c:
+        {
+          scope = "source.${name}";
+          injection-regex = name;
+        }
+        // (lib.removeAttrs c [ "source" ])
+      ) cfg;
+    };
 }
