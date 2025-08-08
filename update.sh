@@ -3,7 +3,7 @@ set -eou pipefail
 
 # check commands ################################
 for cmd in nix nvd; do
-  command -v $cmd > /dev/null || echo command $cmd does not exist
+  command -v $cmd > /dev/null || echo "warning: command $cmd does not exist"
 done
 
 usage(){
