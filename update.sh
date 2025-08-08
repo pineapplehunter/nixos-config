@@ -2,11 +2,9 @@
 set -eou pipefail
 
 # check commands ################################
-for cmd in nix nixos-rebuild home-manager nvd; do
+for cmd in nix nvd; do
   command -v $cmd > /dev/null || echo command $cmd does not exist
 done
-
-HOMEMANAGER=$(which home-manager || echo NOT_FOUND)
 
 usage(){
   echo "usage: os   build|switch|boot|diff|expire            [args...]"
@@ -55,9 +53,16 @@ function os-users {
 
 function os-home-expire {
   os-users | while read -r u; do
-    cd /
-    sudo -u "$u" LANG=C "$HOMEMANAGER" expire-generations 0 2>&1 | grep -v No | grep -v Cannot || true
-    sudo -u "$u" LANG=C nix profile wipe-history || true
+    sudo -u "$u" bash << EOF
+find "\$HOME/.local/state/nix/profiles" -name "home-manager-*-link" | \
+  while read -r generation; do
+    if [ "\$(readlink -f "\$HOME/.local/state/nix/profiles/home-manager")" != "\$(readlink "\$generation")" ]; then
+      echo removing generation "\$(basename \$generation)" for \$(whoami)
+      rm "\$generation"
+    fi
+  done
+nix profile wipe-history || true
+EOF
   done
 }
 
@@ -77,16 +82,16 @@ function os-diff {
 function os-switch {
   os-diff
   yes_or_exit "do you want to commit and update?"
-  sudo echo starting upgrade
+  echo starting upgrade
   git commit -p || true
-  sudo nixos-rebuild switch --flake ".#$HOST" "${args[@]}"
+  sudo ./result/bin/switch-to-configuration switch
   os-home-expire
 }
 
 function os-boot {
   os-build
-  sudo echo switching boot
-  sudo nixos-rebuild boot --flake ".#$HOST"
+  echo switching boot
+  sudo ./result/bin/switch-to-configuration boot
 }
 
 function os-update {
@@ -101,7 +106,13 @@ function os-update {
 ## home ############################################
 
 function home-expire {
-  LANG=C $HOMEMANAGER expire-generations 0 2>&1 | grep -v No | grep -v Cannot || true
+  find "$HOME/.local/state/nix/profiles" -name "home-manager-*-link" | \
+    while read -r generation; do
+      if [ "$(readlink -f "$HOME/.local/state/nix/profiles/home-manager")" != "$(readlink "$generation")" ]; then
+        echo removing generation "$generation"
+        rm "$generation"
+      fi
+    done
   LANG=C nix profile wipe-history || true
 }
 
@@ -128,7 +139,7 @@ function home-switch {
   yes_or_exit "do you want to commit and update?"
   echo starting switch
   git commit -p || true
-  $HOMEMANAGER switch -b "hm-backup" --flake ".#$HOME_CONFIG_NAME" "${args[@]}"
+  HOME_MANAGER_BACKUP_EXT=hm-backup ./result/activate
   home-expire
 }
 
