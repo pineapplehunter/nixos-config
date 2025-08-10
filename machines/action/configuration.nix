@@ -37,7 +37,11 @@
         speedFactor = 2;
       }
       {
-        system = "x86_64-linux,aarch64-linux,riscv64-linux";
+        systems = [
+          "x86_64-linux"
+          "aarch64-linux"
+          "riscv64-linux"
+        ];
         maxJobs = 16;
         supportedFeatures = [
           "big-parallel"
