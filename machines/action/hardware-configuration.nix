@@ -26,6 +26,7 @@
     kernelModules = [ "kvm-intel" ];
     extraModulePackages = [ ];
     resumeDevice = "/dev/disk/by-uuid/087b3e39-7001-4677-b290-8dd45c64bb37";
+    initrd.systemd.enable = true;
   };
 
   fileSystems = {
