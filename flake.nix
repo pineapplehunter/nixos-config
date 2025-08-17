@@ -35,6 +35,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     howdy-module.url = "github:pineapplehunter/howdy-module";
+    lanzaboote = {
+      url = "github:nix-community/lanzaboote/v0.4.2";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

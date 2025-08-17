@@ -25,4 +25,10 @@ in
     self.nixosModules.niri
     ./action/configuration.nix
   ];
+  kpro-takata = nixosSystemWrapped [
+    inputs.lanzaboote.nixosModules.lanzaboote
+    self.nixosModules.personal
+    self.nixosModules.niri
+    ./kpro-takata/configuration.nix
+  ];
 }
