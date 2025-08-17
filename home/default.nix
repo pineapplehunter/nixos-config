@@ -42,6 +42,14 @@ let
       ];
     }
     {
+      configname = "takata";
+      username = "takata";
+      modules = [
+        modules.common
+        modules.shogo
+      ];
+    }
+    {
       configname = "minimal-shogo";
       username = "shogo";
       modules = [
