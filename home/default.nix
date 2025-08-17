@@ -31,6 +31,7 @@ let
     cradsec = ./cradsec/default.nix;
     ssh = ./ssh/default.nix;
     julia = ./julia/default.nix;
+    kpro = ./kpro/default.nix;
   };
   config-template = [
     {
@@ -42,11 +43,12 @@ let
       ];
     }
     {
-      configname = "takata";
+      configname = "kpro";
       username = "takata";
       modules = [
         modules.common
         modules.shogo
+        modules.kpro
       ];
     }
     {
