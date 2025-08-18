@@ -14,20 +14,24 @@
     (modulesPath + "/installer/scan/not-detected.nix")
   ];
 
-  boot.initrd.availableKernelModules = [
-    "xhci_pci"
-    "thunderbolt"
-    "nvme"
-    "usb_storage"
-    "sd_mod"
-  ];
-  boot.initrd.kernelModules = [ "dm-snapshot" ];
-  boot.kernelModules = [ "kvm-intel" ];
-  boot.extraModulePackages = [ ];
-  boot.initrd.systemd.enable = true;
-  boot.initrd.systemd.tpm2.enable = true;
-  boot.initrd.luks.devices.cryptroot.device =
-    "/dev/disk/by-uuid/4ec820c4-37c3-4925-9439-8bcec0c3ef62";
+  boot = {
+    initrd = {
+      availableKernelModules = [
+        "xhci_pci"
+        "thunderbolt"
+        "nvme"
+        "usb_storage"
+        "sd_mod"
+      ];
+      kernelModules = [ "dm-snapshot" ];
+      systemd.enable = true;
+      systemd.tpm2.enable = true;
+      luks.devices.cryptroot.device = "/dev/disk/by-uuid/4ec820c4-37c3-4925-9439-8bcec0c3ef62";
+    };
+    kernelModules = [ "kvm-intel" ];
+    extraModulePackages = [ ];
+    resumeDevice = "/dev/disk/by-uuid/87cb250e-f9a3-40b2-877c-fd07e77535ea";
+  };
 
   fileSystems."/" = {
     device = "/dev/mapper/vg1-main";
@@ -45,7 +49,7 @@
   };
 
   swapDevices = [
-    { device = "/dev/mapper/vg1-swap"; }
+    { device = "/dev/disk/by-uuid/87cb250e-f9a3-40b2-877c-fd07e77535ea"; }
   ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
