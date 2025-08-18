@@ -26,6 +26,7 @@ in
     ./action/configuration.nix
   ];
   kpro-takata = nixosSystemWrapped [
+    inputs.nixos-hardware.nixosModules.lenovo-thinkpad-x1-13th-gen
     inputs.lanzaboote.nixosModules.lanzaboote
     self.nixosModules.personal
     self.nixosModules.niri
