@@ -119,6 +119,7 @@
         // lib.optionalAttrs (system == "x86_64-linux") {
           action = check-build self.nixosConfigurations.action.config.system.build.toplevel;
           beast = check-build self.nixosConfigurations.beast.config.system.build.toplevel;
+          kpro-takata = check-build self.nixosConfigurations.kpro-takata.config.system.build.toplevel;
         }
         // self.packages.${system}
       );
