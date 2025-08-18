@@ -189,6 +189,8 @@
   security.tpm2.enable = true;
   services.openssh.settings.PasswordAuthentication = false;
 
+  services.fprintd.enable = true;
+
   # security.pam.services =
   #   let
   #     inherit (pkgs)
