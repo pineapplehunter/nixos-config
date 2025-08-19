@@ -38,7 +38,7 @@ jobs:
       - name: Setup Attic Cache
         continue-on-error: true
         run: |
-          nix profile install "github:nixos/nixpkgs?ref=nixos-24.11#attic-client"
+          nix profile add "github:nixos/nixpkgs?ref=nixos-24.11#attic-client"
           attic login attic-server ${{ secrets.ATTIC_ENDPOINT }} ${{ secrets.ATTIC_TOKEN }}
           attic use ${{ secrets.ATTIC_CACHE }}
 
