@@ -81,7 +81,7 @@
         # It calls check-timeout twice to prevent toctou attacks
         # !!! PLEASE CHECK SKIP LINES WHEN MODIFYING !!!
         auth [success=ignore default=2]      ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${check-timeout}
-        auth [success=ignore default=ignore] ${fprintd}/lib/security/pam_fprintd.so
+        auth [success=ignore default=1] ${fprintd}/lib/security/pam_fprintd.so
         auth [success=4 default=ignore]      ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${check-timeout}
         auth [success=1 default=ignore]      ${linux-pam}/lib/security/pam_unix.so likeauth nullok try_first_pass
         auth requisite                       ${linux-pam}/lib/security/pam_deny.so
