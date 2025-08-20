@@ -48,5 +48,6 @@ jobs:
           df -h /
 
       - name: Upload Cache
+        if: always()
         continue-on-error: true
         run: nix path-info --all | grep -v ".drv" | attic push ${{ secrets.ATTIC_CACHE }} --stdin -j 1
