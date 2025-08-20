@@ -18,6 +18,25 @@
 
   pineapplehunter.windows-vm.enable = true;
 
+  boot.kernelPatches = [
+    {
+      name = "selinux";
+      patch = null;
+      structuredExtraConfig.SECURITY_SELINUX = lib.kernel.yes;
+    }
+    {
+      name = "ima";
+      patch = null;
+      structuredExtraConfig = with lib.kernel; {
+        EVM = yes;
+        IMA = yes;
+        IMA_DEFAULT_HASH_SHA256 = yes;
+        IMA_READ_POLICY = yes;
+        IMA_WRITE_POLICY = yes;
+      };
+    }
+  ];
+
   # nixpkgs.flake.source = lib.mkForce null;
   nix = {
     distributedBuilds = true;
@@ -100,6 +119,8 @@
     };
 
     # pcscd.enable = true;
+
+    journald.audit = true;
   };
 
   # Bootloader.
@@ -187,9 +208,11 @@
       };
     };
 
-  environment.systemPackages = [
-    pkgs.yubikey-manager
-    pkgs.sbctl
+  environment.systemPackages = with pkgs; [
+    libselinux
+    policycoreutils
+    sbctl
+    yubikey-manager
   ];
   # debug info for ease of debug
   environment.enableDebugInfo = true;
@@ -221,4 +244,33 @@
 
   # services.automatic-timezoned.enable = true;
   services.fwupd.enable = true;
+  systemd.package = pkgs.systemd.override { withSelinux = true; };
+
+  environment.etc = {
+    "selinux/config".text = ''
+      SELINUX=permissive
+      SELINUXTYPE=refpolicy
+    '';
+    "selinux/semanage.conf".text = ''
+      compiler-directory = ${pkgs.policycoreutils}/libexec/selinux/hll
+
+      [load_policy]
+      path = ${lib.getExe' pkgs.policycoreutils "load_policy"}
+      [end]
+
+      [setfiles]
+      path = ${lib.getExe' pkgs.policycoreutils "setfiles"}
+      args = -q -c $@ $<
+      [end]
+
+      [sefcontext_compile]
+      path = ${lib.getExe' pkgs.libselinux "sefcontext_compile"}
+      args = -r $@
+      [end]
+    '';
+  };
+  security.lsm = [
+    "selinux"
+    "ima"
+  ];
 }
