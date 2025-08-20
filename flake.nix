@@ -94,7 +94,9 @@
             name = "nixos-config";
             packages = [
               management-tools
+              pkgs.home-manager
               pkgs.nix-output-monitor
+              pkgs.nixos-rebuild
               pkgs.nvd
               pkgs.statix
             ];
