@@ -70,6 +70,13 @@
     # Enable the GNOME Desktop Environment.
     displayManager.gdm.enable = true;
     desktopManager.gnome.enable = true;
+    desktopManager.gnome.extraGSettingsOverrides = ''
+      [org.gnome.mutter]
+      experimental-features=['scale-monitor-framebuffer', 'xwayland-native-scaling']
+
+      [org.gnome.login-screen]
+      enable-fingerprint-authentication=false
+    '';
 
     snapper.configs = {
       home = {
@@ -191,18 +198,6 @@
 
   services.fprintd.enable = true;
 
-  programs.dconf = {
-    enable = true;
-    profiles.gdm = {
-      enableUserDb = true;
-      databases = [
-        {
-          # disable finger print in /etc/pam.d/gdm-fingerprint
-          settings."org/gnome/login-screen".enable-fingerprint-authentication = false;
-        }
-      ];
-    };
-  };
   security.polkit.extraConfig = ''
     /*
       hibernation
