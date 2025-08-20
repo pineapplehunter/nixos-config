@@ -2,11 +2,11 @@
 set -eou pipefail
 
 # check commands ################################
-for cmd in nix nixos-rebuild home-manager nvd; do
+for cmd in nix nvd; do
   command -v $cmd > /dev/null || echo command $cmd does not exist
 done
 
-HOMEMANAGER=$(which home-manager || echo NOT_FOUND)
+HOMEMANAGER=$(command -v home-manager || echo NOT_FOUND)
 
 usage(){
   echo "usage: os   build|switch|boot|diff|expire            [args...]"
@@ -156,6 +156,7 @@ EOF
 # main ###############################################
 
 function os-cmd {
+  command -v nixos-rebuild > /dev/null || echo command nixos-rebuild does not exist
   case "$cmd" in
     build) os-build;;
     switch) os-switch;;
@@ -168,6 +169,7 @@ function os-cmd {
 }
 
 function home-cmd {
+  command -v home-manager > /dev/null || echo command home-manager does not exist
   case "$cmd" in
     build) home-build;;
     diff) home-diff;;
