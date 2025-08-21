@@ -5,6 +5,7 @@
 {
   pkgs,
   lib,
+  config,
   self,
   ...
 }:
@@ -272,5 +273,14 @@
   security.lsm = [
     "selinux"
     "ima"
+  ];
+
+  systemd.additionalUpstreamSystemUnits = lib.optionals config.systemd.tpm2.enable [
+    "systemd-pcrfs-root.service"
+    "systemd-pcrfs@.service"
+    "systemd-pcrmachine.service"
+    "systemd-pcrphase-initrd.service"
+    "systemd-pcrphase-sysinit.service"
+    "systemd-pcrphase.service"
   ];
 }
