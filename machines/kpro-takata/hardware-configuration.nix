@@ -36,7 +36,14 @@
   fileSystems."/" = {
     device = "/dev/mapper/vg1-main";
     fsType = "btrfs";
-    options = [ "subvol=@" ];
+    options = [
+      "autodefrag"
+      "commit=120"
+      "compress=zstd"
+      "noatime"
+      "space_cache=v2"
+      "subvol=@"
+    ];
   };
 
   fileSystems."/boot" = {
