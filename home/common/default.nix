@@ -79,7 +79,7 @@ in
           ge.night-theme-switcher
           ge.quick-lang-switch
           ge.runcat
-          ge.tailscale-status
+          ge.tailscale-qs
           ge.tiling-assistant
         ];
     };
