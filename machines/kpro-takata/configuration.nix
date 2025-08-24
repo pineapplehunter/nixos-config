@@ -43,7 +43,11 @@
     distributedBuilds = true;
     buildMachines = [
       {
-        system = "x86_64-linux";
+        systems = [
+          "aarch64-linux"
+          "riscv64-linux"
+          "x86_64-linux"
+        ];
         maxJobs = 32;
         supportedFeatures = [
           "big-parallel"
