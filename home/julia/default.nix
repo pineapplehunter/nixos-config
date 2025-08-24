@@ -24,7 +24,10 @@
       Unit.Description = "Precompile julia packages for fast repl";
       Service = {
         ExecStart = pkgs.writeShellScript "julia-precompile" ''
-          julia -e "using Pkg; Pkg.precompile()"
+          julia ${pkgs.writeText "julia-precompile.jl" ''
+            using Pkg
+            Pkg.precompile()
+          ''}
         '';
         Environment = [
           "JULIA_DEPOT_PATH=${config.home.sessionVariables.JULIA_DEPOT_PATH}"
