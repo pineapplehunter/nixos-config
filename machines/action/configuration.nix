@@ -271,4 +271,11 @@
   };
 
   services.automatic-timezoned.enable = true;
+
+  services.beesd.filesystems."-" = {
+    spec = "UUID=c73fb028-c49b-4d3e-8628-39e326535d46";
+    # use recommended value
+    # https://github.com/Zygo/bees/blob/master/docs/config.md
+    hashTableSizeMB = 128;
+  };
 }
