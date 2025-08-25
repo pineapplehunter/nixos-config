@@ -24,6 +24,23 @@
     distributedBuilds = true;
     buildMachines = [
       {
+        systems = [
+          "aarch64-linux"
+          "riscv64-linux"
+          "x86_64-linux"
+        ];
+        maxJobs = 32;
+        supportedFeatures = [
+          "big-parallel"
+          "kvm"
+          "benchmark"
+          "nixos-test"
+        ];
+        sshUser = "takata";
+        hostName = "kpro-njlab";
+        speedFactor = 4;
+      }
+      {
         system = "x86_64-linux";
         maxJobs = 16;
         supportedFeatures = [
