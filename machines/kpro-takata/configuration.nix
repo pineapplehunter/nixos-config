@@ -291,4 +291,11 @@
   systemd.sleep.extraConfig = ''
     HibernateDelaySec=2h
   '';
+
+  services.beesd.filesystems."-" = {
+    spec = "UUID=77b7cb82-87a1-45ec-8306-1a8edad64fd1";
+    # use recommended value
+    # https://github.com/Zygo/bees/blob/master/docs/config.md
+    hashTableSizeMB = 128;
+  };
 }
