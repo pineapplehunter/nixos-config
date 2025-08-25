@@ -287,4 +287,8 @@
     "systemd-pcrphase-sysinit.service"
     "systemd-pcrphase.service"
   ];
+
+  systemd.sleep.extraConfig = ''
+    HibernateDelaySec=2h
+  '';
 }
