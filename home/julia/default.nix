@@ -53,7 +53,6 @@
               "PATH=${lib.makeBinPath [ pkgs.julia ]}"
             ];
           };
-          Install.WantedBy = [ "default.target" ];
         };
       };
       timers = {
