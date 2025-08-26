@@ -281,7 +281,7 @@
         }
     });
   '';
-  services.logind = {
+  services.logind.settings.Login = {
     lidSwitch = "suspend-then-hibernate";
     lidSwitchDocked = "suspend-then-hibernate";
     lidSwitchExternalPower = "suspend-then-hibernate";
