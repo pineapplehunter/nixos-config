@@ -98,10 +98,13 @@
         # Session management.
         session required ${linux-pam}/lib/security/pam_env.so conffile=/etc/pam/environment readenv=0
         session required ${linux-pam}/lib/security/pam_unix.so
+        session required ${linux-pam}/lib/security/pam_limits.so conf=${makeLimitsConf config.security.pam.services.login.limits}
+      '';
+      login-session = ''
+        # Session management.
         session required ${linux-pam}/lib/security/pam_loginuid.so
         session required ${linux-pam}/lib/security/pam_lastlog.so silent
         session optional ${systemd}/lib/security/pam_systemd.so
-        session required ${linux-pam}/lib/security/pam_limits.so conf=${makeLimitsConf config.security.pam.services.login.limits}
         session optional ${gnome-keyring}/lib/security/pam_gnome_keyring.so auto_start
       '';
       only-unix-rule = ''
@@ -127,6 +130,13 @@
         password  substack      default-auth
         session   include       default-auth
       '';
+      use-default-with-login-rule = ''
+        auth      substack      default-auth
+        account   include       default-auth
+        password  substack      default-auth
+        session   include       default-auth
+        session   include       default-with-login
+      '';
       use-only-unix-rule = ''
         auth      substack      only-unix-auth
         account   include       only-unix-auth
@@ -142,6 +152,7 @@
     in
     {
       default-auth.text = default-rule;
+      default-with-login.text = login-session;
       only-unix-auth.text = only-unix-rule;
 
       chfn.text = lib.mkForce use-only-unix-rule;
@@ -149,12 +160,12 @@
       chsh.text = lib.mkForce use-only-unix-rule;
       cups.text = lib.mkForce use-default-rule;
       gdm-fingerprint.text = lib.mkForce deny-all-rule;
-      gdm-password.text = lib.mkForce use-default-rule;
+      gdm-password.text = lib.mkForce use-default-with-login-rule;
       groupadd.text = lib.mkForce use-default-rule;
       groupdel.text = lib.mkForce use-only-unix-rule;
       groupmems.text = lib.mkForce use-default-rule;
       groupmod.text = lib.mkForce use-only-unix-rule;
-      login.text = lib.mkForce use-default-rule;
+      login.text = lib.mkForce use-default-with-login-rule;
       passwd.text = lib.mkForce use-only-unix-rule;
       polkit-1.text = lib.mkForce use-default-rule;
       su.text = lib.mkForce use-default-rule;
