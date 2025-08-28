@@ -57,8 +57,10 @@ in
       zellij
     ]
     ++ [
+      multi-bintools
+    ]
+    ++ lib.optionals (pkgs.stdenv.hostPlatform.system == "x86_64-linux") [
       (tpm2-tools-wrapper "tpm2")
       (tpm2-tools-wrapper "tss2")
-      multi-bintools
     ];
 }
