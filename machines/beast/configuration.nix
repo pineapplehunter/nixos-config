@@ -63,11 +63,11 @@
   # turns out trying to prevent all writes may be a bad idea
   systemd.tmpfiles.settings."bcache" = {
     "/sys/block/bcache0/bcache/cache_mode".w.argument = "writeback";
-    "/sys/block/bcache0/bcache/writeback_percent".w.argument = "20";
+    "/sys/block/bcache0/bcache/writeback_percent".w.argument = "30";
     "/sys/block/bcache0/bcache/sequential_cutoff".w.argument = toString (64 * 1024 * 1024); # 64M
-    "/sys/block/bcache0/bcache/writeback_delay".w.argument = toString (24 * 60 * 60); # a day
-    "/sys/block/bcache0/bcache/cache/cache0/congested_read_threshold_us".w.argument = "2000";
-    "/sys/block/bcache0/bcache/cache/cache0/congested_write_threshold_us".w.argument = "20000";
+    "/sys/block/bcache0/bcache/writeback_delay".w.argument = toString (15 * 60); # 15 min
+    "/sys/fs/bcache/eca17911-1262-439c-bcb0-aff2495bce28/congested_read_threshold_us".w.argument = "0";
+    "/sys/fs/bcache/eca17911-1262-439c-bcb0-aff2495bce28/congested_write_threshold_us".w.argument = "0";
   };
 
   networking.hostName = "beast"; # Define your hostname.
