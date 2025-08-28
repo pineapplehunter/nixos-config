@@ -214,9 +214,12 @@
     };
 
   environment.systemPackages = with pkgs; [
+    checkpolicy
     libselinux
     policycoreutils
     sbctl
+    selinux-python
+    setools
     yubikey-manager
   ];
   # debug info for ease of debug
@@ -299,5 +302,25 @@
     # use recommended value
     # https://github.com/Zygo/bees/blob/master/docs/config.md
     hashTableSizeMB = 128;
+  };
+
+  system.activationScripts.selinux = {
+    deps = [ "etc" ];
+    text = ''
+      install -d -m0755 /var/lib/selinux
+      cmd="${lib.getExe' pkgs.policycoreutils "semodule"} -s refpolicy -i ${pkgs.selinux-refpolicy}/share/selinux/refpolicy/*.pp"
+      skipSELinuxActivation=0
+
+      if [ -f /var/lib/selinux/activate-check ]; then
+        if [ "$(cat /var/lib/selinux/activate-check)" == "$cmd" ]; then
+          skipSELinuxActivation=1
+        fi
+      fi
+
+      if [ $skipSELinuxActivation -eq 0 ]; then
+        eval "$cmd"
+        echo "$cmd" >/var/lib/selinux/activate-check
+      fi
+    '';
   };
 }
