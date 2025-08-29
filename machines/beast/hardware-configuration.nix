@@ -31,6 +31,10 @@
       "kvm-amd"
     ];
     extraModulePackages = [ ];
+    kernelParams = [
+      "zswap.enabled=1"
+      "zswap.compressor=zstd"
+    ];
   };
 
   services.lvm.boot.thin.enable = true;
