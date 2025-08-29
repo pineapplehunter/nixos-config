@@ -178,5 +178,9 @@
     # multiplied by 8 for 8TB storage
     # https://github.com/Zygo/bees/blob/master/docs/config.md
     hashTableSizeMB = 128 * 8;
+    extraOptions = [
+      "--throttle-factor"
+      "2"
+    ];
   };
 }
