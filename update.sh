@@ -61,6 +61,10 @@ function os-home-expire {
   done
 }
 
+function os-generation-expire {
+  sudo nix profile wipe-history --profile /nix/var/nix/profiles/system --older-than 14d
+}
+
 function os-build {
   nom build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "${args[@]}"
 }
@@ -79,6 +83,7 @@ function os-switch {
   yes_or_exit "do you want to commit and update?"
   sudo echo starting upgrade
   git commit -p || true
+  os-generation-expire # need to run before switch to remove entries in bootloader
   sudo nixos-rebuild switch --flake ".#$HOST" "${args[@]}"
   os-home-expire
 }
