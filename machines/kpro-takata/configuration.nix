@@ -222,6 +222,7 @@
     setools
     yubikey-manager
     e2fsprogs
+    zoom-us
   ];
   # debug info for ease of debug
   environment.enableDebugInfo = true;

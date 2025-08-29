@@ -51,6 +51,7 @@
         "slack"
         "vista-fonts"
         "vscode"
+        "zoom"
       ];
   };
 
