@@ -221,6 +221,7 @@
     selinux-python
     setools
     yubikey-manager
+    e2fsprogs
   ];
   # debug info for ease of debug
   environment.enableDebugInfo = true;
