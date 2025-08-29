@@ -254,9 +254,6 @@
     };
 
   environment.systemPackages = [
-    (pkgs.writeScriptBin "ai" ''
-      ollama run deepseek-r1:8b
-    '')
     pkgs.yubikey-manager
   ];
   # debug info for ease of debug
