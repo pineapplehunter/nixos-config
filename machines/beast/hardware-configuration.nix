@@ -44,12 +44,13 @@
       device = "/dev/disk/by-uuid/20f60216-a9ad-46c7-bbc5-fd6cc4a17a39";
       fsType = "btrfs";
       options = [
-        "subvol=@"
+        "autodefrag"
         "commit=60"
         "compress=zstd"
         "noatime"
-        "space_cache=v2"
         "nossd"
+        "space_cache=v2"
+        "subvol=@"
       ];
     };
 

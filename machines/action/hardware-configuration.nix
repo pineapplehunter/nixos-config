@@ -30,43 +30,40 @@
     };
   };
 
-  fileSystems = {
-    "/" = {
-      device = "/dev/disk/by-uuid/c73fb028-c49b-4d3e-8628-39e326535d46";
-      fsType = "btrfs";
-      options = [
+  fileSystems =
+    let
+      btrfs-options = subvol: [
         "autodefrag"
         "commit=120"
         "compress=zstd"
         "noatime"
         "space_cache=v2"
-        "subvol=@"
+        "subvol=${subvol}"
       ];
-    };
+    in
+    {
+      "/" = {
+        device = "/dev/disk/by-uuid/c73fb028-c49b-4d3e-8628-39e326535d46";
+        fsType = "btrfs";
+        options = btrfs-options "@";
+      };
 
-    "/home" = {
-      device = "/dev/disk/by-uuid/c73fb028-c49b-4d3e-8628-39e326535d46";
-      fsType = "btrfs";
-      options = [
-        "autodefrag"
-        "commit=120"
-        "compress=zstd"
-        "noatime"
-        "space_cache=v2"
-        "subvol=@home"
-      ];
-    };
+      "/home" = {
+        device = "/dev/disk/by-uuid/c73fb028-c49b-4d3e-8628-39e326535d46";
+        fsType = "btrfs";
+        options = btrfs-options "@home";
+      };
 
-    "/efi" = {
-      device = "/dev/disk/by-uuid/DA91-D0F6";
-      fsType = "vfat";
-    };
+      "/efi" = {
+        device = "/dev/disk/by-uuid/DA91-D0F6";
+        fsType = "vfat";
+      };
 
-    "/boot" = {
-      device = "/dev/disk/by-uuid/8057-31F0";
-      fsType = "vfat";
+      "/boot" = {
+        device = "/dev/disk/by-uuid/8057-31F0";
+        fsType = "vfat";
+      };
     };
-  };
 
   swapDevices = [ { device = "/dev/disk/by-uuid/087b3e39-7001-4677-b290-8dd45c64bb37"; } ];
 
