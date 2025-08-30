@@ -37,7 +37,7 @@
   };
 
   fileSystems."/" = {
-    device = "/dev/mapper/vg1-main";
+    device = "/dev/disk/by-uuid/77b7cb82-87a1-45ec-8306-1a8edad64fd1";
     fsType = "btrfs";
     options = [
       "autodefrag"
