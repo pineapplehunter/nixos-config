@@ -148,14 +148,6 @@
   # https://discourse.nixos.org/t/suspend-then-hibernate/31953/5
   powerManagement.enable = true;
 
-  # speedup boot
-  systemd.services = {
-    docker.wantedBy = lib.mkForce [ "default.target" ];
-    ollama.wantedBy = lib.mkForce [ "default.target" ];
-    libvirtd.wantedBy = lib.mkForce [ "default.target" ];
-    libvirt-guests.wantedBy = lib.mkForce [ "default.target" ];
-  };
-
   networking = {
     hostName = "kpro-takata"; # Define your hostname.
     # Enable networking
@@ -314,6 +306,14 @@
     sleep.extraConfig = ''
       HibernateDelaySec=2h
     '';
+
+    services = {
+      docker.wantedBy = lib.mkForce [ "default.target" ];
+      ollama.wantedBy = lib.mkForce [ "default.target" ];
+      libvirtd.wantedBy = lib.mkForce [ "default.target" ];
+      libvirt-guests.wantedBy = lib.mkForce [ "default.target" ];
+      "beesd@-".wantedBy = lib.mkForce [ ];
+    };
   };
 
   system.activationScripts.selinux = {

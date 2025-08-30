@@ -194,6 +194,7 @@
     ollama.wantedBy = lib.mkForce [ "default.target" ];
     libvirtd.wantedBy = lib.mkForce [ "default.target" ];
     libvirt-guests.wantedBy = lib.mkForce [ "default.target" ];
+    "beesd@-".wantedBy = lib.mkForce [ ];
   };
 
   networking = {
