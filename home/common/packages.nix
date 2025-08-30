@@ -1,7 +1,7 @@
 { pkgs, ... }:
 let
   # multilib for bintools
-  multi-bintools = (pkgs.wrapBintoolsWith { bintools = pkgs.binutils-unwrapped-all-targets; });
+  multi-bintools = pkgs.wrapBintoolsWith { bintools = pkgs.binutils-unwrapped-all-targets; };
 
   tpm2-tools-wrapper =
     name:

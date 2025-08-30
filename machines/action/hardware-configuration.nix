@@ -4,7 +4,6 @@
 {
   config,
   lib,
-  pkgs,
   modulesPath,
   ...
 }:
@@ -14,19 +13,21 @@
   nixpkgs.system = "x86_64-linux";
 
   boot = {
-    initrd.availableKernelModules = [
-      "xhci_pci"
-      "thunderbolt"
-      "nvme"
-      "usb_storage"
-      "sd_mod"
-      "rtsx_pci_sdmmc"
-    ];
-    initrd.kernelModules = [ ];
     kernelModules = [ "kvm-intel" ];
     extraModulePackages = [ ];
     resumeDevice = "/dev/disk/by-uuid/087b3e39-7001-4677-b290-8dd45c64bb37";
-    initrd.systemd.enable = true;
+    initrd = {
+      systemd.enable = true;
+      kernelModules = [ ];
+      availableKernelModules = [
+        "xhci_pci"
+        "thunderbolt"
+        "nvme"
+        "usb_storage"
+        "sd_mod"
+        "rtsx_pci_sdmmc"
+      ];
+    };
   };
 
   fileSystems = {

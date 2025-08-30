@@ -3,7 +3,6 @@
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
 {
-  config,
   pkgs,
   self,
   ...
@@ -72,9 +71,6 @@
       "20000";
   };
 
-  networking.hostName = "beast"; # Define your hostname.
-  networking.networkmanager.enable = true;
-
   services = {
     # Enable the GNOME Desktop Environment.
     desktopManager.gnome.enable = true;
@@ -120,29 +116,33 @@
     localtimed.enable = true;
   };
 
-  networking.firewall.interfaces."tailscale0" = {
-    allowedTCPPorts = [
-      # prometheus node-exporter
-      9100
-      # ollama
-      4000
-      # immich
-      2283
-      # prometheus switchbot-exporter
-      3725
-    ];
-    allowedTCPPortRanges = [
-      # garage original
-      {
-        from = 3900;
-        to = 3905;
-      }
-      #garage proxied
-      {
-        from = 3950;
-        to = 3955;
-      }
-    ];
+  networking = {
+    hostName = "beast"; # Define your hostname.
+    networkmanager.enable = true;
+    firewall.interfaces."tailscale0" = {
+      allowedTCPPorts = [
+        # prometheus node-exporter
+        9100
+        # ollama
+        4000
+        # immich
+        2283
+        # prometheus switchbot-exporter
+        3725
+      ];
+      allowedTCPPortRanges = [
+        # garage original
+        {
+          from = 3900;
+          to = 3905;
+        }
+        #garage proxied
+        {
+          from = 3950;
+          to = 3955;
+        }
+      ];
+    };
   };
 
   virtualisation = {

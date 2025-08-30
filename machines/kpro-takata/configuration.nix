@@ -213,97 +213,107 @@
       };
     };
 
-  environment.systemPackages = with pkgs; [
-    checkpolicy
-    libselinux
-    policycoreutils
-    sbctl
-    selinux-python
-    setools
-    yubikey-manager
-    e2fsprogs
-    zoom-us
-  ];
-  # debug info for ease of debug
-  environment.enableDebugInfo = true;
+  environment = {
+    systemPackages = with pkgs; [
+      checkpolicy
+      libselinux
+      policycoreutils
+      sbctl
+      selinux-python
+      setools
+      yubikey-manager
+      e2fsprogs
+      zoom-us
+    ];
 
-  security.tpm2.enable = true;
-  services.openssh.settings.PasswordAuthentication = false;
+    # debug info for ease of debug
+    enableDebugInfo = true;
 
-  services.fprintd.enable = true;
+    etc = {
+      "selinux/config".text = ''
+        SELINUX=permissive
+        SELINUXTYPE=refpolicy
+      '';
+      "selinux/semanage.conf".text = ''
+        compiler-directory = ${pkgs.policycoreutils}/libexec/selinux/hll
 
-  security.polkit.extraConfig = ''
-    /*
-      hibernation
-      https://ubuntuhandbook.org/index.php/2021/08/enable-hibernate-ubuntu-21-10/
-    */
-    polkit.addRule(function(action, subject) {
-        if (action.id == "org.freedesktop.login1.hibernate" ||
-            action.id == "org.freedesktop.login1.hibernate-multiple-sessions" ||
-            action.id == "org.freedesktop.upower.hibernate" ||
-            action.id == "org.freedesktop.login1.handle-hibernate-key" ||
-            action.id == "org.freedesktop.login1.hibernate-ignore-inhibit")
-        {
-            return polkit.Result.YES;
-        }
-    });
-  '';
-  services.logind.settings.Login = {
-    lidSwitch = "suspend-then-hibernate";
-    lidSwitchDocked = "suspend-then-hibernate";
-    lidSwitchExternalPower = "suspend-then-hibernate";
+        [load_policy]
+        path = ${lib.getExe' pkgs.policycoreutils "load_policy"}
+        [end]
+
+        [setfiles]
+        path = ${lib.getExe' pkgs.policycoreutils "setfiles"}
+        args = -q -c $@ $<
+        [end]
+
+        [sefcontext_compile]
+        path = ${lib.getExe' pkgs.libselinux "sefcontext_compile"}
+        args = -r $@
+        [end]
+      '';
+    };
   };
 
-  # services.automatic-timezoned.enable = true;
-  services.fwupd.enable = true;
-  systemd.package = pkgs.systemd.override { withSelinux = true; };
-
-  environment.etc = {
-    "selinux/config".text = ''
-      SELINUX=permissive
-      SELINUXTYPE=refpolicy
+  security = {
+    tpm2.enable = true;
+    polkit.extraConfig = ''
+      /*
+        hibernation
+        https://ubuntuhandbook.org/index.php/2021/08/enable-hibernate-ubuntu-21-10/
+      */
+      polkit.addRule(function(action, subject) {
+          if (action.id == "org.freedesktop.login1.hibernate" ||
+              action.id == "org.freedesktop.login1.hibernate-multiple-sessions" ||
+              action.id == "org.freedesktop.upower.hibernate" ||
+              action.id == "org.freedesktop.login1.handle-hibernate-key" ||
+              action.id == "org.freedesktop.login1.hibernate-ignore-inhibit")
+          {
+              return polkit.Result.YES;
+          }
+      });
     '';
-    "selinux/semanage.conf".text = ''
-      compiler-directory = ${pkgs.policycoreutils}/libexec/selinux/hll
-
-      [load_policy]
-      path = ${lib.getExe' pkgs.policycoreutils "load_policy"}
-      [end]
-
-      [setfiles]
-      path = ${lib.getExe' pkgs.policycoreutils "setfiles"}
-      args = -q -c $@ $<
-      [end]
-
-      [sefcontext_compile]
-      path = ${lib.getExe' pkgs.libselinux "sefcontext_compile"}
-      args = -r $@
-      [end]
-    '';
+    lsm = [
+      "selinux"
+      "ima"
+    ];
   };
-  security.lsm = [
-    "selinux"
-    "ima"
-  ];
 
-  systemd.additionalUpstreamSystemUnits = lib.optionals config.systemd.tpm2.enable [
-    "systemd-pcrfs-root.service"
-    "systemd-pcrfs@.service"
-    "systemd-pcrmachine.service"
-    "systemd-pcrphase-initrd.service"
-    "systemd-pcrphase-sysinit.service"
-    "systemd-pcrphase.service"
-  ];
+  services = {
+    openssh.settings.PasswordAuthentication = false;
 
-  systemd.sleep.extraConfig = ''
-    HibernateDelaySec=2h
-  '';
+    fprintd.enable = true;
 
-  services.beesd.filesystems."-" = {
-    spec = "UUID=77b7cb82-87a1-45ec-8306-1a8edad64fd1";
-    # use recommended value
-    # https://github.com/Zygo/bees/blob/master/docs/config.md
-    hashTableSizeMB = 128;
+    logind.settings.Login = {
+      lidSwitch = "suspend-then-hibernate";
+      lidSwitchDocked = "suspend-then-hibernate";
+      lidSwitchExternalPower = "suspend-then-hibernate";
+    };
+
+    # services.automatic-timezoned.enable = true;
+    fwupd.enable = true;
+
+    beesd.filesystems."-" = {
+      spec = "UUID=77b7cb82-87a1-45ec-8306-1a8edad64fd1";
+      # use recommended value
+      # https://github.com/Zygo/bees/blob/master/docs/config.md
+      hashTableSizeMB = 128;
+    };
+  };
+
+  systemd = {
+    package = pkgs.systemd.override { withSelinux = true; };
+    additionalUpstreamSystemUnits = lib.optionals config.systemd.tpm2.enable [
+      "systemd-pcrfs-root.service"
+      "systemd-pcrfs@.service"
+      "systemd-pcrmachine.service"
+      "systemd-pcrphase-initrd.service"
+      "systemd-pcrphase-sysinit.service"
+      "systemd-pcrphase.service"
+    ];
+
+    sleep.extraConfig = ''
+      HibernateDelaySec=2h
+    '';
   };
 
   system.activationScripts.selinux = {

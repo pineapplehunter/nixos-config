@@ -6,7 +6,6 @@
   pkgs,
   lib,
   self,
-  config,
   ...
 }:
 
