@@ -57,6 +57,19 @@
         ];
         sshUser = "takata";
         hostName = "kpro-njlab";
+        speedFactor = 4;
+      }
+      {
+        system = "x86_64-linux";
+        maxJobs = 16;
+        supportedFeatures = [
+          "big-parallel"
+          "kvm"
+          "benchmark"
+          "nixos-test"
+        ];
+        sshUser = "shogo";
+        hostName = "daniel-njlab-pc";
         speedFactor = 2;
       }
     ];
