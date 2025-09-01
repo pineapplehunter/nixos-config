@@ -15,6 +15,7 @@ in
     pkgs.blender
     pkgs.jujutsu
     pkgs.nautilus-thumbnailer-stl
+    pkgs.orca-slicer
     pkgs.vivado
 
     artwork-wallpapers
