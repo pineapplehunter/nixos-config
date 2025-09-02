@@ -326,6 +326,33 @@
       libvirtd.wantedBy = lib.mkForce [ "default.target" ];
       libvirt-guests.wantedBy = lib.mkForce [ "default.target" ];
       "beesd@-".wantedBy = lib.mkForce [ ];
+      adjust-backlight-resume = {
+        description = "adjust backlight after suspend";
+        wantedBy = [ "suspend.target" ];
+        after = [ "suspend.target" ];
+        path = [ pkgs.coreutils ];
+        script = ''
+          sleep 2
+          BACKLIGHT=/sys/class/backlight/intel_backlight/brightness
+          if [ -f $BACKLIGHT ]; then
+            echo setting backlight
+            cat $BACKLIGHT | tee $BACKLIGHT
+          fi
+        '';
+      };
+      adjust-backlight-boot = {
+        description = "adjust backlight after boot";
+        wantedBy = [ "default.target" ];
+        path = [ pkgs.coreutils ];
+        script = ''
+          sleep 2
+          BACKLIGHT=/sys/class/backlight/intel_backlight/brightness
+          if [ -f $BACKLIGHT ]; then
+            echo setting backlight
+            cat $BACKLIGHT | tee $BACKLIGHT
+          fi
+        '';
+      };
     };
   };
 
