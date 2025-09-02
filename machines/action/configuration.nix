@@ -109,9 +109,6 @@
     desktopManager.gnome.extraGSettingsOverrides = ''
       [org.gnome.mutter]
       experimental-features=['scale-monitor-framebuffer', 'xwayland-native-scaling']
-
-      [org.gnome.login-screen]
-      enable-fingerprint-authentication=false
     '';
 
     snapper.configs = {
