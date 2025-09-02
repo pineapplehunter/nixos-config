@@ -33,6 +33,8 @@
     kernelParams = [
       "zswap.enabled=1"
       "zswap.compressor=zstd"
+      "i915.force_probe=!7d51"
+      "xe.force_probe=7d51"
     ];
   };
 
