@@ -135,6 +135,8 @@
         "1"
       ];
     };
+
+    fwupd.enable = true;
   };
 
   networking = {
