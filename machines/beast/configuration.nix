@@ -123,6 +123,18 @@
     prometheus.exporters.node.enable = true;
 
     localtimed.enable = true;
+
+    beesd.filesystems."-" = {
+      spec = "UUID=20f60216-a9ad-46c7-bbc5-fd6cc4a17a39";
+      # use recommended value
+      # multiplied by 8 for 8TB storage
+      # https://github.com/Zygo/bees/blob/master/docs/config.md
+      hashTableSizeMB = 128 * 8;
+      extraOptions = [
+        "--loadavg-target"
+        "1"
+      ];
+    };
   };
 
   networking = {
@@ -183,15 +195,4 @@
       };
     };
 
-  services.beesd.filesystems."-" = {
-    spec = "UUID=20f60216-a9ad-46c7-bbc5-fd6cc4a17a39";
-    # use recommended value
-    # multiplied by 8 for 8TB storage
-    # https://github.com/Zygo/bees/blob/master/docs/config.md
-    hashTableSizeMB = 128 * 8;
-    extraOptions = [
-      "--loadavg-target"
-      "1"
-    ];
-  };
 }
