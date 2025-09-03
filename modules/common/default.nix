@@ -182,7 +182,7 @@
     };
 
     avahi = {
-      enable = true;
+      enable = lib.mkDefault true;
       nssmdns4 = true;
       openFirewall = true;
     };

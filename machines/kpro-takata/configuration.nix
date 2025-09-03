@@ -138,6 +138,9 @@
     # pcscd.enable = true;
 
     journald.audit = true;
+
+    # disable for security purposes
+    avahi.enable = false;
   };
 
   # Bootloader.
