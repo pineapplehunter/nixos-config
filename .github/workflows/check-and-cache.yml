@@ -34,9 +34,7 @@ jobs:
           attic use ${{ secrets.ATTIC_CACHE }}
 
       - name: Run checks
-        run: |
-          nix flake check --keep-going --all-systems --accept-flake-config --fallback
-          df -h /
+        run: nix flake check --keep-going --all-systems --accept-flake-config --fallback
 
       - name: Upload Cache
         if: always()
