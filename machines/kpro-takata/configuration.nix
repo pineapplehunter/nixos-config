@@ -141,6 +141,20 @@
 
     # disable for security purposes
     avahi.enable = false;
+
+    udev.extraRules = ''
+      # When AC adapter is plugged in
+      SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_ONLINE}=="1", ENV{POWER_SUPPLY_NAME}=="AC", \
+        RUN+="${config.systemd.package}/bin/systemctl --no-block start power-ac.target"
+      SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_ONLINE}=="1", ENV{POWER_SUPPLY_NAME}=="AC", \
+        RUN+="${config.systemd.package}/bin/systemctl --no-block stop power-battery.target"
+
+      # When AC adapter is unplugged
+      SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_ONLINE}=="0", ENV{POWER_SUPPLY_NAME}=="AC", \
+        RUN+="${config.systemd.package}/bin/systemctl --no-block stop power-ac.target"
+      SUBSYSTEM=="power_supply", ENV{POWER_SUPPLY_ONLINE}=="0", ENV{POWER_SUPPLY_NAME}=="AC", \
+        RUN+="${config.systemd.package}/bin/systemctl --no-block start power-battery.target"
+    '';
   };
 
   # Bootloader.
@@ -327,7 +341,10 @@
       ollama.wantedBy = lib.mkForce [ "default.target" ];
       libvirtd.wantedBy = lib.mkForce [ "default.target" ];
       libvirt-guests.wantedBy = lib.mkForce [ "default.target" ];
-      "beesd@-".wantedBy = lib.mkForce [ ];
+      "beesd@-" = {
+        wantedBy = lib.mkForce [ "power-ac.target" ];
+        requires = [ "power-ac.target" ];
+      };
       adjust-backlight-resume = {
         description = "adjust backlight after suspend";
         wantedBy = [ "suspend.target" ];
@@ -355,6 +372,10 @@
           fi
         '';
       };
+    };
+    targets = {
+      power-ac.description = "Powered by AC";
+      power-battery.description = "Powered by Battery";
     };
   };
 
