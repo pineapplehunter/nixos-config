@@ -4,6 +4,7 @@
 
 {
   pkgs,
+  config,
   lib,
   self,
   ...
@@ -193,7 +194,10 @@
     ollama.wantedBy = lib.mkForce [ "default.target" ];
     libvirtd.wantedBy = lib.mkForce [ "default.target" ];
     libvirt-guests.wantedBy = lib.mkForce [ "default.target" ];
-    "beesd@-".wantedBy = lib.mkForce [ ];
+    "beesd@-" = {
+      wantedBy = lib.mkForce [ "power-ac.target" ];
+      requires = [ "power-ac.target" ];
+    };
   };
 
   networking = {

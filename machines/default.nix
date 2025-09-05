@@ -23,6 +23,7 @@ in
     inputs.nixos-hardware.nixosModules.dell-xps-13-9310
     self.nixosModules.personal
     self.nixosModules.niri
+    self.nixosModules.power-targets
     ./action/configuration.nix
   ];
   kpro-takata = nixosSystemWrapped [
@@ -30,6 +31,7 @@ in
     inputs.lanzaboote.nixosModules.lanzaboote
     self.nixosModules.kpro
     self.nixosModules.niri
+    self.nixosModules.power-targets
     ./kpro-takata/configuration.nix
   ];
 }
