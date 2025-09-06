@@ -71,7 +71,31 @@
       "/sys/block/bcache0/bcache/cache/congested_write_threshold_us".w.argument = "20000";
     };
 
-    services."beesd@-".wantedBy = lib.mkForce [ ];
+    services = {
+      "beesd@-".wantedBy = lib.mkForce [ ];
+      start-beesd = {
+        description = "start beesd";
+        script = ''
+          systemctl start beesd@-
+        '';
+      };
+      stop-beesd = {
+        description = "stop beesd";
+        script = ''
+          systemctl stop beesd@-
+        '';
+      };
+    };
+    timers = {
+      start-beesd = {
+        description = "start beesd";
+        timerConfig.OnCalendar = "01:00:00";
+      };
+      stop-beesd = {
+        description = "stop beesd";
+        timerConfig.OnCalendar = "05:00:00";
+      };
+    };
   };
 
   services = {
