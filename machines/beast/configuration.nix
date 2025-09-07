@@ -72,30 +72,36 @@
     };
 
     services = {
-      "beesd@-".wantedBy = lib.mkForce [ ];
-      start-beesd = {
-        description = "start beesd";
+      "beesd@-" = {
+        wantedBy = lib.mkForce [ "inactive-time.target" ];
+        requires = [ "inactive-time.target" ];
+      };
+      inactive-start = {
+        description = "Begin inactive time";
         script = ''
-          systemctl start beesd@-
+          systemctl start inactive-time.target
         '';
       };
-      stop-beesd = {
-        description = "stop beesd";
+      inactive-stop = {
+        description = "End inactive time";
         script = ''
-          systemctl stop beesd@-
+          systemctl stop inactive-time.target
         '';
       };
     };
     timers = {
-      start-beesd = {
+      inactive-start = {
         description = "start beesd";
         timerConfig.OnCalendar = "01:00:00";
+        wantedBy = [ "timers.target" ];
       };
-      stop-beesd = {
+      inactive-stop = {
         description = "stop beesd";
         timerConfig.OnCalendar = "05:00:00";
+        wantedBy = [ "timers.target" ];
       };
     };
+    targets.inactive-time.description = "Inactive time";
   };
 
   services = {
