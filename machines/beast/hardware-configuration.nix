@@ -45,7 +45,7 @@
       fsType = "btrfs";
       options = [
         "autodefrag"
-        "commit=60"
+        "commit=120"
         "compress=zstd"
         "noatime"
         "nossd"
