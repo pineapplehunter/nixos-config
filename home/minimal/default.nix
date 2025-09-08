@@ -61,6 +61,7 @@ in
 
       git = {
         enable = true;
+        package = pkgs.git.override { withLibsecret = true; };
         signing = {
           signByDefault = true;
           key = "${config.home.homeDirectory}/.ssh/id_ed25519.pub";
@@ -82,6 +83,7 @@ in
           fetch.writeCommitGraph = true;
           init.defaultBranch = "main";
           rerere.enabled = true;
+          credential.helper = "libsecret";
         };
       };
 
