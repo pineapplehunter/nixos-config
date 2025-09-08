@@ -47,7 +47,6 @@ let
       username = "takata";
       modules = [
         modules.common
-        modules.shogo
         modules.kpro
       ];
     }

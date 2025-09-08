@@ -204,7 +204,6 @@
     let
       inherit (self.homeModules)
         nixos-common
-        shogo
         cradsec
         kpro
         ;
@@ -213,7 +212,6 @@
       takata = {
         imports = [
           nixos-common
-          shogo
           kpro
           cradsec
         ];
