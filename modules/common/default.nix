@@ -59,10 +59,12 @@
     package = pkgs.nixVersions.latest;
     settings = {
       experimental-features = [
-        "nix-command"
-        "flakes"
-        "ca-derivations"
         "auto-allocate-uids"
+        "ca-derivations"
+        "dynamic-derivations"
+        "flakes"
+        "nix-command"
+        "recursive-nix"
       ];
       auto-allocate-uids = true;
       trusted-users =
