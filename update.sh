@@ -62,7 +62,7 @@ function os-home-expire {
 }
 
 function os-generation-expire {
-  sudo nix profile wipe-history --profile /nix/var/nix/profiles/system --older-than 14d
+  sudo nix-env -p /nix/var/nix/profiles/system --delete-generations +10
 }
 
 function os-build {
