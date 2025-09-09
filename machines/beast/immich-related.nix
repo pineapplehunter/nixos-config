@@ -29,6 +29,8 @@
     User = "garage";
     Group = "garage";
     DynamicUser = false;
+    RestartSec = "1min";
+    Restart = "always";
   };
 
   users.users.garage = {
