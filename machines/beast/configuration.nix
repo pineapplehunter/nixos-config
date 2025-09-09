@@ -67,8 +67,12 @@
       "/sys/block/bcache0/bcache/writeback_percent".w.argument = "30";
       "/sys/block/bcache0/bcache/sequential_cutoff".w.argument = toString (64 * 1024 * 1024); # 64M
       "/sys/block/bcache0/bcache/writeback_delay".w.argument = toString (24 * 60 * 60); # 1 day
-      "/sys/block/bcache0/bcache/cache/congested_read_threshold_us".w.argument = "2000";
-      "/sys/block/bcache0/bcache/cache/congested_write_threshold_us".w.argument = "20000";
+      "/sys/block/bcache1/bcache/cache_mode".w.argument = "writeback";
+      "/sys/block/bcache1/bcache/writeback_percent".w.argument = "30";
+      "/sys/block/bcache1/bcache/sequential_cutoff".w.argument = toString (64 * 1024 * 1024); # 64M
+      "/sys/block/bcache1/bcache/writeback_delay".w.argument = toString (24 * 60 * 60); # 1 day
+      "/sys/block/bcache0/bcache/cache/congested_read_threshold_us".w.argument = "0";
+      "/sys/block/bcache0/bcache/cache/congested_write_threshold_us".w.argument = "0";
     };
 
     services = {
