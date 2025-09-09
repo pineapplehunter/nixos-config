@@ -156,8 +156,6 @@
     };
     prometheus.exporters.node.enable = true;
 
-    localtimed.enable = true;
-
     beesd.filesystems."-" = {
       spec = "UUID=20f60216-a9ad-46c7-bbc5-fd6cc4a17a39";
       # use recommended value
