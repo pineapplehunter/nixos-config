@@ -5,7 +5,6 @@
       pkgs.noto-fonts
       pkgs.noto-fonts-color-emoji
       pkgs.fira-code-symbols
-      pkgs.vistafonts
       pkgs.ubuntu-classic
       pkgs.ubuntu-sans
       pkgs.ubuntu-sans-mono
