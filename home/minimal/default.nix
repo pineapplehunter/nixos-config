@@ -61,7 +61,7 @@ in
 
       git = {
         enable = true;
-        package = pkgs.git.override { withLibsecret = true; };
+        package = pkgs.gitFull;
         signing = {
           signByDefault = true;
           key = "${config.home.homeDirectory}/.ssh/id_ed25519.pub";
