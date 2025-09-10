@@ -90,20 +90,12 @@
         "docker.socket"
       ];
       script = ''
-        docker compose down
-        docker compose up &
-        # Wait for health check
-        while ! curl -f http://localhost:2283 -o /dev/null; do
-            sleep 1
-        done
-
-        # Tell systemd we're ready
-        systemd-notify --ready
-        wait
+        docker compose up
       '';
-      preStop = "docker compose down";
+      preStop = ''
+        docker compose down
+      '';
       serviceConfig = {
-        Type = "notify";
         WorkingDirectory = "/home/shogo/immich";
         Restart = "always";
         TimeoutSec = 600;
