@@ -37,7 +37,7 @@ stdenv.mkDerivation rec {
         -i Makefile
     # Remove probe-bcache which will be handled by util-linux
     sed -e "/probe-bcache/d" \
-        -e "s@.*bcache-register.*@RUN+=\"${bash}/bin/sh -c 'echo $tempnode > /sys/fs/bcache/register_quiet'\"@" \
+        -e "s@.*bcache-register.*@RUN+=\"${bash}/bin/sh -c 'echo \$tempnode > /sys/fs/bcache/register_quiet'\"@" \
         -i 69-bcache.rules
   '';
 
