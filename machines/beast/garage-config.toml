@@ -1,6 +1,7 @@
 metadata_dir = "/garage/meta"
 data_dir = "/garage/data"
 db_engine = "lmdb"
+lmdb_map_size = "4T"
 
 metadata_auto_snapshot_interval = "6h"
 
