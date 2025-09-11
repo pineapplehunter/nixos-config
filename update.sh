@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eou pipefail
+set -Eeou pipefail
 
 # check commands ################################
 for cmd in nix nvd; do
