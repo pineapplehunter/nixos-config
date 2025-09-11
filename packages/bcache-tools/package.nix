@@ -4,8 +4,8 @@
   fetchgit,
   pkg-config,
   util-linux,
-  udevCheckHook,
   bash,
+  udevCheckHook,
 }:
 
 stdenv.mkDerivation rec {
@@ -26,19 +26,20 @@ stdenv.mkDerivation rec {
 
   doInstallCheck = true;
 
-  # * Remove broken install rules (they ignore $PREFIX) for stuff we don't need
-  #   anyway (it's distro specific stuff).
-  # * Fixup absolute path to modprobe.
   prePatch = ''
+    # * Remove distro specific install rules which are not used in NixOS.
+    # * Remove binaries for udev which are not needed on modern systems.
     sed -e "/INSTALL.*initramfs\/hook/d" \
         -e "/INSTALL.*initcpio\/install/d" \
         -e "/INSTALL.*dracut\/module-setup.sh/d" \
         -e "/INSTALL.*probe-bcache/d" \
         -i Makefile
-    # Remove probe-bcache which will be handled by util-linux
+    # * Remove probe-bcache which is handled by util-linux
     sed -e "/probe-bcache/d" \
-        -e "s@.*bcache-register.*@RUN+=\"${bash}/bin/sh -c 'echo \$tempnode > /sys/fs/bcache/register_quiet'\"@" \
         -i 69-bcache.rules
+    # * Replace bcache-register binary with a write to sysfs
+    substituteInPlace 69-bcache.rules \
+      --replace-fail "bcache-register \$tempnode" "${bash}/bin/sh -c 'echo \$tempnode > /sys/fs/bcache/register'"
   '';
 
   makeFlags = [
