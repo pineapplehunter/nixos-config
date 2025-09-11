@@ -25,10 +25,6 @@ language-servers = ["ruff", "basedpyright"]
 name = "python"
 
 [[language]]
-language-servers = ["buf"]
-name = "protobuf"
-
-[[language]]
 name = "meson"
 
 [language.formatter]
@@ -41,10 +37,6 @@ command = "basedpyright-langserver"
 
 [language-server.basedpyright.config.pyright]
 disableTaggedHints = true
-
-[language-server.buf]
-args = ["beta", "lsp"]
-command = "buf"
 
 [language-server.nixd]
 command = "nixd"

@@ -121,7 +121,6 @@
     # for editors
     basedpyright
     bash-language-server
-    buf
     clang-tools
     marksman
     nixd
