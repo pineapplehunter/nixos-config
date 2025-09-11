@@ -47,6 +47,12 @@ rec {
       # supress warning
       inherit (old) src;
     });
+
+    # temporary fix build failure
+    # https://github.com/NixOS/nixpkgs/issues/438765
+    tailscale = prev.tailscale.overrideAttrs {
+      doCheck = false;
+    };
   };
 
   custom-packages =
