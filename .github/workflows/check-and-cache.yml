@@ -34,8 +34,8 @@ jobs:
         continue-on-error: true
         run: |
           nix profile add "github:nixos/nixpkgs?ref=nixos-24.11#attic-client"
-          attic login attic-server ${{ secrets.ATTIC_ENDPOINT }} ${{ secrets.ATTIC_TOKEN }}
-          attic use ${{ secrets.ATTIC_CACHE }}
+          attic login attic-server ${{ vars.ATTIC_ENDPOINT }} ${{ secrets.ATTIC_TOKEN }}
+          attic use ${{ vars.ATTIC_CACHE }}
 
       - name: Run checks
         run: nix flake check --keep-going --all-systems --accept-flake-config --fallback
@@ -43,4 +43,4 @@ jobs:
       - name: Upload Cache
         if: always()
         continue-on-error: true
-        run: nix path-info --all | grep -v ".drv$" | attic push ${{ secrets.ATTIC_CACHE }} --stdin -j 1
+        run: nix path-info --all | grep -v ".drv$" | attic push ${{ vars.ATTIC_CACHE }} --stdin -j 1
