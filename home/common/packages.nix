@@ -39,6 +39,7 @@ in
       age-plugin-yubikey
       agenix
       difftastic
+      dig
       dust
       elan
       fzf
@@ -46,8 +47,8 @@ in
       nix-update
       nixfmt-rfc-style
       nixpkgs-fmt
-      tokei
       starship
+      tokei
       tree
       typst
       wabt
