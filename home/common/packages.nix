@@ -43,6 +43,7 @@ in
       dust
       elan
       fzf
+      git-extras
       nix-index
       nix-update
       nixfmt-rfc-style
