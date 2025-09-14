@@ -42,6 +42,7 @@ in
       dig
       dust
       elan
+      fuc
       fzf
       git-extras
       nix-index
