@@ -59,10 +59,15 @@
     settings = {
       experimental-features = [
         "auto-allocate-uids"
+        "blake3-hashes"
         "ca-derivations"
+        "cgroups"
         "dynamic-derivations"
         "flakes"
         "nix-command"
+        "no-url-literals"
+        "parse-toml-timestamps"
+        "pipe-operators"
         "recursive-nix"
       ];
       auto-allocate-uids = true;
@@ -82,6 +87,7 @@
       ];
       warn-dirty = false;
       allow-import-from-derivation = false;
+      use-cgroups = true;
     };
     gc = {
       automatic = true;
