@@ -25,12 +25,15 @@
     environmentFile = config.age.secrets.garage-secret.path;
   };
 
-  systemd.services.garage.serviceConfig = {
-    User = "garage";
-    Group = "garage";
-    DynamicUser = false;
-    RestartSec = "1min";
-    Restart = "always";
+  systemd.services.garage = {
+    serviceConfig = {
+      User = "garage";
+      Group = "garage";
+      DynamicUser = false;
+      RestartSec = "1min";
+      Restart = "always";
+    };
+    wantedBy = lib.mkForce [ "default.target" ];
   };
 
   users.users.garage = {
