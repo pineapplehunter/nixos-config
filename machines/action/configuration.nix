@@ -233,7 +233,6 @@
         "networkmanager"
         "wheel"
         "dialout"
-        "tss" # for tpm
       ];
     };
 
@@ -263,7 +262,10 @@
   # debug info for ease of debug
   environment.enableDebugInfo = true;
 
-  security.tpm2.enable = true;
+  security.tpm2 = {
+    enable = true;
+    abrmd.enable = true;
+  };
   services.openssh.settings.PasswordAuthentication = false;
 
   security.polkit.extraConfig = ''

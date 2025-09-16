@@ -196,7 +196,6 @@
         "networkmanager"
         "wheel"
         "dialout"
-        "tss" # for tpm
       ];
     };
   };
@@ -260,7 +259,10 @@
   };
 
   security = {
-    tpm2.enable = true;
+    tpm2 = {
+      enable = true;
+      abrmd.enable = true;
+    };
     polkit.extraConfig = ''
       /*
         hibernation
