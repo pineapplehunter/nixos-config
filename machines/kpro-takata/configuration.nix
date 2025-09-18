@@ -220,13 +220,13 @@
   environment = {
     systemPackages = with pkgs; [
       checkpolicy
+      e2fsprogs
       libselinux
       policycoreutils
       sbctl
       selinux-python
       setools
       yubikey-manager
-      e2fsprogs
       zoom-us
     ];
 
