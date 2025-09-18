@@ -20,7 +20,7 @@ in
       default = null;
       description = "name of the configuration in flake";
     };
-    is-nixos = mkEnableOption "remove nixGL wrapper";
+    isNixos = mkEnableOption "remove nixGL wrapper";
   };
   config.home.sessionVariables = mkMerge [
     (mkIf (cfg.config-name != null) {

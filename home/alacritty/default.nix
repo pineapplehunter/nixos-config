@@ -5,7 +5,7 @@
   ...
 }:
 let
-  inherit (config.pineapplehunter) is-nixos;
+  inherit (config.pineapplehunter) isNixos;
   inherit (pkgs.stdenv.hostPlatform) isLinux;
 in
 {
@@ -21,7 +21,7 @@ in
         paths = [ alacritty ];
         nativeBuildInputs = [ makeWrapper ];
         postBuild =
-          if is-nixos then
+          if isNixos then
             ''
               rm $out/bin/alacritty
               makeWrapper "${getExe alacritty}" "$out/bin/alacritty" \

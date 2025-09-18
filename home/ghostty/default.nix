@@ -6,13 +6,13 @@
 }:
 let
   inherit (pkgs.stdenv.hostPlatform) isLinux;
-  inherit (config.pineapplehunter) is-nixos;
+  inherit (config.pineapplehunter) isNixos;
 in
 {
   config.programs.ghostty = {
     enable = isLinux;
     package =
-      if is-nixos then
+      if isNixos then
         pkgs.ghostty
       else
         let

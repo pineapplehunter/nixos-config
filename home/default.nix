@@ -16,7 +16,7 @@ let
     common = import ./common;
     nixos-common = {
       imports = [ self.homeModules.common ];
-      config.pineapplehunter.is-nixos = true;
+      config.pineapplehunter.isNixos = true;
     };
     alacritty = ./alacritty/default.nix;
     dconf = ./dconf/default.nix;

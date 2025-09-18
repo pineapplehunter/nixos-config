@@ -6,7 +6,7 @@
 }:
 let
   inherit (pkgs.stdenv.hostPlatform) isLinux;
-  inherit (config.pineapplehunter) is-nixos;
+  inherit (config.pineapplehunter) isNixos;
 in
 {
   imports =
@@ -65,7 +65,7 @@ in
     };
 
     gnome-shell = {
-      enable = isLinux && is-nixos;
+      enable = isLinux && isNixos;
       extensions =
         let
           ge = pkgs.gnomeExtensions;
