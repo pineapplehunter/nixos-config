@@ -23,6 +23,7 @@
     package = pkgs.garage_2_0_0;
     settings = lib.importTOML ./garage-config.toml;
     environmentFile = config.age.secrets.garage-secret.path;
+    logLevel = "error";
   };
 
   systemd.services.garage = {
