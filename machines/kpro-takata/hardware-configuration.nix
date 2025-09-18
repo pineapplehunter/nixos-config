@@ -31,8 +31,6 @@
     extraModulePackages = [ ];
     resumeDevice = "/dev/disk/by-uuid/87cb250e-f9a3-40b2-877c-fd07e77535ea";
     kernelParams = [
-      "zswap.enabled=1"
-      "zswap.compressor=zstd"
       "i915.force_probe=!7d51"
       "xe.force_probe=7d51"
     ];
