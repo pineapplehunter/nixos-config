@@ -194,6 +194,7 @@
       openFirewall = true;
     };
 
+    dbus.implementation = "broker";
   };
 
   users.defaultUserShell = pkgs.zsh;
