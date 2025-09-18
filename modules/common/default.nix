@@ -71,12 +71,7 @@
         "recursive-nix"
       ];
       auto-allocate-uids = true;
-      trusted-users =
-        let
-          normalUsers = lib.filterAttrs (_: user: user.isNormalUser) config.users.users;
-          normalUserNames = lib.attrNames normalUsers;
-        in
-        normalUserNames;
+      trusted-users = [ "@wheel" ];
       substituters = [
         "https://cache.nixos.org/"
         "https://attic.s.ihavenojob.work/shogo"
