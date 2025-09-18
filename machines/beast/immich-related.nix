@@ -61,9 +61,11 @@
           --endpoint http://localhost:3900 \
           --region garage \
           --list-type 2 \
-          --memory-limit $((1024*4)) \
+          --memory-limit ${toString (1024 * 4)} \
           --stat-cache-ttl 10m \
           --cache mnt-cache \
+          --http-timeout 0 \
+          --print-stats 5m \
           --shared-config ${config.age.secrets.geesefs-creds.path} \
           -o allow_other \
           immich: \
