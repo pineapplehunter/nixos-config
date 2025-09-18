@@ -220,6 +220,7 @@
   environment = {
     systemPackages = with pkgs; [
       checkpolicy
+      clamav
       e2fsprogs
       libselinux
       policycoreutils
