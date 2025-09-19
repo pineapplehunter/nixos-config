@@ -257,7 +257,6 @@
 
   environment.systemPackages = with pkgs; [
     yubikey-manager
-    zoom-us
   ];
   # debug info for ease of debug
   environment.enableDebugInfo = true;

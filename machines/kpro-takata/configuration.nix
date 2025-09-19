@@ -230,7 +230,6 @@
       selinux-python
       setools
       yubikey-manager
-      zoom-us
     ];
 
     # debug info for ease of debug

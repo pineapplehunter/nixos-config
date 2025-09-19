@@ -135,6 +135,8 @@
     which-nix.enable = true;
     sudo-nix.enable = true;
     man-nix.enable = true;
+
+    zoom-us.enable = true;
   };
 
   i18n.inputMethod = {
