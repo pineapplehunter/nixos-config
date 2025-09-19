@@ -43,39 +43,39 @@
     distributedBuilds = true;
     buildMachines = [
       {
+        hostName = "kpro-njlab";
+        maxJobs = 32;
+        speedFactor = 4;
+        sshUser = "takata";
+        supportedFeatures = [
+          "big-parallel"
+          "kvm"
+          "benchmark"
+          "nixos-test"
+        ];
         systems = [
           "aarch64-linux"
           "riscv64-linux"
           "x86_64-linux"
         ];
-        maxJobs = 32;
-        supportedFeatures = [
-          "big-parallel"
-          "kvm"
-          "benchmark"
-          "nixos-test"
-        ];
-        sshUser = "takata";
-        hostName = "kpro-njlab";
-        speedFactor = 4;
       }
       {
-        system = "x86_64-linux";
+        hostName = "daniel-njlab-pc";
         maxJobs = 16;
+        speedFactor = 2;
+        sshUser = "shogo";
         supportedFeatures = [
           "big-parallel"
           "kvm"
           "benchmark"
           "nixos-test"
         ];
-        sshUser = "shogo";
-        hostName = "daniel-njlab-pc";
-        speedFactor = 2;
+        system = "x86_64-linux";
       }
     ];
     settings = {
-      connect-timeout = 10;
       builders-use-substitutes = true;
+      connect-timeout = 10;
     };
     # channel.enable = false;
   };
