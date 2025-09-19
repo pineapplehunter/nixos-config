@@ -13,25 +13,25 @@ let
     "aarch64-darwin"
   ];
   modules = {
-    common = import ./common;
+    alacritty = ./alacritty/default.nix;
+    common = ./common/default.nix;
+    cradsec = ./cradsec.nix;
+    dconf = ./dconf.nix;
+    emacs = ./emacs/default.nix;
+    flatpak-update = ./flatpak-update.nix;
+    ghostty = ./ghostty.nix;
+    helix = ./helix/default.nix;
+    julia = ./julia.nix;
+    kpro = ./kpro.nix;
+    minimal = ./minimal/default.nix;
     nixos-common = {
       imports = [ self.homeModules.common ];
       config.pineapplehunter.isNixos = true;
     };
-    alacritty = ./alacritty/default.nix;
-    dconf = ./dconf/default.nix;
-    emacs = ./emacs/default.nix;
-    flatpak-update = ./flatpak-update/default.nix;
-    ghostty = ./ghostty/default.nix;
-    helix = ./helix/default.nix;
-    minimal = ./minimal/default.nix;
-    pineapplehunter = ./pineapplehunter/default.nix;
-    shogo = ./shogo/default.nix;
+    pineapplehunter = ./pineapplehunter.nix;
+    shogo = ./shogo.nix;
+    ssh = ./ssh.nix;
     zellij = ./zellij/default.nix;
-    cradsec = ./cradsec/default.nix;
-    ssh = ./ssh/default.nix;
-    julia = ./julia/default.nix;
-    kpro = ./kpro/default.nix;
   };
   config-template = [
     {
