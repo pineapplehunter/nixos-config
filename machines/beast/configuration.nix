@@ -174,29 +174,40 @@
   networking = {
     hostName = "beast"; # Define your hostname.
     networkmanager.enable = true;
-    firewall.interfaces."tailscale0" = {
-      allowedTCPPorts = [
-        # prometheus node-exporter
-        9100
-        # ollama
-        4000
-        # immich
-        2283
-        # prometheus switchbot-exporter
-        3725
-      ];
-      allowedTCPPortRanges = [
-        # garage original
-        {
-          from = 3900;
-          to = 3905;
-        }
-        #garage proxied
-        {
-          from = 3950;
-          to = 3955;
-        }
-      ];
+    firewall.interfaces = {
+      "tailscale0" = {
+        allowedTCPPorts = [
+          # prometheus node-exporter
+          9100
+          # ollama
+          4000
+          # immich
+          2283
+          # prometheus switchbot-exporter
+          3725
+        ];
+        allowedTCPPortRanges = [
+          # garage original
+          {
+            from = 3900;
+            to = 3905;
+          }
+          #garage proxied
+          {
+            from = 3950;
+            to = 3955;
+          }
+        ];
+      };
+      "wlp36s0" = {
+        allowedTCPPortRanges = [
+          # garage original
+          {
+            from = 3900;
+            to = 3905;
+          }
+        ];
+      };
     };
   };
 
