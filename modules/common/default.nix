@@ -199,9 +199,12 @@
   # Enable sound with pipewire.
   security.rtkit.enable = true;
 
-  environment.variables = {
-    BAT_THEME = "GitHub";
-    EDITOR = "hx";
+  environment = {
+    variables = {
+      BAT_THEME = "GitHub";
+      EDITOR = "hx";
+    };
+    enableAllTerminfo = true;
   };
 
   home-manager = {
