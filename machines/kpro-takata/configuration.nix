@@ -224,6 +224,7 @@
       checkpolicy
       clamav
       e2fsprogs
+      ima-evm-utils
       libselinux
       policycoreutils
       sbctl

@@ -33,6 +33,7 @@
     kernelParams = [
       "i915.force_probe=!7d51"
       "xe.force_probe=7d51"
+      "ima_policy=critical_data"
     ];
   };
 
