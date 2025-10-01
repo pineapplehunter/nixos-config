@@ -36,6 +36,13 @@
         IMA_WRITE_POLICY = yes;
       };
     }
+    {
+      name = "ipe";
+      patch = null;
+      structuredExtraConfig = with lib.kernel; {
+        SECURITY_IPE = yes;
+      };
+    }
   ];
 
   # nixpkgs.flake.source = lib.mkForce null;
