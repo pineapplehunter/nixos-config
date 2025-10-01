@@ -43,6 +43,23 @@ rec {
       inherit (old) src;
     });
 
+    # Add capability support
+    # https://github.com/eza-community/eza/pull/1624
+    eza = prev.eza.overrideAttrs (
+      finalAttrs: prevAttrs: {
+        version = "0-custom";
+        src = final.fetchFromGitHub {
+          owner = "pineapplehunter";
+          repo = "eza";
+          rev = "9ce6f250358df0ced6d2ca96ca02c4227e54bed4";
+          hash = "sha256-UB9b7jKiqxQDiKqDyLFn6Q2nq77ph9kYHTKjPuV8/Zw=";
+        };
+        cargoDeps = final.rustPlatform.fetchCargoVendor {
+          inherit (finalAttrs) src pname version;
+          hash = "sha256-uieSKyhdwREMKDs4hurHcBm/W6MYmMUceFPaNIxTYes=";
+        };
+      }
+    );
   };
 
   custom-packages =
