@@ -26,11 +26,6 @@ rec {
       '';
     });
 
-    # Faster builds when using remote builds
-    android-studio = prev.android-studio.overrideAttrs {
-      preferLocalBuild = true;
-    };
-
     # Remove sleep notification.  The notification wakes up the screen
     # after dimming.
     gnome-settings-daemon = prev.gnome-settings-daemon.overrideAttrs (old: {
@@ -48,11 +43,6 @@ rec {
       inherit (old) src;
     });
 
-    # temporary fix build failure
-    # https://github.com/NixOS/nixpkgs/issues/438765
-    tailscale = prev.tailscale.overrideAttrs {
-      doCheck = false;
-    };
   };
 
   custom-packages =
