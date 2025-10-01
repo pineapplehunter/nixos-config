@@ -236,6 +236,7 @@
       selinux-python
       setools
       yubikey-manager
+      (coreutils-full.override { selinuxSupport = true; })
     ];
 
     # debug info for ease of debug
