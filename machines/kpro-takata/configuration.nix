@@ -292,6 +292,8 @@
       "selinux"
       "ima"
     ];
+    audit.enable = true;
+    auditd.enable = true;
   };
 
   services = {
