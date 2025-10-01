@@ -7,6 +7,7 @@ in
     with pkgs;
     [
       attic-client
+      eza
       fd
       ffmpegthumbnailer
       file

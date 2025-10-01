@@ -102,8 +102,8 @@ in
     home.shellAliases = lib.mkMerge [
       {
         ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";
-        la = "ls -a";
-        ll = "ls -lha";
+        la = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M' --all";
+        ll = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M' --all --long --header";
       }
       (optionalAttrs isLinux {
         ip = "ip -c";
