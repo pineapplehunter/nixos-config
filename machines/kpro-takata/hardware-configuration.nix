@@ -31,8 +31,10 @@
     extraModulePackages = [ ];
     resumeDevice = "/dev/disk/by-uuid/87cb250e-f9a3-40b2-877c-fd07e77535ea";
     kernelParams = [
-      "i915.force_probe=!7d51"
-      "xe.force_probe=7d51"
+      # disable xe driver due to kernel bug
+      # https://www.spinics.net/lists/stable/msg878442.html
+      # "i915.force_probe=!7d51"
+      # "xe.force_probe=7d51"
       "ima_policy=critical_data"
     ];
   };
