@@ -40,11 +40,14 @@
       device = "/dev/disk/by-uuid/20f60216-a9ad-46c7-bbc5-fd6cc4a17a39";
       fsType = "btrfs";
       options = [
+        "defaults"
+
         "autodefrag"
         "commit=120"
         "compress=zstd"
         "noatime"
         "nossd"
+        "nosuid"
         "space_cache=v2"
         "subvol=@"
       ];
@@ -53,6 +56,15 @@
     "/boot" = {
       device = "/dev/disk/by-uuid/5B2D-4C85";
       fsType = "vfat";
+      options = [
+        "defaults"
+
+        "dmask=0077"
+        "fmask=0177"
+        "nodev"
+        "noexec"
+        "nosuid"
+      ];
     };
   };
 

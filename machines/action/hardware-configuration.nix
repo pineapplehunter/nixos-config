@@ -33,12 +33,24 @@
   fileSystems =
     let
       btrfs-options = subvol: [
+        "defaults"
+
         "autodefrag"
         "commit=120"
         "compress=zstd"
         "noatime"
+        "nosuid"
         "space_cache=v2"
         "subvol=${subvol}"
+      ];
+      boot-part-options = [
+        "defaults"
+
+        "dmask=0077"
+        "fmask=0177"
+        "nodev"
+        "noexec"
+        "nosuid"
       ];
     in
     {
@@ -57,11 +69,13 @@
       "/efi" = {
         device = "/dev/disk/by-uuid/DA91-D0F6";
         fsType = "vfat";
+        options = boot-part-options;
       };
 
       "/boot" = {
         device = "/dev/disk/by-uuid/8057-31F0";
         fsType = "vfat";
+        options = boot-part-options;
       };
     };
 
