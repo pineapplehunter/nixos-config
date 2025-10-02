@@ -137,6 +137,8 @@
     man-nix.enable = true;
 
     zoom-us.enable = true;
+
+    bandwhich.enable = true;
   };
 
   i18n.inputMethod = {
