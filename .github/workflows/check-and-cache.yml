@@ -31,7 +31,7 @@ jobs:
         run: |
           nix profile add --inputs-from . \
             "nixpkgs#omnix" \
-            "github:nixos/nixpkgs?ref=nixos-24.11#attic-client"
+            "nixpkgs#attic-client"
 
       - name: Setup Attic Cache
         continue-on-error: true
