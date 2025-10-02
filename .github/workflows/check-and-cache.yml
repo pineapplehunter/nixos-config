@@ -25,13 +25,8 @@ jobs:
         if: runner.os == 'Linux'
       - uses: cachix/install-nix-action@v31
 
-        # Latest version of attic is not working correctly on x86_64-darwin
-        # https://github.com/zhaofengli/attic/issues/264
       - name: Install Omnix and Attic
-        run: |
-          nix profile add --inputs-from . \
-            "nixpkgs#omnix" \
-            "github:nixos/nixpkgs?ref=nixos-24.11#attic-client"
+        run: nix profile add --inputs-from . "nixpkgs#omnix" "nixpkgs#attic-client"
 
       - name: Setup Attic Cache
         continue-on-error: true
