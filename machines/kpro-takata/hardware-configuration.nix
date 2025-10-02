@@ -47,6 +47,7 @@
       "commit=120"
       "compress=zstd"
       "noatime"
+      "nosuid"
       "space_cache=v2"
       "subvol=@"
     ];
