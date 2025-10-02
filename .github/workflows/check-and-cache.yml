@@ -33,8 +33,11 @@ jobs:
           attic login attic-server ${{ vars.ATTIC_ENDPOINT }} ${{ secrets.ATTIC_TOKEN }}
           attic use ${{ vars.ATTIC_CACHE }}
 
+      - name: Setup Omnix
+        run: nix profile add --inputs-from . "nixpkgs#omnix"
+
       - name: Run checks
-        run: nix flake check --keep-going --all-systems --accept-flake-config --fallback
+        run: om ci
 
       - name: Upload Cache
         if: always()
