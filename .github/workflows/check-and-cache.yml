@@ -25,17 +25,15 @@ jobs:
         if: runner.os == 'Linux'
       - uses: cachix/install-nix-action@v31
 
-      - name: Install Omnix and Attic
-        run: nix profile add --inputs-from . "nixpkgs#omnix" "nixpkgs#attic-client"
-
       - name: Setup Attic Cache
         continue-on-error: true
         run: |
+          nix profile add --inputs-from . "nixpkgs#attic-client"
           attic login attic-server ${{ vars.ATTIC_ENDPOINT }} ${{ secrets.ATTIC_TOKEN }}
           attic use ${{ vars.ATTIC_CACHE }}
 
       - name: Run checks
-        run: om ci
+        run: nix build
 
       - name: Upload Cache
         if: always()

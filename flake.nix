@@ -70,15 +70,16 @@
     }
     // {
       formatter = eachSystem (pkgs: pkgs.nixfmt-tree);
-      packages = eachSystem (
-        pkgs:
-        lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
-          inherit (pkgs)
-            stl2pov
-            nautilus-thumbnailer-stl
-            ;
-        }
-      );
+      packages = eachSystem (pkgs: {
+        default =
+          let
+            check-build = drv: pkgs.runCommand "${drv.name}-check" { dummy = drv; } "touch $out";
+          in
+          pkgs.runCommand "fast-check" {
+            dummy = map check-build (lib.attrValues self.checks.${pkgs.system});
+          } "touch $out";
+
+      });
       devShells = eachSystem (
         pkgs:
         let
@@ -119,8 +120,14 @@
           beast = self.nixosConfigurations.beast.config.system.build.toplevel;
           kpro-takata = self.nixosConfigurations.kpro-takata.config.system.build.toplevel;
         }
-        // self.packages.${system}
+        // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+          inherit (pkgs)
+            stl2pov
+            nautilus-thumbnailer-stl
+            ;
+        }
       );
+
       legacyPackages = eachSystem lib.id;
     };
 
