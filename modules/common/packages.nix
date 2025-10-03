@@ -25,6 +25,7 @@
     nixfmt-rfc-style
     nixpkgs-fmt
     npins
+    omnix
     openssl
     papers
     pciutils
