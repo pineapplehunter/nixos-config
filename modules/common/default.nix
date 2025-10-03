@@ -78,7 +78,7 @@
       ];
       trusted-public-keys = [
         "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        "shogo:dzOG75ufKKljdUzTbGDpTuBmup3/K5RDmr28jb0jHCg="
+        "shogo:j1RjLY92tqW6OqeoLukgFEsxO8Vnd9N8ZpmQhy/rXcQ="
       ];
       warn-dirty = false;
       allow-import-from-derivation = false;
