@@ -31,17 +31,19 @@ in
           '';
         };
     settings = {
-      theme = "Adwaita";
-      window-theme = "light";
+      font-feature = "-dlig";
       font-size = 10;
       gtk-titlebar = false;
-      font-feature = "-dlig";
       keybind = [
         "ctrl+shift+plus=increase_font_size:1"
         "ctrl+shift+equal=decrease_font_size:1"
         "ctrl+shift+0=reset_font_size"
         "ctrl+enter=unbind"
       ];
+      theme = "Adwaita";
+      window-inherit-working-directory = false;
+      window-theme = "light";
+      working-directory = "home";
     };
   };
 }
