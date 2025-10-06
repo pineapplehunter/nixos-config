@@ -76,7 +76,9 @@
             check-build = drv: pkgs.runCommand "${drv.name}-check" { dummy = drv; } "touch $out";
           in
           pkgs.runCommand "fast-check" {
-            dummy = map check-build (lib.attrValues self.checks.${pkgs.system});
+            dummy = map check-build (lib.attrValues self.checks.${pkgs.system}) ++ [
+              (check-build self.devShells.${pkgs.system}.default)
+            ];
           } "touch $out";
 
       });
