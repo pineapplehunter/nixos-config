@@ -9,8 +9,21 @@ done
 HOMEMANAGER=$(command -v home-manager || echo NOT_FOUND)
 
 usage(){
-  echo "usage: os   build|switch|boot|diff|expire            [args...]"
-  echo "       home build|switch|boot|diff|expire|fix-darwin [args...]"
+  PNAME=$(basename ${0:-update.sh})
+  if [[ "$PNAME" == os || "$PNAME" == home ]]; then
+    echo "usage: $PNAME [cmd] [nix_args...]" >&2
+  else
+    echo "usage: $PNAME [os|home] [cmd] [nix_args...]" >&2
+  fi
+  cat << EOF >&2
+cmd:
+  build      : Build the configuration
+  switch     : Switch to new configuration
+  boot       : Build and set new configuration on next boot
+  diff       : Show difference of the current and new closure
+  expire     : Remove old configurations
+  fix-darwin : Fix nix installation after update (only home)
+EOF
   exit 1
 }
 
