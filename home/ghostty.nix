@@ -33,6 +33,8 @@ in
     settings = {
       font-feature = "-dlig";
       font-size = 10;
+      # https://github.com/ghostty-org/ghostty/discussions/8940
+      gtk-single-instance = false;
       gtk-titlebar = false;
       keybind = [
         "ctrl+shift+plus=increase_font_size:1"
