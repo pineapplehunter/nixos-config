@@ -33,7 +33,7 @@ jobs:
           attic use ${{ vars.ATTIC_CACHE }}
 
       - name: Run checks
-        run: nix build
+        run: nix build --fallback
 
       - name: Upload Cache
         if: always()
