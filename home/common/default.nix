@@ -5,7 +5,7 @@
   ...
 }:
 let
-  inherit (pkgs.stdenv.hostPlatform) isLinux;
+  inherit (pkgs.stdenv.hostPlatform) isLinux system;
   inherit (config.pineapplehunter) isNixos;
 in
 {
@@ -94,6 +94,7 @@ in
 
     gpg.enable = true;
 
+    julia.enable = system == "x86_64-linux";
   };
 
   home = {
