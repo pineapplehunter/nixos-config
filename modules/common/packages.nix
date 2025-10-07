@@ -7,7 +7,7 @@
     binutils
     btop
     btrfs-assistant
-    curl-http3
+    curlFull
     fd
     file
     git

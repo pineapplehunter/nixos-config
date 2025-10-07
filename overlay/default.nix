@@ -11,12 +11,6 @@ rec {
   ];
 
   global = final: prev: {
-    # add support for http3
-    curl-http3 = prev.curl.override {
-      http3Support = true;
-      openssl = prev.quictls;
-    };
-
     # Fix issue: slow startup time.  Reason unknown (did not search).
     flatpak = prev.flatpak.overrideAttrs (old: {
       postPatch = (old.postPatch or "") + ''
