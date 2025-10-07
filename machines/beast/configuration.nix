@@ -74,38 +74,6 @@
       "/sys/block/bcache0/bcache/cache/congested_read_threshold_us".w.argument = "0";
       "/sys/block/bcache0/bcache/cache/congested_write_threshold_us".w.argument = "0";
     };
-
-    services = {
-      "beesd@-" = {
-        wantedBy = lib.mkForce [ "inactive-time.target" ];
-        requires = [ "inactive-time.target" ];
-      };
-      inactive-start = {
-        description = "Begin inactive time";
-        script = ''
-          systemctl start inactive-time.target
-        '';
-      };
-      inactive-stop = {
-        description = "End inactive time";
-        script = ''
-          systemctl stop inactive-time.target
-        '';
-      };
-    };
-    timers = {
-      inactive-start = {
-        description = "start beesd";
-        timerConfig.OnCalendar = "01:00:00";
-        wantedBy = [ "timers.target" ];
-      };
-      inactive-stop = {
-        description = "stop beesd";
-        timerConfig.OnCalendar = "05:00:00";
-        wantedBy = [ "timers.target" ];
-      };
-    };
-    targets.inactive-time.description = "Inactive time";
   };
 
   services = {
@@ -155,14 +123,6 @@
       };
     };
     prometheus.exporters.node.enable = true;
-
-    beesd.filesystems."-" = {
-      spec = "UUID=20f60216-a9ad-46c7-bbc5-fd6cc4a17a39";
-      # use recommended value
-      # multiplied by 8 for 8TB storage
-      # https://github.com/Zygo/bees/blob/master/docs/config.md
-      hashTableSizeMB = 128 * 8;
-    };
 
     fwupd.enable = true;
   };
