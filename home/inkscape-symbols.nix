@@ -23,7 +23,8 @@ in
     in
     lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       if [[ -d "${symbols-path}" ]]; then
-        ln -s -f $VERBOSE_ARG "${icons-extracted}" "${symbols-path}/inkscape-open-symbols"
+        rm -f $VERBOSE_ARG "${symbols-path}/inkscape-open-symbols"
+        ln -s $VERBOSE_ARG "${icons-extracted}" "${symbols-path}/inkscape-open-symbols"
       fi
     '';
 }
