@@ -135,6 +135,6 @@
 
   nixConfig = {
     extra-substituters = [ "https://attic.s.ihavenojob.work/shogo" ];
-    extra-trusted-public-keys = [ "shogo:j1RjLY92tqW6OqeoLukgFEsxO8Vnd9N8ZpmQhy/rXcQ=" ];
+    extra-trusted-public-keys = [ "shogo:R9ZWo9iGw8E0X6G24R7XLPH0UeE3VZ/WFi2+D0Kmud4=" ];
   };
 }
