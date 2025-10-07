@@ -17,6 +17,7 @@ in
         flatpak-update
         ghostty
         helix
+        inkscape-symbols
         julia
         minimal
         pineapplehunter
@@ -30,6 +31,7 @@ in
       flatpak-update
       ghostty
       helix
+      inkscape-symbols
       julia
       minimal
       pineapplehunter

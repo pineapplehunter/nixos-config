@@ -21,6 +21,7 @@ let
     flatpak-update = ./flatpak-update.nix;
     ghostty = ./ghostty.nix;
     helix = ./helix/default.nix;
+    inkscape-symbols = ./inkscape-symbols.nix;
     julia = ./julia.nix;
     kpro = ./kpro.nix;
     minimal = ./minimal/default.nix;
