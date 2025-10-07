@@ -96,15 +96,15 @@ function os-switch {
   yes_or_exit "do you want to commit and update?"
   sudo echo starting upgrade
   git commit -p || true
-  os-generation-expire # need to run before switch to remove entries in bootloader
   sudo nixos-rebuild switch --flake ".#$HOST" "${args[@]}"
-  os-home-expire
 }
 
 function os-boot {
-  os-build
-  sudo echo switching boot
   sudo nixos-rebuild boot --flake ".#$HOST"
+}
+
+function os-test {
+  sudo nixos-rebuild test --flake ".#$HOST"
 }
 
 function os-update {
@@ -147,7 +147,10 @@ function home-switch {
   echo starting switch
   git commit -p || true
   $HOMEMANAGER switch -b "hm-backup" --flake ".#$HOME_CONFIG_NAME" "${args[@]}"
-  home-expire
+}
+
+function home-test {
+  $HOMEMANAGER test -b "hm-backup" --flake ".#$HOME_CONFIG_NAME" "${args[@]}"
 }
 
 function home-update {
@@ -176,12 +179,13 @@ EOF
 function os-cmd {
   command -v nixos-rebuild > /dev/null || echo command nixos-rebuild does not exist
   case "$cmd" in
-    build) os-build;;
-    switch) os-switch;;
-    diff) os-diff;;
-    update) os-update;;
     boot) os-boot;;
+    build) os-build;;
+    diff) os-diff;;
     expire) os-home-expire;;
+    switch) os-switch;;
+    test) os-test;;
+    update) os-update;;
     *) echo unknown command && usage;;
   esac
 }
@@ -191,10 +195,11 @@ function home-cmd {
   case "$cmd" in
     build) home-build;;
     diff) home-diff;;
-    switch) home-switch;;
-    update) home-update;;
     expire) home-expire;;
     fix-darwin) home-fix-darwin;;
+    switch) home-switch;;
+    test) home-test;;
+    update) home-update;;
     *) echo unknown command && usage;;
   esac
 }
