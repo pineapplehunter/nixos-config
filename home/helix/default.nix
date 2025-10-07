@@ -3,6 +3,9 @@
   lib,
   ...
 }:
+let
+  inherit (pkgs.stdenv.hostPlatform) isLinux;
+in
 {
   imports = [ ./helix-tree-sitter-module.nix ];
 
@@ -117,18 +120,22 @@
     };
   };
 
-  config.home.packages = with pkgs; [
-    # for editors
-    basedpyright
-    bash-language-server
-    clang-tools
-    marksman
-    nixd
-    ruff
-    taplo
-    texlab
-    tinymist
-    vscode-langservers-extracted
-    nodePackages.typescript-language-server
-  ];
+  config.home.packages =
+    with pkgs;
+    [
+      # for editors
+      bash-language-server
+      clang-tools
+      marksman
+      nixd
+      ruff
+      taplo
+      texlab
+      tinymist
+      vscode-langservers-extracted
+      nodePackages.typescript-language-server
+    ]
+    ++ lib.optionals isLinux [
+      basedpyright
+    ];
 }
