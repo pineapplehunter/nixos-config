@@ -4,9 +4,12 @@
   lib,
   ...
 }:
-
+let
+  cfg = config.programs.julia;
+in
 {
-  config = lib.mkIf pkgs.hostPlatform.isLinux {
+  options.programs.julia.enable = lib.mkEnableOption "julia";
+  config = lib.mkIf cfg.enable {
     xdg.dataFile."julia/config/startup.jl".text = ''
       try
         using OhMyREPL
