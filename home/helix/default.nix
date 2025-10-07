@@ -126,7 +126,6 @@ in
       # for editors
       bash-language-server
       clang-tools
-      marksman
       nixd
       ruff
       taplo
@@ -136,6 +135,7 @@ in
       nodePackages.typescript-language-server
     ]
     ++ lib.optionals isLinux [
+      marksman
       basedpyright
     ];
 }
