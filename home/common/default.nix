@@ -17,11 +17,11 @@ in
         flatpak-update
         ghostty
         helix
-        pineapplehunter
-        zellij
-        minimal
-        ssh
         julia
+        minimal
+        pineapplehunter
+        ssh
+        zellij
         ;
     in
     [
@@ -30,11 +30,11 @@ in
       flatpak-update
       ghostty
       helix
-      pineapplehunter
-      zellij
-      minimal
-      ssh
       julia
+      minimal
+      pineapplehunter
+      ssh
+      zellij
       ./packages.nix
     ];
 
