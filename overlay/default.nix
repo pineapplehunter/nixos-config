@@ -54,6 +54,25 @@ rec {
         };
       }
     );
+
+    # Cmake4 related build failures.
+    # temporary fix to build the packages.
+    # https://github.com/NixOS/nixpkgs/issues/445447
+    qgnomeplatform = prev.qgnomeplatform.overrideAttrs (old: {
+      env.CMAKE_POLICY_VERSION_MINIMUM = "3.5";
+    });
+    qgnomeplatform-qt6 = prev.qgnomeplatform-qt6.overrideAttrs (old: {
+      env.CMAKE_POLICY_VERSION_MINIMUM = "3.5";
+    });
+    julia = prev.julia.overrideAttrs (old: {
+      env.CMAKE_POLICY_VERSION_MINIMUM = "3.5";
+    });
+    intel-graphics-compiler = prev.intel-graphics-compiler.overrideAttrs (old: {
+      env.CMAKE_POLICY_VERSION_MINIMUM = "3.5";
+    });
+    libvdpau-va-gl = prev.libvdpau-va-gl.overrideAttrs (old: {
+      env.CMAKE_POLICY_VERSION_MINIMUM = "3.5";
+    });
   };
 
   custom-packages =
