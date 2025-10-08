@@ -73,6 +73,19 @@ rec {
     libvdpau-va-gl = prev.libvdpau-va-gl.overrideAttrs (old: {
       env.CMAKE_POLICY_VERSION_MINIMUM = "3.5";
     });
+
+    # Fix build failure temporary.
+    # https://github.com/NixOS/nixpkgs/pull/449438
+    pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+      (py-final: py-prev: {
+        img2pdf = py-prev.img2pdf.overrideAttrs (old: {
+          disabledTests = (old.disabledTests or [ ]) ++ [
+            "test_date"
+            "test_jpg"
+          ];
+        });
+      })
+    ];
   };
 
   custom-packages =
