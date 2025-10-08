@@ -78,6 +78,11 @@ function os-generation-expire {
   sudo nix-env -p /nix/var/nix/profiles/system --delete-generations +10
 }
 
+function os-expire {
+  os-generation-expire
+  os-home-expire
+}
+
 function os-build {
   nom build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "${args[@]}"
 }
@@ -182,7 +187,7 @@ function os-cmd {
     boot) os-boot;;
     build) os-build;;
     diff) os-diff;;
-    expire) os-home-expire;;
+    expire) os-expire;;
     switch) os-switch;;
     test) os-test;;
     update) os-update;;
