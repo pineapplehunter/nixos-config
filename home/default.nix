@@ -1,67 +1,40 @@
 {
-  self,
-  nixpkgs,
   inputs,
+  config,
+  lib,
+  withSystem,
   ...
 }:
 let
-  inherit (nixpkgs) lib;
-  systems = [
-    "x86_64-linux"
-    "aarch64-linux"
-    "x86_64-darwin"
-    "aarch64-darwin"
-  ];
-  modules = {
-    alacritty = ./alacritty/default.nix;
-    common = ./common/default.nix;
-    cradsec = ./cradsec.nix;
-    dconf = ./dconf.nix;
-    emacs = ./emacs/default.nix;
-    flatpak-update = ./flatpak-update.nix;
-    ghostty = ./ghostty.nix;
-    helix = ./helix/default.nix;
-    inkscape-symbols = ./inkscape-symbols.nix;
-    julia = ./julia.nix;
-    kpro = ./kpro.nix;
-    minimal = ./minimal/default.nix;
-    nixos-common = {
-      imports = [ self.homeModules.common ];
-      config.pineapplehunter.isNixos = true;
-    };
-    pineapplehunter = ./pineapplehunter.nix;
-    shogo = ./shogo.nix;
-    ssh = ./ssh.nix;
-    zellij = ./zellij/default.nix;
-  };
+  mods = config.flake.homeModules;
   config-template = [
     {
       configname = "shogo";
       username = "shogo";
       modules = [
-        modules.common
-        modules.shogo
+        mods.common
+        mods.shogo
       ];
     }
     {
       configname = "kpro";
       username = "takata";
       modules = [
-        modules.common
-        modules.kpro
+        mods.common
+        mods.kpro
       ];
     }
     {
       configname = "minimal-shogo";
       username = "shogo";
       modules = [
-        modules.minimal
-        modules.shogo
+        mods.minimal
+        mods.shogo
       ];
     }
   ];
   all-configs = lib.cartesianProduct {
-    system = systems;
+    system = config.systems;
     config = config-template;
   };
   configurations = lib.listToAttrs (
@@ -70,10 +43,8 @@ let
       {
         name = "${config.configname}-${system}";
         value = inputs.home-manager.lib.homeManagerConfiguration {
-          pkgs = self.legacyPackages.${system};
-          extraSpecialArgs = { inherit inputs self; };
+          pkgs = withSystem system ({ pkgs, ... }: pkgs);
           modules = [
-            self.homeModules.pineapplehunter
             (
               { pkgs, ... }:
               {
@@ -94,5 +65,29 @@ let
   );
 in
 {
-  inherit modules configurations;
+  imports = [
+    inputs.home-manager.flakeModules.home-manager
+
+    ./alacritty/default.nix
+    ./common.nix
+    ./cradsec.nix
+    ./dconf.nix
+    ./emacs/default.nix
+    ./flatpak-update.nix
+    ./ghostty.nix
+    ./helix/default.nix
+    ./inkscape-symbols.nix
+    ./julia.nix
+    ./kpro.nix
+    ./minimal.nix
+    ./nixos-common.nix
+    ./packages-minimal.nix
+    ./packages.nix
+    ./pineapplehunter.nix
+    ./shogo.nix
+    ./ssh.nix
+    ./zellij.nix
+  ];
+
+  flake.homeConfigurations = configurations;
 }

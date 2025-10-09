@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
     empty.url = "github:pineapplehunter/nix-empty";
+    flake-parts.url = "github:hercules-ci/flake-parts";
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -42,96 +43,110 @@
   };
 
   outputs =
-    { self, nixpkgs, ... }@inputs:
-    let
-      inherit (nixpkgs) lib;
-      systems = [
-        "x86_64-linux"
-        "aarch64-linux"
-        "x86_64-darwin"
-        "aarch64-darwin"
-      ];
-      overlays = [
-        inputs.howdy-module.overlays.default
-        inputs.nixgl.overlays.default
-        inputs.nix-xilinx.overlay
-        inputs.agenix.overlays.default
-        self.overlays.default
-      ];
-      eachSystem = f: lib.genAttrs systems (system: f (import nixpkgs { inherit system overlays; }));
-    in
-    {
-      nixosModules = import ./modules;
-      homeModules = (import ./home { inherit self nixpkgs inputs; }).modules;
-      homeConfigurations = (import ./home { inherit self nixpkgs inputs; }).configurations;
-      overlays = import ./overlay { inherit lib inputs self; };
-      nixosConfigurations = import ./machines { inherit lib inputs self; };
-      templates = import ./templates;
-    }
-    // {
-      formatter = eachSystem (pkgs: pkgs.nixfmt-tree);
-      packages = eachSystem (pkgs: {
-        default =
-          let
-            check-build = drv: pkgs.runCommand "${drv.name}-check" { dummy = drv; } "touch $out";
-          in
-          pkgs.runCommand "fast-check" {
-            dummy = map check-build (lib.attrValues self.checks.${pkgs.system}) ++ [
-              (check-build self.devShells.${pkgs.system}.default)
-            ];
-          } "touch $out";
+    { flake-parts, ... }@inputs:
+    flake-parts.lib.mkFlake { inherit inputs; } (
+      { config, ... }:
+      {
+        imports = [
+          ./home/default.nix
+          ./machines/default.nix
+          ./modules/default.nix
+          ./overlay/default.nix
+          ./templates/default.nix
+        ];
 
-      });
-      devShells = eachSystem (
-        pkgs:
-        let
-          management-tools = pkgs.runCommand "management-tools" { } ''
-            mkdir -p $out/bin
-            ${pkgs.stdenv.shellDryRun} ${./update.sh}
-            ln -s ${./update.sh} $out/bin/os
-            ln -s ${./update.sh} $out/bin/home
-          '';
-        in
-        {
-          default = pkgs.mkShellNoCC {
-            name = "nixos-config";
-            packages = [
-              management-tools
-              pkgs.home-manager
-              pkgs.nix-output-monitor
-              pkgs.nvd
-              pkgs.statix
-            ];
-            shellHook = ''
-              export HOST=`hostname`
-            '';
+        systems = [
+          "aarch64-darwin"
+          "aarch64-linux"
+          "x86_64-darwin"
+          "x86_64-linux"
+        ];
+
+        perSystem =
+          {
+            pkgs,
+            lib,
+            system,
+            ...
+          }:
+          {
+            legacyPackages = pkgs;
+            formatter = pkgs.nixfmt-tree;
+            devShells.default =
+              let
+                management-tools = pkgs.runCommand "management-tools" { } ''
+                  mkdir -p $out/bin
+                  ${pkgs.stdenv.shellDryRun} ${./update.sh}
+                  ln -s ${./update.sh} $out/bin/os
+                  ln -s ${./update.sh} $out/bin/home
+                '';
+              in
+              pkgs.mkShellNoCC {
+                name = "nixos-config";
+                packages = [
+                  management-tools
+                  pkgs.home-manager
+                  pkgs.nix-output-monitor
+                  pkgs.nvd
+                  pkgs.statix
+                ];
+                shellHook = ''
+                  export HOST=`hostname`
+                '';
+              };
+
+            packages.ci =
+              let
+                check-build = drv: pkgs.runCommand "${drv.name}-check" { dummy = drv; } "touch $out";
+              in
+              pkgs.runCommand "fast-check" {
+                dummy = map check-build (lib.attrValues config.flake.checks.${system}) ++ [
+                  (check-build config.flake.devShells.${system}.default)
+                ];
+              } "touch $out";
+
+            checks = {
+              user-shogo = config.flake.homeConfigurations."shogo-${system}".activationPackage;
+              user-minimal-shogo = config.flake.homeConfigurations."minimal-shogo-${system}".activationPackage;
+            }
+            // lib.optionalAttrs (system == "x86_64-linux") {
+              action = config.flake.nixosConfigurations.action.config.system.build.toplevel;
+              beast = config.flake.nixosConfigurations.beast.config.system.build.toplevel;
+              kpro-takata = config.flake.nixosConfigurations.kpro-takata.config.system.build.toplevel;
+            }
+            // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+              inherit (pkgs)
+                stl2pov
+                nautilus-thumbnailer-stl
+                ;
+            };
           };
-        }
-      );
-      checks = eachSystem (
-        pkgs:
-        let
-          inherit (pkgs.hostPlatform) system;
-        in
-        {
-          user-shogo = self.homeConfigurations."shogo-${system}".activationPackage;
-          user-minimal-shogo = self.homeConfigurations."minimal-shogo-${system}".activationPackage;
-        }
-        // lib.optionalAttrs (system == "x86_64-linux") {
-          action = self.nixosConfigurations.action.config.system.build.toplevel;
-          beast = self.nixosConfigurations.beast.config.system.build.toplevel;
-          kpro-takata = self.nixosConfigurations.kpro-takata.config.system.build.toplevel;
-        }
-        // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
-          inherit (pkgs)
-            stl2pov
-            nautilus-thumbnailer-stl
-            ;
-        }
-      );
+      }
+    );
 
-      legacyPackages = eachSystem lib.id;
-    };
+  #       checks = eachSystem (
+  #         pkgs:
+  #         let
+  #           inherit (pkgs.hostPlatform) system;
+  #         in
+  #         {
+  #           user-shogo = self.homeConfigurations."shogo-${system}".activationPackage;
+  #           user-minimal-shogo = self.homeConfigurations."minimal-shogo-${system}".activationPackage;
+  #         }
+  #         // lib.optionalAttrs (system == "x86_64-linux") {
+  #           action = self.nixosConfigurations.action.config.system.build.toplevel;
+  #           beast = self.nixosConfigurations.beast.config.system.build.toplevel;
+  #           kpro-takata = self.nixosConfigurations.kpro-takata.config.system.build.toplevel;
+  #         }
+  #         // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+  #           inherit (pkgs)
+  #             stl2pov
+  #             nautilus-thumbnailer-stl
+  #             ;
+  #         }
+  #       );
+
+  #     };
 
   nixConfig = {
     extra-substituters = [ "https://attic.s.ihavenojob.work/shogo" ];

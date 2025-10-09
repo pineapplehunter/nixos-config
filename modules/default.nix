@@ -1,11 +1,15 @@
 {
-  common = ./common/default.nix;
-  gstreamer = ./gstreamer.nix;
-  japanese = ./japanese.nix;
-  kpro = ./kpro/default.nix;
-  niri = ./niri.nix;
-  personal = ./personal/default.nix;
-  power-targets = ./power-targets.nix;
-  shell-config = ./shell-config/default.nix;
-  windows-vm = ./windows-vm.nix;
+  imports = [
+    ./common.nix
+    ./fonts.nix
+    ./gstreamer.nix
+    ./japanese.nix
+    ./kpro.nix
+    ./niri.nix
+    ./packages.nix
+    ./personal.nix
+    ./power-targets.nix
+    ./shell-config/default.nix
+    ./windows-vm.nix
+  ];
 }
