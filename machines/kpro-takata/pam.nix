@@ -141,12 +141,6 @@
         password  substack      only-unix-auth
         session   include       only-unix-auth
       '';
-      deny-all-rule = ''
-        auth      requisite ${linux-pam}/lib/security/pam_deny.so
-        account   requisite ${linux-pam}/lib/security/pam_deny.so
-        password  requisite ${linux-pam}/lib/security/pam_deny.so
-        session   requisite ${linux-pam}/lib/security/pam_deny.so
-      '';
     in
     {
       default-auth.text = default-rule;
@@ -157,7 +151,7 @@
       chpasswd.text = lib.mkForce use-only-unix-rule;
       chsh.text = lib.mkForce use-only-unix-rule;
       cups.text = lib.mkForce use-default-rule;
-      gdm-fingerprint.text = lib.mkForce deny-all-rule;
+      gdm-fingerprint.enable = lib.mkForce false;
       gdm-password.text = lib.mkForce use-default-with-login-rule;
       groupadd.text = lib.mkForce use-default-rule;
       groupdel.text = lib.mkForce use-only-unix-rule;
