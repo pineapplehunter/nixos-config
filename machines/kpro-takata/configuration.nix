@@ -176,11 +176,18 @@ let
         # Enable networking
         networkmanager.enable = true;
 
-        # Open ports in the firewall.
-        # firewall.allowedTCPPorts = [ 8080 ];
-        # firewall.allowedUDPPorts = [ ... ];
-        # Or disable the firewall altogether.
-        # firewall.enable = false;
+        firewall.interfaces = {
+          "tailscale0" = {
+            allowedTCPPorts = [
+              # kde connect
+              1716
+            ];
+            allowedUDPPorts = [
+              # kde connect
+              1728
+            ];
+          };
+        };
       };
 
       virtualisation = {
