@@ -10,6 +10,7 @@
             hostname = "ihavenojob.work";
             user = "shogo";
             identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519";
+            port = 13428;
           };
         };
       };
