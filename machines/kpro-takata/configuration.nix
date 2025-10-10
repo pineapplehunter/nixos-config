@@ -178,13 +178,19 @@ let
 
         firewall.interfaces = {
           "tailscale0" = {
-            allowedTCPPorts = [
-              # kde connect
-              1716
+            allowedTCPPortRanges = [
+              {
+                # kde connect
+                from = 1714;
+                to = 1764;
+              }
             ];
-            allowedUDPPorts = [
-              # kde connect
-              1728
+            allowedUDPPortRanges = [
+              {
+                # kde connect
+                from = 1714;
+                to = 1764;
+              }
             ];
           };
         };
