@@ -119,9 +119,9 @@ in
           enable = true;
           shellAliases = {
             ls = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M'";
-            la = "ls -a";
-            ll = "ls -lha";
-            ip = "ip -c";
+            la = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M' --all";
+            ll = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M' --all --long --header";
+            ip = "ip --color=auto";
           };
         };
         not-found-exec.enable = true;

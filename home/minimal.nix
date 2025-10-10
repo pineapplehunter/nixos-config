@@ -115,7 +115,7 @@ in
             ll = "${pkgs.eza}/bin/eza --icons --git --time-style '+%y/%m/%d %H:%M' --all --long --header";
           }
           (optionalAttrs isLinux {
-            ip = "ip -c";
+            ip = "ip --color=auto";
           })
         ];
 
