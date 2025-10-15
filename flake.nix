@@ -21,7 +21,7 @@
         hyprland.follows = "empty";
       };
     };
-    nixos-hardware.url = "github:nixos/nixos-hardware";
+    nixos-hardware.url = "github:pineapplehunter/nixos-hardware";
     agenix = {
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
