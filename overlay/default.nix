@@ -9,7 +9,7 @@ let
 in
 {
   perSystem =
-    { pkgs, system, ... }:
+    { system, ... }:
     {
       _module.args.pkgs = import inputs.nixpkgs {
         inherit system;
@@ -87,12 +87,6 @@ in
       julia = prev.julia.overrideAttrs (old: {
         env.CMAKE_POLICY_VERSION_MINIMUM = "3.5";
       });
-      # intel-graphics-compiler = prev.intel-graphics-compiler.overrideAttrs (old: {
-      #   env.CMAKE_POLICY_VERSION_MINIMUM = "3.5";
-      # });
-      # libvdpau-va-gl = prev.libvdpau-va-gl.overrideAttrs (old: {
-      #   env.CMAKE_POLICY_VERSION_MINIMUM = "3.5";
-      # });
     };
 
     custom-packages =
