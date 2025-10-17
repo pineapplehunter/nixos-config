@@ -17,8 +17,12 @@ stdenvNoCC.mkDerivation {
 
   installPhase = ''
     runHook preInstall
-    mkdir -p $out/bin
-    cp ${script} $out/bin/google-calendar-open
+
+    cp ${script} google-calendar-open
+    cp ${./icon.svg} google-calendar-open.svg
+    install -Dt "$out/bin" google-calendar-open
+    install -Dt "$out/share/icons/hicolor/scalable/apps" google-calendar-open.svg
+
     runHook postInstall
   '';
 
@@ -27,7 +31,7 @@ stdenvNoCC.mkDerivation {
       name = "google-calendar-open";
       desktopName = "Google Calendar";
       exec = "google-calendar-open";
-      icon = "org.gnome.Calendar";
+      icon = "google-calendar-open";
       comment = "Open Google Calendar";
       categories = [ "Office" ];
     })
