@@ -16,6 +16,7 @@
         github-cli
         gnome-tweaks
         gnumake
+        google-calendar-open
         helix
         htop
         jq
