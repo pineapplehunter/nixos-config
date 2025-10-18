@@ -19,8 +19,6 @@ let
         ./immich-related.nix
       ];
 
-      pineapplehunter.windows-vm.enable = true;
-
       nix = {
         distributedBuilds = true;
         buildMachines = [
@@ -176,6 +174,12 @@ let
           storageDriver = "btrfs";
         };
         podman.enable = true;
+        libvirtd.enable = true;
+        windows.enable = true;
+      };
+
+      programs = {
+        virt-manager.enable = true;
       };
 
       # Define a user account. Don't forget to set a password with ‘passwd’.

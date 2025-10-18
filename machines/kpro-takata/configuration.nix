@@ -18,8 +18,6 @@ let
         ./pam.nix
       ];
 
-      pineapplehunter.windows-vm.enable = true;
-
       boot.kernelPatches = [
         {
           name = "selinux";
@@ -206,8 +204,13 @@ let
           storageDriver = "btrfs";
         };
         podman.enable = true;
+        windows.enable = true;
+        libvirtd.enable = true;
       };
 
+      programs = {
+        virt-manager.enable = true;
+      };
       # Define a user account. Don't forget to set a password with ‘passwd’.
       users.users = {
         takata = {
@@ -382,7 +385,6 @@ in
       os-mods.common
       os-mods.kpro
       os-mods.niri
-      os-mods.power-targets
       configuration
     ];
   };

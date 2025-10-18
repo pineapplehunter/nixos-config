@@ -12,8 +12,6 @@ let
         ./pam.nix
       ];
 
-      pineapplehunter.windows-vm.enable = true;
-
       # nixpkgs.flake.source = lib.mkForce null;
       nix = {
         distributedBuilds = true;
@@ -217,8 +215,13 @@ let
           storageDriver = "btrfs";
         };
         podman.enable = true;
+        windows.enable = true;
+        libvirtd.enable = true;
       };
+      programs = {
+        virt-manager.enable = true;
 
+      };
       # Define a user account. Don't forget to set a password with ‘passwd’.
       users.users = {
         shogo = {

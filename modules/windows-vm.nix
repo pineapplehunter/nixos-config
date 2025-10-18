@@ -7,19 +7,13 @@
       ...
     }:
     let
-      cfg = config.pineapplehunter.windows-vm;
+      cfg = config.virtualisation.windows;
     in
     {
-      options.pineapplehunter.windows-vm.enable = lib.mkEnableOption "windows VM";
+      options.virtualisation.windows.enable = lib.mkEnableOption "windows VM";
 
       config = lib.mkIf cfg.enable {
-        virtualisation = {
-          libvirtd = {
-            enable = true;
-            qemu.swtpm.enable = true;
-          };
-        };
-        programs.virt-manager.enable = true;
+        virtualisation.libvirtd.qemu.swtpm.enable = true;
 
         environment.systemPackages = [
           pkgs.win-virtio
