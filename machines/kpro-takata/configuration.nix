@@ -210,6 +210,8 @@ let
 
       programs = {
         virt-manager.enable = true;
+
+        niri.enable = true;
       };
       # Define a user account. Don't forget to set a password with ‘passwd’.
       users.users = {
@@ -384,7 +386,6 @@ in
       inputs.lanzaboote.nixosModules.lanzaboote
       os-mods.common
       os-mods.kpro
-      os-mods.niri
       configuration
     ];
   };

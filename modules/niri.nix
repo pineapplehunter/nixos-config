@@ -7,7 +7,8 @@
       ...
     }:
     {
-      config = {
+      config = lib.mkIf config.programs.niri.enable {
+        # opinionated packages needed to run niri
         environment.systemPackages = with pkgs; [
           brightnessctl
           fuzzel
@@ -18,7 +19,6 @@
           waybar
           xwayland-satellite
         ];
-        programs.niri.enable = lib.mkDefault true;
         security.pam.services.swaylock.text = config.security.pam.services.gdm-password.text;
       };
     };

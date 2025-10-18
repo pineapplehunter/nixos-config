@@ -20,6 +20,7 @@ in
           mods.fonts
           mods.shell-config
           mods.japanese
+          mods.niri
           mods.nixos-artwork
           mods.windows-vm
           mods.gstreamer
