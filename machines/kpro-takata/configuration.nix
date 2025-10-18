@@ -213,6 +213,7 @@ let
 
         niri.enable = true;
       };
+
       # Define a user account. Don't forget to set a password with ‘passwd’.
       users.users = {
         takata = {
@@ -354,6 +355,8 @@ let
             requires = [ "power-ac.target" ];
           };
         };
+
+        power-targets.enable = true;
       };
 
       system.activationScripts.selinux = {

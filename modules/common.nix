@@ -22,6 +22,7 @@ in
           mods.japanese
           mods.niri
           mods.nixos-artwork
+          mods.power-targets
           mods.windows-vm
           mods.gstreamer
           inputs.agenix.nixosModules.default

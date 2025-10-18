@@ -193,6 +193,8 @@ let
         };
       };
 
+      systemd.power-targets.enable = true;
+
       networking = {
         hostName = "action"; # Define your hostname.
         # Enable networking
@@ -223,6 +225,7 @@ let
 
         niri.enable = true;
       };
+
       # Define a user account. Don't forget to set a password with ‘passwd’.
       users.users = {
         shogo = {
@@ -302,7 +305,6 @@ in
       inputs.nixos-hardware.nixosModules.dell-xps-13-9310
       os-mods.common
       os-mods.personal
-      os-mods.power-targets
       configuration
     ];
   };
