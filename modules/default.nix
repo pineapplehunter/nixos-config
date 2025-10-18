@@ -6,6 +6,7 @@
     ./japanese.nix
     ./kpro.nix
     ./niri.nix
+    ./nixos-artwork.nix
     ./packages.nix
     ./personal.nix
     ./power-targets.nix

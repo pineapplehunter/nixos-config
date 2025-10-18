@@ -20,6 +20,7 @@ in
           mods.fonts
           mods.shell-config
           mods.japanese
+          mods.nixos-artwork
           mods.windows-vm
           mods.gstreamer
           inputs.agenix.nixosModules.default
@@ -29,6 +30,7 @@ in
         ];
 
       pineapplehunter.japanese.enable = true;
+      nixos-artwork.enable = lib.mkDefault true;
 
       nixpkgs = {
         overlays = [
