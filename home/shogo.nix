@@ -2,9 +2,9 @@
   flake.homeModules.shogo = {
     home.packages = [ ];
 
-    programs.git = {
-      userName = "Shogo Takata";
-      userEmail = "peshogo@gmail.com";
+    programs.git.settings.user = {
+      name = "Shogo Takata";
+      email = "peshogo@gmail.com";
     };
   };
 }

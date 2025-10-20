@@ -13,9 +13,9 @@
             };
           };
         };
-        git = {
-          userName = "Shogo Takata";
-          userEmail = "shogo-takata@st.go.tuat.ac.jp";
+        git.settings.user = {
+          name = "Shogo Takata";
+          email = "shogo-takata@st.go.tuat.ac.jp";
         };
       };
     };
