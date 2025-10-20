@@ -282,9 +282,9 @@ let
         });
       '';
       services.logind.settings.Login = {
-        lidSwitch = "suspend-then-hibernate";
-        lidSwitchDocked = "suspend-then-hibernate";
-        lidSwitchExternalPower = "suspend-then-hibernate";
+        HandleLidSwitch = "suspend-then-hibernate";
+        HandleLidSwitchDocked = "suspend-then-hibernate";
+        HandleLidSwitchExternalPower = "suspend-then-hibernate";
       };
 
       services.automatic-timezoned.enable = true;
