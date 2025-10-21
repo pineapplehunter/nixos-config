@@ -16,15 +16,16 @@ in
           mods = flake-config.flake.nixosModules;
         in
         [
-          mods.packages
           mods.fonts
-          mods.shell-config
+          mods.gstreamer
+          mods.hibernate
           mods.japanese
           mods.niri
           mods.nixos-artwork
+          mods.packages
           mods.power-targets
+          mods.shell-config
           mods.windows-vm
-          mods.gstreamer
           inputs.agenix.nixosModules.default
           inputs.howdy-module.nixosModules.default
           inputs.xremap-flake.nixosModules.default

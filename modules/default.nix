@@ -3,6 +3,7 @@
     ./common.nix
     ./fonts.nix
     ./gstreamer.nix
+    ./hibernate.nix
     ./japanese.nix
     ./kpro.nix
     ./niri.nix

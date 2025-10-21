@@ -178,22 +178,22 @@ let
         supportedFilesystems = [ "btrfs" ];
       };
 
-      # https://discourse.nixos.org/t/suspend-then-hibernate/31953/5
-      powerManagement.enable = true;
-
-      # speedup boot
-      systemd.services = {
-        docker.wantedBy = lib.mkForce [ "default.target" ];
-        ollama.wantedBy = lib.mkForce [ "default.target" ];
-        libvirtd.wantedBy = lib.mkForce [ "default.target" ];
-        libvirt-guests.wantedBy = lib.mkForce [ "default.target" ];
-        "beesd@-" = {
-          wantedBy = lib.mkForce [ "power-ac.target" ];
-          requires = [ "power-ac.target" ];
+      systemd = {
+        # speedup boot
+        services = {
+          docker.wantedBy = lib.mkForce [ "default.target" ];
+          ollama.wantedBy = lib.mkForce [ "default.target" ];
+          libvirtd.wantedBy = lib.mkForce [ "default.target" ];
+          libvirt-guests.wantedBy = lib.mkForce [ "default.target" ];
+          "beesd@-" = {
+            wantedBy = lib.mkForce [ "power-ac.target" ];
+            requires = [ "power-ac.target" ];
+          };
         };
-      };
 
-      systemd.power-targets.enable = true;
+        power-targets.enable = true;
+        hibernation.enable = true;
+      };
 
       networking = {
         hostName = "action"; # Define your hostname.
@@ -264,28 +264,6 @@ let
         abrmd.enable = true;
       };
       services.openssh.settings.PasswordAuthentication = false;
-
-      security.polkit.extraConfig = ''
-        /*
-          hibernation
-          https://ubuntuhandbook.org/index.php/2021/08/enable-hibernate-ubuntu-21-10/
-        */
-        polkit.addRule(function(action, subject) {
-            if (action.id == "org.freedesktop.login1.hibernate" ||
-                action.id == "org.freedesktop.login1.hibernate-multiple-sessions" ||
-                action.id == "org.freedesktop.upower.hibernate" ||
-                action.id == "org.freedesktop.login1.handle-hibernate-key" ||
-                action.id == "org.freedesktop.login1.hibernate-ignore-inhibit")
-            {
-                return polkit.Result.YES;
-            }
-        });
-      '';
-      services.logind.settings.Login = {
-        HandleLidSwitch = "suspend-then-hibernate";
-        HandleLidSwitchDocked = "suspend-then-hibernate";
-        HandleLidSwitchExternalPower = "suspend-then-hibernate";
-      };
 
       services.automatic-timezoned.enable = true;
 

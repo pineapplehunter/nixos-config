@@ -166,9 +166,6 @@ let
         supportedFilesystems = [ "btrfs" ];
       };
 
-      # https://discourse.nixos.org/t/suspend-then-hibernate/31953/5
-      powerManagement.enable = true;
-
       networking = {
         hostName = "kpro-takata"; # Define your hostname.
         # Enable networking
@@ -284,22 +281,6 @@ let
           enable = true;
           abrmd.enable = true;
         };
-        polkit.extraConfig = ''
-          /*
-            hibernation
-            https://ubuntuhandbook.org/index.php/2021/08/enable-hibernate-ubuntu-21-10/
-          */
-          polkit.addRule(function(action, subject) {
-              if (action.id == "org.freedesktop.login1.hibernate" ||
-                  action.id == "org.freedesktop.login1.hibernate-multiple-sessions" ||
-                  action.id == "org.freedesktop.upower.hibernate" ||
-                  action.id == "org.freedesktop.login1.handle-hibernate-key" ||
-                  action.id == "org.freedesktop.login1.hibernate-ignore-inhibit")
-              {
-                  return polkit.Result.YES;
-              }
-          });
-        '';
         lsm = [
           "selinux"
           "ima"
@@ -312,12 +293,6 @@ let
         openssh.settings.PasswordAuthentication = false;
 
         fprintd.enable = true;
-
-        logind.settings.Login = {
-          HandleLidSwitch = "suspend-then-hibernate";
-          HandleLidSwitchExternalPower = "suspend-then-hibernate";
-          HandleLidSwitchDocked = "suspend-then-hibernate";
-        };
 
         # services.automatic-timezoned.enable = true;
         fwupd.enable = true;
@@ -341,10 +316,6 @@ let
           "systemd-pcrphase.service"
         ];
 
-        sleep.extraConfig = ''
-          HibernateDelaySec=2h
-        '';
-
         services = {
           docker.wantedBy = lib.mkForce [ "default.target" ];
           ollama.wantedBy = lib.mkForce [ "default.target" ];
@@ -357,6 +328,7 @@ let
         };
 
         power-targets.enable = true;
+        hibernation.enable = true;
       };
 
       system.activationScripts.selinux = {
