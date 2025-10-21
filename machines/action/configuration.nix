@@ -132,6 +132,9 @@ let
         };
 
         pcscd.enable = true;
+
+        tlp.enable = false;
+        tuned.enable = true;
       };
 
       # Bootloader.
