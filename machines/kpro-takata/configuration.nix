@@ -147,6 +147,9 @@ let
 
         # disable for security purposes
         avahi.enable = false;
+
+        tlp.enable = false;
+        tuned.enable = true;
       };
 
       # Bootloader.
