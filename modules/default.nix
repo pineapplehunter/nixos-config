@@ -12,6 +12,7 @@
     ./packages.nix
     ./personal.nix
     ./power-targets.nix
+    ./selinux.nix
     ./shell-config/default.nix
     ./windows-vm.nix
   ];

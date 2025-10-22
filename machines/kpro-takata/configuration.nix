@@ -19,11 +19,6 @@ let
 
       boot.kernelPatches = [
         {
-          name = "selinux";
-          patch = null;
-          structuredExtraConfig.SECURITY_SELINUX = lib.kernel.yes;
-        }
-        {
           name = "ipe";
           patch = null;
           structuredExtraConfig = with lib.kernel; {
@@ -33,6 +28,7 @@ let
       ];
       my = {
         ima.enable = true;
+        selinux.enable = true;
       };
 
       # nixpkgs.flake.source = lib.mkForce null;
@@ -223,52 +219,13 @@ let
 
       environment = {
         systemPackages = with pkgs; [
-          checkpolicy
           clamav
-          e2fsprogs
-          libselinux
-          policycoreutils
           sbctl
-          selinux-python
-          setools
           yubikey-manager
-          (coreutils-full.override { selinuxSupport = true; })
         ];
 
         # debug info for ease of debug
         enableDebugInfo = true;
-
-        etc = {
-          "selinux/config".text = ''
-            SELINUX=permissive
-            SELINUXTYPE=refpolicy
-          '';
-          "selinux/semanage.conf".text = ''
-            compiler-directory = ${pkgs.policycoreutils}/libexec/selinux/hll
-
-            [load_policy]
-            path = ${lib.getExe' pkgs.policycoreutils "load_policy"}
-            [end]
-
-            [setfiles]
-            path = ${lib.getExe' pkgs.policycoreutils "setfiles"}
-            args = -q -c $@ $<
-            [end]
-
-            [sefcontext_compile]
-            path = ${lib.getExe' pkgs.libselinux "sefcontext_compile"}
-            args = -r $@
-            [end]
-          '';
-        };
-      };
-
-      security = {
-        lsm = [
-          "selinux"
-        ];
-        audit.enable = true;
-        auditd.enable = true;
       };
 
       services = {
@@ -288,8 +245,6 @@ let
       };
 
       systemd = {
-        package = pkgs.systemd.override { withSelinux = true; };
-
         services = {
           docker.wantedBy = lib.mkForce [ "default.target" ];
           ollama.wantedBy = lib.mkForce [ "default.target" ];
@@ -303,26 +258,6 @@ let
 
         power-targets.enable = true;
         hibernation.enable = true;
-      };
-
-      system.activationScripts.selinux = {
-        deps = [ "etc" ];
-        text = ''
-          install -d -m0755 /var/lib/selinux
-          cmd="${lib.getExe' pkgs.policycoreutils "semodule"} -s refpolicy -i ${pkgs.selinux-refpolicy}/share/selinux/refpolicy/*.pp"
-          skipSELinuxActivation=0
-
-          if [ -f /var/lib/selinux/activate-check ]; then
-            if [ "$(cat /var/lib/selinux/activate-check)" == "$cmd" ]; then
-              skipSELinuxActivation=1
-            fi
-          fi
-
-          if [ $skipSELinuxActivation -eq 0 ]; then
-            eval "$cmd"
-            echo "$cmd" >/var/lib/selinux/activate-check
-          fi
-        '';
       };
     };
 in

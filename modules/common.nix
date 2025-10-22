@@ -29,6 +29,7 @@ in
           mods.nixos-artwork
           mods.packages
           mods.power-targets
+          mods.selinux
           mods.shell-config
           mods.windows-vm
         ];
