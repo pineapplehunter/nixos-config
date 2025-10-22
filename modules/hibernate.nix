@@ -5,7 +5,14 @@
       cfg = config.systemd.hibernation;
     in
     {
-      options.systemd.hibernation.enable = lib.mkEnableOption "hibernation";
+      options.systemd.hibernation = {
+        enable = lib.mkEnableOption "hibernation";
+        delaySec = lib.mkOption {
+          description = "Time to suspend until hibernation";
+          type = lib.types.str;
+          default = "2h";
+        };
+      };
 
       config = lib.mkIf cfg.enable {
         services.logind.settings.Login = {
@@ -14,7 +21,7 @@
           HandleLidSwitchExternalPower = "suspend-then-hibernate";
         };
         systemd.sleep.extraConfig = ''
-          HibernateDelaySec=2h
+          HibernateDelaySec=${cfg.delaySec}
         '';
       };
     };
