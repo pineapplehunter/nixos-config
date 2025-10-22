@@ -29,6 +29,7 @@ let
       my = {
         ima.enable = true;
         selinux.enable = true;
+        secureboot.enable = true;
       };
 
       # nixpkgs.flake.source = lib.mkForce null;
@@ -136,11 +137,6 @@ let
       # Bootloader.
 
       boot = {
-        loader.systemd-boot.enable = lib.mkForce false;
-        lanzaboote = {
-          enable = true;
-          pkiBundle = "/var/lib/sbctl";
-        };
         binfmt.emulatedSystems = [
           "aarch64-linux"
           "riscv64-linux"
@@ -220,7 +216,6 @@ let
       environment = {
         systemPackages = with pkgs; [
           clamav
-          sbctl
           yubikey-manager
         ];
 
@@ -267,7 +262,6 @@ in
     system = null;
     modules = [
       inputs.nixos-hardware.nixosModules.lenovo-thinkpad-x1-13th-gen
-      inputs.lanzaboote.nixosModules.lanzaboote
       os-mods.common
       os-mods.kpro
       configuration
