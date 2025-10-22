@@ -17,15 +17,6 @@ let
         ./pam.nix
       ];
 
-      boot.kernelPatches = [
-        {
-          name = "ipe";
-          patch = null;
-          structuredExtraConfig = with lib.kernel; {
-            SECURITY_IPE = yes;
-          };
-        }
-      ];
       my = {
         ima.enable = true;
         selinux.enable = true;
