@@ -16,6 +16,10 @@ in
           mods = flake-config.flake.nixosModules;
         in
         [
+          inputs.agenix.nixosModules.default
+          inputs.home-manager.nixosModules.home-manager
+          inputs.howdy-module.nixosModules.default
+          inputs.xremap-flake.nixosModules.default
           mods.fonts
           mods.gstreamer
           mods.hibernate
@@ -26,10 +30,6 @@ in
           mods.power-targets
           mods.shell-config
           mods.windows-vm
-          inputs.agenix.nixosModules.default
-          inputs.howdy-module.nixosModules.default
-          inputs.xremap-flake.nixosModules.default
-          inputs.home-manager.nixosModules.home-manager
         ];
 
       pineapplehunter.japanese.enable = true;
