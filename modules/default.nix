@@ -4,6 +4,7 @@
     ./fonts.nix
     ./gstreamer.nix
     ./hibernate.nix
+    ./ima.nix
     ./japanese.nix
     ./kpro.nix
     ./niri.nix

@@ -7,7 +7,6 @@ let
     {
       pkgs,
       lib,
-      config,
       ...
     }:
 
@@ -25,17 +24,6 @@ let
           structuredExtraConfig.SECURITY_SELINUX = lib.kernel.yes;
         }
         {
-          name = "ima";
-          patch = null;
-          structuredExtraConfig = with lib.kernel; {
-            EVM = yes;
-            IMA = yes;
-            IMA_DEFAULT_HASH_SHA256 = yes;
-            IMA_READ_POLICY = yes;
-            IMA_WRITE_POLICY = yes;
-          };
-        }
-        {
           name = "ipe";
           patch = null;
           structuredExtraConfig = with lib.kernel; {
@@ -43,6 +31,9 @@ let
           };
         }
       ];
+      my = {
+        ima.enable = true;
+      };
 
       # nixpkgs.flake.source = lib.mkForce null;
       nix = {
@@ -235,7 +226,6 @@ let
           checkpolicy
           clamav
           e2fsprogs
-          ima-evm-utils
           libselinux
           policycoreutils
           sbctl
@@ -274,13 +264,8 @@ let
       };
 
       security = {
-        tpm2 = {
-          enable = true;
-          abrmd.enable = true;
-        };
         lsm = [
           "selinux"
-          "ima"
         ];
         audit.enable = true;
         auditd.enable = true;
@@ -304,14 +289,6 @@ let
 
       systemd = {
         package = pkgs.systemd.override { withSelinux = true; };
-        additionalUpstreamSystemUnits = lib.optionals config.systemd.tpm2.enable [
-          "systemd-pcrfs-root.service"
-          "systemd-pcrfs@.service"
-          "systemd-pcrmachine.service"
-          "systemd-pcrphase-initrd.service"
-          "systemd-pcrphase-sysinit.service"
-          "systemd-pcrphase.service"
-        ];
 
         services = {
           docker.wantedBy = lib.mkForce [ "default.target" ];

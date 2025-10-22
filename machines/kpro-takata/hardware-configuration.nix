@@ -23,8 +23,6 @@
         "sd_mod"
       ];
       kernelModules = [ "dm-snapshot" ];
-      systemd.enable = true;
-      systemd.tpm2.enable = true;
       luks.devices.cryptroot.device = "/dev/disk/by-uuid/4ec820c4-37c3-4925-9439-8bcec0c3ef62";
     };
     kernelModules = [ "kvm-intel" ];
@@ -33,7 +31,6 @@
     kernelParams = [
       "i915.force_probe=!7d51"
       "xe.force_probe=7d51"
-      "ima_policy=critical_data"
     ];
   };
 
