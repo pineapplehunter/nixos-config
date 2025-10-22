@@ -112,13 +112,7 @@ let
 
         # Enable the GNOME Desktop Environment.
         displayManager.gdm.enable = true;
-        desktopManager.gnome = {
-          enable = true;
-          extraGSettingsOverrides = ''
-            [org.gnome.mutter]
-            experimental-features=['scale-monitor-framebuffer', 'xwayland-native-scaling', 'variable-refresh-rate']
-          '';
-        };
+        desktopManager.gnome.enable = true;
 
         snapper.configs = {
           home = {

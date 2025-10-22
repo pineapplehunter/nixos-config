@@ -192,6 +192,11 @@ in
         };
 
         dbus.implementation = "broker";
+
+        desktopManager.gnome.extraGSettingsOverrides = ''
+          [org.gnome.mutter]
+          experimental-features=['scale-monitor-framebuffer', 'xwayland-native-scaling', 'variable-refresh-rate']
+        '';
       };
 
       users.defaultUserShell = pkgs.zsh;
