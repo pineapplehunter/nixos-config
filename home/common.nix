@@ -82,7 +82,7 @@ in
 
         gpg.enable = true;
 
-        julia.enable = system == "x86_64-linux";
+        # julia.enable = system == "x86_64-linux";
       };
 
       home = {
