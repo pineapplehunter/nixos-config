@@ -245,6 +245,18 @@ let
         power-targets.enable = true;
         hibernation.enable = true;
       };
+
+      specialisation = {
+        xe-driver.configuration = {
+          boot.kernelParams = [
+            "i915.force_probe=!7d51"
+            "xe.force_probe=7d51"
+          ];
+        };
+        noresume.configuration = {
+          boot.kernelParams = [ "noresume" ];
+        };
+      };
     };
 in
 
