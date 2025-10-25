@@ -147,12 +147,6 @@ in
         type = "ibus";
       };
 
-      qt = {
-        enable = true;
-        platformTheme = "gnome";
-        style = "adwaita";
-      };
-
       services = {
         xremap.enable = lib.mkDefault false;
 
