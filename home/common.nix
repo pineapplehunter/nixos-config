@@ -95,7 +95,10 @@ in
         };
       };
 
-      services.flatpak-repo.enable = isLinux;
-      services.flatpak-update.enable = isLinux;
+      services = {
+        flatpak-repo.enable = isLinux;
+        flatpak-update.enable = isLinux;
+        pueue.enable = isLinux;
+      };
     };
 }
