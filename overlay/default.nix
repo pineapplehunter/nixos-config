@@ -81,6 +81,15 @@ in
       julia = prev.julia.overrideAttrs (old: {
         env.CMAKE_POLICY_VERSION_MINIMUM = "3.5";
       });
+
+      btrfs-assistant = prev.btrfs-assistant.overrideAttrs (old: {
+        patches = (old.patches or [ ]) ++ [
+          (final.fetchpatch {
+            url = "https://gitlab.com/btrfs-assistant/btrfs-assistant/-/commit/edc0a13bac5189a1a910f5adab01b2d5b60c76f6.diff";
+            hash = "sha256-kGyp5OaSGk4OvhtyNSygJEW+wAJksK8opxtLPbhA+10=";
+          })
+        ];
+      });
     };
 
     custom-packages =
