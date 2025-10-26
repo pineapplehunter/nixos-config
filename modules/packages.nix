@@ -39,7 +39,6 @@
         usbutils
         vim
         wl-clipboard
-        yubioath-flutter
 
         # editor
         dconf-editor
