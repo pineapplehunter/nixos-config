@@ -75,13 +75,6 @@ in
         }
       );
 
-      # Cmake4 related build failures.
-      # temporary fix to build the packages.
-      # https://github.com/NixOS/nixpkgs/issues/445447
-      julia = prev.julia.overrideAttrs (old: {
-        env.CMAKE_POLICY_VERSION_MINIMUM = "3.5";
-      });
-
       btrfs-assistant = prev.btrfs-assistant.overrideAttrs (old: {
         patches = (old.patches or [ ]) ++ [
           (final.fetchpatch {
