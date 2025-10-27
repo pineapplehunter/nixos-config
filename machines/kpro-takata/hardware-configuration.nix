@@ -23,7 +23,10 @@
         "sd_mod"
       ];
       kernelModules = [ "dm-snapshot" ];
-      luks.devices.cryptroot.device = "/dev/disk/by-uuid/4ec820c4-37c3-4925-9439-8bcec0c3ef62";
+      luks.devices.cryptroot = {
+        device = "/dev/disk/by-uuid/4ec820c4-37c3-4925-9439-8bcec0c3ef62";
+        crypttabExtraOpts = [ "fido2-device=auto" ];
+      };
     };
     kernelModules = [ "kvm-intel" ];
     extraModulePackages = [ ];
