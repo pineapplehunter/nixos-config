@@ -51,7 +51,6 @@
         errands
         gitify
         pdfarranger
-        slack
         super-productivity
         webcord
 

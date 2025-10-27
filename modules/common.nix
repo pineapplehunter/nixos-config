@@ -49,9 +49,7 @@ in
           pkg:
           lib.elem (pkgs.lib.getName pkg) [
             "libfprint-2-tod1-goodix"
-            "slack"
             "vscode"
-            "zoom"
           ];
       };
 
@@ -136,8 +134,6 @@ in
         which-nix.enable = true;
         sudo-nix.enable = true;
         man-nix.enable = true;
-
-        zoom-us.enable = true;
 
         bandwhich.enable = true;
       };
