@@ -100,5 +100,14 @@ in
         flatpak-update.enable = isLinux;
         pueue.enable = isLinux;
       };
+
+      xdg = {
+        enable = true;
+        mimeApps.associations.added = {
+          "x-scheme-handler/slack" = [ "com.slack.Slack.desktop" ];
+          "x-scheme-handler/zoomus" = [ "us.zoom.Zoom.desktop" ];
+          "x-scheme-handler/zoommtg" = [ "us.zoom.Zoom.desktop" ];
+        };
+      };
     };
 }
