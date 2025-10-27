@@ -44,6 +44,7 @@ let
       environment.systemPackages = [
         pkgs.podman-compose
         pkgs.geesefs
+        pkgs.vivado
       ];
 
       # Use the systemd-boot EFI boot loader.
