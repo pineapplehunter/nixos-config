@@ -205,6 +205,8 @@ in
         enableAllTerminfo = true;
       };
 
+      xdg.portal.xdgOpenUsePortal = true;
+
       home-manager = {
         useGlobalPkgs = true;
         backupFileExtension = "hm-backup";
