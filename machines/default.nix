@@ -1,7 +1,7 @@
 {
   imports = [
-    ./action/configuration.nix
-    ./beast/configuration.nix
-    ./kpro-takata/configuration.nix
+    ./action.nix
+    ./beast.nix
+    ./kpro-takata.nix
   ];
 }

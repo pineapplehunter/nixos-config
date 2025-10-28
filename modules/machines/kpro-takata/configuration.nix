@@ -1,9 +1,10 @@
-{ inputs, config, ... }:
+{ config, ... }:
 let
   home-mods = config.flake.homeModules;
   os-mods = config.flake.nixosModules;
-
-  configuration =
+in
+{
+  flake.nixosModules.kpro-takata =
     {
       pkgs,
       lib,
@@ -13,8 +14,8 @@ let
     {
       imports = [
         # Include the results of the hardware scan.
-        ./hardware-configuration.nix
-        ./pam.nix
+        os-mods.kpro-takata-hardware
+        os-mods.kpro-takata-pam
       ];
 
       my = {
@@ -258,16 +259,4 @@ let
         };
       };
     };
-in
-
-{
-  flake.nixosConfigurations.kpro-takata = inputs.nixpkgs.lib.nixosSystem {
-    system = null;
-    modules = [
-      inputs.nixos-hardware.nixosModules.lenovo-thinkpad-x1-13th-gen
-      os-mods.common
-      os-mods.kpro
-      configuration
-    ];
-  };
 }

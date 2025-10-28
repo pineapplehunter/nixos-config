@@ -1,15 +1,17 @@
-{ inputs, config, ... }:
+{ config, ... }:
 let
   home-mods = config.flake.homeModules;
   os-mods = config.flake.nixosModules;
+in
 
-  configuration =
+{
+  flake.nixosModules.action =
     { pkgs, lib, ... }:
     {
       imports = [
         # Include the results of the hardware scan.
-        ./hardware-configuration.nix
-        ./pam.nix
+        os-mods.action-hardware
+        os-mods.action-pam
       ];
 
       # nixpkgs.flake.source = lib.mkForce null;
@@ -278,15 +280,4 @@ let
         hashTableSizeMB = 128 * 2;
       };
     };
-in
-{
-  flake.nixosConfigurations.action = inputs.nixpkgs.lib.nixosSystem {
-    system = null;
-    modules = [
-      inputs.nixos-hardware.nixosModules.dell-xps-13-9310
-      os-mods.common
-      os-mods.personal
-      configuration
-    ];
-  };
 }

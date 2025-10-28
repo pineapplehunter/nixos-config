@@ -1,4 +1,9 @@
-{ config, inputs, ... }:
+{
+  config,
+  inputs,
+  self,
+  ...
+}:
 let
   flake-config = config;
 in
@@ -104,7 +109,7 @@ in
 
       age = {
         secrets.access_tokens = {
-          file = ../secrets/access-tokens.age;
+          file = "${self}/secrets/access-tokens.age";
           mode = "0440";
           group = "wheel";
         };

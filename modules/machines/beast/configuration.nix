@@ -2,21 +2,22 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ inputs, config, ... }:
+{ config, ... }:
 let
   home-mods = config.flake.homeModules;
   os-mods = config.flake.nixosModules;
-  configuration =
+in
+{
+  flake.nixosModules.beast =
     {
       pkgs,
       ...
     }:
-
     {
       imports = [
         # Include the results of the hardware scan.
-        ./hardware-configuration.nix
-        ./immich-related.nix
+        os-mods.beast-hardware
+        os-mods.beast-immich-related
       ];
 
       nix = {
@@ -201,14 +202,4 @@ let
       };
 
     };
-in
-{
-  flake.nixosConfigurations.beast = inputs.nixpkgs.lib.nixosSystem {
-    system = null;
-    modules = [
-      os-mods.common
-      os-mods.personal
-      configuration
-    ];
-  };
 }
