@@ -124,30 +124,6 @@
       }
     );
 
-  #       checks = eachSystem (
-  #         pkgs:
-  #         let
-  #           inherit (pkgs.hostPlatform) system;
-  #         in
-  #         {
-  #           user-shogo = self.homeConfigurations."shogo-${system}".activationPackage;
-  #           user-minimal-shogo = self.homeConfigurations."minimal-shogo-${system}".activationPackage;
-  #         }
-  #         // lib.optionalAttrs (system == "x86_64-linux") {
-  #           action = self.nixosConfigurations.action.config.system.build.toplevel;
-  #           beast = self.nixosConfigurations.beast.config.system.build.toplevel;
-  #           kpro-takata = self.nixosConfigurations.kpro-takata.config.system.build.toplevel;
-  #         }
-  #         // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
-  #           inherit (pkgs)
-  #             stl2pov
-  #             nautilus-thumbnailer-stl
-  #             ;
-  #         }
-  #       );
-
-  #     };
-
   nixConfig = {
     extra-substituters = [ "https://attic.s.ihavenojob.work/shogo" ];
     extra-trusted-public-keys = [ "shogo:R9ZWo9iGw8E0X6G24R7XLPH0UeE3VZ/WFi2+D0Kmud4=" ];
