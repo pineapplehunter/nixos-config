@@ -10,11 +10,11 @@
     {
       age.secrets = {
         geesefs-creds = {
-          file = "${self}/secrets/geesefs-creds.age";
+          file = self + /secrets/geesefs-creds.age;
           mode = "0400";
         };
         garage-secret = {
-          file = "${self}/secrets/garage-secret.age";
+          file = self + /secrets/garage-secret.age;
           mode = "0400";
           owner = "garage";
           group = "garage";

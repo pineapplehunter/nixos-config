@@ -109,7 +109,7 @@ in
 
       age = {
         secrets.access_tokens = {
-          file = "${self}/secrets/access-tokens.age";
+          file = self + /secrets/access-tokens.age;
           mode = "0440";
           group = "wheel";
         };

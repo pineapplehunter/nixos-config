@@ -90,7 +90,7 @@ in
       final: prev:
       prev.lib.packagesFromDirectoryRecursive {
         inherit (final) callPackage;
-        directory = "${self}/packages";
+        directory = self + /packages;
       };
 
     platformSpecificOverlay =
