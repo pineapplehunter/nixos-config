@@ -40,15 +40,10 @@
           kernelParams = [ "ima_policy=${cfg.policy}" ];
         };
 
-        environment.systemPackages = with pkgs; [
-          ima-evm-utils
-        ];
+        environment.systemPackages = [ pkgs.ima-evm-utils ];
 
         security = {
-          tpm2 = {
-            enable = true;
-            abrmd.enable = true;
-          };
+          tpm2.enable = true;
           lsm = [ "ima" ];
         };
 
