@@ -2,29 +2,46 @@
   description = "A basic shell";
 
   inputs.nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+  inputs.flake-parts.url = "github:hercules-ci/flake-parts";
 
   outputs =
-    { nixpkgs, ... }:
-    let
-      inherit (nixpkgs) lib;
-      systems = [
-        "aarch64-darwin"
-        "aarch64-linux"
-        "x86_64-darwin"
-        "x86_64-linux"
-      ];
-      overlays = [ ];
-      eachSystem = f: lib.genAttrs systems (system: f (import nixpkgs { inherit system overlays; }));
-    in
-    {
-      devShells = eachSystem (pkgs: {
-        default = pkgs.mkShell { packages = with pkgs; [ hello ]; };
-      });
+    { flake-parts, ... }@inputs:
+    flake-parts.lib.mkFlake { inherit inputs; } (
+      { config, ... }:
+      {
+        # Custom overlays for this shell
+        flake.overlays.default = final: prev: { };
 
-      # use nixfmt for all nix files
-      formatter = eachSystem (pkgs: pkgs.nixfmt-tree);
+        systems = [
+          "aarch64-darwin"
+          "aarch64-linux"
+          "x86_64-darwin"
+          "x86_64-linux"
+        ];
 
-      # make all packages accecible with `nix build`
-      legacyPackages = eachSystem lib.id;
-    };
+        perSystem =
+          { pkgs, system, ... }:
+          {
+            _module.args.pkgs = import inputs.nixpkgs {
+              inherit system;
+              overlays = [
+                config.flake.overlays.default
+                # Add overlays as needed
+              ];
+            };
+
+            devShells.default = pkgs.mkShell {
+              packages = with pkgs; [
+                hello
+              ];
+            };
+
+            # Use nixfmt for all nix files
+            formatter = pkgs.nixfmt-tree;
+
+            # Uncomment to build any package with `nix build .#package`
+            #legacyPackages = pkgs;
+          };
+      }
+    );
 }

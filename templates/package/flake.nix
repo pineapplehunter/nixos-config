@@ -2,42 +2,44 @@
   description = "A basic package";
 
   inputs.nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+  inputs.flake-parts.url = "github:hercules-ci/flake-parts";
 
   outputs =
-    { nixpkgs, config, ... }:
-    let
-      inherit (nixpkgs) lib;
-      systems = [
-        "aarch64-darwin"
-        "aarch64-linux"
-        "x86_64-darwin"
-        "x86_64-linux"
-      ];
-      overlays = [ config.flake.overlays.default ];
-      eachSystem = f: lib.genAttrs systems (system: f (import nixpkgs { inherit system overlays; }));
-    in
-    {
-      # add packages from `pkgs` directory
-      overlays.default =
-        final: prev:
-        lib.packagesFromDirectoryRecursive {
-          inherit (final) callPackage;
-          directory = ./pkgs;
+    { flake-parts, ... }@inputs:
+    flake-parts.lib.mkFlake { inherit inputs; } (
+      { config, ... }:
+      {
+        flake.overlays.default = final: prev: {
+          # Add custom packages
+          custom-package = final.callPackage ./package.nix { };
         };
 
-      packages = eachSystem (pkgs: {
-        # change name to the added package
-        default = pkgs.custom-package;
-      });
+        systems = [
+          "aarch64-darwin"
+          "aarch64-linux"
+          "x86_64-darwin"
+          "x86_64-linux"
+        ];
 
-      devShells = eachSystem (pkgs: {
-        default = pkgs.mkShell { packages = with pkgs; [ hello ]; };
-      });
+        perSystem =
+          { pkgs, system, ... }:
+          {
+            _module.args.pkgs = import inputs.nixpkgs {
+              inherit system;
+              overlays = [
+                config.flake.overlays.default
+                # Add overlays as needed
+              ];
+            };
 
-      # use nixfmt for all nix files
-      formatter = eachSystem (pkgs: pkgs.nixfmt-tree);
+            packages.default = pkgs.custom-package;
 
-      # make all packages accecible with `nix build`
-      legacyPackages = eachSystem lib.id;
-    };
+            # Use nixfmt for all nix files
+            formatter = pkgs.nixfmt-tree;
+
+            # Uncomment to build any package with `nix build .#package`
+            #legacyPackages = pkgs;
+          };
+      }
+    );
 }
