@@ -53,6 +53,7 @@
           ./modules/default.nix
           ./overlay/default.nix
           ./templates/default.nix
+          ./secrets/default.nix
         ];
 
         systems = [

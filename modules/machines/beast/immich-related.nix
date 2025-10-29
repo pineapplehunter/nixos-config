@@ -1,4 +1,4 @@
-{ self, ... }:
+{ config, ... }:
 {
   flake.nixosModules.beast-immich-related =
     {
@@ -10,11 +10,11 @@
     {
       age.secrets = {
         geesefs-creds = {
-          file = self + /secrets/geesefs-creds.age;
+          file = config.ageFile.geesefs-creds;
           mode = "0400";
         };
         garage-secret = {
-          file = self + /secrets/garage-secret.age;
+          file = config.ageFile.garage-secret;
           mode = "0400";
           owner = "garage";
           group = "garage";

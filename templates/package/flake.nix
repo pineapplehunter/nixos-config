@@ -4,7 +4,7 @@
   inputs.nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
 
   outputs =
-    { self, nixpkgs, ... }:
+    { nixpkgs, config, ... }:
     let
       inherit (nixpkgs) lib;
       systems = [
@@ -13,7 +13,7 @@
         "x86_64-darwin"
         "x86_64-linux"
       ];
-      overlays = [ self.overlays.default ];
+      overlays = [ config.flake.overlays.default ];
       eachSystem = f: lib.genAttrs systems (system: f (import nixpkgs { inherit system overlays; }));
     in
     {

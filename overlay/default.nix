@@ -2,7 +2,6 @@
   inputs,
   config,
   lib,
-  self,
   ...
 }:
 let
@@ -90,7 +89,7 @@ in
       final: prev:
       prev.lib.packagesFromDirectoryRecursive {
         inherit (final) callPackage;
-        directory = self + /packages;
+        directory = ./packages;
       };
 
     platformSpecificOverlay =
