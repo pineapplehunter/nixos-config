@@ -74,15 +74,6 @@ in
           };
         }
       );
-
-      btrfs-assistant = prev.btrfs-assistant.overrideAttrs (old: {
-        patches = (old.patches or [ ]) ++ [
-          (final.fetchpatch {
-            url = "https://gitlab.com/btrfs-assistant/btrfs-assistant/-/commit/edc0a13bac5189a1a910f5adab01b2d5b60c76f6.diff";
-            hash = "sha256-kGyp5OaSGk4OvhtyNSygJEW+wAJksK8opxtLPbhA+10=";
-          })
-        ];
-      });
     };
 
     custom-packages =

@@ -16,7 +16,7 @@
         virtualisation.libvirtd.qemu.swtpm.enable = true;
 
         environment.systemPackages = [
-          pkgs.win-virtio
+          pkgs.virtio-win
           pkgs.win-spice
         ];
 
