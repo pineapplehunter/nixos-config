@@ -51,11 +51,13 @@ in
       });
 
       # Fix issue: non-standard version representation
-      nix-search-cli = inputs.nix-search-cli.packages.${final.system}.default.overrideAttrs (old: {
-        version = lib.head (lib.match ''[^0-9]*([0-9\.]+).*'' old.version);
-        # supress warning
-        inherit (old) src;
-      });
+      nix-search-cli =
+        inputs.nix-search-cli.packages.${final.stdenv.hostPlatform.system}.default.overrideAttrs
+          (old: {
+            version = lib.head (lib.match ''[^0-9]*([0-9\.]+).*'' old.version);
+            # supress warning
+            inherit (old) src;
+          });
 
       # Add capability support
       # https://github.com/eza-community/eza/pull/1624
@@ -92,7 +94,7 @@ in
       in
       recursiveMergeAttrs [
         (lib.optionalAttrs prev.stdenv.hostPlatform.isLinux {
-          inherit (import inputs.nixpkgs-stable { inherit (prev) system; })
+          inherit (import inputs.nixpkgs-stable { inherit (prev.stdenv.hostPlatform) system; })
             ;
         })
         (lib.optionalAttrs prev.stdenv.hostPlatform.isDarwin { })
