@@ -24,6 +24,8 @@ in
         secureboot.enable = true;
       };
 
+      pineapplehunter.japanese.environment.enable = false;
+
       # nixpkgs.flake.source = lib.mkForce null;
       nix = {
         distributedBuilds = true;
@@ -245,6 +247,8 @@ in
         power-targets.enable = true;
         hibernation.enable = true;
       };
+
+      console.keyMap = lib.mkDefault "jp106";
 
       specialisation = {
         xe-driver.configuration = {
