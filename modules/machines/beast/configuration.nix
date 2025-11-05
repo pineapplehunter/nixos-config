@@ -16,6 +16,8 @@ in
     {
       imports = [
         # Include the results of the hardware scan.
+        os-mods.common
+        os-mods.personal
         os-mods.beast-hardware
         os-mods.beast-immich-related
       ];

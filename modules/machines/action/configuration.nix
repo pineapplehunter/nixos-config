@@ -1,4 +1,4 @@
-{ config, ... }:
+{ inputs, config, ... }:
 let
   home-mods = config.flake.homeModules;
   os-mods = config.flake.nixosModules;
@@ -10,6 +10,9 @@ in
     {
       imports = [
         # Include the results of the hardware scan.
+        inputs.nixos-hardware.nixosModules.dell-xps-13-9310
+        os-mods.common
+        os-mods.personal
         os-mods.action-hardware
         os-mods.action-pam
       ];
