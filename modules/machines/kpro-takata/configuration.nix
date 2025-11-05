@@ -220,7 +220,6 @@ in
 
         fprintd.enable = true;
 
-        # services.automatic-timezoned.enable = true;
         fwupd.enable = true;
 
         beesd.filesystems."-" = {
