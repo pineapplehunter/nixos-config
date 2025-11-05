@@ -194,6 +194,7 @@ in
             "networkmanager"
             "wheel"
             "dialout"
+            "tss" # for tpm2
           ];
         };
       };
