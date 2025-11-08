@@ -52,8 +52,11 @@ in
 
       # Use the systemd-boot EFI boot loader.
       boot = {
-        loader.systemd-boot.enable = true;
-        loader.systemd-boot.consoleMode = "0";
+        loader.systemd-boot = {
+          enable = true;
+          consoleMode = "0";
+          configurationLimit = 30;
+        };
         #boot.loader.efi.canTouchEfiVariables = true;
         binfmt.emulatedSystems = [
           "aarch64-linux"

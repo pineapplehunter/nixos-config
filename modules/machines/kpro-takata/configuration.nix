@@ -141,6 +141,7 @@ in
           "wasm32-wasi"
         ];
         supportedFilesystems = [ "btrfs" ];
+        loader.systemd-boot.configurationLimit = 30;
       };
 
       networking = {
