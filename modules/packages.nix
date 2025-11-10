@@ -52,7 +52,6 @@
         gitify
         pdfarranger
         super-productivity
-        webcord
 
         # other
         gnome-firmware
