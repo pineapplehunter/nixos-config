@@ -32,6 +32,7 @@ in
           mods.secureboot
           mods.selinux
           mods.shell-config
+          mods.tpm2
           mods.windows-vm
         ];
 

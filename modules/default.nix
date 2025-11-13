@@ -16,6 +16,7 @@
     ./secureboot.nix
     ./selinux.nix
     ./shell-config/default.nix
+    ./tpm2.nix
     ./windows-vm.nix
   ];
 }

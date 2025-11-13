@@ -25,6 +25,7 @@ in
         ima.enable = true;
         selinux.enable = true;
         secureboot.enable = true;
+        tpm2.enable = true;
       };
 
       pineapplehunter.japanese.environment.enable = false;

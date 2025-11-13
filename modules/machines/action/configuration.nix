@@ -17,6 +17,8 @@ in
         os-mods.action-pam
       ];
 
+      my.tpm2.enable = true;
+
       # nixpkgs.flake.source = lib.mkForce null;
       nix = {
         distributedBuilds = true;
@@ -267,10 +269,6 @@ in
       # debug info for ease of debug
       environment.enableDebugInfo = true;
 
-      security.tpm2 = {
-        enable = true;
-        abrmd.enable = true;
-      };
       services.openssh.settings.PasswordAuthentication = false;
 
       services.beesd.filesystems."-" = {
