@@ -10,7 +10,22 @@ in
       lib,
       ...
     }:
-
+    let
+      xe-config =
+        { lib, config, ... }:
+        let
+          cfg = config.my.xe;
+        in
+        {
+          options.my.xe.enable = lib.mkEnableOption "enable xe driver";
+          config = lib.mkIf cfg.enable {
+            boot.kernelParams = [
+              "i915.force_probe=!7d51"
+              "xe.force_probe=7d51"
+            ];
+          };
+        };
+    in
     {
       imports = [
         # Include the results of the hardware scan.
@@ -19,6 +34,7 @@ in
         os-mods.kpro
         os-mods.kpro-takata-hardware
         os-mods.kpro-takata-pam
+        xe-config
       ];
 
       my = {
@@ -26,6 +42,7 @@ in
         selinux.enable = true;
         secureboot.enable = true;
         tpm2.enable = true;
+        xe.enable = lib.mkDefault true;
       };
 
       pineapplehunter.japanese.environment.enable = false;
@@ -257,11 +274,8 @@ in
       console.keyMap = lib.mkDefault "jp106";
 
       specialisation = {
-        xe-driver.configuration = {
-          boot.kernelParams = [
-            "i915.force_probe=!7d51"
-            "xe.force_probe=7d51"
-          ];
+        no-xe.configuration = {
+          my.xe.enable = false;
         };
         noresume.configuration = {
           boot.kernelParams = [ "noresume" ];
