@@ -269,6 +269,8 @@ in
           (certToPem ./NPCTxxxECC384LeafCA012111.cer)
         ];
 
+      security.tpm2.fapi.profileName = "P_ECCP384SHA384";
+
       specialisation = {
         xe-driver.configuration = {
           boot.kernelParams = [
