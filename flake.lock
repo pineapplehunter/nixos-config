@@ -401,15 +401,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1744084593,
-        "narHash": "sha256-18CGSBp1gT9sjzeQI3kmG5nxQi4h3zG2GhDoMv69umg=",
+        "lastModified": 1763076773,
+        "narHash": "sha256-CGAq34Sw3wB6Gou3t75/Az9fCUn5GJO1s0WhP8bqXfU=",
         "owner": "pineapplehunter",
         "repo": "nixGL",
-        "rev": "04cd7242dd960ac228f202a8072cb9eb57c566fe",
+        "rev": "d0cd6aab4e02279c8af82870921971855945fe29",
         "type": "github"
       },
       "original": {
         "owner": "pineapplehunter",
+        "ref": "fix-system",
         "repo": "nixGL",
         "type": "github"
       }

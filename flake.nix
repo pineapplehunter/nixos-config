@@ -28,7 +28,7 @@
       inputs.home-manager.follows = "home-manager";
     };
     nixgl = {
-      url = "github:pineapplehunter/nixGL";
+      url = "github:pineapplehunter/nixGL?ref=fix-system";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-search-cli = {
