@@ -256,21 +256,6 @@ in
 
       console.keyMap = lib.mkDefault "jp106";
 
-      security.pki.certificateFiles =
-        let
-          certToPem =
-            cert:
-            pkgs.runCommand "custom.pem" { nativeBuildInputs = [ pkgs.openssl ]; } ''
-              openssl x509 -in ${cert} -out $out
-            '';
-        in
-        [
-          (certToPem ./NPCTxxxECC521RootCA.cer)
-          (certToPem ./NPCTxxxECC384LeafCA012111.cer)
-        ];
-
-      security.tpm2.fapi.profileName = "P_ECCP384SHA384";
-
       specialisation = {
         xe-driver.configuration = {
           boot.kernelParams = [
