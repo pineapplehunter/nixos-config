@@ -65,12 +65,9 @@ in
               ge.blur-my-shell
               ge.caffeine
               ge.gsconnect
-              ge.just-perfection
               ge.night-theme-switcher
-              ge.quick-lang-switch
               ge.runcat
               ge.tailscale-qs
-              ge.tiling-assistant
             ];
         };
 
