@@ -75,12 +75,14 @@
             file-types = [ "ninja" ];
           }
           {
-            name = "tamarin";
+            # Tamarin
+            name = "spthy";
             source = pkgs.fetchFromGitHub {
-              owner = "aeyno";
-              repo = "tree-sitter-tamarin";
-              rev = "07e2f32c1e9f68e8b813b8eca924a61f2c4b94d8";
-              hash = "sha256-J2LoV0mu1PDMrwGoK671naWpT50dv3muR/WJ3MyRQOI=";
+              owner = "tamarin-prover";
+              repo = "tamarin-prover";
+              rootDir = "tree-sitter/tree-sitter-spthy";
+              rev = "32705dd3717361574fc8dada786d4930a3b7ad29";
+              hash = "sha256-/0IEwOVujWr4iFCEZWr9/opSu+mONCgd1miZqI2QK+M=";
             };
             comment-tokens = [ "//" ];
             file-types = [ "spthy" ];
