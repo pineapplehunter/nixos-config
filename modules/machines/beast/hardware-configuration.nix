@@ -45,10 +45,8 @@
             "defaults"
 
             "autodefrag"
-            "commit=120"
             "compress=zstd"
             "noatime"
-            "nossd"
             "nosuid"
             "space_cache=v2"
             "subvol=@"
