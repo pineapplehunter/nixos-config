@@ -81,8 +81,8 @@
               owner = "tamarin-prover";
               repo = "tamarin-prover";
               rootDir = "tree-sitter/tree-sitter-spthy";
-              rev = "32705dd3717361574fc8dada786d4930a3b7ad29";
-              hash = "sha256-/0IEwOVujWr4iFCEZWr9/opSu+mONCgd1miZqI2QK+M=";
+              rev = "b9136cb6c263ffc8f43ff54f9c31d7df62f9e85c";
+              hash = "sha256-4GQ9MUS3epj6NOsLos5k4+Omsixho1W9aLg0W2TcOgc=";
             };
             comment-tokens = [ "//" ];
             file-types = [ "spthy" ];
