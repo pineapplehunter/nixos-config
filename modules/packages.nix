@@ -34,6 +34,7 @@
         pciutils
         reptyr
         ripgrep
+        snapper-gui
         tree
         unzipNLS
         usbutils
