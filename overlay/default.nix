@@ -88,6 +88,20 @@ in
           ];
         });
       };
+
+      gnomeExtensions = prev.gnomeExtensions // {
+        # https://github.com/joaophi/tailscale-gnome-qs/pull/45
+        tailscale-qs = prev.gnomeExtensions.tailscale-qs.overrideAttrs (old: {
+          version = "0-custom";
+          src = final.fetchFromGitHub {
+            owner = "joaophi";
+            repo = "tailscale-gnome-qs";
+            rootDir = "tailscale@joaophi.github.com";
+            rev = "94c4fdce6b9e76d0856b1f916f50b8f53388f129";
+            hash = "sha256-7AWWn6hb44ORlbhr3WK6VUM8NHAI2ObH0KYbjfmhwXk=";
+          };
+        });
+      };
     };
 
     custom-packages =
