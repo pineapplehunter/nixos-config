@@ -66,17 +66,16 @@ in
         plymouth.enable = false;
       };
 
-      # for bcache writeback
-      # https://wiki.archlinux.org/title/Bcache#Situation:_Prevent_all_write_access_to_a_HDD
-      # turns out trying to prevent all writes may be a bad idea
-      systemd = {
-        tmpfiles.settings."bcache" = {
-          "/sys/block/bcache0/bcache/cache_mode".w.argument = "writeback";
-          "/sys/block/bcache0/bcache/writeback_percent".w.argument = toString (24 * 60 * 60); # a day
-          "/sys/block/bcache0/bcache/sequential_cutoff".w.argument = toString (64 * 1024 * 1024); # 64M
-          "/sys/block/bcache0/bcache/writeback_delay".w.argument = toString 600; # 10 min
-          "/sys/block/bcache0/bcache/cache/congested_read_threshold_us".w.argument = "0";
-          "/sys/block/bcache0/bcache/cache/congested_write_threshold_us".w.argument = "0";
+      systemd.services = {
+        bcache-setup = {
+          description = "Initial setup for bcache";
+          path = [ pkgs.bcache-tools ];
+          script = ''
+            sudo bcache set-cachemode /dev/disk/by-uuid/fed831d5-efca-4101-a6e8-5abde217964c writearound
+            sudo bcache set-cachemode /dev/disk/by-uuid/97d0acab-c4d0-4987-8f46-055cfc9a06c1 writearound
+          '';
+          serviceConfig.Type = "oneshot";
+          wantedBy = [ "default.target" ];
         };
       };
 
