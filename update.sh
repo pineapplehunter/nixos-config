@@ -105,11 +105,11 @@ function os-switch {
 }
 
 function os-boot {
-  sudo nixos-rebuild boot --flake ".#$HOST"
+  sudo nixos-rebuild boot --flake ".#$HOST" "${args[@]}"
 }
 
 function os-test {
-  sudo nixos-rebuild test --flake ".#$HOST"
+  sudo nixos-rebuild test --flake ".#$HOST" "${args[@]}"
 }
 
 function os-update {
