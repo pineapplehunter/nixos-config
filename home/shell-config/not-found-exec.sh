@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if ! command -v nix > /dev/null; then
+  echo nix command not found in PATH
+  exit 1
+fi
+
 cmd="$1"
 nixpkgs=$(@jq@ '.flakes[] | select(.from.id | contains("nixpkgs")) | .to.path' -r < /etc/nix/registry.json || echo "github:nixos/nixpkgs?ref=nixos-unstable")
 export NIXPKGS_ALLOW_UNFREE=1
@@ -28,4 +33,4 @@ if [ -n "@confirm@" ]; then
   esac
 fi
 
-@nix@ shell "$nixpkgs#$cmd_package" --impure -c "$cmd_name" "$@"
+nix shell "$nixpkgs#$cmd_package" --impure -c "$cmd_name" "$@"

@@ -22,7 +22,6 @@
           inherit (cfg.not-found-exec) confirm;
           cut = "${pkgs.coreutils}/bin/cut";
           jq = getExe pkgs.jq;
-          nix = getExe config.nix.package;
         };
         name = "not-found-exec";
         dir = "bin";
@@ -34,7 +33,6 @@
         src = ./which-nix.sh;
         replacements = {
           jq = getExe pkgs.jq;
-          nix = getExe config.nix.package;
           which = getExe pkgs.which;
         };
         name = "which-nix";
@@ -56,7 +54,6 @@
         src = ./man-nix.sh;
         replacements = {
           jq = getExe pkgs.jq;
-          nix = getExe config.nix.package;
           man = getExe pkgs.man;
         };
         name = "man-nix";
