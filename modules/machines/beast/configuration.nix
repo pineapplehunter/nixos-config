@@ -135,6 +135,8 @@ in
             hashTableSizeMB = 1024;
           };
         };
+
+        smartd.enable = true;
       };
 
       networking = {
