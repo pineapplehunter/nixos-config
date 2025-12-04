@@ -1,5 +1,5 @@
 {
-  flake.nixosModules.shell-config =
+  flake.homeModules.shell-config =
     {
       config,
       lib,
@@ -83,24 +83,24 @@
         programs = {
           command-not-found.enable = false;
 
-          zsh.interactiveShellInit = ''
-            function command_not_found_handler() {
-              ${getExe not-found-exec} "$@"
+          zsh.initContent = ''
+            command_not_found_handler() {
+              "${getExe not-found-exec}" "$@"
             }
           '';
           fish.interactiveShellInit = ''
             function fish_command_not_found
-              ${getExe not-found-exec} argv
+              "${getExe not-found-exec}" $argv
             end
           '';
-          bash.interactiveShellInit = ''
-            function command_not_found_handler() {
-              ${getExe not-found-exec} "$@"
+          bash.initExtra = ''
+            command_not_found_handler() {
+              "${getExe not-found-exec}" "$@"
             }
           '';
         };
 
-        environment.systemPackages =
+        home.packages =
           optionals cfg.not-found-exec.addToPath [ not-found-exec ]
           ++ optionals cfg.which-nix.enable [ which-nix ]
           ++ optionals cfg.sudo-nix.enable [ sudo-nix ]

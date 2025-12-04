@@ -23,9 +23,10 @@ in
           mods.inkscape-symbols
           mods.julia
           mods.minimal
+          mods.packages
+          mods.shell-config
           mods.ssh
           mods.zellij
-          mods.packages
         ];
 
       programs = {
@@ -80,6 +81,11 @@ in
         gpg.enable = true;
 
         julia.enable = system == "x86_64-linux";
+
+        not-found-exec.enable = true;
+        which-nix.enable = true;
+        sudo-nix.enable = true;
+        man-nix.enable = true;
       };
 
       home = {

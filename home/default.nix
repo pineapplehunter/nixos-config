@@ -84,6 +84,7 @@ in
     ./packages-minimal.nix
     ./packages.nix
     ./pineapplehunter.nix
+    ./shell-config/default.nix
     ./shogo.nix
     ./ssh.nix
     ./zellij.nix

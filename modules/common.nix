@@ -31,7 +31,6 @@ in
           mods.power-targets
           mods.secureboot
           mods.selinux
-          mods.shell-config
           mods.tpm2
           mods.windows-vm
         ];
@@ -131,10 +130,6 @@ in
             ip = "ip --color=auto";
           };
         };
-        not-found-exec.enable = true;
-        which-nix.enable = true;
-        sudo-nix.enable = true;
-        man-nix.enable = true;
 
         bandwhich.enable = true;
       };
