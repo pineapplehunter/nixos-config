@@ -77,6 +77,8 @@ in
           serviceConfig.Type = "oneshot";
           wantedBy = [ "default.target" ];
         };
+        # disable display manager on boot
+        display-manager.enable = false;
       };
 
       services = {
