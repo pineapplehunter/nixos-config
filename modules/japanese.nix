@@ -58,19 +58,9 @@
 
             # Select internationalisation properties.
             i18n.defaultLocale = lib.mkDefault "ja_JP.UTF-8";
-
-            i18n.extraLocaleSettings = {
-              LC_ADDRESS = lib.mkDefault "ja_JP.UTF-8";
-              LC_IDENTIFICATION = lib.mkDefault "ja_JP.UTF-8";
-              LC_MEASUREMENT = lib.mkDefault "ja_JP.UTF-8";
-              LC_MONETARY = lib.mkDefault "ja_JP.UTF-8";
-              LC_NAME = lib.mkDefault "ja_JP.UTF-8";
-              LC_NUMERIC = lib.mkDefault "ja_JP.UTF-8";
-              LC_PAPER = lib.mkDefault "ja_JP.UTF-8";
-              LC_TELEPHONE = lib.mkDefault "ja_JP.UTF-8";
-              LC_TIME = lib.mkDefault "ja_JP.UTF-8";
-            };
           })
+
+          { i18n.extraLocales = [ "ja_JP.UTF-8/UTF-8" ]; }
         ]
       );
     };
