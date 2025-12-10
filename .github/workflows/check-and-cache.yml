@@ -28,6 +28,9 @@ jobs:
       - uses: wimpysworld/nothing-but-nix@main
         if: runner.os == 'Linux'
       - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            fallback = true
 
       - name: Setup Attic Cache
         continue-on-error: true
@@ -37,7 +40,7 @@ jobs:
           attic use ${{ vars.ATTIC_CACHE }}
 
       - name: Run checks
-        run: nix build ".#ci" --fallback
+        run: nix build ".#ci"
 
       - name: Upload Cache
         if: always()
