@@ -11,5 +11,8 @@
     ./kpro-takata/configuration.nix
     ./kpro-takata/hardware-configuration.nix
     ./kpro-takata/pam.nix
+
+    ./rpi5/default.nix
+    ./rpi5/garage.nix
   ];
 }

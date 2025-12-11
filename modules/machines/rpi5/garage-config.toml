@@ -1,0 +1,32 @@
+metadata_dir = "/garage/meta"
+data_dir = "/garage/data"
+db_engine = "sqlite"
+
+metadata_auto_snapshot_interval = "12h"
+
+
+replication_factor = 2
+
+# compression_level = 1
+
+rpc_bind_addr = "[::]:3901"
+rpc_public_addr = "100.120.80.18:3901"
+
+bootstrap_peers = [
+  "066b82b40e430166c50c554a07ecc3b3dfc4bd636889c868409ae8f2c711cf49@ihavenojob.work:3901",
+]
+
+# consistency_mode = "dangerous"
+
+[s3_api]
+s3_region = "garage"
+api_bind_addr = "0.0.0.0:3900"
+root_domain = ".s3.garage"
+
+[s3_web]
+bind_addr = "100.120.80.18:3902"
+root_domain = ".web.garage"
+index = "index.html"
+
+[admin]
+api_bind_addr = "0.0.0.0:3903"

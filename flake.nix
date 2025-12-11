@@ -42,6 +42,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.rust-overlay.follows = "rust-overlay";
     };
+    nixos-raspberrypi = {
+      url = "github:nvmd/nixos-raspberrypi/develop";
+    };
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -128,7 +135,13 @@
     );
 
   nixConfig = {
-    extra-substituters = [ "https://attic.s.ihavenojob.work/shogo" ];
-    extra-trusted-public-keys = [ "shogo:R9ZWo9iGw8E0X6G24R7XLPH0UeE3VZ/WFi2+D0Kmud4=" ];
+    extra-substituters = [
+      "https://attic.s.ihavenojob.work/shogo"
+      "https://nixos-raspberrypi.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "shogo:R9ZWo9iGw8E0X6G24R7XLPH0UeE3VZ/WFi2+D0Kmud4="
+      "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
+    ];
   };
 }
