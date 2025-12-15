@@ -62,6 +62,8 @@ in
               useRoutingFeatures = "both";
             };
 
+            programs.atop.enable = true;
+
             time.timeZone = "Asia/Tokyo";
             networking.hostName = "rpi5";
 
