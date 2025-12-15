@@ -74,19 +74,19 @@
             comment-tokens = [ "#" ];
             file-types = [ "ninja" ];
           }
-          # {
-          #   # Tamarin
-          #   name = "spthy";
-          #   source = pkgs.fetchFromGitHub {
-          #     owner = "tamarin-prover";
-          #     repo = "tamarin-prover";
-          #     rootDir = "tree-sitter/tree-sitter-spthy";
-          #     rev = "b9136cb6c263ffc8f43ff54f9c31d7df62f9e85c";
-          #     hash = "sha256-4GQ9MUS3epj6NOsLos5k4+Omsixho1W9aLg0W2TcOgc=";
-          #   };
-          #   comment-tokens = [ "//" ];
-          #   file-types = [ "spthy" ];
-          # }
+          {
+            # Tamarin
+            name = "spthy";
+            source = pkgs.fetchFromGitHub {
+              owner = "tamarin-prover";
+              repo = "tamarin-prover";
+              rootDir = "tree-sitter/tree-sitter-spthy";
+              rev = "b9136cb6c263ffc8f43ff54f9c31d7df62f9e85c";
+              hash = "sha256-4GQ9MUS3epj6NOsLos5k4+Omsixho1W9aLg0W2TcOgc=";
+            };
+            comment-tokens = [ "//" ];
+            file-types = [ "spthy" ];
+          }
         ];
         languages = lib.importTOML ./helix-languages.toml;
         settings = {
