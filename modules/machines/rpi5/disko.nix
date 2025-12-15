@@ -71,7 +71,10 @@ in
     "/var/log".neededForBoot = true;
     "/garage" = {
       device = "/dev/bcache0";
-      options = mountOptions ++ [ "nofail" ];
+      options = mountOptions ++ [
+        "nofail"
+        "x-systemd.required-by=garage.service"
+      ];
     };
   };
 
