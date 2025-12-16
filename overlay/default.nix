@@ -25,7 +25,6 @@ in
 
   flake.overlays = {
     default = lib.composeManyExtensions [
-      overlays.platformSpecificOverlay
       overlays.global
       overlays.custom-packages
     ];
@@ -116,20 +115,5 @@ in
         inherit (final) callPackage;
         directory = ./packages;
       };
-
-    platformSpecificOverlay =
-      final: prev:
-      let
-        # from https://discourse.nixos.org/t/nix-function-to-merge-attributes-records-recursively-and-concatenate-arrays/2030?u=pineapplehunter
-        recursiveMergeAttrs =
-          listOfAttrsets: lib.fold (attrset: acc: lib.recursiveUpdate attrset acc) { } listOfAttrsets;
-      in
-      recursiveMergeAttrs [
-        (lib.optionalAttrs prev.stdenv.hostPlatform.isLinux {
-          inherit (import inputs.nixpkgs-stable { inherit (prev.stdenv.hostPlatform) system; })
-            ;
-        })
-        (lib.optionalAttrs prev.stdenv.hostPlatform.isDarwin { })
-      ];
   };
 }
