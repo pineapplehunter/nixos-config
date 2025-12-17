@@ -135,7 +135,7 @@
           nodePackages.typescript-language-server
         ]
         ++ lib.optionals isLinux [
-          marksman
+          markdown-oxide
           basedpyright
         ];
     };
