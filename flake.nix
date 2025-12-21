@@ -124,6 +124,9 @@
               beast = config.flake.nixosConfigurations.beast.config.system.build.toplevel;
               kpro-takata = config.flake.nixosConfigurations.kpro-takata.config.system.build.toplevel;
             }
+            // lib.optionalAttrs (system == "aarch64-linux") {
+              rpi5 = config.flake.nixosConfigurations.rpi5.config.system.build.toplevel;
+            }
             // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
               inherit (pkgs)
                 stl2pov
