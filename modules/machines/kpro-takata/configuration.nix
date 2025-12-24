@@ -273,6 +273,8 @@ in
 
       console.keyMap = lib.mkDefault "jp106";
 
+      security.tpm2.fapi.profileName = "P_ECCP384SHA384";
+
       specialisation = {
         no-xe.configuration = {
           my.xe.enable = false;
