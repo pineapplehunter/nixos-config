@@ -43,6 +43,7 @@ in
         secureboot.enable = true;
         tpm2.enable = true;
         xe.enable = lib.mkDefault true;
+        fsverity.enable = true;
       };
 
       pineapplehunter.japanese.environment.enable = false;

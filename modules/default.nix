@@ -2,6 +2,7 @@
   imports = [
     ./common.nix
     ./fonts.nix
+    ./fsverity.nix
     ./gstreamer.nix
     ./hibernate.nix
     ./ima.nix
