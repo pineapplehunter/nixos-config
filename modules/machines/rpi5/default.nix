@@ -64,6 +64,17 @@ in
               useRoutingFeatures = "both";
             };
 
+            services.beesd.filesystems = {
+              "root" = {
+                spec = "/";
+                hashTableSizeMB = 128;
+              };
+              "garage" = {
+                spec = "/garage";
+                hashTableSizeMB = 128;
+              };
+            };
+
             programs.atop.enable = true;
 
             time.timeZone = "Asia/Tokyo";
