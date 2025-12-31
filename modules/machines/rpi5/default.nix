@@ -76,6 +76,7 @@ in
             };
 
             programs.atop.enable = true;
+            programs.zsh.enable = true;
 
             time.timeZone = "Asia/Tokyo";
             networking.hostName = "rpi5";
@@ -138,6 +139,8 @@ in
 
             # Allow the user to log in as root without a password.
             users.users.root.initialHashedPassword = "";
+
+            users.defaultUserShell = pkgs.zsh;
 
             # Don't require sudo/root to `reboot` or `poweroff`.
             security.polkit.enable = true;
