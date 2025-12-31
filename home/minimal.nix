@@ -36,6 +36,13 @@ in
               ignoreSpace = true;
               path = "${config.xdg.cacheHome}/zsh/zsh_history";
             };
+            autosuggestion.enable = true;
+            syntaxHighlighting.enable = true;
+            historySubstringSearch = {
+              enable = true;
+              searchUpKey = "$terminfo[kcuu1]";
+              searchDownKey = "$terminfo[kcud1]";
+            };
           };
 
           direnv = {
