@@ -15,11 +15,7 @@
     };
     xremap-flake = {
       url = "github:xremap/nix-flake";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        home-manager.follows = "home-manager";
-        hyprland.follows = "empty";
-      };
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-hardware.url = "github:pineapplehunter/nixos-hardware";
     agenix = {
