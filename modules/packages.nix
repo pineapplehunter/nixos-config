@@ -28,7 +28,8 @@
         nixfmt-rfc-style
         nixpkgs-fmt
         npins
-        omnix
+        # https://github.com/NixOS/nixpkgs/pull/472294
+        # omnix
         openssl
         papers
         pciutils
