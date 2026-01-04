@@ -47,4 +47,4 @@ jobs:
       - name: Upload Cache
         if: always()
         continue-on-error: true
-        run: nix path-info --all | grep -v ".drv$" | attic push ${{ vars.ATTIC_CACHE }} --stdin -j 1
+        run: nix path-info --all | grep -v ".drv$" | attic push ${{ vars.ATTIC_CACHE }} --stdin
