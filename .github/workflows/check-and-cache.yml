@@ -13,12 +13,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runner:
-          - "ubuntu-24.04"
-          - "ubuntu-24.04-arm"
-          - "macos-26"
-          - "macos-15-intel"
-    runs-on: ${{ matrix.runner }}
+        cfg:
+          - runner: "ubuntu-24.04"
+            system: "x86_64-linux"
+          - runner: "ubuntu-24.04-arm"
+            system: "aarch64-linux"
+          - runner: "macos-26"
+            system: "aarch64-darwin"
+          - runner: "macos-26"
+            system: "x86_64-darwin"
+    runs-on: ${{ matrix.cfg.runner }}
     steps:
       - uses: actions/checkout@v5
       - name: enable unprivileged userns clone
@@ -33,6 +37,7 @@ jobs:
           extra_nix_config: |
             fallback = true
             accept-flake-config = true
+            system = ${{ matrix.cfg.system }}
 
       - name: Setup Attic Cache
         continue-on-error: true
