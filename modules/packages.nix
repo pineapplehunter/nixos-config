@@ -10,10 +10,12 @@
         btop
         btrfs-assistant
         curlFull
+        delta
         fd
         file
         git
         github-cli
+        glow
         gnome-tweaks
         gnumake
         google-calendar-open
