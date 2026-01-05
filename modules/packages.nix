@@ -53,7 +53,7 @@
         errands
         gitify
         pdfarranger
-        # super-productivity
+        super-productivity
 
         # other
         gnome-firmware
