@@ -36,13 +36,8 @@ jobs:
             fallback = true
             accept-flake-config = true
             system = ${{ matrix.cfg.system }}
-
-      - name: Setup Attic Cache
-        continue-on-error: true
-        run: |
-          nix profile add --inputs-from . "nixpkgs#attic-client"
-          attic login attic-server ${{ vars.ATTIC_ENDPOINT }} ${{ secrets.ATTIC_TOKEN }}
-          attic use ${{ vars.ATTIC_CACHE }}
+            extra-substituters = https://attic.s.ihavenojob.work/shogo
+            extra-trusted-public-keys = shogo:R9ZWo9iGw8E0X6G24R7XLPH0UeE3VZ/WFi2+D0Kmud4=
 
       - name: Run checks
         run: nix build ".#ci"
@@ -50,4 +45,8 @@ jobs:
       - name: Upload Cache
         if: always()
         continue-on-error: true
-        run: nix path-info --all | grep -v ".drv$" | attic push ${{ vars.ATTIC_CACHE }} --stdin
+        run: |
+          nix profile add --inputs-from . "nixpkgs#attic-client"
+          attic login attic-server ${{ vars.ATTIC_ENDPOINT }} ${{ secrets.ATTIC_TOKEN }}
+          attic use ${{ vars.ATTIC_CACHE }}
+          nix path-info --all | grep -v ".drv$" | attic push ${{ vars.ATTIC_CACHE }} --stdin
