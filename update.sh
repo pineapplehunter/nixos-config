@@ -117,8 +117,8 @@ function os-update {
   nix flake update nixpkgs
   if ! git diff --exit-code --quiet HEAD -- flake.lock; then
     nix flake update
-    os-switch || git checkout HEAD -- flake.lock
   fi
+  os-switch || git checkout HEAD -- flake.lock
 }
 
 ## home ############################################
@@ -163,8 +163,8 @@ function home-update {
   nix flake update nixpkgs
   if ! git diff --exit-code --quiet HEAD -- flake.lock; then
     nix flake update
-    home-switch || git checkout HEAD -- flake.lock
   fi
+  home-switch || git checkout HEAD -- flake.lock
 }
 
 function home-fix-darwin {
