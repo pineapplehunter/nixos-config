@@ -70,8 +70,10 @@ in
 
         gpg.enable = true;
 
-        # https://github.com/NixOS/nixpkgs/issues/475534
-        # julia.enable = system == "x86_64-linux";
+        julia = {
+          enable = system == "x86_64-linux";
+          package = pkgs.julia-bin;
+        };
 
         not-found-exec.enable = true;
         which-nix.enable = true;

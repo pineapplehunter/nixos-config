@@ -10,7 +10,10 @@
       cfg = config.programs.julia;
     in
     {
-      options.programs.julia.enable = lib.mkEnableOption "julia";
+      options.programs.julia = {
+        enable = lib.mkEnableOption "julia";
+        package = lib.mkPackageOption pkgs "julia" { };
+      };
       config = lib.mkIf cfg.enable {
         xdg.dataFile."julia/config/startup.jl".text = ''
           try
@@ -22,7 +25,9 @@
 
         home.sessionVariables.JULIA_DEPOT_PATH = "${config.xdg.dataHome}/julia:$JULIA_DEPOT_PATH";
 
-        home.packages = with pkgs; [ julia ];
+        # use julia-bin because julia fails to build
+        # https://github.com/NixOS/nixpkgs/issues/475534
+        home.packages = [ cfg.package ];
 
         # precompile julia
         systemd.user = {
@@ -39,7 +44,7 @@
                 '';
                 Environment = [
                   "JULIA_DEPOT_PATH=${config.home.sessionVariables.JULIA_DEPOT_PATH}"
-                  "PATH=${lib.makeBinPath [ pkgs.julia ]}"
+                  "PATH=${lib.makeBinPath [ cfg.package ]}"
                 ];
               };
               Install.WantedBy = [ "default.target" ];
@@ -55,7 +60,7 @@
                 '';
                 Environment = [
                   "JULIA_DEPOT_PATH=${config.home.sessionVariables.JULIA_DEPOT_PATH}"
-                  "PATH=${lib.makeBinPath [ pkgs.julia ]}"
+                  "PATH=${lib.makeBinPath [ cfg.package ]}"
                 ];
               };
             };
