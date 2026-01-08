@@ -1,6 +1,7 @@
 { config, inputs, ... }:
 let
   home-mods = config.flake.homeModules;
+  flake-config = config;
 in
 {
   flake.nixosModules.rpi5 = {
@@ -25,6 +26,14 @@ in
         (
           { config, pkgs, ... }:
           {
+
+            age = {
+              secrets.access_tokens = {
+                file = flake-config.ageFile.access-tokens;
+                mode = "0440";
+                group = "wheel";
+              };
+            };
             networking.useNetworkd = true;
             # mdns
             networking.firewall.allowedUDPPorts = [ 5353 ];
@@ -165,7 +174,21 @@ in
             };
 
             # allow nix-copy to live system
-            nix.settings.trusted-users = [ "@wheel" ];
+            nix = {
+              settings = {
+                trusted-users = [ "@wheel" ];
+                experimental-features = [
+                  "auto-allocate-uids"
+                  "cgroups"
+                  "flakes"
+                  "nix-command"
+                  "no-url-literals"
+                ];
+              };
+              extraOptions = ''
+                !include ${config.age.secrets.access_tokens.path}
+              '';
+            };
 
             # We are stateless, so just default to latest.
             system.stateVersion = config.system.nixos.release;
