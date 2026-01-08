@@ -214,6 +214,9 @@ in
 
       networking.nftables.enable = true;
 
+      # prevent libvirt starting vms on boot
+      virtualisation.libvirtd.onBoot = "ignore";
+
       system.stateVersion = config.system.nixos.release;
     };
 }
