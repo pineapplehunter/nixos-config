@@ -28,8 +28,16 @@
               patch = null;
               structuredExtraConfig = with lib.kernel; {
                 EVM = yes;
+                EVM_ATTR_FSUUID = yes;
                 IMA = yes;
+                IMA_APPRAISE = yes;
+                IMA_APPRAISE_BOOTPARAM = yes;
                 IMA_DEFAULT_HASH_SHA256 = yes;
+                IMA_KEXEC = yes;
+                IMA_LSM_RULES = yes;
+                IMA_MEASURE_ASYMMETRIC_KEYS = yes;
+                IMA_NG_TEMPLATE = yes;
+                IMA_QUEUE_EARLY_BOOT_KEYS = yes;
                 IMA_READ_POLICY = yes;
                 IMA_WRITE_POLICY = yes;
               };
