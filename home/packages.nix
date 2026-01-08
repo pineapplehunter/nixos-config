@@ -22,7 +22,7 @@
           git-extras
           nix-index
           nix-update
-          nixfmt-rfc-style
+          nixfmt
           nixpkgs-fmt
           starship
           tokei

@@ -99,7 +99,7 @@ in
               tree
               helix
               nixd
-              nixfmt-rfc-style
+              nixfmt
               git
             ];
 

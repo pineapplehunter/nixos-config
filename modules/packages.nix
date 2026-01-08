@@ -27,8 +27,7 @@
         nix-index
         nix-output-monitor
         nix-tree
-        nixfmt-rfc-style
-        nixpkgs-fmt
+        nixfmt
         npins
         # https://github.com/NixOS/nixpkgs/pull/472294
         # omnix
