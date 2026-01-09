@@ -80,7 +80,6 @@ function os-generation-expire {
 
 function os-expire {
   os-generation-expire
-  os-home-expire
 }
 
 function os-build {
@@ -101,7 +100,9 @@ function os-switch {
   yes_or_exit "do you want to commit and update?"
   sudo echo starting upgrade
   git commit -p || true
+  os-expire
   sudo nixos-rebuild switch --flake ".#$HOST" "${args[@]}"
+  home-expire
 }
 
 function os-boot {
@@ -152,6 +153,7 @@ function home-switch {
   echo starting switch
   git commit -p || true
   $HOMEMANAGER switch -b "hm-backup" --flake ".#$HOME_CONFIG_NAME" "${args[@]}"
+  home-expire
 }
 
 function home-test {
