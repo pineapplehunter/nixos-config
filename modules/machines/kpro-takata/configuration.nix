@@ -46,8 +46,6 @@ in
         fsverity.enable = true;
       };
 
-      pineapplehunter.japanese.environment.enable = false;
-
       # nixpkgs.flake.source = lib.mkForce null;
       nix = {
         distributedBuilds = true;
