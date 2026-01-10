@@ -10,7 +10,7 @@
         delaySec = lib.mkOption {
           description = "Time to suspend until hibernation";
           type = lib.types.str;
-          default = "2h";
+          default = "12h";
         };
       };
 
