@@ -20,7 +20,7 @@
           fuc
           fzf
           git-extras
-          nix-index
+          nix-index-unwrapped
           nix-update
           nixfmt
           nixpkgs-fmt
