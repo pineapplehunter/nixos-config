@@ -101,6 +101,10 @@ in
           };
         });
       };
+
+      # use latest nix version for all packages. normally used in
+      # a wrapper.
+      nix = final.nixVersions.latest;
     };
 
     custom-packages =
