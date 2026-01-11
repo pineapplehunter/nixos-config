@@ -11,18 +11,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cfg:
-          - runner: "ubuntu-24.04"
-            system: "x86_64-linux"
-          - runner: "ubuntu-24.04-arm"
-            system: "aarch64-linux"
-          - runner: "macos-26"
-            system: "aarch64-darwin"
-          - runner: "macos-26"
-            system: "x86_64-darwin"
-    runs-on: ${{ matrix.cfg.runner }}
+        system:
+          - "x86_64-linux"
+          - "aarch64-linux"
+          - "aarch64-darwin"
+          - "x86_64-darwin"
+    runs-on: >-
+      ${{ (matrix.system == 'x86_64-linux' && 'ubuntu-latest')
+      || (matrix.system == 'aarch64-linux' && 'ubuntu-24.04-arm')
+      || (matrix.system == 'x86_64-darwin' && 'macos-latest')
+      || (matrix.system == 'aarch64-darwin' && 'macos-latest') }}
+
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: enable unprivileged userns clone
         if: runner.os == 'Linux'
         run: |
@@ -35,7 +36,7 @@ jobs:
           extra_nix_config: |
             fallback = true
             accept-flake-config = true
-            system = ${{ matrix.cfg.system }}
+            system = ${{ matrix.system }}
             extra-substituters = https://attic.s.ihavenojob.work/shogo
             extra-trusted-public-keys = shogo:R9ZWo9iGw8E0X6G24R7XLPH0UeE3VZ/WFi2+D0Kmud4=
 
