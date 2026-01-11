@@ -24,7 +24,7 @@
         jq
         ncdu
         nethogs
-        nix-index-unwrapped
+        nix-index
         nix-output-monitor
         nix-tree
         nixfmt
