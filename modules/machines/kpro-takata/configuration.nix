@@ -80,6 +80,19 @@ in
             ];
             system = "x86_64-linux";
           }
+          {
+            hostName = "beast";
+            maxJobs = 16;
+            speedFactor = 2;
+            sshUser = "shogo";
+            supportedFeatures = [
+              "big-parallel"
+              "kvm"
+              "benchmark"
+              "nixos-test"
+            ];
+            system = "x86_64-linux";
+          }
         ];
         settings = {
           builders-use-substitutes = true;
