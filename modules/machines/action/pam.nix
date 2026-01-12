@@ -84,8 +84,8 @@
             # It calls check-timeout twice to prevent toctou attacks
             # !!! PLEASE CHECK SKIP LINES WHEN MODIFYING !!!
             auth [success=ignore default=3]      ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${check-timeout}
-            auth [success=1 default=ignore]      ${howdy}/lib/security/pam_howdy.so
-            auth [success=ignore default=1] ${fprintd}/lib/security/pam_fprintd.so
+            auth [success=1      default=2]      ${howdy}/lib/security/pam_howdy.so
+            auth [success=ignore default=1]      ${fprintd}/lib/security/pam_fprintd.so
             auth [success=4 default=ignore]      ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${check-timeout}
             auth [success=1 default=ignore]      ${linux-pam}/lib/security/pam_unix.so likeauth nullok try_first_pass
             auth requisite                       ${linux-pam}/lib/security/pam_deny.so
@@ -124,7 +124,30 @@
 
             account  include default-auth
             password include default-auth
-            sesstion include default-auth
+            session  include default-auth
+          '';
+          only-weak = ''
+            auth [success=1 default=ignore]      ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${check-timeout}
+            auth [default=3]                     ${linux-pam}/lib/security/pam_exec.so quiet ${lib.getExe' pkgs.coreutils "sleep"} infinity
+            auth [success=1      default=2]      ${howdy}/lib/security/pam_howdy.so
+            auth [success=ignore default=1]      ${fprintd}/lib/security/pam_fprintd.so
+            auth [success=1 default=ignore]      ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${check-timeout}
+            auth requisite                       ${linux-pam}/lib/security/pam_deny.so
+            auth requisite                       ${linux-pam}/lib/security/pam_permit.so
+          '';
+          gdm-password = ''
+            auth      substack      only-unix-auth
+            account   include       only-unix-auth
+            password  substack      only-unix-auth
+            session   include       only-unix-auth
+            session   include       default-with-login
+          '';
+          gdm-fingerprint = ''
+            auth      substack      only-weak
+            account   include       default-auth
+            password  substack      default-auth
+            session   include       default-auth
+            session   include       default-with-login
           '';
           use-default-rule = ''
             auth      substack      default-auth
@@ -145,24 +168,19 @@
             password  substack      only-unix-auth
             session   include       only-unix-auth
           '';
-          deny-all-rule = ''
-            auth      requisite ${linux-pam}/lib/security/pam_deny.so
-            account   requisite ${linux-pam}/lib/security/pam_deny.so
-            password  requisite ${linux-pam}/lib/security/pam_deny.so
-            session   requisite ${linux-pam}/lib/security/pam_deny.so
-          '';
         in
         {
           default-auth.text = default-rule;
           default-with-login.text = login-session;
           only-unix-auth.text = only-unix-rule;
+          only-weak.text = only-weak;
 
           chfn.text = lib.mkForce use-only-unix-rule;
           chpasswd.text = lib.mkForce use-only-unix-rule;
           chsh.text = lib.mkForce use-only-unix-rule;
           cups.text = lib.mkForce use-default-rule;
-          gdm-fingerprint.text = lib.mkForce deny-all-rule;
-          gdm-password.text = lib.mkForce use-default-with-login-rule;
+          gdm-fingerprint.text = lib.mkForce gdm-fingerprint;
+          gdm-password.text = lib.mkForce gdm-password;
           groupadd.text = lib.mkForce use-default-rule;
           groupdel.text = lib.mkForce use-only-unix-rule;
           groupmems.text = lib.mkForce use-default-rule;
