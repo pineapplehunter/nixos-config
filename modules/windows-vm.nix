@@ -1,7 +1,6 @@
 {
   flake.nixosModules.windows-vm =
     {
-      pkgs,
       config,
       lib,
       ...
@@ -14,11 +13,6 @@
 
       config = lib.mkIf cfg.enable {
         virtualisation.libvirtd.qemu.swtpm.enable = true;
-
-        environment.systemPackages = [
-          pkgs.virtio-win
-          pkgs.win-spice
-        ];
 
         networking.firewall.trustedInterfaces = [ "virbr0" ];
       };
