@@ -29,8 +29,7 @@
         nix-tree
         nixfmt
         npins
-        # https://github.com/NixOS/nixpkgs/pull/472294
-        # omnix
+        omnix
         openssl
         papers
         pciutils
