@@ -8,7 +8,7 @@
 
   config.ageFile = {
     access-tokens = ./access-tokens.age;
-    geesefs-creds = ./geesefs-creds.age;
     garage-secret = ./garage-secret.age;
+    immich-backup-env = ./immich-backup-env.age;
   };
 }

@@ -12,8 +12,8 @@ in
     }:
     {
       age.secrets = {
-        geesefs-creds = {
-          file = flake-config.ageFile.geesefs-creds;
+        immich-backup-env = {
+          file = flake-config.ageFile.immich-backup-env;
           mode = "0400";
         };
         garage-secret = {
@@ -75,6 +75,34 @@ in
             Restart = "always";
             TimeoutSec = 600;
           };
+          wantedBy = [ "default.target" ];
+        };
+        immich-backup = {
+          script = ''
+            aws s3 sync /home/shogo/immich/storage/ s3://immich/ \
+              --endpoint http://localhost:3900 \
+              --region garage \
+              --cli-read-timeout 300
+          '';
+          path = [ pkgs.awscli2 ];
+          serviceConfig = {
+            EnvironmentFile = config.age.secrets.immich-backup-env.path;
+            ExecCondition = "systemctl is-active --quiet garage.service";
+          };
+        };
+      };
+      systemd.timers = {
+        immich-backup = {
+          wantedBy = [ "timers.target" ];
+          timerConfig = {
+            OnCalendar = "daily";
+            OnStartupSec = "1h";
+            AccuracySec = "12h";
+          };
+        };
+      };
+      systemd.targets = {
+        immich = {
           wantedBy = [ "default.target" ];
         };
       };
