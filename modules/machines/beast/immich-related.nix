@@ -74,6 +74,34 @@ in
             WorkingDirectory = "/home/shogo/immich";
             Restart = "always";
             TimeoutSec = 600;
+            # CapabilityBoundingSet = "";
+            PrivateDevices = true;
+            ProtectKernelTunables = true;
+            ProtectControlGroups = true;
+            ProtectKernelModules = true;
+            ProtectKernelLogs = true;
+            ProtectProc = "invisible";
+            ProcSubset = "pid";
+            NoNewPrivileges = true;
+            ProtectClock = true;
+            SystemCallArchitectures = "native";
+            RestrictNamespaces = true;
+            RestrictSUIDSGID = true;
+            LockPersonality = true;
+            RestrictRealtime = true;
+            MemoryDenyWriteExecute = true;
+            ProtectHostname = true;
+            ProtectHome = "read-only";
+            SystemCallFilter = [
+              "~@privileged"
+              "~@debug"
+              "~@cpu-emulation"
+              "~@obsolete"
+              "~@resources"
+              "~@mount"
+            ];
+            RestrictAddressFamilies = "";
+            RemoveIPC = true;
           };
           wantedBy = [ "default.target" ];
         };
@@ -88,6 +116,39 @@ in
           serviceConfig = {
             EnvironmentFile = config.age.secrets.immich-backup-env.path;
             ExecCondition = "systemctl is-active --quiet garage.service";
+            User = "shogo";
+            CapabilityBoundingSet = "";
+            PrivateDevices = true;
+            ProtectKernelTunables = true;
+            ProtectControlGroups = true;
+            ProtectKernelModules = true;
+            ProtectKernelLogs = true;
+            ProtectProc = "invisible";
+            ProcSubset = "pid";
+            NoNewPrivileges = true;
+            ProtectClock = true;
+            SystemCallArchitectures = "native";
+            RestrictNamespaces = true;
+            RestrictSUIDSGID = true;
+            LockPersonality = true;
+            RestrictRealtime = true;
+            MemoryDenyWriteExecute = true;
+            ProtectHostname = true;
+            ProtectHome = "read-only";
+            SystemCallFilter = [
+              "~@privileged"
+              "~@debug"
+              "~@cpu-emulation"
+              "~@obsolete"
+              "~@resources"
+              "~@mount"
+            ];
+            RestrictAddressFamilies = [
+              "AF_UNIX"
+              "AF_INET"
+              "AF_INET6"
+            ];
+            RemoveIPC = true;
           };
         };
       };
