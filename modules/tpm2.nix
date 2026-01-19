@@ -1,6 +1,11 @@
 {
   flake.nixosModules.tpm2 =
-    { config, lib, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.my.tpm2;
     in
@@ -15,6 +20,11 @@
           tctiEnvironment.enable = lib.mkDefault true;
           tctiEnvironment.interface = lib.mkDefault "tabrmd";
         };
+
+        environment.systemPackages = [
+          pkgs.tpm2-tools
+          pkgs.tss2
+        ];
       };
     };
 }
