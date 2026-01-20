@@ -15,6 +15,8 @@ in
         immich-backup-env = {
           file = flake-config.ageFile.immich-backup-env;
           mode = "0400";
+          owner = "immich";
+          group = "immich";
         };
         garage-secret = {
           file = flake-config.ageFile.garage-secret;
@@ -23,6 +25,14 @@ in
           group = "garage";
         };
       };
+
+      users.users.immich = {
+        name = "immich";
+        isSystemUser = true;
+        group = "immich";
+        extraGroups = [ "docker" ];
+      };
+      users.groups.immich = { };
 
       services.garage = {
         enable = true;
@@ -71,7 +81,8 @@ in
             docker compose down
           '';
           serviceConfig = {
-            WorkingDirectory = "/home/shogo/immich";
+            User = "immich";
+            WorkingDirectory = "/immich";
             Restart = "always";
             TimeoutSec = 600;
             # CapabilityBoundingSet = "";
@@ -107,7 +118,7 @@ in
         };
         immich-backup = {
           script = ''
-            aws s3 sync /home/shogo/immich/storage/ s3://immich/ \
+            aws s3 sync /immich/storage/ s3://immich/ \
               --endpoint http://localhost:3900 \
               --region garage \
               --cli-read-timeout 300
@@ -116,7 +127,7 @@ in
           serviceConfig = {
             EnvironmentFile = config.age.secrets.immich-backup-env.path;
             ExecCondition = "systemctl is-active --quiet garage.service";
-            User = "shogo";
+            User = "immich";
             CapabilityBoundingSet = "";
             PrivateDevices = true;
             ProtectKernelTunables = true;
