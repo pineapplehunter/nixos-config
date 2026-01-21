@@ -35,8 +35,7 @@ in
               };
             };
             networking.useNetworkd = true;
-            # mdns
-            networking.firewall.allowedUDPPorts = [ 5353 ];
+            networking.nftables.enable = true;
             systemd.network.networks = {
               "99-ethernet-default-dhcp".networkConfig.MulticastDNS = "yes";
               "99-wireless-client-dhcp".networkConfig.MulticastDNS = "yes";
@@ -65,6 +64,25 @@ in
                   RoutePriorityOffset = 300;
                 };
                 Settings.AutoConnect = true;
+              };
+            };
+            # mdns
+            networking.firewall = {
+              allowedUDPPorts = [ 5353 ];
+              interfaces = {
+                "tailscale0" = {
+                  allowedTCPPorts = [
+                    # prometheus node-exporter
+                    9100
+                  ];
+                  allowedTCPPortRanges = [
+                    # garage original
+                    {
+                      from = 3900;
+                      to = 3905;
+                    }
+                  ];
+                };
               };
             };
 
