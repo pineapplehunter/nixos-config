@@ -19,7 +19,6 @@ let
         "noatime"
         "noauto"
         "x-systemd.automount"
-        "x-systemd.idle-timeout=1min"
       ];
     };
   };
@@ -41,7 +40,6 @@ let
         "noatime"
         "noauto"
         "x-systemd.automount"
-        "x-systemd.idle-timeout=1min"
         "umask=0077"
       ];
     };
