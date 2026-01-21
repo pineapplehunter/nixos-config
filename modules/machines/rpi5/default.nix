@@ -102,6 +102,8 @@ in
               };
             };
 
+            services.prometheus.exporters.node.enable = true;
+
             programs.atop.enable = true;
             programs.zsh.enable = true;
 
