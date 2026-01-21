@@ -118,8 +118,10 @@ in
             aws s3 sync /immich/storage/ s3://immich/ \
               --endpoint http://localhost:3900 \
               --region garage \
-              --cli-read-timeout 300
+              --cli-read-timeout 300 \
+              --no-progress
           '';
+          restartIfChanged = false;
           path = [ pkgs.awscli2 ];
           serviceConfig = {
             Type = "oneshot";
