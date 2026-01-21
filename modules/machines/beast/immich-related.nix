@@ -70,10 +70,7 @@ in
             docker-compose
           ];
           requires = [ "docker.socket" ];
-          after = [
-            "geesefs-mount.service"
-            "docker.socket"
-          ];
+          after = [ "docker.socket" ];
           script = ''
             docker compose up
           '';
