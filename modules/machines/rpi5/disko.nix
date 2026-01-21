@@ -17,8 +17,6 @@ let
       # mountpoint = "/boot/firmware";
       mountOptions = [
         "noatime"
-        "noauto"
-        "x-systemd.automount"
       ];
     };
   };
@@ -38,8 +36,6 @@ let
       # mountpoint = "/boot";
       mountOptions = [
         "noatime"
-        "noauto"
-        "x-systemd.automount"
         "umask=0077"
       ];
     };
@@ -70,7 +66,6 @@ in
     "/garage" = {
       device = "/dev/bcache0";
       options = mountOptions ++ [
-        "nofail"
         "x-systemd.required-by=garage.service"
       ];
     };
