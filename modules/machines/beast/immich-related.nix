@@ -125,6 +125,7 @@ in
           '';
           path = [ pkgs.awscli2 ];
           serviceConfig = {
+            Type = "oneshot";
             EnvironmentFile = config.age.secrets.immich-backup-env.path;
             ExecCondition = "systemctl is-active --quiet garage.service";
             User = "immich";
