@@ -14,7 +14,6 @@ in
       _module.args.pkgs = import inputs.nixpkgs {
         inherit system;
         overlays = [
-          inputs.howdy-module.overlays.default
           inputs.nixgl.overlays.default
           inputs.nix-xilinx.overlay
           inputs.agenix.overlays.default

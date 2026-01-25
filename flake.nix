@@ -31,7 +31,6 @@
       url = "github:peterldowns/nix-search-cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    howdy-module.url = "github:pineapplehunter/howdy-module";
     rust-overlay.url = "github:oxalica/rust-overlay";
     lanzaboote = {
       url = "github:nix-community/lanzaboote?ref=v0.4.2";
