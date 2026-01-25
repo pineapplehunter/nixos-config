@@ -126,7 +126,7 @@
           '';
           only-weak = ''
             auth [success=1 default=ignore]      ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${check-timeout}
-            auth [default=2]                     ${linux-pam}/lib/security/pam_exec.so quiet ${lib.getExe' pkgs.coreutils "sleep"} infinity
+            auth [default=2]                     ${linux-pam}/lib/security/pam_exec.so quiet ${lib.getExe' pkgs.coreutils "sleep"} 300
             auth [success=ignore default=1]      ${fprintd}/lib/security/pam_fprintd.so
             auth [success=1 default=ignore]      ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${check-timeout}
             auth requisite                       ${linux-pam}/lib/security/pam_deny.so
