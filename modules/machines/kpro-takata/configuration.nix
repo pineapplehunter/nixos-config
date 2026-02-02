@@ -101,7 +101,7 @@ in
         # channel.enable = false;
       };
 
-      # zramSwap.enable = true;
+      zramSwap.enable = true;
 
       services = {
         xremap = {

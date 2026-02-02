@@ -224,5 +224,6 @@ in
         };
       };
 
+      zramSwap.enable = true;
     };
 }
