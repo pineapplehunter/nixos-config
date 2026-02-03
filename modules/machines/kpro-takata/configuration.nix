@@ -11,20 +11,6 @@ in
       ...
     }:
     let
-      xe-config =
-        { lib, config, ... }:
-        let
-          cfg = config.my.xe;
-        in
-        {
-          options.my.xe.enable = lib.mkEnableOption "enable xe driver";
-          config = lib.mkIf cfg.enable {
-            boot.kernelParams = [
-              "i915.force_probe=!7d51"
-              "xe.force_probe=7d51"
-            ];
-          };
-        };
     in
     {
       imports = [
@@ -34,7 +20,6 @@ in
         os-mods.kpro
         os-mods.kpro-takata-hardware
         os-mods.kpro-takata-pam
-        xe-config
       ];
 
       my = {
@@ -42,7 +27,10 @@ in
         selinux.enable = true;
         secureboot.enable = true;
         tpm2.enable = true;
-        xe.enable = lib.mkDefault true;
+        xe = {
+          enable = lib.mkDefault true;
+          devices = [ "7d51" ];
+        };
         fsverity.enable = true;
       };
 

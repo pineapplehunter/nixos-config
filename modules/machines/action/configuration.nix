@@ -18,6 +18,10 @@ in
       ];
 
       my.tpm2.enable = true;
+      my.xe = {
+        enable = lib.mkDefault true;
+        devices = [ "9a49" ];
+      };
 
       # nixpkgs.flake.source = lib.mkForce null;
       nix = {
@@ -277,6 +281,15 @@ in
         # multiplied by 2 for 2TB storage
         # https://github.com/Zygo/bees/blob/master/docs/config.md
         hashTableSizeMB = 128 * 2;
+      };
+
+      specialisation = {
+        no-xe.configuration = {
+          my.xe.enable = false;
+        };
+        noresume.configuration = {
+          boot.kernelParams = [ "noresume" ];
+        };
       };
     };
 }

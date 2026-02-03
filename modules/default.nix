@@ -18,5 +18,6 @@
     ./selinux.nix
     ./tpm2.nix
     ./windows-vm.nix
+    ./xe-driver.nix
   ];
 }

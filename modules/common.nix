@@ -34,6 +34,7 @@ in
           mods.selinux
           mods.tpm2
           mods.windows-vm
+          mods.xe-driver
         ];
 
       pineapplehunter.japanese.enable = true;
