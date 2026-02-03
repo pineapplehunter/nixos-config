@@ -22,6 +22,7 @@
         helix
         htop
         jq
+        lsof
         ncdu
         nethogs
         nix-index
