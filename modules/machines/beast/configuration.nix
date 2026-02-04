@@ -45,8 +45,9 @@ in
       };
 
       environment.systemPackages = [
-        pkgs.podman-compose
         pkgs.geesefs
+        pkgs.podman-compose
+        pkgs.smartmontools
         pkgs.vivado
       ];
 
