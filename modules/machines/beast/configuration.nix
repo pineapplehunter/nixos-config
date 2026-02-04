@@ -140,7 +140,10 @@ in
             TIMELINE_LIMIT_YEARLY = 2;
           };
         };
-        prometheus.exporters.node.enable = true;
+        prometheus.exporters = {
+          node.enable = true;
+          smartctl.enable = true;
+        };
 
         fwupd.enable = true;
 
@@ -162,6 +165,8 @@ in
             allowedTCPPorts = [
               # prometheus node-exporter
               9100
+              # prometheus smart
+              9633
               # ollama
               4000
               # immich

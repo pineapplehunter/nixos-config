@@ -74,6 +74,8 @@ in
                   allowedTCPPorts = [
                     # prometheus node-exporter
                     9100
+                    # prometheus smart
+                    9633
                   ];
                   allowedTCPPortRanges = [
                     # garage original
@@ -102,7 +104,10 @@ in
               };
             };
 
-            services.prometheus.exporters.node.enable = true;
+            services.prometheus.exporters = {
+              node.enable = true;
+              smartctl.enable = true;
+            };
 
             programs.atop.enable = true;
             programs.zsh.enable = true;
