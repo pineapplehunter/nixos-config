@@ -15,12 +15,10 @@
         };
       };
       config = lib.mkIf cfg.enable {
-        boot.kernelParams = lib.flatten (
-          lib.map (x: [
-            "i915.force_probe=!${x}"
-            "xe.force_probe=${x}"
-          ]) cfg.devices
-        );
+        boot.kernelParams = lib.concatMap (x: [
+          "i915.force_probe=!${x}"
+          "xe.force_probe=${x}"
+        ]) cfg.devices;
       };
     };
 }
