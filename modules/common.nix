@@ -53,9 +53,6 @@ in
             "libfprint-2-tod1-goodix"
             "vscode"
           ];
-        config.permittedInsecurePackages = [
-          "electron-37.10.3"
-        ];
       };
 
       nix = {
