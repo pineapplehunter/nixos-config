@@ -135,6 +135,8 @@ in
         type = "ibus";
       };
 
+      i18n.supportedLocales = [ "all" ];
+
       services = {
         xremap.enable = lib.mkDefault false;
 
