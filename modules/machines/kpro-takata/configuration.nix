@@ -234,6 +234,7 @@ in
         systemPackages = with pkgs; [
           clamav
           yubikey-manager
+          bubblewrap
         ];
 
         # debug info for ease of debug
