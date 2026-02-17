@@ -72,7 +72,7 @@ in
 
         julia = {
           enable = system == "x86_64-linux";
-          package = pkgs.julia-bin;
+          package = pkgs.julia;
         };
 
         not-found-exec.enable = true;
