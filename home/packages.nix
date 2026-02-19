@@ -31,6 +31,7 @@
           wabt
           wasm-tools
           wasmtime
+          wayscriber
           xh
           zellij
         ]
