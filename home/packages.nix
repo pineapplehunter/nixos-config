@@ -31,7 +31,6 @@
           wabt
           wasm-tools
           wasmtime
-          wayscriber
           xh
           zellij
         ]
@@ -40,6 +39,9 @@
         ]
         ++ lib.optionals (pkgs.stdenv.hostPlatform.system == "x86_64-linux") [
           tpm2-tools
+        ]
+        ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+          wayscriber
         ];
     };
 }
