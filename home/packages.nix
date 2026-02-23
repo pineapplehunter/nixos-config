@@ -21,6 +21,7 @@
           fzf
           git-extras
           nix-index
+          nix-init
           nix-update
           nixfmt
           nixpkgs-fmt
