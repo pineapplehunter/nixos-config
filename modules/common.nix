@@ -138,8 +138,6 @@ in
       i18n.supportedLocales = [ "all" ];
 
       services = {
-        xremap.enable = lib.mkDefault false;
-
         # Enable the OpenSSH daemon.
         openssh = {
           enable = true;
