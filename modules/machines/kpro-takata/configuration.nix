@@ -236,9 +236,6 @@ in
           yubikey-manager
           bubblewrap
         ];
-
-        # debug info for ease of debug
-        enableDebugInfo = true;
       };
 
       services = {

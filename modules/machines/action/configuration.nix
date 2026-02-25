@@ -270,8 +270,6 @@ in
       environment.systemPackages = with pkgs; [
         yubikey-manager
       ];
-      # debug info for ease of debug
-      environment.enableDebugInfo = true;
 
       services.openssh.settings.PasswordAuthentication = false;
 
