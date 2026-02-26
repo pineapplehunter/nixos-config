@@ -12,6 +12,9 @@
             identityFile = "${config.home.homeDirectory}/.ssh/id_ed25519";
             port = 13428;
           };
+          "*" = {
+            compression = true;
+          };
         };
       };
     };
