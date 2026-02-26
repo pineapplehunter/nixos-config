@@ -41,8 +41,6 @@ in
               "99-wireless-client-dhcp".networkConfig.MulticastDNS = "yes";
             };
 
-            boot.loader.raspberryPi.bootloader = "kernel";
-
             # This comment was lifted from `srvos`
             # Do not take down the network for too long when upgrading,
             # This also prevents failures of services that are restarted instead of stopped.
@@ -146,15 +144,12 @@ in
 
             ];
 
-            system.nixos.tags =
-              let
-                cfg = config.boot.loader.raspberryPi;
-              in
-              [
-                "raspberry-pi-${cfg.variant}"
-                cfg.bootloader
-                config.boot.kernelPackages.kernel.version
-              ];
+            system.nixos.tags = [
+              "raspberry-pi"
+              config.boot.kernelPackages.kernel.version
+            ];
+
+            boot.loader.raspberry-pi.bootloader = "kernel";
 
             # This is identical to what nixos installer does in
             # (modulesPash + "profiles/installation-device.nix")
