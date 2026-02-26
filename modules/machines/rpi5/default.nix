@@ -261,6 +261,7 @@ in
           {
             nixpkgs.overlays = [
               inputs.agenix.overlays.default
+              (import ./overlays.nix)
             ];
           }
         )
