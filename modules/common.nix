@@ -191,7 +191,6 @@ in
 
       environment = {
         variables = {
-          BAT_THEME = "GitHub";
           EDITOR = "hx";
         };
         enableAllTerminfo = true;

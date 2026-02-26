@@ -33,8 +33,11 @@ in
         bat = {
           enable = true;
           config = {
-            theme = "GitHub";
+            theme = "ansi";
           };
+          extraPackages = with pkgs.bat-extras; [
+            batman
+          ];
         };
 
         btop = {
