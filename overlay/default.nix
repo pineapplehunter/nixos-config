@@ -89,14 +89,15 @@ in
 
       gnomeExtensions = prev.gnomeExtensions // {
         # https://github.com/joaophi/tailscale-gnome-qs/pull/45
+        # https://github.com/tailscale-qs/tailscale-gnome-qs/issues/7
         tailscale-qs = prev.gnomeExtensions.tailscale-qs.overrideAttrs (old: {
           version = "0-custom";
           src = final.fetchFromGitHub {
-            owner = "joaophi";
+            owner = "tailscale-qs";
             repo = "tailscale-gnome-qs";
-            rootDir = "tailscale@joaophi.github.com";
-            rev = "94c4fdce6b9e76d0856b1f916f50b8f53388f129";
-            hash = "sha256-7AWWn6hb44ORlbhr3WK6VUM8NHAI2ObH0KYbjfmhwXk=";
+            rootDir = "tailscale-gnome-qs@tailscale-qs.github.io";
+            rev = "f1906cece38cbc5da2db835febb30b1cc0b675a7";
+            hash = "sha256-BHlMSX+LFBm1hOEaOkApHxPgrTYDnglzK+0UxY6KOzI=";
           };
         });
       };
