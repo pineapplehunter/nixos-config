@@ -16,6 +16,7 @@ in
         in
         [
           mods.alacritty
+          mods.colored-man-pages
           mods.dconf
           mods.flatpak-update
           mods.ghostty
@@ -82,6 +83,11 @@ in
         which-nix.enable = true;
         sudo-nix.enable = true;
         man-nix.enable = true;
+
+        man = {
+          enable = true;
+          color.enable = true;
+        };
       };
 
       home = {
