@@ -19,7 +19,7 @@ in
 
       my.tpm2.enable = true;
       my.xe = {
-        enable = lib.mkDefault false;
+        enable = lib.mkDefault true;
         devices = [ "9a49" ];
       };
 
@@ -282,8 +282,8 @@ in
       };
 
       specialisation = {
-        xe-driver.configuration = {
-          my.xe.enable = true;
+        no-xe.configuration = {
+          my.xe.enable = false;
         };
         noresume.configuration = {
           boot.kernelParams = [ "noresume" ];

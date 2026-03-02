@@ -28,7 +28,7 @@ in
         secureboot.enable = true;
         tpm2.enable = true;
         xe = {
-          enable = lib.mkDefault false;
+          enable = lib.mkDefault true;
           devices = [ "7d51" ];
         };
         fsverity.enable = true;
@@ -274,8 +274,8 @@ in
       security.tpm2.fapi.profileName = "P_ECCP384SHA384";
 
       specialisation = {
-        xe-driver.configuration = {
-          my.xe.enable = true;
+        no-xe.configuration = {
+          my.xe.enable = false;
         };
         noresume.configuration = {
           boot.kernelParams = [ "noresume" ];
