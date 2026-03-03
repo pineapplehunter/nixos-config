@@ -126,13 +126,14 @@
           # for editors
           bash-language-server
           clang-tools
+          helix-assist
           nixd
+          nodePackages.typescript-language-server
           ruff
           taplo
           texlab
           tinymist
           vscode-langservers-extracted
-          nodePackages.typescript-language-server
         ]
         ++ lib.optionals isLinux [
           markdown-oxide

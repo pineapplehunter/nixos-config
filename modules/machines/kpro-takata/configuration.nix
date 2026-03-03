@@ -34,6 +34,12 @@ in
         fsverity.enable = true;
       };
 
+      age.secrets.anthropic-key = {
+        file = config.ageFile.anthropic-key;
+        mode = "770";
+        group = "wheel";
+      };
+
       # nixpkgs.flake.source = lib.mkForce null;
       nix = {
         distributedBuilds = true;

@@ -8,6 +8,7 @@
 
   config.ageFile = {
     access-tokens = ./access-tokens.age;
+    anthropic-key = ./anthropic-key.age;
     garage-secret = ./garage-secret.age;
     immich-backup-env = ./immich-backup-env.age;
   };

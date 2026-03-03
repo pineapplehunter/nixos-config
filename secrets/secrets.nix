@@ -23,6 +23,7 @@ let
 in
 {
   "access-tokens.age".publicKeys = users ++ systems;
-  "immich-backup-env.age".publicKeys = users ++ [ beast-system ];
+  "anthropic-key.age".publicKeys = users ++ systems;
   "garage-secret.age".publicKeys = users ++ systems;
+  "immich-backup-env.age".publicKeys = users ++ [ beast-system ];
 }
