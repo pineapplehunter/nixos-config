@@ -84,7 +84,7 @@ in
               format = "ssh";
             };
             settings = {
-              aliases =
+              alias =
                 let
                   difft = lib.getExe pkgs.difftastic;
                 in
