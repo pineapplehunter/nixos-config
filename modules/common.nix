@@ -210,14 +210,7 @@ in
       # prevent libvirt starting vms on boot
       virtualisation.libvirtd.onBoot = "ignore";
 
-      documentation = {
-        dev.enable = true;
-        man.cache.enable = true;
-        nixos = {
-          includeAllModules = true;
-          options.warningsAreErrors = false;
-        };
-      };
+      documentation.dev.enable = true;
 
       system.stateVersion = config.system.nixos.release;
     };
