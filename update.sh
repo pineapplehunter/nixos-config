@@ -45,6 +45,15 @@ function yes_or_exit {
   done
 }
 
+# trap #############################################
+
+function end {
+  echo Canceled
+  exit 1
+}
+
+trap end SIGINT
+
 # parse args #######################################
 
 kind="$(basename "$0")"
