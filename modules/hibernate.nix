@@ -20,9 +20,9 @@
           HandleLidSwitchDocked = "suspend-then-hibernate";
           HandleLidSwitchExternalPower = "suspend-then-hibernate";
         };
-        systemd.sleep.extraConfig = ''
-          HibernateDelaySec=${cfg.delaySec}
-        '';
+        systemd.sleep.settings.Sleep = {
+          HibernateDelaySec = cfg.delaySec;
+        };
       };
     };
 }
