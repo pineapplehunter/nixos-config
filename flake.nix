@@ -31,7 +31,7 @@
       url = "github:peterldowns/nix-search-cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    rust-overlay.url = "github:oxalica/rust-overlay";
+    rust-overlay.url = "github:oxalica/rust-overlay?ref=stable";
     lanzaboote = {
       url = "github:nix-community/lanzaboote?ref=v0.4.2";
       inputs.nixpkgs.follows = "nixpkgs";
