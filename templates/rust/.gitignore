@@ -1,2 +1,5 @@
 /.direnv
 result*
+
+# rust
+/target
