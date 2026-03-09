@@ -25,6 +25,7 @@
           nix-update
           nixfmt
           nixpkgs-fmt
+          project-init
           starship
           tokei
           tree
