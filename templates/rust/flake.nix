@@ -37,6 +37,7 @@
 
             devShells.default = pkgs.mkShell {
               packages = with pkgs; [
+                pkg-config
                 rustPlatform.bindgenHook
                 (rust-bin.stable.latest.default.override {
                   extensions = [
