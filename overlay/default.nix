@@ -87,6 +87,19 @@ in
         });
       };
 
+      bees = prev.bees.overrideAttrs (old: {
+        # faster building
+        enableParallelBuilding = true;
+
+        patches = (old.patches or [ ]) ++ [
+          # https://github.com/Zygo/bees/issues/325
+          (final.fetchpatch {
+            url = "https://github.com/Zygo/bees/commit/b8086fb41af052bdadf35dc13382604e246dc12c.patch";
+            hash = "sha256-HhK0swaw9zfz4uoKSNq3nhQrs/UzmJ/GH0Yg9KLrW54=";
+          })
+        ];
+      });
+
       gnomeExtensions = prev.gnomeExtensions // {
         # https://github.com/joaophi/tailscale-gnome-qs/pull/45
         tailscale-qs = prev.gnomeExtensions.tailscale-qs.overrideAttrs (old: {
