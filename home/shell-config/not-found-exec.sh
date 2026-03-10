@@ -1,13 +1,13 @@
-#!/usr/bin/env bash
-set -euo pipefail
-
 if ! command -v nix > /dev/null; then
   echo nix command not found in PATH
   exit 1
 fi
 
 cmd="$1"
-nixpkgs=$(@jq@ '.flakes[] | select(.from.id | contains("nixpkgs")) | .to.path' -r < /etc/nix/registry.json || echo "github:nixos/nixpkgs?ref=nixos-unstable")
+nixpkgs="github:nixos/nixpkgs?ref=nixos-unstable"
+if [ -f /etc/nix/registry.json ]; then
+  nixpkgs=$(jq '.flakes[] | select(.from.id | contains("nixpkgs")) | .to.path' -r < /etc/nix/registry.json || $nixpkgs)
+fi
 export NIXPKGS_ALLOW_UNFREE=1
 shift
 
@@ -17,14 +17,14 @@ if [ -z "$cmd" ]; then
 fi
 
 if [[ $cmd = *@* ]]; then
-  cmd_name=$(echo "$cmd" | @cut@ -d "@" -f 1)
-  cmd_package=$(echo "$cmd" | @cut@ -d "@" -f 2)
+  cmd_name=$(echo "$cmd" | cut -d "@" -f 1)
+  cmd_package=$(echo "$cmd" | cut -d "@" -f 2)
 else
   cmd_name="$cmd"
   cmd_package="$cmd"
 fi
 
-if [ -n "@confirm@" ]; then
+if [ -n "$CONFIRM" ]; then
   echo "Command '$cmd_name' not found, do you want to try $cmd_name from $nixpkgs#$cmd_package? [y/N]: "
   read -r choice
   case "$choice" in

@@ -16,50 +16,42 @@
 
       cfg = config.programs;
 
-      not-found-exec = pkgs.replaceVarsWith {
-        src = ./not-found-exec.sh;
-        replacements = {
-          inherit (cfg.not-found-exec) confirm;
-          cut = "${pkgs.coreutils}/bin/cut";
-          jq = getExe pkgs.jq;
-        };
+      not-found-exec = pkgs.writeShellApplication {
         name = "not-found-exec";
-        dir = "bin";
-        isExecutable = true;
-        meta.mainProgram = "not-found-exec";
+        runtimeInputs = [
+          pkgs.jq
+          pkgs.coreutils
+        ];
+        runtimeEnv = {
+          CONFIRM = cfg.not-found-exec.confirm;
+        };
+        text = lib.readFile ./not-found-exec.sh;
       };
 
-      which-nix = pkgs.replaceVarsWith {
-        src = ./which-nix.sh;
-        replacements = {
-          jq = getExe pkgs.jq;
-          which = getExe pkgs.which;
-        };
+      which-nix = pkgs.writeShellApplication {
         name = "which-nix";
-        dir = "bin";
-        isExecutable = true;
-        meta.mainProgram = "which-nix";
+        runtimeInputs = [
+          pkgs.jq
+          pkgs.which
+          pkgs.coreutils
+        ];
+        text = lib.readFile ./which-nix.sh;
       };
 
-      sudo-nix = pkgs.replaceVarsWith {
-        src = ./sudo-nix.sh;
-        replacements.which-nix = getExe which-nix;
+      sudo-nix = pkgs.writeShellApplication {
         name = "sudo-nix";
-        dir = "bin";
-        isExecutable = true;
-        meta.mainProgram = "sudo-nix";
+        runtimeInputs = [ which-nix ];
+        text = lib.readFile ./sudo-nix.sh;
       };
 
-      man-nix = pkgs.replaceVarsWith {
-        src = ./man-nix.sh;
-        replacements = {
-          jq = getExe pkgs.jq;
-          man = getExe pkgs.man;
-        };
+      man-nix = pkgs.writeShellApplication {
         name = "man-nix";
-        dir = "bin";
-        isExecutable = true;
-        meta.mainProgram = "man-nix";
+        runtimeInputs = [
+          pkgs.coreutils
+          pkgs.jq
+          pkgs.man
+        ];
+        text = lib.readFile ./man-nix.sh;
       };
     in
     {
