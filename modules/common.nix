@@ -203,7 +203,12 @@ in
         backupFileExtension = "hm-backup";
       };
 
-      security.sudo-rs.enable = true;
+      security.sudo-rs = {
+        enable = true;
+        extraConfig = ''
+          Defaults pwfeedback
+        '';
+      };
 
       networking.nftables.enable = true;
 
