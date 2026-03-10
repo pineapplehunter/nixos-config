@@ -4,6 +4,7 @@ if ! command -v nix > /dev/null; then
 fi
 
 NIX=$(command -v nix)
+WHICH=$(command -v which)
 
 cmd="$1"
 nixpkgs="github:nixos/nixpkgs?ref=nixos-unstable"
@@ -25,4 +26,4 @@ else
   cmd_package="$cmd"
 fi
 
-PATH="" "$NIX" shell "$nixpkgs#$cmd_package" --impure -c which "$cmd_name"
+PATH="" "$NIX" shell "$nixpkgs#$cmd_package" --impure -c "$WHICH" "$cmd_name"
