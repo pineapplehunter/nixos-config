@@ -212,6 +212,13 @@ in
 
       documentation.dev.enable = true;
 
+      # Fix for howdy
+      # https://github.com/NixOS/nixpkgs/issues/483867
+      systemd.services."polkit-agent-helper@".serviceConfig = lib.mkIf config.services.howdy.enable {
+        DeviceAllow = "char-video4linux rw";
+        PrivateDevices = "no";
+      };
+
       system.stateVersion = config.system.nixos.release;
     };
 }
