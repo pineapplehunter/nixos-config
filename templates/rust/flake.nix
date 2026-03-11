@@ -4,7 +4,7 @@
   inputs.nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
   inputs.flake-parts.url = "github:hercules-ci/flake-parts";
   inputs.rust-overlay = {
-    url = "github:oxalica/rust-overlay";
+    url = "github:oxalica/rust-overlay?ref=stable";
     inputs.nixpkgs.follows = "nixpkgs";
   };
 
