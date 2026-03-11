@@ -19,7 +19,9 @@ green initialilizing project in "$(pwd)"
 git init
 nix flake init -t "$REPO#$TYPE"
 git add .
-direnv allow
+if [ -f .envrc ]; then
+  direnv allow
+fi
 
 # reset trap
 trap - EXIT
