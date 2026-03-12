@@ -166,6 +166,9 @@ in
         ];
         supportedFilesystems = [ "btrfs" ];
         loader.systemd-boot.configurationLimit = 30;
+        extraModprobeConfig = ''
+          options kvm_intel nested=1
+        '';
       };
 
       networking = {
