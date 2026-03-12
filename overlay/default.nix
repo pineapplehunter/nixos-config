@@ -65,12 +65,12 @@ in
           src = final.fetchFromGitHub {
             owner = "pineapplehunter";
             repo = "eza";
-            rev = "b2ead8a48777223c1aa50cd75ac49901c80d146b";
-            hash = "sha256-7pcuaxga9ctlEsUhNSl32aiYPhkQtkqXBzR6Cs71dCM=";
+            rev = "02dd5f8069067b25e2862eb7ac3c001cab70ea72";
+            hash = "sha256-7atO09NXOFLk9chyF1kYJplfWnrrIJA8paxpiJEWdhE=";
           };
           cargoDeps = final.rustPlatform.fetchCargoVendor {
             inherit (finalAttrs) src pname version;
-            hash = "sha256-o2lYnCTXyNrZVX+IWaAdmyxpvdEPy+TCltpJhXYDIkg=";
+            hash = "sha256-J6Qu8FFlp3PMTm0M/XT4TqQPaqH57TLBPhQE1Y5hdjg=";
           };
         }
       );
