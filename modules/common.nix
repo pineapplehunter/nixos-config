@@ -215,7 +215,10 @@ in
       # prevent libvirt starting vms on boot
       virtualisation.libvirtd.onBoot = "ignore";
 
-      documentation.dev.enable = true;
+      documentation = {
+        dev.enable = true;
+        man.cache.generateAtRuntime = true;
+      };
 
       # Fix for howdy
       # https://github.com/NixOS/nixpkgs/issues/483867
