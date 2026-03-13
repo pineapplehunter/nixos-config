@@ -25,6 +25,7 @@
           nix-update
           nixfmt
           nixpkgs-fmt
+          opencode
           project-init
           starship
           tokei
