@@ -63,7 +63,6 @@ in
             "cgroups"
             "flakes"
             "nix-command"
-            "no-url-literals"
           ];
           auto-allocate-uids = true;
           trusted-users = [ "@wheel" ];
