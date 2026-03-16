@@ -1,7 +1,7 @@
 final: prev: {
-  libcamera_rpi = prev.libcamera_rpi.overrideAttrs (old: rec{
+  libcamera_rpi = prev.libcamera_rpi.overrideAttrs (old: rec {
     version = "0.7.0+rpt20260205";
-     src = final.fetchFromGitHub {
+    src = final.fetchFromGitHub {
       owner = "raspberrypi";
       repo = "libcamera";
       rev = "v${version}";
