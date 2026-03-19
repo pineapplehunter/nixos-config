@@ -1,9 +1,28 @@
 {
   flake.homeModules.packages =
-    { pkgs, ... }:
+    { pkgs, lib,... }:
     let
       # multilib for bintools
       multi-bintools = pkgs.wrapBintoolsWith { bintools = pkgs.binutils-unwrapped-all-targets; };
+
+      wrapper = pkgs.writeShellApplication {
+        name="bubble-wrapper";
+        runtimeInputs = [pkgs.bubblewrap];
+        text = lib.readFile ./wrapping.sh;
+      };
+      
+      opencode-wrapped = pkgs.symlinkJoin {
+        name = "opencode-wrapped";
+        paths = [ pkgs.opencode ];
+        nativeBuildInputs = [ pkgs.makeWrapper ];
+        postBuild = ''
+          rm -rf "$out/bin"
+          mkdir "$out/bin"
+          makeWrapper "${lib.getExe wrapper}" "$out/bin/opencode" \
+            --set EXECUTABLE "${lib.getExe pkgs.opencode}" \
+            --set PROJECT_ROOT_FILE flake.nix
+        '';
+      };
     in
     {
       config.home.packages =
@@ -25,7 +44,7 @@
           nix-update
           nixfmt
           nixpkgs-fmt
-          opencode
+          opencode-wrapped
           project-init
           starship
           tokei
