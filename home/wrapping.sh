@@ -24,6 +24,14 @@ done
 PROJECT_ROOT=$PWD
 popd > /dev/null || exit 1
 
+ARG_PATH=$(mktemp)
+
+append_args(){
+  for arg in "$@"; do
+    echo -ne "$arg\0" >> "$ARG_PATH"
+  done
+}
+
 bwrap_args=(
   --unshare-all
   --share-net
@@ -32,38 +40,61 @@ bwrap_args=(
   --proc /proc
   --ro-bind /nix /nix
   --ro-bind "$HOME" "$HOME"
+  --tmpfs "$HOME/.ssh" # hide ssh keys
   --bind "$PROJECT_ROOT" "$PROJECT_ROOT"
+  --setenv LANG C
 )
 
+append_args "${bwrap_args[@]}"
+
 # add nessesary etc dirs
-ETC_ENTRIES=(
-  host.conf
-  hosts
-  localtime
-  nsswitch.conf
-  pki
-  resolv.conf
+RO_ENTRIES=(
+  /etc/gai.conf
+  /etc/host.conf
+  /etc/hosts
+  /etc/localtime
+  /etc/nix
+  /etc/nsswitch.conf
+  /etc/pki
+  /etc/resolv.conf
+  /etc/ssl
+  /etc/static
 )
-for e in "${ETC_ENTRIES[@]}"; do
-  bwrap_args+=(--ro-bind-try "/etc/$e" "/etc/$e")
+for e in "${RO_ENTRIES[@]}"; do
+  append_args --ro-bind-try "$e" "$e"
 done
+
+# Add paths as RO
+original_ifs="$IFS"
+IFS=:
+for p in $PATH; do
+  if [[ -L "$p" ]]; then
+    # Links (only nested?) causes bwrap to crash.
+    continue
+  else
+    append_args --ro-bind-try "$p" "$p"
+  fi
+done
+IFS=$original_ifs
 
 # add nessesary opencode dirs
 OPENCODE_ENTRIES=(
-  .cache/opencode
-  .config/opencode
-  .local/share/opencode
-  .local/state/opencode
+  "$HOME/.cache/opencode"
+  "$HOME/.config/opencode"
+  "$HOME/.local/share/opencode"
+  "$HOME/.local/state/opencode"
+
+  "$HOME/.cache/nix" # for nix develop
 )
 for e in "${OPENCODE_ENTRIES[@]}"; do
-  bwrap_args+=(--bind "/$HOME/$e" "/$HOME/$e")
+  append_args --bind "$e" "$e"
 done
 
 # Parse special arguments (only before first non-@ argument or @@)
 while [[ "${1:-}" == @* ]]; do
   case "$1" in
     @net)
-      bwrap_args+=(--share-net)
+      append_args --share-net
       ;;
     @@)
       break
@@ -76,4 +107,5 @@ while [[ "${1:-}" == @* ]]; do
   shift
 done
 
-exec bwrap "${bwrap_args[@]}" -- "$EXECUTABLE" "$@"
+exec {fd}< "$ARG_PATH"
+exec bwrap --args "$fd" -- "$EXECUTABLE" "$@"
