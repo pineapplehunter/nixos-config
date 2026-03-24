@@ -52,6 +52,10 @@ in
           lib.elem (pkgs.lib.getName pkg) [
             "libfprint-2-tod1-goodix"
             "vscode"
+            # printer drivers
+            "brgenml1lpr"
+            "cnijfilter2"
+            "samsung-unified-linux-driver"
           ];
       };
 
@@ -144,15 +148,24 @@ in
         };
 
         # Enable CUPS to print documents.
+        # https://wiki.nixos.org/wiki/Printing
         printing = {
           enable = true;
+          openFirewall = true;
           drivers = [
-            pkgs.gutenprint
-            pkgs.hplip
-            pkgs.splix
-            pkgs.epson-escpr
-            pkgs.cups-filters
+            pkgs.brgenml1lpr
+            pkgs.brlaser
+            pkgs.cnijfilter2
             pkgs.cups-browsed
+            pkgs.cups-filters
+            pkgs.epson-escpr
+            pkgs.epson-escpr2
+            pkgs.gutenprint
+            pkgs.gutenprint-bin
+            pkgs.hplip
+            pkgs.postscript-lexmark
+            pkgs.samsung-unified-linux-driver
+            pkgs.splix
           ];
         };
 
