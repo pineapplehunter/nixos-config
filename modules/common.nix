@@ -151,6 +151,8 @@ in
             pkgs.hplip
             pkgs.splix
             pkgs.epson-escpr
+            pkgs.cups-filters
+            pkgs.cups-browsed
           ];
         };
 

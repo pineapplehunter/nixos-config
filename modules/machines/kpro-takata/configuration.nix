@@ -149,7 +149,7 @@ in
         journald.audit = true;
 
         # disable for security purposes
-        avahi.enable = false;
+        avahi.enable = true;
 
         tlp.enable = false;
         tuned.enable = true;
