@@ -56,6 +56,7 @@ in
             "brgenml1lpr"
             "cnijfilter2"
             "samsung-unified-linux-driver"
+            "canon-cups-ufr2"
           ];
       };
 
@@ -155,7 +156,11 @@ in
           drivers = [
             pkgs.brgenml1lpr
             pkgs.brlaser
+            pkgs.canon-capt
+            pkgs.canon-cups-ufr2
+            pkgs.carps-cups
             pkgs.cnijfilter2
+            pkgs.cups-bjnp
             pkgs.cups-browsed
             pkgs.cups-filters
             pkgs.epson-escpr
