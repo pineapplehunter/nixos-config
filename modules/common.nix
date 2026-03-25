@@ -101,6 +101,7 @@ in
 
       boot.plymouth.enable = lib.mkDefault true;
       boot.kernelPackages = pkgs.linuxPackages_latest;
+      boot.tmp.cleanOnBoot = lib.mkDefault true;
 
       age = {
         secrets.access_tokens = {
