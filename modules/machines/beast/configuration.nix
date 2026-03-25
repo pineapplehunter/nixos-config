@@ -82,6 +82,19 @@ in
         display-manager.enable = false;
       };
 
+      systemd.tmpfiles.settings.setup-btrfs-reclaim =
+        let
+          disk = "/sys/fs/btrfs/20f60216-a9ad-46c7-bbc5-fd6cc4a17a39/allocation";
+        in
+        {
+          "${disk}/data/dynamic_reclaim".w.argument = "1";
+          "${disk}/data/periodic_reclaim".w.argument = "1";
+          "${disk}/metadata/dynamic_reclaim".w.argument = "1";
+          "${disk}/metadata/periodic_reclaim".w.argument = "1";
+          "${disk}/system/dynamic_reclaim".w.argument = "1";
+          "${disk}/system/periodic_reclaim".w.argument = "1";
+        };
+
       services = {
         # Enable the GNOME Desktop Environment.
         desktopManager.gnome = {
