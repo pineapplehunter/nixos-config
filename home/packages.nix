@@ -48,7 +48,6 @@
           nix-update
           nixfmt
           nixpkgs-fmt
-          opencode-wrapped
           project-init
           starship
           tokei
@@ -67,6 +66,7 @@
           tpm2-tools
         ]
         ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+          opencode-wrapped
           wayscriber
         ];
     };
