@@ -13,7 +13,7 @@ any-error () {
 trap any-error EXIT
 
 REPO=github:pineapplehunter/nixos-config
-TYPE=$(nix flake show "$REPO" --json --quiet --quiet | jq '.templates | keys[]' -r | fzf)
+TYPE=$( nix eval "$REPO#templates" --json --quiet | jq "keys[]" -r | fzf --preview "template-preview {}" )
 
 green initialilizing project in "$(pwd)"
 git init
