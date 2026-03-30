@@ -1,0 +1,134 @@
+diff --git a/packages/opencode/src/cli/cmd/tui/component/spinner.tsx b/packages/opencode/src/cli/cmd/tui/component/spinner.tsx
+index 8dc545550..dcf2e68f2 100644
+--- a/packages/opencode/src/cli/cmd/tui/component/spinner.tsx
++++ b/packages/opencode/src/cli/cmd/tui/component/spinner.tsx
+@@ -7,14 +7,27 @@ import "opentui-spinner/solid"
+ 
+ const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+ 
+-export function Spinner(props: { children?: JSX.Element; color?: RGBA }) {
++function formatElapsed(seconds: number): string {
++  const h = Math.floor(seconds / 3600)
++  const m = Math.floor((seconds % 3600) / 60)
++  const s = seconds % 60
++  if (h > 0) return `${h}h ${m}m ${s}s`
++  if (m > 0) return `${m}m ${s}s`
++  return `${s}s`
++}
++
++export function Spinner(props: { children?: JSX.Element; color?: RGBA; elapsed?: number }) {
+   const { theme } = useTheme()
+   const kv = useKV()
+   const color = () => props.color ?? theme.textMuted
++  const showElapsed = () => props.elapsed !== undefined && props.elapsed >= 10
+   return (
+     <Show when={kv.get("animations_enabled", true)} fallback={<text fg={color()}>⋯ {props.children}</text>}>
+       <box flexDirection="row" gap={1}>
+         <spinner frames={frames} interval={80} color={color()} />
++        <Show when={showElapsed()}>
++          <text fg={color()}>{formatElapsed(props.elapsed!)}</text>
++        </Show>
+         <Show when={props.children}>
+           <text fg={color()}>{props.children}</text>
+         </Show>
+diff --git a/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx b/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx
+index 7456742cd..972de0887 100644
+--- a/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx
++++ b/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx
+@@ -7,6 +7,7 @@ import {
+   For,
+   Match,
+   on,
++  onCleanup,
+   onMount,
+   Show,
+   Switch,
+@@ -1639,6 +1640,7 @@ function InlineTool(props: {
+   complete: any
+   pending: string
+   spinner?: boolean
++  elapsed?: number
+   children: JSX.Element
+   part: ToolPart
+   onClick?: () => void
+@@ -1707,7 +1709,9 @@ function InlineTool(props: {
+     >
+       <Switch>
+         <Match when={props.spinner}>
+-          <Spinner color={fg()} children={props.children} />
++          <Spinner color={fg()} elapsed={props.elapsed}>
++            {props.icon} {props.children}
++          </Spinner>
+         </Match>
+         <Match when={true}>
+           <text paddingLeft={3} fg={fg()} attributes={denied() ? TextAttributes.STRIKETHROUGH : undefined}>
+@@ -1730,6 +1734,7 @@ function BlockTool(props: {
+   onClick?: () => void
+   part?: ToolPart
+   spinner?: boolean
++  elapsed?: number
+ }) {
+   const { theme } = useTheme()
+   const renderer = useRenderer()
+@@ -1761,7 +1766,9 @@ function BlockTool(props: {
+           </text>
+         }
+       >
+-        <Spinner color={theme.textMuted}>{props.title.replace(/^# /, "")}</Spinner>
++        <Spinner color={theme.textMuted} elapsed={props.elapsed}>
++          {props.title.replace(/^# /, "")}
++        </Spinner>
+       </Show>
+       {props.children}
+       <Show when={error()}>
+@@ -1775,6 +1782,26 @@ function Bash(props: ToolProps<typeof BashTool>) {
+   const { theme } = useTheme()
+   const sync = useSync()
+   const isRunning = createMemo(() => props.part.state.status === "running")
++  const [startTime, setStartTime] = createSignal<number | null>(null)
++  const [elapsed, setElapsed] = createSignal(0)
++
++  createEffect(() => {
++    if (props.part.state.status === "running" && !startTime()) {
++      setStartTime(Date.now())
++    }
++  })
++
++  createEffect(() => {
++    if (!isRunning() || !startTime()) return
++    const update = () => {
++      const e = Date.now() - startTime()!
++      setElapsed(Math.floor(e / 1000))
++    }
++    update()
++    const id = setInterval(update, 1000)
++    onCleanup(() => clearInterval(id))
++  })
++
+   const output = createMemo(() => stripAnsi(props.metadata.output?.trim() ?? ""))
+   const [expanded, setExpanded] = createSignal(false)
+   const lines = createMemo(() => output().split("\n"))
+@@ -1816,6 +1843,7 @@ function Bash(props: ToolProps<typeof BashTool>) {
+           title={title()}
+           part={props.part}
+           spinner={isRunning()}
++          elapsed={isRunning() ? elapsed() : undefined}
+           onClick={overflow() ? () => setExpanded((prev) => !prev) : undefined}
+         >
+           <box gap={1}>
+@@ -1830,7 +1858,14 @@ function Bash(props: ToolProps<typeof BashTool>) {
+         </BlockTool>
+       </Match>
+       <Match when={true}>
+-        <InlineTool icon="$" pending="Writing command..." complete={props.input.command} part={props.part}>
++        <InlineTool
++          icon="$"
++          pending="Writing command..."
++          complete={props.input.command}
++          part={props.part}
++          spinner={isRunning()}
++          elapsed={isRunning() ? elapsed() : undefined}
++        >
+           {props.input.command}
+         </InlineTool>
+       </Match>

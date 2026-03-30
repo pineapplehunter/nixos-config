@@ -119,6 +119,7 @@ in
             url = "https://github.com/anomalyco/opencode/commit/e3ab329fe13d4758e1053a6c33e416449d5d33f5.patch";
             hash = "sha256-L3Mn2wRVEXgzphRBZ4wbMss0SLpa6R/Ad4w7EOyrbwA=";
           })
+          ./opencode-elapsed.patch
         ];
       });
     };
