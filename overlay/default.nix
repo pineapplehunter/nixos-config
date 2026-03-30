@@ -99,27 +99,6 @@ in
         enableParallelBuilding = true;
       });
 
-      # https://github.com/NixOS/nixpkgs/pull/502923
-      ibus-engines = prev.ibus-engines // {
-        mozc = final.symlinkJoin {
-          name = "mozc-patched";
-          paths = [ prev.ibus-engines.mozc ];
-          postBuild = ''
-            mv "$out"/share/ibus/component{s,}
-          '';
-          meta.isIbusEngine = true;
-          inherit (prev.ibus-engines.mozc) src;
-        };
-        mozc-ut = final.symlinkJoin {
-          name = "mozc-patched";
-          paths = [ prev.ibus-engines.mozc-ut ];
-          postBuild = ''
-            mv "$out"/share/ibus/component{s,}
-          '';
-          meta.isIbusEngine = true;
-        };
-      };
-
       gnomeExtensions = prev.gnomeExtensions // {
         # https://github.com/joaophi/tailscale-gnome-qs/pull/45
         tailscale-qs = prev.gnomeExtensions.tailscale-qs.overrideAttrs (old: {
