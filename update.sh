@@ -7,6 +7,7 @@ for cmd in nix nvd; do
 done
 
 HOMEMANAGER=$(command -v home-manager || echo NOT_FOUND)
+NIX_EXE=${NIX_EXE:-nom}
 
 usage(){
   PNAME=$(basename "${0:-update.sh}")
@@ -92,7 +93,7 @@ function os-expire {
 }
 
 function os-build {
-  nom build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "${args[@]}"
+  "$NIX_EXE" build ".#nixosConfigurations.$HOST.config.system.build.toplevel" "${args[@]}"
 }
 
 function os-diff {
@@ -139,7 +140,7 @@ function home-expire {
 }
 
 function home-build {
-  nom build ".#homeConfigurations.$HOME_CONFIG_NAME.activationPackage" "${args[@]}"
+  "$NIX_EXE" build ".#homeConfigurations.$HOME_CONFIG_NAME.activationPackage" "${args[@]}"
 }
 
 function home-diff {
