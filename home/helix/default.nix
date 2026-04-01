@@ -120,24 +120,10 @@
         };
       };
 
-      config.home.packages =
-        with pkgs;
-        [
-          # for editors
-          bash-language-server
-          clang-tools
-          helix-assist
-          nixd
-          nodePackages.typescript-language-server
-          ruff
-          taplo
-          texlab
-          tinymist
-          vscode-langservers-extracted
-        ]
-        ++ lib.optionals isLinux [
-          markdown-oxide
-          basedpyright
-        ];
+      config.home.packages = with pkgs; [
+        # for editors
+        bash-language-server
+        nixd
+      ];
     };
 }
