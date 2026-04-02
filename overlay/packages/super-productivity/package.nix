@@ -1,7 +1,7 @@
 {
   buildNpmPackage,
   copyDesktopItems,
-  electron_39,
+  electron,
   fetchFromGitHub,
   lib,
   makeDesktopItem,
@@ -10,18 +10,15 @@
   rsync,
   stdenv,
 }:
-let
-  electron = electron_39;
-in
 buildNpmPackage rec {
   pname = "super-productivity";
-  version = "18.0.0";
+  version = "18.1.3";
 
   src = fetchFromGitHub {
     owner = "johannesjo";
     repo = "super-productivity";
     tag = "v${version}";
-    hash = "sha256-yI/0eAYBKRr2qBDhN06SMNq4fOor3blq4Wr7kAowxRk=";
+    hash = "sha256-NCprKgZDaECQyYKeMUJ+08gI0RJMyBqUJD/tSoO6vr0=";
   };
 
   # Use custom fetcher for deps because super-productivity uses multiple
@@ -31,7 +28,7 @@ buildNpmPackage rec {
   npmDeps = stdenv.mkDerivation (
     lib.fetchers.normalizeHash { } {
       pname = "super-productivity-deps";
-      inherit version src postPatch;
+      inherit version src;
 
       nativeBuildInputs = [
         prefetch-npm-deps
@@ -60,7 +57,7 @@ buildNpmPackage rec {
       dontInstall = true;
 
       outputHashMode = "recursive";
-      hash = "sha256-/EZUaeuWtNfT9mcQke+Eoqr+hQ0Soo80BKsdZ0lDN34=";
+      hash = "sha256-Ji49d+yIDnf79emgGDfekUlhvDpZ4GzIgRBrRJ7eLBI=";
     }
   );
 
@@ -75,7 +72,6 @@ buildNpmPackage rec {
   nativeBuildInputs = [ copyDesktopItems ];
 
   postPatch = ''
-    cp "${./package-lock.json}" package-lock.json
     substituteInPlace electron-builder.yaml \
       --replace-fail "notarize: true" "notarize: false"
   '';
