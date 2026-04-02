@@ -1,5 +1,9 @@
 name: CI
 
+# update note:
+# The hash of the actions used can be updated with actions-up
+# $ nix shell .#bun -c bunx actions-up
+
 on:
   push:
   pull_request:
@@ -23,15 +27,15 @@ jobs:
       || (matrix.system == 'aarch64-darwin' && 'macos-latest') }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: enable unprivileged userns clone
         if: runner.os == 'Linux'
         run: |
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           sudo sysctl -w kernel.unprivileged_userns_clone=1
-      - uses: wimpysworld/nothing-but-nix@main
+      - uses: wimpysworld/nothing-but-nix@687c797a730352432950c707ab493fcc951818d7 # v10
         if: runner.os == 'Linux'
-      - uses: cachix/install-nix-action@v31
+      - uses: cachix/install-nix-action@96951a368ba55167b55f1c916f7d416bac6505fe # v31.10.3
         with:
           extra_nix_config: |
             fallback = true
