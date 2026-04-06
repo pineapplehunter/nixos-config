@@ -34,6 +34,8 @@ append_args(){
 
 bwrap_args=(
   --unshare-all
+  --die-with-parent
+  --cap-drop ALL
   --share-net
   --tmpfs /tmp
   --dev /dev
@@ -41,6 +43,9 @@ bwrap_args=(
   --ro-bind /nix /nix
   --ro-bind "$HOME" "$HOME"
   --tmpfs "$HOME/.ssh" # hide ssh keys
+  --tmpfs /etc
+  --tmpfs /run
+  --tmpfs /var
   --bind "$PROJECT_ROOT" "$PROJECT_ROOT"
   --setenv LANG C
 )
@@ -71,6 +76,14 @@ for p in $PATH; do
   if [[ -L "$p" ]]; then
     # Links (only nested?) causes bwrap to crash.
     continue
+  elif [[ "$p" = /nix/store/* ]]; then
+    # skip nix paths.
+    # They are already included
+    continue
+  elif [[ "$p" = /home/* ]]; then
+    # skip home paths.
+    # HOME is RO mounted
+    continue
   else
     append_args --ro-bind-try "$p" "$p"
   fi
@@ -90,11 +103,24 @@ for e in "${OPENCODE_ENTRIES[@]}"; do
   append_args --bind "$e" "$e"
 done
 
+# Add R/W git states for worktrees
+if [[ -f "$PROJECT_ROOT/.git" ]]; then
+  GITDIR=$(grep gitdir "$PROJECT_ROOT/.git")
+  GITDIR=${GITDIR##gitdir: }
+  REVGITDIR=$(cat "$GITDIR"/gitdir)
+  if [[ "$REVGITDIR" == "$PROJECT_ROOT/.git" ]]; then
+    append_args --bind "$GITDIR" "$GITDIR"
+  fi
+fi
+
 # Parse special arguments (only before first non-@ argument or @@)
 while [[ "${1:-}" == @* ]]; do
   case "$1" in
     @net)
       append_args --share-net
+      ;;
+    @debug-shell)
+      DEBUG_MODE=1
       ;;
     @@)
       break
@@ -108,4 +134,8 @@ while [[ "${1:-}" == @* ]]; do
 done
 
 exec {fd}< "$ARG_PATH"
-exec bwrap --args "$fd" -- "$EXECUTABLE" "$@"
+if [[ "${DEBUG_MODE:-0}" = 0 ]]; then
+  exec bwrap --args "$fd" -- "$EXECUTABLE" "$@"
+else
+  exec bwrap --args "$fd" -- "$SHELL" "$@"
+fi
