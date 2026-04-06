@@ -264,7 +264,7 @@ in
 
       systemd = {
         services = {
-          docker.wantedBy = lib.mkForce [ "default.target" ];
+          docker.wantedBy = lib.mkForce [ ];
           libvirtd.wantedBy = lib.mkForce [ "default.target" ];
           libvirt-guests.wantedBy = lib.mkForce [ "default.target" ];
           "beesd@-" = {
