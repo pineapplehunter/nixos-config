@@ -67,9 +67,7 @@ in
             speedFactor = 2;
             sshUser = "shogo";
             supportedFeatures = [
-              "big-parallel"
               "kvm"
-              "benchmark"
               "nixos-test"
             ];
             system = "x86_64-linux";
@@ -80,9 +78,7 @@ in
             speedFactor = 2;
             sshUser = "shogo";
             supportedFeatures = [
-              "big-parallel"
               "kvm"
-              "benchmark"
               "nixos-test"
             ];
             system = "x86_64-linux";
