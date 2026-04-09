@@ -170,6 +170,9 @@ in
 
         tlp.enable = false;
         tuned.enable = true;
+
+        # explicitly set to disable warnings
+        xremap.enable = false;
       };
 
       networking = {
