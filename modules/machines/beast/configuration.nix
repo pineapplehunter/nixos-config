@@ -247,7 +247,5 @@ in
           ];
         };
       };
-
-      zramSwap.enable = true;
     };
 }

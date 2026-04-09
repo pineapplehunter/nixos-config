@@ -91,8 +91,6 @@ in
         # channel.enable = false;
       };
 
-      zramSwap.enable = true;
-
       services = {
         xremap = {
           enable = true;
