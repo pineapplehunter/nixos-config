@@ -43,7 +43,6 @@ in
       nixpkgs = {
         overlays = [
           inputs.nixgl.overlays.default
-          inputs.nix-xilinx.overlay
           inputs.agenix.overlays.default
           flake-config.flake.overlays.default
         ];

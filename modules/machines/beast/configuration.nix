@@ -48,7 +48,6 @@ in
         pkgs.geesefs
         pkgs.podman-compose
         pkgs.smartmontools
-        pkgs.vivado
       ];
 
       # Use the systemd-boot EFI boot loader.
