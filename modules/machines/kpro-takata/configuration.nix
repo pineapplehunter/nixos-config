@@ -247,13 +247,6 @@ in
         fprintd.enable = true;
 
         fwupd.enable = true;
-
-        beesd.filesystems."-" = {
-          spec = "UUID=77b7cb82-87a1-45ec-8306-1a8edad64fd1";
-          # use recommended value
-          # https://github.com/Zygo/bees/blob/master/docs/config.md
-          hashTableSizeMB = 128;
-        };
       };
 
       systemd = {
@@ -261,10 +254,6 @@ in
           docker.wantedBy = lib.mkForce [ ];
           libvirtd.wantedBy = lib.mkForce [ "default.target" ];
           libvirt-guests.wantedBy = lib.mkForce [ "default.target" ];
-          "beesd@-" = {
-            wantedBy = lib.mkForce [ "power-ac.target" ];
-            requires = [ "power-ac.target" ];
-          };
         };
 
         power-targets.enable = true;

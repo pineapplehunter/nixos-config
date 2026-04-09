@@ -91,17 +91,6 @@ in
               useRoutingFeatures = "both";
             };
 
-            services.beesd.filesystems = {
-              "root" = {
-                spec = "/";
-                hashTableSizeMB = 128;
-              };
-              "garage" = {
-                spec = "/garage";
-                hashTableSizeMB = 128;
-              };
-            };
-
             services.prometheus.exporters = {
               node.enable = true;
               smartctl.enable = true;

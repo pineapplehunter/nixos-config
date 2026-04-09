@@ -197,10 +197,6 @@ in
           ollama.wantedBy = lib.mkForce [ "default.target" ];
           libvirtd.wantedBy = lib.mkForce [ "default.target" ];
           libvirt-guests.wantedBy = lib.mkForce [ "default.target" ];
-          "beesd@-" = {
-            wantedBy = lib.mkForce [ "power-ac.target" ];
-            requires = [ "power-ac.target" ];
-          };
         };
 
         power-targets.enable = true;
@@ -270,14 +266,6 @@ in
       ];
 
       services.openssh.settings.PasswordAuthentication = false;
-
-      services.beesd.filesystems."-" = {
-        spec = "UUID=c73fb028-c49b-4d3e-8628-39e326535d46";
-        # use recommended value
-        # multiplied by 2 for 2TB storage
-        # https://github.com/Zygo/bees/blob/master/docs/config.md
-        hashTableSizeMB = 128 * 2;
-      };
 
       specialisation = {
         no-xe.configuration = {

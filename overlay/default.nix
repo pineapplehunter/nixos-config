@@ -86,18 +86,6 @@ in
         });
       };
 
-      bees = prev.bees.overrideAttrs (old: {
-        src = final.fetchFromGitHub {
-          owner = "Zygo";
-          repo = "bees";
-          rev = "b8086fb41af052bdadf35dc13382604e246dc12c";
-          hash = "sha256-HmXCQB477AhEo7dormAv+d7jz4cKiQEHQie9VvUqUzM=";
-        };
-
-        # faster building
-        enableParallelBuilding = true;
-      });
-
       gnomeExtensions = prev.gnomeExtensions // {
         # https://github.com/joaophi/tailscale-gnome-qs/pull/45
         tailscale-qs = prev.gnomeExtensions.tailscale-qs.overrideAttrs (old: {
