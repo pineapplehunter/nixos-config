@@ -15,6 +15,7 @@
         };
       };
       config = lib.mkIf cfg.enable {
+        boot.initrd.availableKernelModules = [ "xe" ];
         boot.kernelParams = lib.concatMap (x: [
           "i915.force_probe=!${x}"
           "xe.force_probe=${x}"
