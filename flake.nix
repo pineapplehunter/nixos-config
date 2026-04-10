@@ -34,7 +34,7 @@
       inputs.rust-overlay.follows = "rust-overlay";
     };
     nixos-raspberrypi = {
-      url = "github:nvmd/nixos-raspberrypi/develop";
+      url = "github:nvmd/nixos-raspberrypi?ref=develop";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     disko = {
