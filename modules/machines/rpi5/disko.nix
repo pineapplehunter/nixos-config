@@ -65,6 +65,7 @@ in
     "/var/log".neededForBoot = true;
     "/garage" = {
       device = "/dev/bcache0";
+      fsType = "btrfs";
       options = mountOptions ++ [
         "x-systemd.required-by=garage.service"
       ];
