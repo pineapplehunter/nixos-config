@@ -130,11 +130,11 @@
 
   nixConfig = {
     extra-substituters = [
-      "https://attic.s.ihavenojob.work/shogo"
+      "https://niks3-storage.gweb.ihavenojob.work?priority=99"
       "https://nixos-raspberrypi.cachix.org"
     ];
     extra-trusted-public-keys = [
-      "shogo:R9ZWo9iGw8E0X6G24R7XLPH0UeE3VZ/WFi2+D0Kmud4="
+      "niks3-cache:RW+9UW/AgeDvEawJndPbzNVYQcDPjXA4J23srAi5+sE="
       "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
     ];
   };

@@ -71,12 +71,10 @@ in
           auto-allocate-uids = true;
           trusted-users = [ "@wheel" ];
           substituters = [
-            "https://cache.nixos.org/"
-            "https://attic.s.ihavenojob.work/shogo"
+            "https://niks3-storage.gweb.ihavenojob.work?priority=99"
           ];
           trusted-public-keys = [
-            "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-            "shogo:R9ZWo9iGw8E0X6G24R7XLPH0UeE3VZ/WFi2+D0Kmud4="
+            "niks3-cache:RW+9UW/AgeDvEawJndPbzNVYQcDPjXA4J23srAi5+sE="
           ];
           warn-dirty = false;
           allow-import-from-derivation = false;
@@ -105,6 +103,11 @@ in
       age = {
         secrets.access_tokens = {
           file = flake-config.ageFile.access-tokens;
+          mode = "0440";
+          group = "wheel";
+        };
+        secrets.niks3-token = {
+          file = flake-config.ageFile.niks3-token;
           mode = "0440";
           group = "wheel";
         };
@@ -211,6 +214,8 @@ in
       environment = {
         variables = {
           EDITOR = "hx";
+          NIKS3_SERVER_URL = "https://niks3.s.ihavenojob.work";
+          NIKS3_AUTH_TOKEN_FILE = config.age.secrets.niks3-token.path;
         };
         enableAllTerminfo = true;
       };

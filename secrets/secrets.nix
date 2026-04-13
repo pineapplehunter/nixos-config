@@ -26,4 +26,5 @@ in
   "anthropic-key.age".publicKeys = users ++ systems;
   "garage-secret.age".publicKeys = users ++ systems;
   "immich-backup-env.age".publicKeys = users ++ [ beast-system ];
+  "niks3-token.age".publicKeys = users ++ systems;
 }

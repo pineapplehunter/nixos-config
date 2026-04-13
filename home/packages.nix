@@ -43,6 +43,7 @@
           fuc
           fzf
           git-extras
+          niks3
           nix-index
           nix-init
           nix-update
