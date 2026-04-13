@@ -48,6 +48,7 @@
           nix-update
           nixfmt
           nixpkgs-fmt
+          nixr
           project-init
           starship
           tokei
