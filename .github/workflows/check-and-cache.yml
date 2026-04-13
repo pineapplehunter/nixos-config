@@ -55,5 +55,5 @@ jobs:
         run: |
           nix profile add --inputs-from . "nixpkgs#niks3"
           echo "$NIKS3_AUTH_TOKEN" > token
-          nix path-info --all | xargs niks3 push
+          nix path-info --all | xargs -n 20 niks3 push
           
