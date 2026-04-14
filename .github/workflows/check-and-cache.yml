@@ -41,11 +41,19 @@ jobs:
             system = ${{ matrix.system }}
             extra-substituters = https://attic.s.ihavenojob.work/shogo?priority=90 https://niks3-storage.gweb.ihavenojob.work?priority=80
             extra-trusted-public-keys = shogo:R9ZWo9iGw8E0X6G24R7XLPH0UeE3VZ/WFi2+D0Kmud4= niks3-cache:RW+9UW/AgeDvEawJndPbzNVYQcDPjXA4J23srAi5+sE=
-      - uses: aleadag/niks3-action@ea2e7c1e92316f5da40a3b6fa867313a3e176fd3 # v0.4.2
-        with:
-          endpoint: "${{ vars.NIKS3_SERVER_URL }}"
-          auth-token: "${{ secrets.NIKS3_AUTH_TOKEN }}"
-          push-flake-inputs: true
 
       - name: Run checks
         run: nix build ".#ci"
+
+      - name: Upload Cache
+        if: always()
+        continue-on-error: true
+        env:
+          NIKS3_SERVER_URL: ${{ vars.NIKS3_SERVER_URL }}
+          NIKS3_AUTH_TOKEN: ${{ secrets.NIKS3_AUTH_TOKEN }}
+          NIKS3_AUTH_TOKEN_FILE: ./token
+        run: |
+          nix profile add --inputs-from . "nixpkgs#niks3"
+          echo "$NIKS3_AUTH_TOKEN" > token
+          nix path-info --all | grep -v '.drv$' | xargs -n 50 -- niks3 push
+          
