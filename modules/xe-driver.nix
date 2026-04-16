@@ -14,12 +14,23 @@
           example = [ "7d51" ];
         };
       };
-      config = lib.mkIf cfg.enable {
-        boot.initrd.availableKernelModules = [ "xe" ];
-        boot.kernelParams = lib.concatMap (x: [
-          "i915.force_probe=!${x}"
-          "xe.force_probe=${x}"
-        ]) cfg.devices;
-      };
+      config = lib.mkIf cfg.enable (
+        lib.mkMerge [
+          {
+            boot.initrd.availableKernelModules = [ "xe" ];
+            boot.initrd.kernelModules = [ "xe" ];
+            boot.kernelParams = lib.concatMap (x: [
+              "i915.force_probe=!${x}"
+              "xe.force_probe=${x}"
+            ]) cfg.devices;
+          }
+          (lib.mkIf config.boot.plymouth.enable {
+            boot.initrd.systemd.services.plymouth-start = {
+              after = [ "systemd-modules-load.service" ];
+              wants = [ "systemd-modules-load.service" ];
+            };
+          })
+        ]
+      );
     };
 }
