@@ -238,6 +238,10 @@ in
           clamav
           yubikey-manager
           bubblewrap
+          (pkgs.writeShellApplication {
+            name = "update-luks2-tpm2-key";
+            text = "systemd-cryptenroll /dev/nvme0n1p5 --wipe-slot tpm2 --tpm2-device=auto --tpm2-pcrs=1,7";
+          })
         ];
       };
 
