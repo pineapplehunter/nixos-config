@@ -8,7 +8,6 @@
       config.home.packages =
         with pkgs;
         [
-          attic-client
           eza
           fd
           ffmpegthumbnailer
