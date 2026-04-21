@@ -73,7 +73,6 @@ in
     ./common.nix
     ./cradsec.nix
     ./dconf.nix
-    ./emacs/default.nix
     ./flatpak-update.nix
     ./ghostty.nix
     ./helix/default.nix
