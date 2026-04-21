@@ -21,7 +21,6 @@ in
           mods.flatpak-update
           mods.ghostty
           mods.helix
-          mods.inkscape-symbols
           mods.julia
           mods.minimal
           mods.packages

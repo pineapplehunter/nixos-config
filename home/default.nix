@@ -77,7 +77,6 @@ in
     ./flatpak-update.nix
     ./ghostty.nix
     ./helix/default.nix
-    ./inkscape-symbols.nix
     ./julia.nix
     ./kpro.nix
     ./minimal.nix
