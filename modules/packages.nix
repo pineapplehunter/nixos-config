@@ -66,7 +66,5 @@
         nautilus-open-any-terminal
         nautilus-python
       ];
-
-      environment.gnome.excludePackages = [ pkgs.evince ];
     };
 }
