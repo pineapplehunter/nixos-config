@@ -43,6 +43,7 @@
           fuc
           fzf
           git-extras
+          hl-log-viewer
           niks3
           nix-index
           nix-init
@@ -51,6 +52,7 @@
           nixpkgs-fmt
           nixr
           project-init
+          pv
           starship
           tokei
           tree
