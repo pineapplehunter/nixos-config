@@ -22,12 +22,17 @@ trap any-error EXIT
 
 DERIVATION_PATHS=()
 REMOTE=none
-
+NIX_BUILD_OPTIONS=()
 while [[ -n "${1:-}" ]]; do
   case "$1" in
     --remote|-r)
       REMOTE=$2
       shift
+      ;;
+    --)
+      shift
+      NIX_BUILD_OPTIONS=("$@")
+      break
       ;;
     *)
       while read -r path; do
@@ -39,14 +44,12 @@ while [[ -n "${1:-}" ]]; do
 done
 
 BUILT_PATHS=()
-REMOTE_BUILT_PATHS=()
 for drv in "${DERIVATION_PATHS[@]}"; do
   BUILT_PATHS+=("$drv^*")
-  REMOTE_BUILT_PATHS+=("$(printf "%q" "$drv^*")")
 done
 
 nix copy --to ssh:"$REMOTE" "${DERIVATION_PATHS[@]}"
-ssh "$REMOTE" nix -L build --no-link "${REMOTE_BUILT_PATHS[@]}"
+ssh "$REMOTE" -- "$(printf "%q " nix build --no-link --log-format bar-with-logs "${NIX_BUILD_OPTIONS[@]}" "${BUILT_PATHS[@]}")"
 nix build --no-require-sigs --extra-trusted-substituters ssh:"$REMOTE" "${BUILT_PATHS[@]}"
 
 # reset trap
