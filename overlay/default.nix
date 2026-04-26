@@ -105,8 +105,6 @@ in
           ./opencode-elapsed.patch
         ];
       });
-
-      super-productivity = prev.super-productivity.override { electron_39 = final.electron; };
     };
 
     custom-packages =
