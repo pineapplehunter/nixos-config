@@ -98,6 +98,7 @@ in
       boot.plymouth.enable = lib.mkDefault true;
       boot.kernelPackages = pkgs.linuxPackages_latest;
       boot.tmp.cleanOnBoot = lib.mkDefault true;
+      boot.extraModprobeConfig = "install algif_aead /bin/false";
 
       age = {
         secrets.access_tokens = {

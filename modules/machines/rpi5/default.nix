@@ -139,6 +139,7 @@ in
             ];
 
             boot.loader.raspberry-pi.bootloader = "kernel";
+            boot.extraModprobeConfig = "install algif_aead /bin/false";
 
             # This is identical to what nixos installer does in
             # (modulesPash + "profiles/installation-device.nix")
