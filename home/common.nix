@@ -87,6 +87,20 @@ in
           enable = true;
           color.enable = true;
         };
+
+        zsh = {
+          plugins = [
+            {
+              name = "zsh-ssh";
+              src = pkgs.fetchFromGitHub {
+                owner = "sunlei";
+                repo = "zsh-ssh";
+                rev = "2049d186697f80386068b61732d785d40bf51213";
+                hash = "sha256-YEgJzbanZ7iRD9hV8Pn6Ns3Vj87mKnwZjO0VIhamnX4=";
+              };
+            }
+          ];
+        };
       };
 
       home = {
