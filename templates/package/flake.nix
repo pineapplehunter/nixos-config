@@ -6,39 +6,32 @@
 
   outputs =
     { flake-parts, ... }@inputs:
-    flake-parts.lib.mkFlake { inherit inputs; } (
-      { config, ... }:
-      {
-        flake.overlays.default = final: prev: {
-          # Add custom packages
-          custom-package = final.callPackage ./package.nix { };
-        };
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [
+        "aarch64-darwin"
+        "aarch64-linux"
+        "x86_64-linux"
+      ];
 
-        systems = [
-          "aarch64-darwin"
-          "aarch64-linux"
-          "x86_64-linux"
-        ];
-
-        perSystem =
-          { pkgs, system, ... }:
-          {
-            _module.args.pkgs = import inputs.nixpkgs {
-              inherit system;
-              overlays = [
-                config.flake.overlays.default
-                # Add overlays as needed
-              ];
-            };
-
-            packages.default = pkgs.custom-package;
-
-            # Use nixfmt for all nix files
-            formatter = pkgs.nixfmt-tree;
-
-            # Uncomment to build any package with `nix build .#package`
-            #legacyPackages = pkgs;
+      perSystem =
+        { pkgs, system, ... }:
+        {
+          _module.args.pkgs = import inputs.nixpkgs {
+            inherit system;
+            overlays = [
+              # Add overlays as needed
+            ];
           };
-      }
-    );
+
+          packages = {
+            custom-package = pkgs.callPackage ./package.nix { };
+          };
+
+          # Use nixfmt for all nix files
+          formatter = pkgs.nixfmt-tree;
+
+          # Uncomment to build any package with `nix build .#package`
+          #legacyPackages = pkgs;
+        };
+    };
 }
