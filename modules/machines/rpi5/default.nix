@@ -96,6 +96,31 @@ in
               smartctl.enable = true;
             };
 
+            services.samba = {
+              enable = true;
+              openFirewall = true;
+              settings = {
+                "timemachine" = {
+                  "path" = "/samba/timemachine";
+                  "valid users" = "andy";
+                  "public" = "no";
+                  "writeable" = "yes";
+                  "force user" = "andy";
+                  # Below are the most imporant for macOS compatibility
+                  # Change the above to suit your needs
+                  "fruit:aapl" = "yes";
+                  "fruit:time machine" = "yes";
+                  "vfs objects" = "catia fruit streams_xattr";
+                };
+              };
+            };
+
+            # To be discoverable with windows
+            services.samba-wsdd = {
+              enable = true;
+              openFirewall = true;
+            };
+
             programs.atop.enable = true;
             programs.zsh.enable = true;
 
@@ -114,6 +139,32 @@ in
               enable = true;
               nssmdns4 = true;
               openFirewall = true;
+              extraServiceFiles = {
+                timemachine = ''
+                  <?xml version="1.0" standalone='no'?>
+                  <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+                  <service-group>
+                    <name replace-wildcards="yes">%h</name>
+                    <service>
+                      <type>_smb._tcp</type>
+                      <port>445</port>
+                    </service>
+                      <service>
+                      <type>_device-info._tcp</type>
+                      <port>0</port>
+                      <txt-record>model=TimeCapsule8,119</txt-record>
+                    </service>
+                    <service>
+                      <type>_adisk._tcp</type>
+                      <!-- 
+                        change tm_share to share name, if you changed it. 
+                      --> 
+                      <txt-record>dk0=adVN=tm_share,adVF=0x82</txt-record>
+                      <txt-record>sys=waMa=0,adVF=0x100</txt-record>
+                    </service>
+                  </service-group>
+                '';
+              };
             };
 
             environment.systemPackages = with pkgs; [
@@ -154,6 +205,12 @@ in
               ];
               # Allow the graphical user to login without password
               initialHashedPassword = "";
+            };
+
+            users.users.andy = {
+              isNormalUser = true;
+              description = "Write-access to samba media shares";
+              extraGroups = [ "users" ];
             };
 
             # Allow the user to log in as root without a password.

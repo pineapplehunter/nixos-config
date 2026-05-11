@@ -68,6 +68,15 @@ in
       fsType = "btrfs";
       options = mountOptions ++ [
         "x-systemd.required-by=garage.service"
+        "subvol=@garage"
+      ];
+    };
+    "/samba" = {
+      device = "/dev/bcache0";
+      fsType = "btrfs";
+      options = mountOptions ++ [
+        "x-systemd.required-by=samba.target"
+        "subvol=@samba"
       ];
     };
   };
