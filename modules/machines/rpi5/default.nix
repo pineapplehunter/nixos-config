@@ -123,6 +123,7 @@ in
 
             programs.atop.enable = true;
             programs.zsh.enable = true;
+            programs.bandwhich.enable = true;
 
             time.timeZone = "Asia/Tokyo";
             networking.hostName = "rpi5";
