@@ -1,10 +1,10 @@
 diff --git a/packages/opencode/src/cli/cmd/tui/component/spinner.tsx b/packages/opencode/src/cli/cmd/tui/component/spinner.tsx
-index 8dc545550..dcf2e68f2 100644
+index 700780314..462b60fb0 100644
 --- a/packages/opencode/src/cli/cmd/tui/component/spinner.tsx
 +++ b/packages/opencode/src/cli/cmd/tui/component/spinner.tsx
 @@ -7,14 +7,27 @@ import "opentui-spinner/solid"
  
- const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+ export const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
  
 -export function Spinner(props: { children?: JSX.Element; color?: RGBA }) {
 +function formatElapsed(seconds: number): string {
@@ -24,7 +24,7 @@ index 8dc545550..dcf2e68f2 100644
    return (
      <Show when={kv.get("animations_enabled", true)} fallback={<text fg={color()}>⋯ {props.children}</text>}>
        <box flexDirection="row" gap={1}>
-         <spinner frames={frames} interval={80} color={color()} />
+         <spinner frames={SPINNER_FRAMES} interval={80} color={color()} />
 +        <Show when={showElapsed()}>
 +          <text fg={color()}>{formatElapsed(props.elapsed!)}</text>
 +        </Show>
@@ -32,7 +32,7 @@ index 8dc545550..dcf2e68f2 100644
            <text fg={color()}>{props.children}</text>
          </Show>
 diff --git a/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx b/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx
-index 7456742cd..972de0887 100644
+index ce651fdbe..04da1724f 100644
 --- a/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx
 +++ b/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx
 @@ -7,6 +7,7 @@ import {
@@ -43,7 +43,7 @@ index 7456742cd..972de0887 100644
    onMount,
    Show,
    Switch,
-@@ -1639,6 +1640,7 @@ function InlineTool(props: {
+@@ -1735,6 +1736,7 @@ function InlineTool(props: {
    complete: any
    pending: string
    spinner?: boolean
@@ -51,7 +51,7 @@ index 7456742cd..972de0887 100644
    children: JSX.Element
    part: ToolPart
    onClick?: () => void
-@@ -1707,7 +1709,9 @@ function InlineTool(props: {
+@@ -1804,7 +1806,9 @@ function InlineTool(props: {
      >
        <Switch>
          <Match when={props.spinner}>
@@ -62,7 +62,7 @@ index 7456742cd..972de0887 100644
          </Match>
          <Match when={true}>
            <text paddingLeft={3} fg={fg()} attributes={denied() ? TextAttributes.STRIKETHROUGH : undefined}>
-@@ -1730,6 +1734,7 @@ function BlockTool(props: {
+@@ -1827,6 +1831,7 @@ function BlockTool(props: {
    onClick?: () => void
    part?: ToolPart
    spinner?: boolean
@@ -70,7 +70,7 @@ index 7456742cd..972de0887 100644
  }) {
    const { theme } = useTheme()
    const renderer = useRenderer()
-@@ -1761,7 +1766,9 @@ function BlockTool(props: {
+@@ -1858,7 +1863,9 @@ function BlockTool(props: {
            </text>
          }
        >
@@ -81,9 +81,9 @@ index 7456742cd..972de0887 100644
        </Show>
        {props.children}
        <Show when={error()}>
-@@ -1775,6 +1782,26 @@ function Bash(props: ToolProps<typeof BashTool>) {
+@@ -1872,6 +1879,26 @@ function Shell(props: ToolProps<typeof ShellTool>) {
    const { theme } = useTheme()
-   const sync = useSync()
+   const pathFormatter = usePathFormatter()
    const isRunning = createMemo(() => props.part.state.status === "running")
 +  const [startTime, setStartTime] = createSignal<number | null>(null)
 +  const [elapsed, setElapsed] = createSignal(0)
@@ -108,7 +108,7 @@ index 7456742cd..972de0887 100644
    const output = createMemo(() => stripAnsi(props.metadata.output?.trim() ?? ""))
    const [expanded, setExpanded] = createSignal(false)
    const lines = createMemo(() => output().split("\n"))
-@@ -1816,6 +1843,7 @@ function Bash(props: ToolProps<typeof BashTool>) {
+@@ -1902,6 +1929,7 @@ function Shell(props: ToolProps<typeof ShellTool>) {
            title={title()}
            part={props.part}
            spinner={isRunning()}
@@ -116,7 +116,7 @@ index 7456742cd..972de0887 100644
            onClick={overflow() ? () => setExpanded((prev) => !prev) : undefined}
          >
            <box gap={1}>
-@@ -1830,7 +1858,14 @@ function Bash(props: ToolProps<typeof BashTool>) {
+@@ -1916,7 +1944,14 @@ function Shell(props: ToolProps<typeof ShellTool>) {
          </BlockTool>
        </Match>
        <Match when={true}>
