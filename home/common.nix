@@ -23,6 +23,7 @@ in
           mods.helix
           mods.julia
           mods.minimal
+          mods.opencode
           mods.packages
           mods.shell-config
           mods.ssh
