@@ -45,7 +45,6 @@ in
       };
 
       environment.systemPackages = [
-        pkgs.geesefs
         pkgs.podman-compose
         pkgs.smartmontools
       ];
