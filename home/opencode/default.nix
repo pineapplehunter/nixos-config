@@ -29,9 +29,16 @@
       programs.opencode = {
         enable = true;
         package = opencode-wrapped;
-        settings = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
-          permission = "allow";
-        };
+        settings = lib.mkMerge [
+          {
+            autoupdate = false;
+            formatter = true;
+            lsp = true;
+          }
+          (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
+            permission = "allow";
+          })
+        ];
         skills = {
           flake = ./flake.md;
           nixpkgs = ./nixpkgs.md;
