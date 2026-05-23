@@ -92,19 +92,6 @@ in
           ./opencode-elapsed.patch
         ];
       });
-
-      pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
-        (py-final: py-prev: {
-          tpm2-pytss = py-prev.tpm2-pytss.overrideAttrs (old: {
-            patches = (old.patches or [ ]) ++ [
-              (final.fetchpatch {
-                url = "https://github.com/tpm2-software/tpm2-pytss/commit/5d15cad4bde28902a4becb8e2a8e915aba8abbd0.patch";
-                hash = "sha256-b2zVD7KJGVzJ765HO8LFAe9MyQmjOTpERmEqUrIg3oM=";
-              })
-            ];
-          });
-        })
-      ];
     };
 
     custom-packages =
