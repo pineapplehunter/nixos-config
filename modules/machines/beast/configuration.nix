@@ -97,10 +97,6 @@ in
         # Enable the GNOME Desktop Environment.
         desktopManager.gnome = {
           enable = true;
-          extraGSettingsOverrides = ''
-            [org.gnome.mutter]
-            experimental-features=['scale-monitor-framebuffer', 'xwayland-native-scaling', 'variable-refresh-rate']
-          '';
         };
         displayManager.gdm = {
           enable = true;

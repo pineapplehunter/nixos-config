@@ -64,13 +64,14 @@ in
           src = final.fetchFromGitHub {
             owner = "pineapplehunter";
             repo = "eza";
-            rev = "02dd5f8069067b25e2862eb7ac3c001cab70ea72";
-            hash = "sha256-7atO09NXOFLk9chyF1kYJplfWnrrIJA8paxpiJEWdhE=";
+            rev = "39ae9d32d8936e539c2f4ca0042fc31fcf0068a1";
+            hash = "sha256-OEgql1Wj79EkoGZ/ZgmFVwMmCgLIhukqehCs/Gg7dLA=";
           };
           cargoDeps = final.rustPlatform.fetchCargoVendor {
             inherit (finalAttrs) src pname version;
             hash = "sha256-J6Qu8FFlp3PMTm0M/XT4TqQPaqH57TLBPhQE1Y5hdjg=";
           };
+          doInstallCheck = false;
         }
       );
 
@@ -86,25 +87,24 @@ in
         });
       };
 
-      gnomeExtensions = prev.gnomeExtensions // {
-        # https://github.com/joaophi/tailscale-gnome-qs/pull/45
-        tailscale-qs = prev.gnomeExtensions.tailscale-qs.overrideAttrs (old: {
-          version = "0-custom";
-          src = final.fetchFromGitHub {
-            owner = "joaophi";
-            repo = "tailscale-gnome-qs";
-            rootDir = "tailscale@joaophi.github.com";
-            rev = "94c4fdce6b9e76d0856b1f916f50b8f53388f129";
-            hash = "sha256-7AWWn6hb44ORlbhr3WK6VUM8NHAI2ObH0KYbjfmhwXk=";
-          };
-        });
-      };
-
       opencode = prev.opencode.overrideAttrs (old: {
         patches = [
           ./opencode-elapsed.patch
         ];
       });
+
+      pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+        (py-final: py-prev: {
+          tpm2-pytss = py-prev.tpm2-pytss.overrideAttrs (old: {
+            patches = (old.patches or [ ]) ++ [
+              (final.fetchpatch {
+                url = "https://github.com/tpm2-software/tpm2-pytss/commit/5d15cad4bde28902a4becb8e2a8e915aba8abbd0.patch";
+                hash = "sha256-b2zVD7KJGVzJ765HO8LFAe9MyQmjOTpERmEqUrIg3oM=";
+              })
+            ];
+          });
+        })
+      ];
     };
 
     custom-packages =

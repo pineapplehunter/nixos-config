@@ -32,7 +32,7 @@ index 700780314..462b60fb0 100644
            <text fg={color()}>{props.children}</text>
          </Show>
 diff --git a/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx b/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx
-index ce651fdbe..04da1724f 100644
+index ae23d58bc..7cbed3854 100644
 --- a/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx
 +++ b/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx
 @@ -7,6 +7,7 @@ import {
@@ -43,7 +43,7 @@ index ce651fdbe..04da1724f 100644
    onMount,
    Show,
    Switch,
-@@ -1735,6 +1736,7 @@ function InlineTool(props: {
+@@ -1733,6 +1734,7 @@ function InlineTool(props: {
    complete: any
    pending: string
    spinner?: boolean
@@ -51,7 +51,7 @@ index ce651fdbe..04da1724f 100644
    children: JSX.Element
    part: ToolPart
    onClick?: () => void
-@@ -1804,7 +1806,9 @@ function InlineTool(props: {
+@@ -1802,7 +1804,9 @@ function InlineTool(props: {
      >
        <Switch>
          <Match when={props.spinner}>
@@ -62,7 +62,7 @@ index ce651fdbe..04da1724f 100644
          </Match>
          <Match when={true}>
            <text paddingLeft={3} fg={fg()} attributes={denied() ? TextAttributes.STRIKETHROUGH : undefined}>
-@@ -1827,6 +1831,7 @@ function BlockTool(props: {
+@@ -1825,6 +1829,7 @@ function BlockTool(props: {
    onClick?: () => void
    part?: ToolPart
    spinner?: boolean
@@ -70,7 +70,7 @@ index ce651fdbe..04da1724f 100644
  }) {
    const { theme } = useTheme()
    const renderer = useRenderer()
-@@ -1858,7 +1863,9 @@ function BlockTool(props: {
+@@ -1856,7 +1861,9 @@ function BlockTool(props: {
            </text>
          }
        >
@@ -81,9 +81,9 @@ index ce651fdbe..04da1724f 100644
        </Show>
        {props.children}
        <Show when={error()}>
-@@ -1872,6 +1879,26 @@ function Shell(props: ToolProps<typeof ShellTool>) {
-   const { theme } = useTheme()
+@@ -1871,6 +1878,26 @@ function Shell(props: ToolProps<typeof ShellTool>) {
    const pathFormatter = usePathFormatter()
+   const ctx = use()
    const isRunning = createMemo(() => props.part.state.status === "running")
 +  const [startTime, setStartTime] = createSignal<number | null>(null)
 +  const [elapsed, setElapsed] = createSignal(0)
@@ -107,13 +107,13 @@ index ce651fdbe..04da1724f 100644
 +
    const output = createMemo(() => stripAnsi(props.metadata.output?.trim() ?? ""))
    const [expanded, setExpanded] = createSignal(false)
-   const lines = createMemo(() => output().split("\n"))
+   const maxLines = 10
 @@ -1902,6 +1929,7 @@ function Shell(props: ToolProps<typeof ShellTool>) {
            title={title()}
            part={props.part}
            spinner={isRunning()}
 +          elapsed={isRunning() ? elapsed() : undefined}
-           onClick={overflow() ? () => setExpanded((prev) => !prev) : undefined}
+           onClick={collapsed().overflow ? () => setExpanded((prev) => !prev) : undefined}
          >
            <box gap={1}>
 @@ -1916,7 +1944,14 @@ function Shell(props: ToolProps<typeof ShellTool>) {

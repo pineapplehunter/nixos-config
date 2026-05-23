@@ -5,7 +5,7 @@
       programs = {
         ssh = {
           enable = true;
-          matchBlocks = {
+          settings = {
             kpro-njlab = {
               hostname = "kpro-njlab";
               user = "takata";

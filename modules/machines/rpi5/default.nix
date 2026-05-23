@@ -331,7 +331,6 @@ in
       variables = {
         EDITOR = "hx";
       };
-      enableAllTerminfo = true;
     };
   };
 }

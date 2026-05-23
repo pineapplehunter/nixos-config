@@ -110,10 +110,6 @@ in
         displayManager.gdm.enable = true;
         desktopManager.gnome = {
           enable = true;
-          extraGSettingsOverrides = ''
-            [org.gnome.mutter]
-            experimental-features=['scale-monitor-framebuffer', 'xwayland-native-scaling', 'variable-refresh-rate']
-          '';
         };
 
         snapper.configs = {

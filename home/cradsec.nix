@@ -4,7 +4,7 @@
     {
       programs.ssh = {
         enable = true;
-        matchBlocks = {
+        settings = {
           cradsec-sgx = {
             hostname = "10.102.51.25";
             user = "takata";

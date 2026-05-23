@@ -5,7 +5,7 @@
       programs.ssh = {
         enable = true;
         enableDefaultConfig = false;
-        matchBlocks = {
+        settings = {
           linode = {
             hostname = "ihavenojob.work";
             user = "shogo";

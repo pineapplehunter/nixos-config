@@ -199,11 +199,6 @@ in
         };
 
         dbus.implementation = "broker";
-
-        desktopManager.gnome.extraGSettingsOverrides = ''
-          [org.gnome.mutter]
-          experimental-features=['scale-monitor-framebuffer', 'xwayland-native-scaling', 'variable-refresh-rate']
-        '';
       };
 
       users.defaultUserShell = pkgs.zsh;
@@ -217,7 +212,6 @@ in
           NIKS3_SERVER_URL = "https://niks3.s.ihavenojob.work";
           NIKS3_AUTH_TOKEN_FILE = config.age.secrets.niks3-token.path;
         };
-        enableAllTerminfo = true;
       };
 
       xdg.portal.xdgOpenUsePortal = true;
