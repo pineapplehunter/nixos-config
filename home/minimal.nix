@@ -80,7 +80,7 @@ in
             package = pkgs.gitFull;
             signing = {
               signByDefault = true;
-              key = "${config.home.homeDirectory}/.ssh/id_ed25519.pub";
+              key = "~/.ssh/id_ed25519.pub";
               format = "ssh";
             };
             settings = {
@@ -96,10 +96,12 @@ in
                 };
               branch.sort = "-committerdate";
               column.ui = "auto";
+              credential.helper = "libsecret";
+              fetch.prune = true;
               fetch.writeCommitGraph = true;
               init.defaultBranch = "main";
+              pull.rebase = true;
               rerere.enabled = true;
-              credential.helper = "libsecret";
             };
           };
 
