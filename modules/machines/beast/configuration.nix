@@ -138,7 +138,6 @@ in
           };
         };
         prometheus.exporters = {
-          node.enable = true;
           smartctl.enable = true;
         };
 
@@ -159,8 +158,6 @@ in
         firewall.interfaces = {
           "tailscale0" = {
             allowedTCPPorts = [
-              # prometheus node-exporter
-              9100
               # prometheus smart
               9633
               # ollama
