@@ -196,6 +196,11 @@ in
         docker = {
           enable = true;
           storageDriver = "btrfs";
+          daemon.settings = {
+            fixed-cidr-v6 = "fd00::/80";
+            ipv6 = true;
+            log-driver = "local";
+          };
         };
         podman.enable = true;
         libvirtd.enable = true;

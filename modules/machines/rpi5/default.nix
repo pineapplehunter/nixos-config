@@ -96,6 +96,11 @@ in
             virtualisation.docker = {
               enable = true;
               rootless.enable = true;
+              daemon.settings = {
+                fixed-cidr-v6 = "fd00::/80";
+                ipv6 = true;
+                log-driver = "local";
+              };
             };
 
             services.samba = {
