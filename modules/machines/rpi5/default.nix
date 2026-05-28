@@ -96,6 +96,11 @@ in
               smartctl.enable = true;
             };
 
+            virtualisation.docker = {
+              enable = true;
+              rootless.enable = true;
+            };
+
             services.samba = {
               enable = true;
               openFirewall = true;
