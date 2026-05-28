@@ -71,12 +71,12 @@ in
         "subvol=@garage"
       ];
     };
-    "/samba" = {
+    "/samba/timemachine" = {
       device = "/dev/bcache0";
       fsType = "btrfs";
       options = mountOptions ++ [
         "x-systemd.required-by=samba.target"
-        "subvol=@samba"
+        "subvol=@samba/timemachine"
       ];
     };
   };
