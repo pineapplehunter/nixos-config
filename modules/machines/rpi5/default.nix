@@ -179,6 +179,7 @@ in
               nixd
               nixfmt
               git
+              ghostty.terminfo
             ];
 
             users.users.shogo.openssh.authorizedKeys.keys = [
