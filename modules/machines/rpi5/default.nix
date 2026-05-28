@@ -113,6 +113,7 @@ in
                   "fruit:aapl" = "yes";
                   "fruit:time machine" = "yes";
                   "vfs objects" = "catia fruit streams_xattr";
+                  "quota backend" = "none";
                 };
               };
             };
