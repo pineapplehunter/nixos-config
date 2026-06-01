@@ -14,12 +14,14 @@ in
       sops.secrets = {
         immich-backup-env = {
           sopsFile = flake-config.sopsFile.immich-backup-env;
+          format = "dotenv";
           mode = "0400";
           owner = "immich";
           group = "immich";
         };
         garage-secret = {
           sopsFile = flake-config.sopsFile.garage-secret;
+          format = "dotenv";
           mode = "0400";
           owner = "garage";
           group = "garage";

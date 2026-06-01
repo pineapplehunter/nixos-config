@@ -14,6 +14,7 @@ in
       sops.secrets = {
         garage-secret = {
           sopsFile = flake-config.sopsFile.garage-secret;
+          format = "dotenv";
           mode = "0400";
           owner = "garage";
           group = "garage";
