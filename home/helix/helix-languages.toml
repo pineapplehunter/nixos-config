@@ -1,5 +1,4 @@
 [[language]]
-language-servers = ["nixd", "nil", "helix-assist"]
 name = "nix"
 
 [[language]]
@@ -21,7 +20,7 @@ name = "typst"
 enable = true
 
 [[language]]
-language-servers = ["ruff", "basedpyright", "helix-assist"]
+language-servers = ["ruff", "basedpyright"]
 name = "python"
 
 [[language]]
@@ -29,7 +28,6 @@ name = "meson"
 
 [[language]]
 name = "rust"
-language-servers = ["rust-analyzer", "helix-assist"]
 
 [language.formatter]
 args = ["fmt", "-"]
@@ -48,7 +46,3 @@ command = "nixd"
 [language-server.ruff]
 args = ["server", "-q", "--preview"]
 command = "ruff"
-
-[language-server.helix-assist]
-command = "helix-assist"
-args = ["--handler", "anthropic", "--num-suggestions", "2"]
