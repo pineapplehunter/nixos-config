@@ -33,11 +33,15 @@ in
         fsverity.enable = true;
       };
 
-      age.secrets.anthropic-key = {
-        file = config.ageFile.anthropic-key;
-        mode = "770";
-        group = "wheel";
-      };
+      # TODO: anthropic-key was dropped during migration.
+      # 1. Add to secrets/default.nix: anthropic-key = ./anthropic-key.env;
+      # 2. Create: sops secrets/anthropic-key.env, paste key, save.
+      # 3. Uncomment below and rebuild.
+      # sops.secrets.anthropic-key = {
+      #   sopsFile = config.sopsFile.anthropic-key;
+      #   mode = "770";
+      #   group = "wheel";
+      # };
 
       # nixpkgs.flake.source = lib.mkForce null;
       nix = {

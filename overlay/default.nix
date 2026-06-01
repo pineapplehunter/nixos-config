@@ -15,7 +15,6 @@ in
         inherit system;
         overlays = [
           inputs.nixgl.overlays.default
-          inputs.agenix.overlays.default
           overlays.default
         ];
       };

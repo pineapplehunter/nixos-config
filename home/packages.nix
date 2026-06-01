@@ -13,7 +13,7 @@
           age
           age-plugin-tpm
           age-plugin-yubikey
-          agenix
+          sops
           difftastic
           dig
           dust

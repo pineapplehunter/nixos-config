@@ -1,0 +1,40 @@
+keys:
+  # TODO: replace age1 keys with SSH keys when sops-nix supports
+  #       ssh recipients natively (see related PRs)
+  # action-shogo (user)
+  - &action_shogo age1829ry46h0ctesxrehhuehw4sxwa5rcpwamjldne3jjzj9gjthq9qflh2vh
+  #   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM/QhUXk6LPpFd97zUow1bHkkF1CvRAjCG1iIfg5BBhd
+  # beast-shogo (user)
+  - &beast_shogo age1w9jtdntgve25s78hp4ncsc08ghxqzttulc0gj9saz3vu7x3arc8s30qrcg
+  #   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE4374jhuKtCRAl0oUFRyWhBw1CoPjRved9KwhFCP0MW
+  # kpro-takata-takata (user)
+  - &kpro_takata_takata age1eqm88quekdz6njax9l9n3lgpqfujl7zgr943wazwlgnafvjkvg4qyr6y3v
+  #   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII9nG2lTRf+GAA92Df7yTbxPmL3EMNMgVr5tIv3YgJI7 takata@kpro-takata
+  # rpi5-shogo (user)
+  - &rpi5_shogo age1u7sg4fyurm9c5mslj4ahsqfa3rw4dryrf76r37ew525j2rpcj35qf5s42q
+  #   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMBVh6R+LRVG2OEJxSeFE+ce5dsO6UL7QhKiXYqoDzn9 shogo@rpi5
+  # action-system (host key)
+  - &action_system age1atv2fjy4n4ch9vfh0aaa7v9muvhdmy263uxpytjnskwll46d7gasnnxr36
+  #   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL9EgqwqmPrBTUtPTBklXlZRSpTXiAycUdzRQ4NTxKd9
+  # beast-system (host key)
+  - &beast_system age1uj4330k402lwxjl27nhy7fwdmas4g2paueeqcpd95u2jrj9kzuyqp70y7g
+  #   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGON5XWNu4X8mWHIH0YkcYha4PH0ykL2PdlF7R8Gl0T/
+  # kpro-takata-system (host key)
+  - &kpro_takata_system age17f7sr2uku695lhqnr8jnmph7us7snp5q9jtwkphqzu6wu3w855kqjlfpks
+  #   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIANSMl7jstvPFct/CSJ3UD/zLTqKFLHJOQUt7TeHsKI root@kpro-takata
+  # rpi5-system (host key)
+  - &rpi5_system age1402wvk9prhpjcky4xpnn8gjs0vx599asglv3jttdrggsg35e34fqglx24r
+  #   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB3PgEsfeu6ALk2SM6Ws1jL3bkEX6SBCzEcc6FUBQIVc root@rpi5
+
+creation_rules:
+  - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
+    key_groups:
+      - age:
+          - *action_shogo
+          - *beast_shogo
+          - *kpro_takata_takata
+          - *rpi5_shogo
+          - *action_system
+          - *beast_system
+          - *kpro_takata_system
+          - *rpi5_system

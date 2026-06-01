@@ -11,15 +11,15 @@ in
       ...
     }:
     {
-      age.secrets = {
+      sops.secrets = {
         immich-backup-env = {
-          file = flake-config.ageFile.immich-backup-env;
+          sopsFile = flake-config.sopsFile.immich-backup-env;
           mode = "0400";
           owner = "immich";
           group = "immich";
         };
         garage-secret = {
-          file = flake-config.ageFile.garage-secret;
+          sopsFile = flake-config.sopsFile.garage-secret;
           mode = "0400";
           owner = "garage";
           group = "garage";
@@ -38,7 +38,7 @@ in
         enable = true;
         package = pkgs.garage_2;
         settings = lib.importTOML ./garage-config.toml;
-        environmentFile = config.age.secrets.garage-secret.path;
+        environmentFile = config.sops.secrets.garage-secret.path;
         logLevel = "error";
       };
 
@@ -125,7 +125,7 @@ in
           path = [ pkgs.awscli2 ];
           serviceConfig = {
             Type = "oneshot";
-            EnvironmentFile = config.age.secrets.immich-backup-env.path;
+            EnvironmentFile = config.sops.secrets.immich-backup-env.path;
             ExecCondition = "systemctl is-active --quiet garage.service";
             User = "immich";
             CapabilityBoundingSet = "";

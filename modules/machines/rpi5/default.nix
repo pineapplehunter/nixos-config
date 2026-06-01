@@ -20,16 +20,25 @@ in
         pi-mods.raspberry-pi-5.display-vc4
         inputs.disko.nixosModules.disko
         inputs.home-manager.nixosModules.default
-        inputs.agenix.nixosModules.default
+        inputs.sops-nix.nixosModules.sops
         ./pi5-configtxt.nix
         ./modules/nice-looking-console.nix
         (
           { config, pkgs, ... }:
           {
 
-            age = {
-              secrets.access_tokens = {
-                file = flake-config.ageFile.access-tokens;
+            sops = {
+              age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+              secrets.access-tokens = {
+                sopsFile = flake-config.sopsFile.common;
+                key = "github-access-token";
+                mode = "0440";
+                group = "wheel";
+              };
+              templates."nix-access-tokens" = {
+                content = ''
+                  access-tokens = github.com=${config.sops.placeholder.access-tokens}
+                '';
                 mode = "0440";
                 group = "wheel";
               };
@@ -261,7 +270,7 @@ in
                 ];
               };
               extraOptions = ''
-                !include ${config.age.secrets.access_tokens.path}
+                !include ${config.sops.templates."nix-access-tokens".path}
               '';
             };
 
@@ -315,7 +324,6 @@ in
           { pkgs, ... }:
           {
             nixpkgs.overlays = [
-              inputs.agenix.overlays.default
               (import ./overlays.nix)
             ];
           }

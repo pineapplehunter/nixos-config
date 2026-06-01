@@ -11,9 +11,9 @@ in
       ...
     }:
     {
-      age.secrets = {
+      sops.secrets = {
         garage-secret = {
-          file = flake-config.ageFile.garage-secret;
+          sopsFile = flake-config.sopsFile.garage-secret;
           mode = "0400";
           owner = "garage";
           group = "garage";
@@ -24,7 +24,7 @@ in
         enable = true;
         package = pkgs.garage_2;
         settings = lib.importTOML ./garage-config.toml;
-        environmentFile = config.age.secrets.garage-secret.path;
+        environmentFile = config.sops.secrets.garage-secret.path;
         logLevel = "error";
       };
 

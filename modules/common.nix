@@ -16,7 +16,7 @@ in
           mods = flake-config.flake.nixosModules;
         in
         [
-          inputs.agenix.nixosModules.default
+          inputs.sops-nix.nixosModules.sops
           inputs.home-manager.nixosModules.home-manager
           inputs.xremap-flake.nixosModules.default
           inputs.disko.nixosModules.disko
@@ -42,7 +42,6 @@ in
       nixpkgs = {
         overlays = [
           inputs.nixgl.overlays.default
-          inputs.agenix.overlays.default
           flake-config.flake.overlays.default
         ];
         config.allowUnfreePredicate =
@@ -91,7 +90,7 @@ in
           randomizedDelaySec = "1h";
         };
         extraOptions = ''
-          !include ${config.age.secrets.access_tokens.path}
+          !include ${config.sops.templates."nix-access-tokens".path}
         '';
       };
 
@@ -100,14 +99,24 @@ in
       boot.tmp.cleanOnBoot = lib.mkDefault true;
       boot.extraModprobeConfig = "install algif_aead /bin/false";
 
-      age = {
-        secrets.access_tokens = {
-          file = flake-config.ageFile.access-tokens;
+      sops = {
+        age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+        secrets.access-tokens = {
+          sopsFile = flake-config.sopsFile.common;
+          key = "github-access-token";
+          mode = "0440";
+          group = "wheel";
+        };
+        templates."nix-access-tokens" = {
+          content = ''
+            access-tokens = github.com=${config.sops.placeholder.access-tokens}
+          '';
           mode = "0440";
           group = "wheel";
         };
         secrets.niks3-token = {
-          file = flake-config.ageFile.niks3-token;
+          sopsFile = flake-config.sopsFile.common;
+          key = "niks-token";
           mode = "0440";
           group = "wheel";
         };
@@ -210,7 +219,7 @@ in
         variables = {
           EDITOR = "hx";
           NIKS3_SERVER_URL = "https://niks3.s.ihavenojob.work";
-          NIKS3_AUTH_TOKEN_FILE = config.age.secrets.niks3-token.path;
+          NIKS3_AUTH_TOKEN_FILE = config.sops.secrets.niks3-token.path;
         };
       };
 

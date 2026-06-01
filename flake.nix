@@ -14,10 +14,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixos-hardware.url = "github:pineapplehunter/nixos-hardware";
-    agenix = {
-      url = "github:ryantm/agenix";
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.home-manager.follows = "home-manager";
     };
     nixgl = {
       url = "github:pineapplehunter/nixGL?ref=fix-system";
@@ -90,6 +89,7 @@
                   pkgs.nix-output-monitor
                   pkgs.nvd
                   pkgs.statix
+                  pkgs.sops
                 ];
                 shellHook = ''
                   export HOST=`hostname`

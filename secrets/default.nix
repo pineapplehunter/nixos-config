@@ -1,16 +1,14 @@
 { lib, ... }:
 {
-  options.ageFile = lib.mkOption {
-    description = "Files that contain age secrets";
+  options.sopsFile = lib.mkOption {
+    description = "Files that contain sops-encrypted secrets";
     type = lib.types.attrsOf lib.types.path;
     default = { };
   };
 
-  config.ageFile = {
-    access-tokens = ./access-tokens.age;
-    anthropic-key = ./anthropic-key.age;
-    garage-secret = ./garage-secret.age;
-    immich-backup-env = ./immich-backup-env.age;
-    niks3-token = ./niks3-token.age;
+  config.sopsFile = {
+    common = ./common.yaml;
+    garage-secret = ./garage-secret.env;
+    immich-backup-env = ./immich-backup.env;
   };
 }
