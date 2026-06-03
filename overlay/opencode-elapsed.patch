@@ -32,7 +32,7 @@ index 700780314..462b60fb0 100644
            <text fg={color()}>{props.children}</text>
          </Show>
 diff --git a/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx b/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx
-index ae23d58bc..7cbed3854 100644
+index 5c0e5e73f..b5ac29b85 100644
 --- a/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx
 +++ b/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx
 @@ -7,6 +7,7 @@ import {
@@ -43,7 +43,7 @@ index ae23d58bc..7cbed3854 100644
    onMount,
    Show,
    Switch,
-@@ -1733,6 +1734,7 @@ function InlineTool(props: {
+@@ -1787,6 +1788,7 @@ function InlineTool(props: {
    complete: any
    pending: string
    spinner?: boolean
@@ -51,18 +51,16 @@ index ae23d58bc..7cbed3854 100644
    children: JSX.Element
    part: ToolPart
    onClick?: () => void
-@@ -1802,7 +1804,9 @@ function InlineTool(props: {
+@@ -1904,7 +1906,7 @@ export function InlineToolRow(props: {
      >
        <Switch>
          <Match when={props.spinner}>
--          <Spinner color={fg()} children={props.children} />
-+          <Spinner color={fg()} elapsed={props.elapsed}>
-+            {props.icon} {props.children}
-+          </Spinner>
+-          <Spinner color={props.color} children={props.children} />
++          <Spinner color={props.color} children={props.children} elapsed={props.elapsed} />
          </Match>
          <Match when={true}>
-           <text paddingLeft={3} fg={fg()} attributes={denied() ? TextAttributes.STRIKETHROUGH : undefined}>
-@@ -1825,6 +1829,7 @@ function BlockTool(props: {
+           <Show
+@@ -1953,6 +1955,7 @@ function BlockTool(props: {
    onClick?: () => void
    part?: ToolPart
    spinner?: boolean
@@ -70,7 +68,7 @@ index ae23d58bc..7cbed3854 100644
  }) {
    const { theme } = useTheme()
    const renderer = useRenderer()
-@@ -1856,7 +1861,9 @@ function BlockTool(props: {
+@@ -1985,7 +1988,9 @@ function BlockTool(props: {
            </text>
          }
        >
@@ -81,7 +79,7 @@ index ae23d58bc..7cbed3854 100644
        </Show>
        {props.children}
        <Show when={error()}>
-@@ -1871,6 +1878,26 @@ function Shell(props: ToolProps<typeof ShellTool>) {
+@@ -2000,6 +2005,26 @@ function Shell(props: ToolProps<typeof ShellTool>) {
    const pathFormatter = usePathFormatter()
    const ctx = use()
    const isRunning = createMemo(() => props.part.state.status === "running")
@@ -108,7 +106,7 @@ index ae23d58bc..7cbed3854 100644
    const output = createMemo(() => stripAnsi(props.metadata.output?.trim() ?? ""))
    const [expanded, setExpanded] = createSignal(false)
    const maxLines = 10
-@@ -1902,6 +1929,7 @@ function Shell(props: ToolProps<typeof ShellTool>) {
+@@ -2031,6 +2056,7 @@ function Shell(props: ToolProps<typeof ShellTool>) {
            title={title()}
            part={props.part}
            spinner={isRunning()}
@@ -116,7 +114,7 @@ index ae23d58bc..7cbed3854 100644
            onClick={collapsed().overflow ? () => setExpanded((prev) => !prev) : undefined}
          >
            <box gap={1}>
-@@ -1916,7 +1944,14 @@ function Shell(props: ToolProps<typeof ShellTool>) {
+@@ -2045,7 +2071,14 @@ function Shell(props: ToolProps<typeof ShellTool>) {
          </BlockTool>
        </Match>
        <Match when={true}>
