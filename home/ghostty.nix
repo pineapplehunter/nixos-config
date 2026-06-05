@@ -35,8 +35,6 @@
         settings = {
           font-feature = "-dlig";
           font-size = 10;
-          # https://github.com/ghostty-org/ghostty/discussions/8940
-          gtk-single-instance = false;
           gtk-titlebar = false;
           keybind = [
             "ctrl+shift+plus=increase_font_size:1"
@@ -44,9 +42,9 @@
             "ctrl+shift+0=reset_font_size"
             "ctrl+enter=unbind"
           ];
-          theme = "Adwaita";
+          theme = "light:Adwaita,dark:Atom One Dark";
           window-inherit-working-directory = false;
-          window-theme = "light";
+          window-theme = "system";
           working-directory = "home";
         };
       };
