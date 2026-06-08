@@ -62,7 +62,7 @@ in
               ge.gsconnect
               ge.night-theme-switcher
               ge.runcat
-              ge.tailscale-qs-2
+              ge.tailscale-qs
             ];
         };
 
