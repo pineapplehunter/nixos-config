@@ -22,6 +22,10 @@
             hostname = "daniel-njlab-pc";
             user = "shogo";
           };
+          rpi5 = {
+            hostname = "rpi5";
+            user = "shogo";
+          };
           raspberry-pi-home = {
             hostname = "raspberry-pi-home";
             user = "shogo";
