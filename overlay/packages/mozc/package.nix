@@ -8,16 +8,19 @@
   withIbus ? false,
   unzip,
   xdg-utils,
-  dictionaries ? [ ],
-  merge-ut-dictionaries,
   python3,
   libglvnd,
   libxcrypt-legacy,
   glib,
   stdenv,
-  gnugrep,
   autoPatchelfHook,
   writableTmpDirAsHomeHook,
+  lndir,
+  makeDesktopItem,
+  copyDesktopItems,
+
+  dictionaries ? [ ],
+  merge-ut-dictionaries,
 }:
 let
   bazel = bazel_8;
@@ -34,7 +37,18 @@ let
     fetchSubmodules = true;
   };
 
-  buildInputsList = [
+  nativeBuildInputs = [
+    bazel
+    copyDesktopItems
+    lndir
+    pkg-config
+    python3
+    qt6.wrapQtAppsHook
+    unzip
+    writableTmpDirAsHomeHook
+  ];
+
+  buildInputs = [
     libglvnd
     libxcrypt-legacy
     qt6.qtbase
@@ -44,27 +58,16 @@ let
     glib
   ];
 
-  nativeBuildInputsList = [
-    bazel
-    pkg-config
-    python3
-    qt6.wrapQtAppsHook
-    unzip
-    writableTmpDirAsHomeHook
-  ];
+  includePath = lib.makeIncludePath buildInputs;
+  libraryPath = lib.makeLibraryPath buildInputs;
 
-  includePath = lib.makeIncludePath buildInputsList;
-  libraryPath = lib.makeLibraryPath buildInputsList;
-
-  cmdArgs = [
+  bazelArgs = [
     "--config=oss_linux"
     "--compilation_mode=opt"
     "--action_env=C_INCLUDE_PATH=${includePath}"
     "--action_env=CPLUS_INCLUDE_PATH=${includePath}"
     "--action_env=LIBRARY_PATH=${libraryPath}"
-  ];
-
-  targets = [
+    # targets
     "unix/icons"
     "gui/tool:mozc_tool"
     "server:mozc_server"
@@ -77,11 +80,19 @@ let
     "unix/ibus:ibus_mozc"
   ];
 
+  # First stage of vendoring: run "bazel vendor" to download all external
+  # dependencies, then clean up sandbox-specific symlinks and markers so the
+  # output is reproducible (fixed-output derivation).
   vendorStage1 = stdenv.mkDerivation {
     pname = "${pname}-vendor-stage1";
-    inherit src version;
+    inherit
+      src
+      version
+      nativeBuildInputs
+      buildInputs
+      ;
 
-    outputHash = "sha256-9kpbuIdiH9pyDuILD6GZ88Mlc3rcA+4AFOAW0VbcFyE=";
+    outputHash = "sha256-Kk/gd8uZfJaYFvA1b4TLycg8mwfQICcgX4WbqYNZqvM=";
     outputHashAlgo = null;
     outputHashMode = "recursive";
 
@@ -90,57 +101,36 @@ let
 
     env.USE_BAZEL_VERSION = bazel.version;
 
-    nativeBuildInputs = nativeBuildInputsList;
-    buildInputs = buildInputsList;
-
-    postPatch = ''
-      cd src
-    '';
-    dontFixup = true;
     buildPhase = ''
       runHook preBuild
 
-      mkdir vendor_dir
-      bazel \
-        --batch \
-        --output_base \
-        .bazel_output_base \
-        vendor \
-        --vendor_dir=vendor_dir \
-        --lockfile_mode=update \
-        ${lib.escapeShellArgs (cmdArgs ++ targets)}
+      cd src
+      bazel vendor --lockfile_mode=update --vendor_dir="$out/vendor_dir" ${lib.escapeShellArgs bazelArgs}
+      cp MODULE.bazel.lock "$out"
 
-      find vendor_dir -type l -lname "$HOME/*" -exec rm '{}' \;
-      find vendor_dir -type l -lname "/private/var/tmp/*" -exec rm '{}' \;
-      find vendor_dir -type l -lname "*.bazel_output_base/*" -exec rm '{}' \;
-      find vendor_dir -name "bazel-external" -exec rm -f '{}' \;
-      find vendor_dir -xtype l -exec rm '{}' \;
-      (${gnugrep}/bin/grep -rI "$NIX_STORE/" vendor_dir --files-with-matches --include="*.marker" --null || true) \
-        | xargs -0 --no-run-if-empty rm
-      find vendor_dir -type l -lname "*.bazel_output_base*" -exec rm '{}' \; 2>/dev/null || true
+      echo "removing broken symlinks and markers..."
+      find "$out" -type l -lname '/*' -print -delete
+      find "$out" -xtype l -print -delete
+      rm -vf "$out"/vendor_dir/@rules_python*.marker
+
       runHook postBuild
     '';
-    installPhase = ''
-      mkdir -p $out/vendor_dir
-      cp -r --reflink=auto vendor_dir/* $out/vendor_dir
-      cp MODULE.bazel.lock $out/ 2>/dev/null || true
-      if [ -d .bazel_output_base/cache ]; then
-        mkdir -p $out/bazel_cache
-        cp -r --reflink=auto .bazel_output_base/cache/* $out/bazel_cache/ 2>/dev/null || true
-      fi
-    '';
+    dontInstall = true;
+    dontFixup = true;
     dontWrapQtApps = true;
   };
 
+  # Second stage of vendoring: patch Python shebangs in the vendored
+  # rules_python files so generated stub scripts use the Nix store Python
+  # path instead of /usr/bin/env.
   vendorDeps = stdenv.mkDerivation {
     name = "${pname}-vendor";
-    inherit version;
+    inherit version buildInputs;
 
     strictDeps = true;
     __structuredAttrs = true;
 
-    nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [ autoPatchelfHook ];
-    buildInputs = buildInputsList;
+    nativeBuildInputs = [ autoPatchelfHook ];
 
     dontWrapQtApps = true;
     src = vendorStage1;
@@ -155,20 +145,27 @@ let
         --replace-fail "/usr/bin/env python3" "${lib.getExe python3}"
       patchShebangs "$out"
 
+      for dir in "$out"/vendor_dir/*/; do
+        echo "pin(\"@@$(basename "$dir")\")"
+      done > "$out"/vendor_dir/VENDOR.bazel
+
       runHook postInstall
     '';
   };
 in
 stdenv.mkDerivation {
-  inherit pname version src;
+  inherit
+    pname
+    version
+    src
+    nativeBuildInputs
+    buildInputs
+    ;
 
   strictDeps = true;
   __structuredAttrs = true;
 
   env.USE_BAZEL_VERSION = bazel.version;
-
-  buildInputs = buildInputsList;
-  nativeBuildInputs = nativeBuildInputsList;
 
   postPatch = ''
     cd src
@@ -176,48 +173,18 @@ stdenv.mkDerivation {
     substituteInPlace config.bzl \
       --replace-fail "/usr/bin/xdg-open" "${xdg-utils}/bin/xdg-open" \
       --replace-fail "/usr" "$out"
+
+    # Copy vendor directory to pwd as links
+    lndir "${vendorDeps}"
   ''
   + lib.optionalString (dictionaries != [ ]) ''
     cat ${ut-dictionary}/mozcdic-ut.txt >> data/dictionary_oss/dictionary00.txt
   '';
 
-  preConfigure = ''
-    if [ -d "${vendorDeps}/vendor_dir" ]; then
-      cp -r "${vendorDeps}/vendor_dir/." vendor_dir/
-      chmod -R +w vendor_dir
-      for dir in vendor_dir/*/; do
-        echo "pin(\"@@$(basename "$dir")\")"
-      done > vendor_dir/VENDOR.bazel
-    fi
-    if [ -f "${vendorDeps}/MODULE.bazel.lock" ]; then
-      cp "${vendorDeps}/MODULE.bazel.lock" MODULE.bazel.lock
-    fi
-    if [ -d "${vendorDeps}/bazel_cache" ]; then
-      mkdir -p .bazel_output_base
-      cp -r "${vendorDeps}/bazel_cache" .bazel_output_base/
-    fi
-  '';
-
   buildPhase = ''
     runHook preBuild
 
-    sed -i "s|/usr/bin/env python3|${lib.getExe python3}|g; s|__PYTHON3__|${lib.getExe python3}|g" \
-      vendor_dir/rules_python*/python/private/py_runtime_info.bzl \
-      vendor_dir/rules_python*/python/private/py_executable.bzl \
-      vendor_dir/rules_python*/python/private/runtime_env_toolchain.bzl \
-      2>/dev/null || true
-
-    bazel ${
-      lib.escapeShellArgs [
-        "--batch"
-        "--output_base"
-        ".bazel_output_base"
-      ]
-    } build ${
-      lib.escapeShellArgs (
-        [ "--vendor_dir=vendor_dir" ] ++ cmdArgs ++ [ "--lockfile_mode=error" ] ++ targets
-      )
-    }
+    bazel build --lockfile_mode=error --vendor_dir=vendor_dir ${lib.escapeShellArgs bazelArgs}
 
     runHook postBuild
   '';
@@ -237,19 +204,32 @@ stdenv.mkDerivation {
     install -Dm555 "bazel-bin/unix/ibus/ibus_mozc"          "$out/lib/ibus-mozc/ibus-engine-mozc"
     install -Dm555 "bazel-bin/unix/ibus/mozc.xml"           "$out/share/ibus/component/mozc.xml"
     install -d "$out/share/ibus-mozc/"
-    for icon in $out/share/icons/mozc/*.png
+    for icon in "$out"/share/icons/mozc/*.png
     do
-      cp $icon $out/share/ibus-mozc/
+      cp "$icon" "$out/share/ibus-mozc/"
     done
-    mv $out/share/ibus-mozc/{mozc,product_icon}.png
+    mv "$out/share/ibus-mozc"/{mozc,product_icon}.png
   '')
   + ''
-    mkdir -p $out/share/applications
-    cp ${./ibus-setup-mozc-jp.desktop} $out/share/applications/ibus-setup-mozc-jp.desktop
-    substituteInPlace $out/share/applications/ibus-setup-mozc-jp.desktop \
-      --replace-fail "@mozc@" "$out"
-
     runHook postInstall
+  '';
+
+  # create a desktop file for gnome-control-center
+  # contents copied from ubuntu
+  desktopItems = lib.optionals withIbus [
+    (makeDesktopItem {
+      name = "ibus-setup-mozc-jp";
+      desktopName = "Mozc Setup";
+      exec = "@out@/lib/mozc/mozc_tool --mode=config_dialog";
+      type = "Application";
+      startupNotify = true;
+      noDisplay = true;
+    })
+  ];
+
+  postFixup = lib.optionalString withIbus ''
+    substituteInPlace "$out/share/applications/ibus-setup-mozc-jp.desktop" \
+      --replace-fail "@out@" "$out"
   '';
 
   passthru = {
