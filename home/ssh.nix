@@ -31,6 +31,11 @@
             user = "shogo";
           };
 
+          # ghostty workarounds
+          "uptermd.upterm.dev" = {
+            setEnv = "TERM=xterm-256color";
+          };
+
           # all hosts
           "*" = {
             compression = true;
