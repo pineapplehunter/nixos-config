@@ -23,12 +23,9 @@
   merge-ut-dictionaries,
 }:
 let
-  bazel = bazel_8;
-
-  ut-dictionary = merge-ut-dictionaries.override { inherit dictionaries; };
-
   pname = "mozc";
   version = "3.33.6133";
+
   src = fetchFromGitHub {
     owner = "google";
     repo = "mozc";
@@ -36,6 +33,8 @@ let
     hash = "sha256-4ZrCIWoqYjoBwaoXq2QGajIQgWP0m2V3ozWQhZIq138=";
     fetchSubmodules = true;
   };
+
+  bazel = bazel_8;
 
   nativeBuildInputs = [
     bazel
@@ -105,7 +104,12 @@ let
       runHook preBuild
 
       cd src
-      bazel vendor --lockfile_mode=update --vendor_dir="$out/vendor_dir" ${lib.escapeShellArgs bazelArgs}
+
+      bazel vendor \
+        --lockfile_mode=update \
+        --vendor_dir="$out/vendor_dir" \
+        ${lib.escapeShellArgs bazelArgs}
+
       cp MODULE.bazel.lock "$out"
 
       echo "removing broken symlinks and markers..."
@@ -152,6 +156,8 @@ let
       runHook postInstall
     '';
   };
+
+  ut-dictionary = merge-ut-dictionaries.override { inherit dictionaries; };
 in
 stdenv.mkDerivation {
   inherit
@@ -184,7 +190,10 @@ stdenv.mkDerivation {
   buildPhase = ''
     runHook preBuild
 
-    bazel build --lockfile_mode=error --vendor_dir=vendor_dir ${lib.escapeShellArgs bazelArgs}
+    bazel build \
+      --lockfile_mode=error \
+      --vendor_dir=vendor_dir \
+      ${lib.escapeShellArgs bazelArgs}
 
     runHook postBuild
   '';
@@ -229,7 +238,7 @@ stdenv.mkDerivation {
 
   postFixup = lib.optionalString withIbus ''
     substituteInPlace "$out/share/applications/ibus-setup-mozc-jp.desktop" \
-      --replace-fail "@out@" "$out"
+      --subst-var out
   '';
 
   passthru = {
