@@ -32,7 +32,7 @@ index 700780314..462b60fb0 100644
            <text fg={color()}>{props.children}</text>
          </Show>
 diff --git a/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx b/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx
-index 5c0e5e73f..b5ac29b85 100644
+index 131303269..db44ec40f 100644
 --- a/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx
 +++ b/packages/opencode/src/cli/cmd/tui/routes/session/index.tsx
 @@ -7,6 +7,7 @@ import {
@@ -43,15 +43,15 @@ index 5c0e5e73f..b5ac29b85 100644
    onMount,
    Show,
    Switch,
-@@ -1787,6 +1788,7 @@ function InlineTool(props: {
-   complete: any
+@@ -1842,6 +1843,7 @@ function InlineTool(props: {
    pending: string
    spinner?: boolean
+   subagent?: boolean
 +  elapsed?: number
    children: JSX.Element
    part: ToolPart
    onClick?: () => void
-@@ -1904,7 +1906,7 @@ export function InlineToolRow(props: {
+@@ -1967,7 +1969,7 @@ export function InlineToolRow(props: {
      >
        <Switch>
          <Match when={props.spinner}>
@@ -60,7 +60,7 @@ index 5c0e5e73f..b5ac29b85 100644
          </Match>
          <Match when={true}>
            <Show
-@@ -1953,6 +1955,7 @@ function BlockTool(props: {
+@@ -2016,6 +2018,7 @@ function BlockTool(props: {
    onClick?: () => void
    part?: ToolPart
    spinner?: boolean
@@ -68,7 +68,7 @@ index 5c0e5e73f..b5ac29b85 100644
  }) {
    const { theme } = useTheme()
    const renderer = useRenderer()
-@@ -1985,7 +1988,9 @@ function BlockTool(props: {
+@@ -2048,7 +2051,9 @@ function BlockTool(props: {
            </text>
          }
        >
@@ -79,7 +79,7 @@ index 5c0e5e73f..b5ac29b85 100644
        </Show>
        {props.children}
        <Show when={error()}>
-@@ -2000,6 +2005,26 @@ function Shell(props: ToolProps<typeof ShellTool>) {
+@@ -2063,6 +2068,26 @@ function Shell(props: ToolProps<typeof ShellTool>) {
    const pathFormatter = usePathFormatter()
    const ctx = use()
    const isRunning = createMemo(() => props.part.state.status === "running")
@@ -106,7 +106,7 @@ index 5c0e5e73f..b5ac29b85 100644
    const output = createMemo(() => stripAnsi(props.metadata.output?.trim() ?? ""))
    const [expanded, setExpanded] = createSignal(false)
    const maxLines = 10
-@@ -2031,6 +2056,7 @@ function Shell(props: ToolProps<typeof ShellTool>) {
+@@ -2094,6 +2119,7 @@ function Shell(props: ToolProps<typeof ShellTool>) {
            title={title()}
            part={props.part}
            spinner={isRunning()}
@@ -114,7 +114,7 @@ index 5c0e5e73f..b5ac29b85 100644
            onClick={collapsed().overflow ? () => setExpanded((prev) => !prev) : undefined}
          >
            <box gap={1}>
-@@ -2045,7 +2071,14 @@ function Shell(props: ToolProps<typeof ShellTool>) {
+@@ -2108,7 +2134,14 @@ function Shell(props: ToolProps<typeof ShellTool>) {
          </BlockTool>
        </Match>
        <Match when={true}>
