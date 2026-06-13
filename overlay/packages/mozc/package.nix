@@ -5,7 +5,6 @@
   pkg-config,
   bazel_8,
   ibus,
-  withIbus ? false,
   unzip,
   xdg-utils,
   python3,
@@ -19,13 +18,19 @@
   makeDesktopItem,
   copyDesktopItems,
 
+  withEmacs ? false,
+  withIbus ? false,
+
   dictionaries ? [ ],
   merge-ut-dictionaries,
 }:
 let
+  bazel = bazel_8;
+
+  ut-dictionary = merge-ut-dictionaries.override { inherit dictionaries; };
+
   pname = "mozc";
   version = "3.33.6133";
-
   src = fetchFromGitHub {
     owner = "google";
     repo = "mozc";
@@ -33,8 +38,6 @@ let
     hash = "sha256-4ZrCIWoqYjoBwaoXq2QGajIQgWP0m2V3ozWQhZIq138=";
     fetchSubmodules = true;
   };
-
-  bazel = bazel_8;
 
   nativeBuildInputs = [
     bazel
@@ -48,36 +51,35 @@ let
   ];
 
   buildInputs = [
+    glib
+    ibus
     libglvnd
     libxcrypt-legacy
     qt6.qtbase
-  ]
-  ++ lib.optionals withIbus [
-    ibus
-    glib
   ];
 
   includePath = lib.makeIncludePath buildInputs;
   libraryPath = lib.makeLibraryPath buildInputs;
 
-  bazelArgs = [
-    "--config=oss_linux"
-    "--compilation_mode=opt"
-    "--action_env=C_INCLUDE_PATH=${includePath}"
-    "--action_env=CPLUS_INCLUDE_PATH=${includePath}"
-    "--action_env=LIBRARY_PATH=${libraryPath}"
-    # targets
-    "unix/icons"
-    "gui/tool:mozc_tool"
-    "server:mozc_server"
-    "unix/emacs:mozc_emacs_helper"
-    "unix/emacs:mozc.el"
-    "renderer/qt:mozc_renderer"
-  ]
-  ++ lib.optionals withIbus [
-    "unix/ibus:gen_mozc_xml"
-    "unix/ibus:ibus_mozc"
-  ];
+  bazelArgs =
+    vendor:
+    [
+      "--config=oss_linux"
+      "--config=stable_channel"
+      "--config=release_build"
+      "--action_env=C_INCLUDE_PATH=${includePath}"
+      "--action_env=CPLUS_INCLUDE_PATH=${includePath}"
+      "--action_env=LIBRARY_PATH=${libraryPath}"
+      "gui/tool:mozc_tool"
+      "server:mozc_server"
+    ]
+    ++ lib.optionals (vendor || withEmacs) [
+      "unix/emacs:mozc_emacs_helper"
+    ]
+    ++ lib.optionals (vendor || withIbus) [
+      "renderer/qt:mozc_renderer"
+      "unix/ibus:ibus_mozc"
+    ];
 
   # First stage of vendoring: run "bazel vendor" to download all external
   # dependencies, then clean up sandbox-specific symlinks and markers so the
@@ -104,12 +106,7 @@ let
       runHook preBuild
 
       cd src
-
-      bazel vendor \
-        --lockfile_mode=update \
-        --vendor_dir="$out/vendor_dir" \
-        ${lib.escapeShellArgs bazelArgs}
-
+      bazel vendor --lockfile_mode=update --vendor_dir="$out/vendor_dir" ${lib.escapeShellArgs (bazelArgs true)}
       cp MODULE.bazel.lock "$out"
 
       echo "removing broken symlinks and markers..."
@@ -156,8 +153,6 @@ let
       runHook postInstall
     '';
   };
-
-  ut-dictionary = merge-ut-dictionaries.override { inherit dictionaries; };
 in
 stdenv.mkDerivation {
   inherit
@@ -181,7 +176,7 @@ stdenv.mkDerivation {
       --replace-fail "/usr" "$out"
 
     # Copy vendor directory to pwd as links
-    lndir "${vendorDeps}"
+    lndir -silent "${vendorDeps}"
   ''
   + lib.optionalString (dictionaries != [ ]) ''
     cat ${ut-dictionary}/mozcdic-ut.txt >> data/dictionary_oss/dictionary00.txt
@@ -190,10 +185,7 @@ stdenv.mkDerivation {
   buildPhase = ''
     runHook preBuild
 
-    bazel build \
-      --lockfile_mode=error \
-      --vendor_dir=vendor_dir \
-      ${lib.escapeShellArgs bazelArgs}
+    bazel build --lockfile_mode=error --vendor_dir=vendor_dir ${lib.escapeShellArgs (bazelArgs false)}
 
     runHook postBuild
   '';
@@ -202,22 +194,18 @@ stdenv.mkDerivation {
     runHook preInstall
 
     install -Dm555 "bazel-bin/server/mozc_server"           "$out/lib/mozc/mozc_server"
-    install -Dm555 "bazel-bin/renderer/qt/mozc_renderer"    "$out/lib/mozc/mozc_renderer"
     install -Dm555 "bazel-bin/gui/tool/mozc_tool"           "$out/lib/mozc/mozc_tool"
+  ''
+  + lib.optionalString withEmacs ''
     install -Dm555 "bazel-bin/unix/emacs/mozc_emacs_helper" "$out/bin/mozc_emacs_helper"
     install -Dm444 "unix/emacs/mozc.el"                     "$out/share/emacs/site-lisp/emacs-mozc/mozc.el"
-    install -d "$out/share/icons/mozc/"
-    unzip bazel-bin/unix/icons.zip -d "$out/share/icons/mozc/"
   ''
   + (lib.optionalString withIbus ''
+    install -Dm555 "bazel-bin/renderer/qt/mozc_renderer"    "$out/lib/mozc/mozc_renderer"
     install -Dm555 "bazel-bin/unix/ibus/ibus_mozc"          "$out/lib/ibus-mozc/ibus-engine-mozc"
     install -Dm555 "bazel-bin/unix/ibus/mozc.xml"           "$out/share/ibus/component/mozc.xml"
-    install -d "$out/share/ibus-mozc/"
-    for icon in "$out"/share/icons/mozc/*.png
-    do
-      cp "$icon" "$out/share/ibus-mozc/"
-    done
-    mv "$out/share/ibus-mozc"/{mozc,product_icon}.png
+
+    unzip bazel-bin/unix/icons.zip -d "$out/share/ibus-mozc/"
   '')
   + ''
     runHook postInstall
