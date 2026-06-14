@@ -91,6 +91,11 @@ in
           ./opencode-elapsed.patch
         ];
       });
+
+      ibus-engines = prev.ibus-engines // {
+        mozc = final.ibus-mozc;
+        mozc-ut = final.ibus-mozc.override { mozc = final.mozc-ut; };
+      };
     };
 
     custom-packages =
