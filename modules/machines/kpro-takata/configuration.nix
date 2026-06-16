@@ -17,7 +17,6 @@ in
         # Include the results of the hardware scan.
         inputs.nixos-hardware.nixosModules.lenovo-thinkpad-x1-13th-gen
         os-mods.common
-        os-mods.kpro
         os-mods.kpro-takata-hardware
         os-mods.kpro-takata-pam
       ];

@@ -7,7 +7,6 @@
     ./hibernate.nix
     ./ima.nix
     ./japanese.nix
-    ./kpro.nix
     ./machines/default.nix
     ./nixos-artwork.nix
     ./packages.nix
