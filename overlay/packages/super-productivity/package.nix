@@ -10,16 +10,19 @@
   rsync,
   stdenv,
   nodejs_22,
-  pkg-config,
   rustPlatform,
-  wayland,
   cacert,
   cargo,
 }:
 let
   electron = electron_41;
   nodejs = nodejs_22;
+in
+buildNpmPackage rec {
+  pname = "super-productivity";
   version = "18.10.0";
+
+  inherit nodejs;
 
   src = fetchFromGitHub {
     owner = "johannesjo";
@@ -27,10 +30,6 @@ let
     tag = "v${version}";
     hash = "sha256-WjbyBX5VcU4ScTXNs3axLiLRZf30yuCZcK5Y3npcKCI=";
   };
-in
-buildNpmPackage rec {
-  pname = "super-productivity";
-  inherit version src nodejs;
 
   # Use custom fetcher for deps because super-productivity uses multiple
   # package-lock.json files to manage plugins.  It checks all lock
@@ -101,10 +100,8 @@ buildNpmPackage rec {
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     cargo
     copyDesktopItems
-    pkg-config
     rustPlatform.cargoSetupHook
   ];
-  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ wayland ];
 
   postPatch = ''
     substituteInPlace electron-builder.yaml \
