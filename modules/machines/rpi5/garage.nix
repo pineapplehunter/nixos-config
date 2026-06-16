@@ -12,9 +12,16 @@ in
     }:
     {
       sops.secrets = {
-        garage-secret = {
+        garage-rpc-secret = {
           sopsFile = flake-config.sopsFile.garage-secret;
-          format = "dotenv";
+          key = "rpc-secret";
+          mode = "0400";
+          owner = "garage";
+          group = "garage";
+        };
+        garage-admin-token = {
+          sopsFile = flake-config.sopsFile.garage-secret;
+          key = "admin-token";
           mode = "0400";
           owner = "garage";
           group = "garage";
@@ -25,7 +32,6 @@ in
         enable = true;
         package = pkgs.garage_2;
         settings = lib.importTOML ./garage-config.toml;
-        environmentFile = config.sops.secrets.garage-secret.path;
         logLevel = "error";
       };
 
@@ -36,6 +42,10 @@ in
           DynamicUser = false;
           RestartSec = "1min";
           Restart = "always";
+        };
+        environment = {
+          GARAGE_RPC_SECRET_FILE = config.sops.secrets.garage-rpc-secret.path;
+          GARAGE_ADMIN_TOKEN_FILE = config.sops.secrets.garage-admin-token.path;
         };
         wantedBy = lib.mkForce [ "default.target" ];
       };

@@ -11,20 +11,41 @@ in
       ...
     }:
     {
-      sops.secrets = {
-        immich-backup-env = {
-          sopsFile = flake-config.sopsFile.immich-backup-env;
-          format = "dotenv";
+      sops = {
+        secrets = {
+          immich-backup-access-key-id = {
+            sopsFile = flake-config.sopsFile.immich-backup-env;
+            key = "access-key-id";
+          };
+          immich-backup-secret-access-key = {
+            sopsFile = flake-config.sopsFile.immich-backup-env;
+            key = "secret-access-key";
+          };
+          garage-rpc-secret = {
+            sopsFile = flake-config.sopsFile.garage-secret;
+            key = "rpc-secret";
+            mode = "0400";
+            owner = "garage";
+            group = "garage";
+          };
+          garage-admin-token = {
+            sopsFile = flake-config.sopsFile.garage-secret;
+            key = "admin-token";
+            mode = "0400";
+            owner = "garage";
+            group = "garage";
+          };
+        };
+        templates."immich-backup-aws-config" = {
+          content = ''
+            [default]
+            aws_access_key_id=${config.sops.placeholder.immich-backup-access-key-id}
+            aws_secret_access_key=${config.sops.placeholder.immich-backup-secret-access-key}
+            region=garage
+          '';
           mode = "0400";
           owner = "immich";
           group = "immich";
-        };
-        garage-secret = {
-          sopsFile = flake-config.sopsFile.garage-secret;
-          format = "dotenv";
-          mode = "0400";
-          owner = "garage";
-          group = "garage";
         };
       };
 
@@ -40,7 +61,6 @@ in
         enable = true;
         package = pkgs.garage_2;
         settings = lib.importTOML ./garage-config.toml;
-        environmentFile = config.sops.secrets.garage-secret.path;
         logLevel = "error";
       };
 
@@ -51,6 +71,10 @@ in
           DynamicUser = false;
           RestartSec = "1min";
           Restart = "always";
+        };
+        environment = {
+          GARAGE_RPC_SECRET_FILE = config.sops.secrets.garage-rpc-secret.path;
+          GARAGE_ADMIN_TOKEN_FILE = config.sops.secrets.garage-admin-token.path;
         };
         wantedBy = lib.mkForce [ "default.target" ];
       };
@@ -125,9 +149,11 @@ in
           '';
           restartIfChanged = false;
           path = [ pkgs.awscli2 ];
+          environment = {
+            AWS_CONFIG_FILE = config.sops.templates.immich-backup-aws-config.path;
+          };
           serviceConfig = {
             Type = "oneshot";
-            EnvironmentFile = config.sops.secrets.immich-backup-env.path;
             ExecCondition = "systemctl is-active --quiet garage.service";
             User = "immich";
             CapabilityBoundingSet = "";

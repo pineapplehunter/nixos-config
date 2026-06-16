@@ -8,7 +8,7 @@
 
   config.sopsFile = {
     common = ./common.yaml;
-    garage-secret = ./garage-secret.env;
-    immich-backup-env = ./immich-backup.env;
+    garage-secret = ./garage-secret.yaml;
+    immich-backup-env = ./immich-backup.yaml;
   };
 }
