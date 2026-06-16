@@ -25,8 +25,29 @@ keys:
   # rpi5-system (host key)
   - &rpi5_system age1402wvk9prhpjcky4xpnn8gjs0vx599asglv3jttdrggsg35e34fqglx24r
   - &rpi5_system_ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB3PgEsfeu6ALk2SM6Ws1jL3bkEX6SBCzEcc6FUBQIVc root@rpi5
+  # kpro-njlab-takata (user)
+  - &kpro_njlab_takata age12scllmyypm560z5s4nk9wjex02w8fuhmp5tcd0h2mpfnr8y4x5ss45nuyj
+  - &kpro_njlab_takata_ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPndWL3gLnSKM8IECZ5aAp9GcwCQUtXM/5iSXfdgkh49 takata@kpro-njlab
+  # daniel-njlab-pc (user)
+  - &daniel_njlab_pc_shogo age1ghjlrya0em72ztklmxndetrgdvmfmged7857kqs8vkd2an4d0e7q0qkk8k
+  - &daniel_njlab_pc_shogo_ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHznJQ8IDhutvWvChU6zk9LpKN0GOVtUbAREYUu2agpU
 
 creation_rules:
+  - path_regex: secrets/niks3.yaml
+    key_groups:
+      - age:
+          - *action_shogo
+          - *action_shogo_ssh
+          - *beast_shogo
+          - *beast_shogo_ssh
+          - *daniel_njlab_pc_shogo
+          - *daniel_njlab_pc_shogo_ssh
+          - *kpro_njlab_takata
+          - *kpro_njlab_takata_ssh
+          - *kpro_takata_takata
+          - *kpro_takata_takata_ssh
+          - *rpi5_shogo
+          - *rpi5_shogo_ssh
   - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
     key_groups:
       - age:

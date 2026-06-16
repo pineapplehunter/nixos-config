@@ -133,7 +133,7 @@ in
       sops = {
         age.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
         secrets.niks3-token = {
-          sopsFile = flake-config.sopsFile.common;
+          sopsFile = flake-config.sopsFile.niks3;
           key = "niks-token";
         };
       };
