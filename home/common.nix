@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, inputs, ... }:
 let
   flake-config = config;
 in
@@ -28,6 +28,7 @@ in
           mods.shell-config
           mods.ssh
           mods.zellij
+          inputs.sops-nix.homeManagerModules.sops
         ];
 
       programs = {
@@ -126,6 +127,14 @@ in
           "x-scheme-handler/slack" = [ "com.slack.Slack.desktop" ];
           "x-scheme-handler/zoomus" = [ "us.zoom.Zoom.desktop" ];
           "x-scheme-handler/zoommtg" = [ "us.zoom.Zoom.desktop" ];
+        };
+      };
+
+      sops = {
+        age.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
+        secrets.niks3-token = {
+          sopsFile = flake-config.sopsFile.common;
+          key = "niks-token";
         };
       };
     };

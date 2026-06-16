@@ -114,12 +114,6 @@ in
           mode = "0440";
           group = "wheel";
         };
-        secrets.niks3-token = {
-          sopsFile = flake-config.sopsFile.common;
-          key = "niks-token";
-          mode = "0440";
-          group = "wheel";
-        };
       };
 
       programs = {
@@ -218,8 +212,6 @@ in
       environment = {
         variables = {
           EDITOR = "hx";
-          NIKS3_SERVER_URL = "https://niks3.s.ihavenojob.work";
-          NIKS3_AUTH_TOKEN_FILE = config.sops.secrets.niks3-token.path;
         };
       };
 

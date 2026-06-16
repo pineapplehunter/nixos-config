@@ -25,7 +25,6 @@
         lsof
         ncdu
         nethogs
-        niks3
         nix-index
         nix-output-monitor
         nix-tree

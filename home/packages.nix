@@ -1,10 +1,23 @@
 {
   flake.homeModules.packages =
-    { pkgs, lib, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     let
       # multilib for bintools
       multi-bintools = pkgs.wrapBintoolsWith { bintools = pkgs.binutils-unwrapped-all-targets; };
-
+      niks3-wrapped = pkgs.writeShellApplication {
+        name = "niks3";
+        runtimeInputs = [ pkgs.niks3 ];
+        text = ''
+          export NIKS3_SERVER_URL="https://niks3.s.ihavenojob.work";
+          export NIKS3_AUTH_TOKEN_FILE="${config.sops.secrets.niks3-token.path}";
+          niks3 "$@"
+        '';
+      };
     in
     {
       config.home.packages =
@@ -22,7 +35,7 @@
           fzf
           git-extras
           hl-log-viewer
-          niks3
+          niks3-wrapped
           nix-index
           nix-init
           nix-update
