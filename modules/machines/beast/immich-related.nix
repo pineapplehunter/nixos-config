@@ -61,7 +61,6 @@ in
         enable = true;
         package = pkgs.garage_2;
         settings = lib.importTOML ./garage-config.toml;
-        logLevel = "error";
       };
 
       systemd.services.garage = {
