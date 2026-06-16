@@ -43,6 +43,7 @@ bwrap_args=(
   --ro-bind /nix /nix
   --ro-bind "$HOME" "$HOME"
   --tmpfs "$HOME/.ssh" # hide ssh keys
+  --tmpfs "$HOME/work" # hide work related files
   --tmpfs /etc
   --tmpfs /run
   --tmpfs /var
