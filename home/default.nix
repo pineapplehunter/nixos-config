@@ -68,7 +68,6 @@ in
   imports = [
     inputs.home-manager.flakeModules.home-manager
 
-    ./alacritty/default.nix
     ./colored-man-pages.nix
     ./common.nix
     ./cradsec.nix

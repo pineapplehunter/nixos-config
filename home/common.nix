@@ -15,7 +15,6 @@ in
           mods = flake-config.flake.homeModules;
         in
         [
-          mods.alacritty
           mods.colored-man-pages
           mods.dconf
           mods.flatpak-update
