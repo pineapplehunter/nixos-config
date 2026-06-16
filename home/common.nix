@@ -28,6 +28,7 @@ in
           mods.ssh
           mods.zellij
           inputs.sops-nix.homeManagerModules.sops
+          inputs.nix-index-database.homeModules.default
         ];
 
       programs = {

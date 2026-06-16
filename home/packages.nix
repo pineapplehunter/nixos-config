@@ -36,7 +36,6 @@
           git-extras
           hl-log-viewer
           niks3-wrapped
-          nix-index
           nix-init
           nix-update
           nixfmt
