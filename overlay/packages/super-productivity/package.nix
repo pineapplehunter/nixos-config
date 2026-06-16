@@ -10,39 +10,22 @@
   rsync,
   stdenv,
   nodejs_22,
-  _experimental-update-script-combinators,
   pkg-config,
   rustPlatform,
   wayland,
   cacert,
+  cargo,
 }:
 let
   electron = electron_41;
   nodejs = nodejs_22;
-  version = "18.9.1";
+  version = "18.10.0";
 
   src = fetchFromGitHub {
     owner = "johannesjo";
     repo = "super-productivity";
     tag = "v${version}";
-    hash = "sha256-iRVCdkZocH/a2be2jFft6njJNrdCEGTDtAakYL08PNA=";
-  };
-
-  wayland-idle-helper = rustPlatform.buildRustPackage {
-    pname = "wayland-idle-helper";
-    inherit version src;
-    sourceRoot = "source/electron/wayland-idle-helper";
-
-    nativeBuildInputs = [ pkg-config ];
-
-    buildInputs = [ wayland ];
-
-    cargoHash = "sha256-u/GjzX8zykIqJlMR/611ADX2EcD1cb4Qr94EkI2sdlA=";
-
-    meta = {
-      platforms = lib.platforms.linux;
-      mainProgram = "wayland-idle-helper";
-    };
+    hash = "sha256-WjbyBX5VcU4ScTXNs3axLiLRZf30yuCZcK5Y3npcKCI=";
   };
 in
 buildNpmPackage rec {
@@ -92,21 +75,36 @@ buildNpmPackage rec {
       dontInstall = true;
 
       outputHashMode = "recursive";
-      hash = "sha256-xfLhEfVH/JyTXqfaZCtTYjaNdhQaX43TC7NYDZ8qJ8U=";
+      hash = "sha256-RxKBJAMrMNTuX7wi2xTjQfXCNXYGTaPf+1/71nLPz10=";
     }
   );
 
   makeCacheWritable = true;
   npmDepsFetcherVersion = 2;
 
+  cargoRoot = "electron/wayland-idle-helper";
+  cargoDeps = rustPlatform.fetchCargoVendor {
+    inherit
+      pname
+      version
+      src
+      cargoRoot
+      ;
+    hash = "sha256-u/GjzX8zykIqJlMR/611ADX2EcD1cb4Qr94EkI2sdlA=";
+  };
+
   env = {
     ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
     CHROMEDRIVER_SKIP_DOWNLOAD = "true";
-    CSC_IDENTITY_AUTO_DISCOVERY = "false";
-    SP_SKIP_WAYLAND_IDLE_HELPER_BUILD = "1";
   };
 
-  nativeBuildInputs = [ copyDesktopItems ];
+  nativeBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+    cargo
+    copyDesktopItems
+    pkg-config
+    rustPlatform.cargoSetupHook
+  ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isLinux [ wayland ];
 
   postPatch = ''
     substituteInPlace electron-builder.yaml \
@@ -157,16 +155,18 @@ buildNpmPackage rec {
       else
         ''
           mkdir -p $out/share/{superproductivity,icons/hicolor/scalable/apps}
-          cp -r .tmp/app-builds/*-unpacked/resources/app.asar $out/share/superproductivity
+          cp -r .tmp/app-builds/*-unpacked/{resources/app.asar,wayland-idle-helper} $out/share/superproductivity
           cp electron/assets/icons/ico-circled.svg $out/share/icons/hicolor/scalable/apps/superproductivity.svg
           makeWrapper '${lib.getExe electron}' "$out/bin/superproductivity" \
             --add-flags "$out/share/superproductivity/app.asar" \
             --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations}}" \
             --set-default ELECTRON_FORCE_IS_PACKAGED 1 \
             --inherit-argv0
-          ln -s ${lib.getExe wayland-idle-helper} $out/share/superproductivity/wayland-idle-helper
         ''
     }
+
+    # backward compat symlink for the old binary name
+    ln -s superproductivity "$out"/bin/super-productivity
 
     runHook postInstall
   '';
@@ -189,17 +189,7 @@ buildNpmPackage rec {
     })
   ];
 
-  passthru = {
-    inherit wayland-idle-helper;
-
-    updateScript = _experimental-update-script-combinators.sequence [
-      (nix-update-script { attrPath = "super-productivity"; })
-      (nix-update-script {
-        attrPath = "super-productivity.wayland-idle-helper";
-        extraArgs = [ "--version=skip" ];
-      })
-    ];
-  };
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "To Do List / Time Tracker with Jira Integration";
@@ -219,4 +209,3 @@ buildNpmPackage rec {
     mainProgram = "superproductivity";
   };
 }
-
