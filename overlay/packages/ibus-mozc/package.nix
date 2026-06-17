@@ -57,12 +57,12 @@ let
     "unix/ibus:ibus_mozc"
   ];
 
-  # First stage of vendoring: run "bazel vendor" to download all external
-  # dependencies, then clean up sandbox-specific symlinks and markers so the
-  # output is reproducible (fixed-output derivation).
+  # vendoring: run "bazel vendor" to download all external dependencies,
+  # then clean up sandbox-specific symlinks and markers so the output
+  # is reproducible (fixed-output derivation).
   vendorDeps = stdenv.mkDerivation (
     lib.fetchers.normalizeHash { } {
-      pname = "${pname}-vendor-stage1";
+      pname = "${pname}-vendor";
       inherit
         src
         version
@@ -70,7 +70,7 @@ let
         buildInputs
         ;
 
-      hash = "sha256-u6UECS31UeJlGJliVxs8UuHnM+Z2jL2Z++WkdbrfjTc=";
+      hash = "sha256-5ZU490czheaya7KB7twcIbzZMlzcwVmV68j9upyItHk=";
       outputHashMode = "recursive";
 
       strictDeps = true;

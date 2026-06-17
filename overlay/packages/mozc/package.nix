@@ -97,7 +97,7 @@ let
         buildInputs
         ;
 
-      hash = "sha256-lMt5rcn/ATEZH1epJ9d4xuxtApz0gGROBzsmNW91IgI=";
+      hash = "sha256-yFw2DcwbzGETXlh84VtBHG0HLundx5VJV+qP7PDbMic=";
       outputHashMode = "recursive";
 
       strictDeps = true;

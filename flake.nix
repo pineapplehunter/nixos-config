@@ -28,7 +28,7 @@
     };
     rust-overlay.url = "github:oxalica/rust-overlay?ref=stable";
     lanzaboote = {
-      url = "github:nix-community/lanzaboote?ref=v1.0.0";
+      url = "github:nix-community/lanzaboote?ref=master";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.rust-overlay.follows = "rust-overlay";
     };
