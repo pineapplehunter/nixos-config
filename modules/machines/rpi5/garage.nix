@@ -15,14 +15,14 @@ in
         garage-rpc-secret = {
           sopsFile = flake-config.sopsFile.garage-secret;
           key = "rpc-secret";
-          mode = "0400";
+          mode = "0440";
           owner = "garage";
           group = "garage";
         };
         garage-admin-token = {
           sopsFile = flake-config.sopsFile.garage-secret;
           key = "admin-token";
-          mode = "0400";
+          mode = "0440";
           owner = "garage";
           group = "garage";
         };
