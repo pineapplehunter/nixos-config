@@ -215,6 +215,7 @@ in
       users.users.shogo = {
         isNormalUser = true;
         extraGroups = [
+          "garage"
           "wheel" # Enable ‘sudo’ for the user.
         ];
       };

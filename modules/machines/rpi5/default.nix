@@ -217,9 +217,10 @@ in
             users.users.shogo = {
               isNormalUser = true;
               extraGroups = [
-                "wheel"
+                "garage"
                 "networkmanager"
                 "video"
+                "wheel"
               ];
               # Allow the graphical user to login without password
               initialHashedPassword = "";
