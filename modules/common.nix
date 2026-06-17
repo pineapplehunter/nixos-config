@@ -69,7 +69,7 @@ in
           auto-allocate-uids = true;
           trusted-users = [ "@wheel" ];
           substituters = [
-            "https://niks3-storage.gweb.ihavenojob.work?priority=99"
+            "https://niks3.gweb.ihavenojob.work?priority=99"
           ];
           trusted-public-keys = [
             "niks3-cache:RW+9UW/AgeDvEawJndPbzNVYQcDPjXA4J23srAi5+sE="

@@ -39,7 +39,7 @@ jobs:
             fallback = true
             accept-flake-config = true
             system = ${{ matrix.system }}
-            extra-substituters = https://niks3-storage.gweb.ihavenojob.work?priority=80
+            extra-substituters = https://niks3.gweb.ihavenojob.work?priority=80
             extra-trusted-public-keys = niks3-cache:RW+9UW/AgeDvEawJndPbzNVYQcDPjXA4J23srAi5+sE=
 
       - name: Run checks
