@@ -28,7 +28,7 @@
     };
     rust-overlay.url = "github:oxalica/rust-overlay?ref=stable";
     lanzaboote = {
-      url = "github:nix-community/lanzaboote?ref=master";
+      url = "github:pineapplehunter/lanzaboote?ref=tmp-bootspec-fix";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.rust-overlay.follows = "rust-overlay";
     };
