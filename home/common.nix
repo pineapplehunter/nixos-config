@@ -4,7 +4,12 @@ let
 in
 {
   flake.homeModules.common =
-    { pkgs, config, ... }:
+    {
+      pkgs,
+      config,
+      lib,
+      ...
+    }:
     let
       inherit (pkgs.stdenv.hostPlatform) isLinux system;
       inherit (config.pineapplehunter) isNixos;
@@ -118,7 +123,24 @@ in
       services = {
         flatpak-repo.enable = isLinux;
         flatpak-update.enable = isLinux;
-        pueue.enable = isLinux;
+
+        pueue = {
+          enable = isLinux;
+          settings = {
+            daemon = {
+              callback = lib.replaceString "\n" " " ''
+                "${lib.getExe pkgs.pueue-discord-notify}"
+                --webhook-file "${config.sops.secrets.pueue-discord-webhook.path}"
+                --id "{{id}}"
+                --command "{{command}}"
+                --result "{{result}}"
+                --exit-code "{{exit_code}}"
+                --group "{{group}}"
+              '';
+              callback_log_lines = 10;
+            };
+          };
+        };
       };
 
       xdg = {
@@ -132,9 +154,10 @@ in
 
       sops = {
         age.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
-        secrets.niks3-token = {
-          sopsFile = flake-config.sopsFile.niks3;
-          key = "niks-token";
+        defaultSopsFile = flake-config.sopsFile.home;
+        secrets = {
+          niks3-token.key = "niks-token";
+          pueue-discord-webhook.key = "pueue-discord-webhook";
         };
       };
     };

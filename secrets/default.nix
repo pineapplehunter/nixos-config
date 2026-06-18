@@ -10,6 +10,6 @@
     common = ./common.yaml;
     garage-secret = ./garage-secret.yaml;
     immich-backup-env = ./immich-backup.yaml;
-    niks3 = ./niks3.yaml;
+    home = ./home.yaml;
   };
 }
