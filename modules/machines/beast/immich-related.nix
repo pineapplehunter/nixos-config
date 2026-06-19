@@ -77,6 +77,10 @@ in
           RestartSec = "1min";
           Restart = "always";
         };
+        environment = {
+          # I only allow access to the key for garage group
+          GARAGE_ALLOW_WORLD_READABLE_SECRETS = "true";
+        };
         wantedBy = lib.mkForce [ "default.target" ];
       };
 

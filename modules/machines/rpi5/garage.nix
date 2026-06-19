@@ -38,7 +38,6 @@ in
             admin.admin_token_file = config.sops.secrets.garage-admin-token.path;
           }
         ];
-        logLevel = "error";
       };
 
       systemd.services.garage = {
@@ -48,6 +47,10 @@ in
           DynamicUser = false;
           RestartSec = "1min";
           Restart = "always";
+        };
+        environment = {
+          # I only allow access to the key for garage group
+          GARAGE_ALLOW_WORLD_READABLE_SECRETS = "true";
         };
         wantedBy = lib.mkForce [ "default.target" ];
       };
