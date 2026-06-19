@@ -8,6 +8,7 @@ in
     {
       pkgs,
       lib,
+      config,
       ...
     }:
     let
@@ -19,6 +20,7 @@ in
         os-mods.common
         os-mods.kpro-takata-hardware
         os-mods.kpro-takata-pam
+        os-mods.ssh-authorized-keys
       ];
 
       my = {
@@ -211,6 +213,7 @@ in
             "dialout"
             "tss" # for tpm2
           ];
+          openssh.authorizedKeys.keys = config.my.sshAuthorizedKeys;
         };
       };
       home-manager.users = {

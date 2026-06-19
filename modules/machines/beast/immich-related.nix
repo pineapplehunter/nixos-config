@@ -135,7 +135,11 @@ in
               "~@resources"
               "~@mount"
             ];
-            RestrictAddressFamilies = "";
+            RestrictAddressFamilies = [
+              "AF_UNIX"
+              "AF_INET"
+              "AF_INET6"
+            ];
             RemoveIPC = true;
           };
           wantedBy = [ "default.target" ];

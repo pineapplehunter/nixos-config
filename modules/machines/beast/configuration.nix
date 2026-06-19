@@ -9,10 +9,7 @@ let
 in
 {
   flake.nixosModules.beast =
-    {
-      pkgs,
-      ...
-    }:
+    { pkgs, config, ... }:
     {
       imports = [
         # Include the results of the hardware scan.
@@ -20,6 +17,7 @@ in
         os-mods.personal
         os-mods.beast-hardware
         os-mods.beast-immich-related
+        os-mods.ssh-authorized-keys
       ];
 
       nix = {
@@ -218,6 +216,8 @@ in
         windows.enable = true;
       };
 
+      services.openssh.settings.PasswordAuthentication = false;
+
       programs = {
         virt-manager.enable = true;
       };
@@ -229,6 +229,7 @@ in
           "garage"
           "wheel" # Enable ‘sudo’ for the user.
         ];
+        openssh.authorizedKeys.keys = config.my.sshAuthorizedKeys;
       };
 
       home-manager.users = {

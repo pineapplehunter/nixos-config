@@ -6,7 +6,12 @@ in
 
 {
   flake.nixosModules.action =
-    { pkgs, lib, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     {
       imports = [
         # Include the results of the hardware scan.
@@ -15,6 +20,7 @@ in
         os-mods.personal
         os-mods.action-hardware
         os-mods.action-pam
+        os-mods.ssh-authorized-keys
       ];
 
       my.tpm2.enable = true;
@@ -238,12 +244,9 @@ in
             "wheel"
             "dialout"
           ];
+          openssh.authorizedKeys.keys = config.my.sshAuthorizedKeys;
         };
 
-        riken = {
-          isNormalUser = true;
-          description = "deprecated only left to view data";
-        };
       };
       home-manager.users = {
         shogo = {

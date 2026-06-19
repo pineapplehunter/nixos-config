@@ -14,6 +14,7 @@
     ./power-targets.nix
     ./secureboot.nix
     ./selinux.nix
+    ./ssh-authorized-keys.nix
     ./tpm2.nix
     ./windows-vm.nix
     ./xe-driver.nix

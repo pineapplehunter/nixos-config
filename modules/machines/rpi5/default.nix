@@ -13,6 +13,7 @@ in
       [
         # os-mods.common
         # os-mods.personal
+        os-mods.ssh-authorized-keys
         os-mods.rpi5-garage
         # Hardware configuration
         pi-mods.raspberry-pi-5.base
@@ -193,15 +194,6 @@ in
               ghostty.terminfo
             ];
 
-            users.users.shogo.openssh.authorizedKeys.keys = [
-              # YOUR SSH PUB KEY HERE #
-
-            ];
-            users.users.root.openssh.authorizedKeys.keys = [
-              # YOUR SSH PUB KEY HERE #
-
-            ];
-
             system.nixos.tags = [
               "raspberry-pi"
               config.boot.kernelPackages.kernel.version
@@ -222,8 +214,7 @@ in
                 "video"
                 "wheel"
               ];
-              # Allow the graphical user to login without password
-              initialHashedPassword = "";
+              openssh.authorizedKeys.keys = config.my.sshAuthorizedKeys;
             };
 
             users.users.andy = {
@@ -232,8 +223,7 @@ in
               extraGroups = [ "users" ];
             };
 
-            # Allow the user to log in as root without a password.
-            users.users.root.initialHashedPassword = "";
+            # Root account is locked by default; set a password or add SSH keys to unlock.
 
             users.defaultUserShell = pkgs.zsh;
 
@@ -256,7 +246,10 @@ in
             services.openssh = {
               enable = true;
               startWhenNeeded = true;
-              settings.PermitRootLogin = "yes";
+              settings = {
+                PasswordAuthentication = false;
+                PermitRootLogin = "prohibit-password";
+              };
             };
 
             # allow nix-copy to live system

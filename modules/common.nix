@@ -225,9 +225,6 @@ in
 
       security.sudo-rs = {
         enable = true;
-        extraConfig = ''
-          Defaults pwfeedback
-        '';
       };
 
       networking.nftables.enable = true;
