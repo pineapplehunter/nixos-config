@@ -33,7 +33,7 @@ keys:
   - &daniel_njlab_pc_shogo_ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHznJQ8IDhutvWvChU6zk9LpKN0GOVtUbAREYUu2agpU
 
 creation_rules:
-  - path_regex: secrets/niks3.yaml
+  - path_regex: secrets/home.yaml
     key_groups:
       - age:
           - *action_shogo
