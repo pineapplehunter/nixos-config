@@ -25,7 +25,7 @@ jobs:
       || (matrix.system == 'aarch64-darwin' && 'macos-latest') }}
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: enable unprivileged userns clone
         if: runner.os == 'Linux'
         run: |
@@ -33,7 +33,7 @@ jobs:
           sudo sysctl -w kernel.unprivileged_userns_clone=1
       - uses: wimpysworld/nothing-but-nix@687c797a730352432950c707ab493fcc951818d7 # v10
         if: runner.os == 'Linux'
-      - uses: cachix/install-nix-action@616559265b40713947b9c190a8ff4b507b5df49b # v31.10.4
+      - uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31.10.6
         with:
           extra_nix_config: |
             fallback = true
