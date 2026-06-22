@@ -16,12 +16,12 @@
             identityFile = "${config.home.homeDirectory}/.ssh/cradsec_takata";
           };
           cradsec-sgx-tailscale = {
-            hostname = "cradsec-proliant-ml110-gen11.tail9ccf68.ts.net";
+            hostname = "cradsec-sgx-machine.tail9ccf68.ts.net";
             user = "takata";
             identityFile = "${config.home.homeDirectory}/.ssh/cradsec_takata";
           };
           cradsec-tdx-tailscale = {
-            hostname = "cradsec-tdx.tail9ccf68.ts.net";
+            hostname = "cradsec-tdx-machine.tail9ccf68.ts.net";
             user = "takata";
             identityFile = "${config.home.homeDirectory}/.ssh/cradsec_takata";
           };
