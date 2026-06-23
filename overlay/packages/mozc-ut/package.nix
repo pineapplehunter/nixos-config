@@ -21,4 +21,3 @@ mozc.override {
     mozcdic-ut-sudachidict
   ];
 }
-
