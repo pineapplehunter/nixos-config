@@ -48,7 +48,6 @@ bwrap_args=(
   --bind "$PROJECT_ROOT" "$PROJECT_ROOT"
   --clearenv
   --setenv LANG C
-  --setenv PATH "$PATH"
   --setenv HOME "$HOME"
   --setenv PWD "$PWD"
 )
@@ -73,25 +72,19 @@ for e in "${RO_ENTRIES[@]}"; do
 done
 
 # Add paths as RO
+SANDBOX_PATH=""
 original_ifs="$IFS"
 IFS=:
 for p in $PATH; do
-  if [[ -L "$p" ]]; then
-    # Links (only nested?) causes bwrap to crash.
-    continue
-  elif [[ "$p" = /nix/store/* ]]; then
-    # skip nix paths.
-    # They are already included
-    continue
-  elif [[ "$p" = /home/* ]]; then
-    # skip home paths.
-    # HOME is RO mounted
-    continue
-  else
-    append_args --ro-bind-try "$p" "$p"
+  if [[ -e "$p" ]]; then
+    REAL=$(realpath -e "$p")
+    SANDBOX_PATH="$SANDBOX_PATH:$REAL"
+    append_args --ro-bind-try "$REAL" "$REAL"
   fi
 done
 IFS=$original_ifs
+SANDBOX_PATH=${SANDBOX_PATH%:}
+append_args --setenv PATH "$SANDBOX_PATH"
 
 # add nessesary opencode dirs
 OPENCODE_ENTRIES=(
@@ -125,18 +118,15 @@ append_args --bind "$PERSISTANT_DIR" /persistant
 # Parse special arguments (only before first non-@ argument or @@)
 while [[ "${1:-}" == @* ]]; do
   case "$1" in
-    @net)
-      append_args --share-net
-      ;;
     @debug-shell)
       DEBUG_MODE=1
       ;;
     @allow)
-      append_args --ro-bind "$1" "$1"
+      append_args --ro-bind "$2" "$2"
       shift
       ;;
     @allow-rw)
-      append_args --bind "$1" "$1"
+      append_args --bind "$2" "$2"
       shift
       ;;
     @@)
