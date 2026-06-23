@@ -23,10 +23,14 @@ in
         os-mods.ssh-authorized-keys
       ];
 
-      my.tpm2.enable = true;
-      my.xe = {
-        enable = lib.mkDefault true;
-        devices = [ "9a49" ];
+      my = {
+        tpm2.enable = true;
+        xe = {
+          enable = lib.mkDefault true;
+          devices = [ "9a49" ];
+        };
+        ima.enable = true;
+        fsverity.enable = true;
       };
 
       # nixpkgs.flake.source = lib.mkForce null;
@@ -151,6 +155,7 @@ in
       # Bootloader.
 
       boot = {
+        kernelPackages = pkgs.linuxPackagesFor pkgs.linux_latest_tigerlake;
         loader.grub = {
           enable = true;
           efiSupport = true;

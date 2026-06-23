@@ -49,6 +49,7 @@ in
 
       # Use the systemd-boot EFI boot loader.
       boot = {
+        kernelPackages = pkgs.linuxPackagesFor pkgs.linux_latest_znver1;
         loader.systemd-boot = {
           enable = true;
           consoleMode = "0";
