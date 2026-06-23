@@ -96,6 +96,17 @@ in
         mozc = final.ibus-mozc;
         mozc-ut = final.ibus-mozc.override { mozc = final.mozc-ut; };
       };
+
+      # march=arrowlake build
+      # https://www.reddit.com/r/NixOS/comments/1b77j9i/build_with_marchnative_and_etc/
+      linux_latest_arrowlake = prev.linux_latest.overrideAttrs (old: {
+        env.NIX_CFLAGS_COMPILE =
+          ((old.env or { }).NIX_CFLAGS_COMPILE or "")
+          + toString [
+            "-O2"
+            "-march=arrowlake"
+          ];
+      });
     };
 
     custom-packages =
