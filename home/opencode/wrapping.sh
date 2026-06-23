@@ -41,14 +41,16 @@ bwrap_args=(
   --dev /dev
   --proc /proc
   --ro-bind /nix /nix
-  --ro-bind "$HOME" "$HOME"
-  --tmpfs "$HOME/.ssh" # hide ssh keys
-  --tmpfs "$HOME/work" # hide work related files
+  --tmpfs "$HOME"
   --tmpfs /etc
   --tmpfs /run
   --tmpfs /var
   --bind "$PROJECT_ROOT" "$PROJECT_ROOT"
+  --clearenv
   --setenv LANG C
+  --setenv PATH "$PATH"
+  --setenv HOME "$HOME"
+  --setenv PWD "$PWD"
 )
 
 append_args "${bwrap_args[@]}"
@@ -114,6 +116,12 @@ if [[ -f "$PROJECT_ROOT/.git" ]]; then
   fi
 fi
 
+# persistant dir
+DIR_HASH=$(echo "$PROJECT_ROOT" | sha256sum | cut -F 1)
+PERSISTANT_DIR="$HOME"/.local/share/opencode-persistant/"$DIR_HASH"
+mkdir -p "$PERSISTANT_DIR"
+append_args --bind "$PERSISTANT_DIR" /persistant
+
 # Parse special arguments (only before first non-@ argument or @@)
 while [[ "${1:-}" == @* ]]; do
   case "$1" in
@@ -122,6 +130,14 @@ while [[ "${1:-}" == @* ]]; do
       ;;
     @debug-shell)
       DEBUG_MODE=1
+      ;;
+    @allow)
+      append_args --ro-bind "$1" "$1"
+      shift
+      ;;
+    @allow-rw)
+      append_args --bind "$1" "$1"
+      shift
       ;;
     @@)
       break
