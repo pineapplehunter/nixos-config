@@ -56,6 +56,7 @@ append_args "${bwrap_args[@]}"
 
 # add nessesary etc dirs
 RO_ENTRIES=(
+  /bin/sh
   /etc/gai.conf
   /etc/host.conf
   /etc/hosts
@@ -66,6 +67,7 @@ RO_ENTRIES=(
   /etc/resolv.conf
   /etc/ssl
   /etc/static
+  /usr/bin/env
 )
 for e in "${RO_ENTRIES[@]}"; do
   append_args --ro-bind-try "$e" "$e"

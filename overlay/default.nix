@@ -88,6 +88,7 @@ in
 
       opencode = prev.opencode.overrideAttrs (old: {
         patches = [
+          ./opencode-worker-rejection.patch
           ./opencode-elapsed.patch
         ];
       });
