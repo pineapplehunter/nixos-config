@@ -9,13 +9,14 @@
     let
       # multilib for bintools
       multi-bintools = pkgs.wrapBintoolsWith { bintools = pkgs.binutils-unwrapped-all-targets; };
-      niks3-wrapped = pkgs.writeShellApplication {
-        name = "niks3";
-        runtimeInputs = [ pkgs.niks3 ];
-        text = ''
-          export NIKS3_SERVER_URL="https://niks3.s.ihavenojob.work";
-          export NIKS3_AUTH_TOKEN_FILE="${config.sops.secrets.niks3-token.path}";
-          niks3 "$@"
+      niks3-wrapped = pkgs.symlinkJoin {
+        name = "niks3-wrapper";
+        paths = [ pkgs.niks3 ];
+        nativeBuildInputs = [ pkgs.makeWrapper ];
+        postBuild = ''
+          wrapProgram "$out/bin/niks3" \
+            --set-default NIKS3_SERVER_URL "https://niks3.s.ihavenojob.work" \
+            --set-default NIKS3_AUTH_TOKEN_FILE "${config.sops.secrets.niks3-token.path}"
         '';
       };
     in
