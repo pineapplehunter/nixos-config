@@ -42,12 +42,11 @@ jobs:
             fallback = true
             accept-flake-config = true
             system = ${{ matrix.system }}
-            extra-substituters = https://niks3.gweb.ihavenojob.work?priority=80
-            extra-trusted-public-keys = niks3-cache:RW+9UW/AgeDvEawJndPbzNVYQcDPjXA4J23srAi5+sE=
 
       - uses: Mic92/niks3-action@12d3e320b2a99b7938f9634bd337cd9fec104609 # v1.1.0
         with:
           server-url: https://niks3.s.ihavenojob.work
+          debug: true
 
       - name: Run checks
         run: nix build ".#ci"
