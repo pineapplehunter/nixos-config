@@ -32,18 +32,18 @@ index 700780314..462b60fb0 100644
            <text fg={color()}>{props.children}</text>
          </Show>
 diff --git a/packages/tui/src/routes/session/index.tsx b/packages/tui/src/routes/session/index.tsx
-index 1a1eb0fcc..eadc7d79a 100644
+index e3758374c..76fd1e00b 100644
 --- a/packages/tui/src/routes/session/index.tsx
 +++ b/packages/tui/src/routes/session/index.tsx
-@@ -1841,6 +1841,7 @@ function InlineTool(props: {
+@@ -1839,6 +1839,7 @@ function InlineTool(props: {
    failure?: string
    spinner?: boolean
-   subagent?: boolean
+   separate?: boolean
 +  elapsed?: number
    children: JSX.Element
    part: ToolPart
    onClick?: () => void
-@@ -1957,7 +1958,7 @@ export function InlineToolRow(props: {
+@@ -1945,7 +1946,7 @@ export function InlineToolRow(props: {
      >
        <Switch>
          <Match when={props.spinner}>
@@ -52,7 +52,7 @@ index 1a1eb0fcc..eadc7d79a 100644
          </Match>
          <Match when={true}>
            <Show
-@@ -2006,6 +2007,7 @@ function BlockTool(props: {
+@@ -1994,6 +1995,7 @@ function BlockTool(props: {
    onClick?: () => void
    part?: ToolPart
    spinner?: boolean
@@ -60,7 +60,7 @@ index 1a1eb0fcc..eadc7d79a 100644
  }) {
    const { theme } = useTheme()
    const renderer = useRenderer()
-@@ -2038,7 +2040,9 @@ function BlockTool(props: {
+@@ -2026,7 +2028,9 @@ function BlockTool(props: {
            </text>
          }
        >
@@ -71,7 +71,7 @@ index 1a1eb0fcc..eadc7d79a 100644
        </Show>
        {props.children}
        <Show when={error()}>
-@@ -2054,6 +2058,26 @@ function Shell(props: ToolProps) {
+@@ -2042,6 +2046,26 @@ function Shell(props: ToolProps) {
    const ctx = use()
    const isRunning = createMemo(() => props.part.state.status === "running")
    const output = createMemo(() => stripAnsi(stringValue(props.metadata.output)?.trim() ?? ""))
@@ -98,7 +98,7 @@ index 1a1eb0fcc..eadc7d79a 100644
    const [expanded, setExpanded] = createSignal(false)
    const maxLines = 10
    const maxChars = createMemo(() => maxLines * Math.max(20, ctx.width - 6))
-@@ -2084,6 +2108,7 @@ function Shell(props: ToolProps) {
+@@ -2072,6 +2096,7 @@ function Shell(props: ToolProps) {
            title={title()}
            part={props.part}
            spinner={isRunning()}
@@ -106,7 +106,7 @@ index 1a1eb0fcc..eadc7d79a 100644
            onClick={collapsed().overflow ? () => setExpanded((prev) => !prev) : undefined}
          >
            <box gap={1}>
-@@ -2098,7 +2123,7 @@ function Shell(props: ToolProps) {
+@@ -2086,7 +2111,7 @@ function Shell(props: ToolProps) {
          </BlockTool>
        </Match>
        <Match when={true}>
