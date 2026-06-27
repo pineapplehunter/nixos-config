@@ -43,10 +43,16 @@ jobs:
             accept-flake-config = true
             system = ${{ matrix.system }}
 
+      - name: Build niks3
+        id: niks3
+        run: |
+          path=$(nix build .#niks3 --print-out-paths --no-link)
+          echo "store-path=$path" >> "$GITHUB_OUTPUT"
+      
       - uses: Mic92/niks3-action@12d3e320b2a99b7938f9634bd337cd9fec104609 # v1.1.0
         with:
           server-url: https://niks3.s.ihavenojob.work
-          debug: true
+          niks3-bin: ${{ steps.niks3.outputs.store-path }}/bin/niks3
 
       - name: Run checks
         run: nix build ".#ci"
