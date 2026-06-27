@@ -55,5 +55,5 @@ jobs:
           niks3-bin: ${{ steps.niks3.outputs.store-path }}/bin/niks3
 
       - name: Run checks
-        run: nix build ".#ci"
+        run: nix build ".#ci" --keep-going
 
