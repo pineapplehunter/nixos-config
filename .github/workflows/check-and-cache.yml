@@ -10,6 +10,9 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  id-token: write
+
 jobs:
   build:
     strategy:
@@ -42,19 +45,10 @@ jobs:
             extra-substituters = https://niks3.gweb.ihavenojob.work?priority=80
             extra-trusted-public-keys = niks3-cache:RW+9UW/AgeDvEawJndPbzNVYQcDPjXA4J23srAi5+sE=
 
+      - uses: Mic92/niks3-action@12d3e320b2a99b7938f9634bd337cd9fec104609 # v1.1.0
+        with:
+          server-url: https://niks3.s.ihavenojob.work
+
       - name: Run checks
         run: nix build ".#ci"
 
-      - name: Upload Cache
-        if: always()
-        continue-on-error: true
-        env:
-          NIKS3_SERVER_URL: ${{ vars.NIKS3_SERVER_URL }}
-          NIKS3_AUTH_TOKEN: ${{ secrets.NIKS3_AUTH_TOKEN }}
-          NIKS3_AUTH_TOKEN_FILE: ./token
-          HL_COLOR: always
-          HL_TIME_FORMAT: ""
-        run: |
-          nix profile add --inputs-from . "nixpkgs#niks3" "nixpkgs#hl-log-viewer"
-          echo "$NIKS3_AUTH_TOKEN" > token
-          nix path-info --all | grep -v '.drv$' | xargs -L 100 -- niks3 push 2>&1 | hl -P
