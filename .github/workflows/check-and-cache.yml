@@ -20,8 +20,8 @@ jobs:
           - "aarch64-linux"
           - "x86_64-linux"
     runs-on: >-
-      ${{ (matrix.system == 'x86_64-linux' && 'ubuntu-latest')
-      || (matrix.system == 'aarch64-linux' && 'ubuntu-24.04-arm')
+      ${{ (matrix.system == 'x86_64-linux' && 'ubuntu-26.04')
+      || (matrix.system == 'aarch64-linux' && 'ubuntu-26.04-arm')
       || (matrix.system == 'aarch64-darwin' && 'macos-latest') }}
 
     steps:
