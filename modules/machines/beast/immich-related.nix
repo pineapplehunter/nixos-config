@@ -21,6 +21,10 @@ in
             sopsFile = flake-config.sopsFile.immich-backup-env;
             key = "secret-access-key";
           };
+          immich-backup-restic-password = {
+            sopsFile = flake-config.sopsFile.immich-backup-env;
+            key = "restic-password";
+          };
           garage-rpc-secret = {
             sopsFile = flake-config.sopsFile.garage-secret;
             key = "rpc-secret";
@@ -43,9 +47,6 @@ in
             aws_secret_access_key=${config.sops.placeholder.immich-backup-secret-access-key}
             region=garage
           '';
-          mode = "0400";
-          owner = "immich";
-          group = "immich";
         };
       };
 
@@ -150,39 +151,53 @@ in
         };
         immich-backup = {
           script = ''
-            aws s3 sync /immich/storage/ s3://immich/ \
-              --endpoint http://localhost:3900 \
-              --region garage \
-              --cli-read-timeout 300 \
-              --no-progress
+            restic backup -v /immich/storage --tag auto
+            restic forget -v --keep-last 30 --prune --tag auto
           '';
           restartIfChanged = false;
-          path = [ pkgs.awscli2 ];
+          path = [ pkgs.restic ];
           environment = {
-            AWS_CONFIG_FILE = config.sops.templates.immich-backup-aws-config.path;
+            AWS_SHARED_CREDENTIALS_FILE = "%d/aws-credentials";
+            RESTIC_PASSWORD_FILE = "%d/restic-password";
+            RESTIC_REPOSITORY = "s3:http://localhost:3900/immich-backup";
+            XDG_CACHE_HOME = "%C/immich-backup";
           };
           serviceConfig = {
-            Type = "oneshot";
-            ExecCondition = "systemctl is-active --quiet garage.service";
-            User = "immich";
+            CacheDirectory = "immich-backup";
             CapabilityBoundingSet = "";
-            PrivateDevices = true;
-            ProtectKernelTunables = true;
-            ProtectControlGroups = true;
-            ProtectKernelModules = true;
-            ProtectKernelLogs = true;
-            ProtectProc = "invisible";
-            ProcSubset = "pid";
-            NoNewPrivileges = true;
-            ProtectClock = true;
-            SystemCallArchitectures = "native";
-            RestrictNamespaces = true;
-            RestrictSUIDSGID = true;
+            DynamicUser = true;
+            ExecCondition = "systemctl is-active --quiet garage.service";
+            IOSchedulingClass = "best-effort";
+            IOSchedulingPriority = 7;
+            LoadCredential = [
+              "aws-credentials:${config.sops.templates.immich-backup-aws-config.path}"
+              "restic-password:${config.sops.secrets.immich-backup-restic-password.path}"
+            ];
             LockPersonality = true;
-            RestrictRealtime = true;
             MemoryDenyWriteExecute = true;
+            Nice = 10;
+            NoNewPrivileges = true;
+            PrivateDevices = true;
+            PrivateUsers = true;
+            ProcSubset = "pid";
+            ProtectClock = true;
+            ProtectControlGroups = true;
+            ProtectHome = true;
             ProtectHostname = true;
-            ProtectHome = "read-only";
+            ProtectKernelLogs = true;
+            ProtectKernelModules = true;
+            ProtectKernelTunables = true;
+            ProtectProc = "invisible";
+            RemoveIPC = true;
+            RestrictAddressFamilies = [
+              "AF_UNIX"
+              "AF_INET"
+              "AF_INET6"
+            ];
+            RestrictNamespaces = true;
+            RestrictRealtime = true;
+            RestrictSUIDSGID = true;
+            SystemCallArchitectures = "native";
             SystemCallFilter = [
               "~@privileged"
               "~@debug"
@@ -191,12 +206,8 @@ in
               "~@resources"
               "~@mount"
             ];
-            RestrictAddressFamilies = [
-              "AF_UNIX"
-              "AF_INET"
-              "AF_INET6"
-            ];
-            RemoveIPC = true;
+            Type = "oneshot";
+            UMask = "0077";
           };
         };
       };
