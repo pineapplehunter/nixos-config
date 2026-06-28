@@ -252,6 +252,20 @@ in
           docker.wantedBy = lib.mkForce [ ];
           libvirtd.wantedBy = lib.mkForce [ "default.target" ];
           libvirt-guests.wantedBy = lib.mkForce [ "default.target" ];
+
+          btrfs-reclaim = {
+            description = "Initial setup for btrfs reclaim";
+            wantedBy = [ "default.target" ];
+            path = [ pkgs.util-linux ];
+            script = ''
+              UUID=$(findmnt / -no UUID)
+              echo 1 > /sys/fs/btrfs/"$UUID"/allocation/data/dynamic_reclaim
+              echo 1 > /sys/fs/btrfs/"$UUID"/allocation/data/periodic_reclaim
+            '';
+            serviceConfig = {
+              Type = "oneshot";
+            };
+          };
         };
 
         power-targets.enable = true;

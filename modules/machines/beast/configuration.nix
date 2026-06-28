@@ -76,6 +76,21 @@ in
           serviceConfig.Type = "oneshot";
           wantedBy = [ "default.target" ];
         };
+
+        btrfs-reclaim = {
+          description = "Initial setup for btrfs reclaim";
+          wantedBy = [ "default.target" ];
+          path = [ pkgs.util-linux ];
+          script = ''
+            UUID=$(findmnt / -no UUID)
+            echo 1 > /sys/fs/btrfs/"$UUID"/allocation/data/dynamic_reclaim
+            echo 1 > /sys/fs/btrfs/"$UUID"/allocation/data/periodic_reclaim
+          '';
+          serviceConfig = {
+            Type = "oneshot";
+          };
+        };
+
         # disable display manager on boot
         display-manager.enable = false;
       };
@@ -87,10 +102,6 @@ in
         {
           "${disk}/data/dynamic_reclaim".w.argument = "1";
           "${disk}/data/periodic_reclaim".w.argument = "1";
-          "${disk}/metadata/dynamic_reclaim".w.argument = "1";
-          "${disk}/metadata/periodic_reclaim".w.argument = "1";
-          "${disk}/system/dynamic_reclaim".w.argument = "1";
-          "${disk}/system/periodic_reclaim".w.argument = "1";
         };
 
       services = {
