@@ -125,7 +125,7 @@ in
           };
         };
 
-        # ollama.enable = true;
+        ollama.enable = true;
 
         tailscale = {
           enable = true;
