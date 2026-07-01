@@ -151,11 +151,48 @@ in
         };
         immich-backup = {
           script = ''
-            restic backup -v /immich/storage --tag auto
-            restic forget -v --keep-last 30 --prune --tag auto
+            mkdir -p /tmp/immich-database
+            cleanup () {
+              rm -rf /tmp/immich-database
+            }
+            trap cleanup EXIT
+
+            echo Uncompressing database backups into /tmp/immich-database
+            for file in /immich/storage/backups/*.sql.gz; do
+                filename=$(basename "$file" .gz)
+                gunzip -c "$file" > "/tmp/immich-database/$filename"
+            done
+
+            echo Backing up database sql files
+            restic backup /tmp/immich-database \
+              --tag auto,database
+
+            # clean temporary files before backing up images
+            rm -rf /tmp/immich-database
+
+            echo Backing up immich data
+            restic backup /immich/storage \
+              --exclude /immich/storage/backups \
+              --exclude /immich/storage/encoded-video \
+              --exclude /immich/storage/thumbs \
+              --tag auto,immich
+
+            echo Checking backup integrity
+            restic check
+
+            echo Cleaning backups
+            restic forget \
+              --keep-daily 7 \
+              --keep-monthly 12 \
+              --prune \
+              --tag auto \
+              --group-by tags
           '';
           restartIfChanged = false;
-          path = [ pkgs.restic ];
+          path = [
+            pkgs.restic
+            pkgs.gzip
+          ];
           environment = {
             AWS_SHARED_CREDENTIALS_FILE = "%d/aws-credentials";
             RESTIC_PASSWORD_FILE = "%d/restic-password";
@@ -179,6 +216,7 @@ in
             NoNewPrivileges = true;
             PrivateDevices = true;
             PrivateUsers = true;
+            PrivateTmp = true;
             ProcSubset = "pid";
             ProtectClock = true;
             ProtectControlGroups = true;
