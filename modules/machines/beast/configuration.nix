@@ -187,6 +187,8 @@ in
               2283
               # prometheus switchbot-exporter
               3725
+              # nextcloud
+              9304
             ];
             allowedTCPPortRanges = [
               # garage original
