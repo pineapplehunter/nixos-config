@@ -52,6 +52,10 @@ bwrap_args=(
   --setenv PWD "$PWD"
 )
 
+if [[ -v OPENCODE_CONFIG_CONTENT ]]; then
+  append_args --setenv OPENCODE_CONFIG_CONTENT "$OPENCODE_CONFIG_CONTENT"
+fi
+
 append_args "${bwrap_args[@]}"
 
 # add nessesary etc dirs
