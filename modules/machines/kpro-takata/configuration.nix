@@ -212,6 +212,7 @@ in
             "networkmanager"
             "wheel"
             "dialout"
+            "nix"
             "tss" # for tpm2
           ];
           openssh.authorizedKeys.keys = config.my.sshAuthorizedKeys;

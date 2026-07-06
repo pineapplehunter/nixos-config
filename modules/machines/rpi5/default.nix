@@ -33,15 +33,13 @@ in
               secrets.access-tokens = {
                 sopsFile = flake-config.sopsFile.common;
                 key = "github-access-token";
-                mode = "0440";
-                group = "wheel";
+                mode = "0400";
               };
               templates."nix-access-tokens" = {
                 content = ''
                   access-tokens = github.com=${config.sops.placeholder.access-tokens}
                 '';
-                mode = "0440";
-                group = "wheel";
+                mode = "0400";
               };
             };
             networking.useNetworkd = true;
@@ -211,6 +209,7 @@ in
               extraGroups = [
                 "garage"
                 "networkmanager"
+                "nix"
                 "video"
                 "wheel"
               ];
@@ -255,18 +254,38 @@ in
             # allow nix-copy to live system
             nix = {
               settings = {
-                trusted-users = [ "@wheel" ];
+                sandbox = true;
+                sandbox-fallback = false;
                 experimental-features = [
                   "auto-allocate-uids"
                   "cgroups"
                   "flakes"
                   "nix-command"
                 ];
+                auto-allocate-uids = true;
+                allowed-users = [ "@nix" ];
+                substituters = [
+                  "https://niks3.gweb.ihavenojob.work?priority=99"
+                ];
+                trusted-substituters = [
+                  "https://niks3.gweb.ihavenojob.work?priority=99"
+                  "https://nixos-raspberrypi.cachix.org"
+                ];
+                trusted-public-keys = [
+                  "niks3-cache:RW+9UW/AgeDvEawJndPbzNVYQcDPjXA4J23srAi5+sE="
+                  "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
+                ];
+                warn-dirty = false;
+                allow-import-from-derivation = false;
+                use-cgroups = true;
               };
               extraOptions = ''
                 !include ${config.sops.templates."nix-access-tokens".path}
+                !include /etc/nix/local-trusted-caches.conf
               '';
             };
+
+            users.groups.nix = { };
 
             # We are stateless, so just default to latest.
             system.stateVersion = config.system.nixos.release;

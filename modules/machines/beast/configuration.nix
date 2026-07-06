@@ -239,6 +239,7 @@ in
         isNormalUser = true;
         extraGroups = [
           "garage"
+          "nix"
           "wheel" # Enable ‘sudo’ for the user.
         ];
         openssh.authorizedKeys.keys = config.my.sshAuthorizedKeys;

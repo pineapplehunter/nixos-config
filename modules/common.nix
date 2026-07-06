@@ -67,12 +67,19 @@ in
             "nix-command"
           ];
           auto-allocate-uids = true;
-          trusted-users = [ "@wheel" ];
+          allowed-users = [ "@nix" ];
+          sandbox = true;
+          sandbox-fallback = false;
           substituters = [
             "https://niks3.gweb.ihavenojob.work?priority=99"
           ];
+          trusted-substituters = [
+            "https://niks3.gweb.ihavenojob.work?priority=99"
+            "https://nixos-raspberrypi.cachix.org"
+          ];
           trusted-public-keys = [
             "niks3-cache:RW+9UW/AgeDvEawJndPbzNVYQcDPjXA4J23srAi5+sE="
+            "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
           ];
           warn-dirty = false;
           allow-import-from-derivation = false;
@@ -91,8 +98,11 @@ in
         };
         extraOptions = ''
           !include ${config.sops.templates."nix-access-tokens".path}
+          !include /etc/nix/local-trusted-caches.conf
         '';
       };
+
+      users.groups.nix = { };
 
       boot.plymouth.enable = lib.mkDefault false;
       boot.tmp.cleanOnBoot = lib.mkDefault true;
@@ -103,15 +113,13 @@ in
         secrets.access-tokens = {
           sopsFile = flake-config.sopsFile.common;
           key = "github-access-token";
-          mode = "0440";
-          group = "wheel";
+          mode = "0400";
         };
         templates."nix-access-tokens" = {
           content = ''
             access-tokens = github.com=${config.sops.placeholder.access-tokens}
           '';
-          mode = "0440";
-          group = "wheel";
+          mode = "0400";
         };
       };
 

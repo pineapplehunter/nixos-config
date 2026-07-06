@@ -262,6 +262,7 @@ in
             "networkmanager"
             "wheel"
             "dialout"
+            "nix"
           ];
           openssh.authorizedKeys.keys = config.my.sshAuthorizedKeys;
         };
