@@ -1,26 +1,29 @@
 ---
 name: sandbox-info
-description: Information about the sandbox environemnt you are runing in
+description: Use when reasoning about sandbox limits, persistent storage, temporary files, Nix tools, or git permission failures.
 compatibility: opencode
 ---
 
 # Sandbox
-You are running in a sandbox.
-Many operations in the sandbox are not permitted or persistant.
+
+You are running in a sandbox. Some filesystem, network, and process operations may be restricted, and some paths are temporary.
 
 # Tools
-You have access to the nix tools in `/nix/store`.
-Feel free to use and download binaries from nix.
 
-# Persistant storage
-**Use `/persistant` for files that need to be stored persistantly.**
-/tmp is mounted as a separate tmpfs from the original system.
-It may be cleared at any point during the operation.
-`/persistant` is nounted so the changes persist after the process exits.
-The underlying persistent directory in the host is different for each project directory, so feel free to clean files that are not needed.
-These are all isolated.
+Nix tools and store paths are available under `/nix/store`. Prefer using Nix-provided tools instead of downloading arbitrary binaries.
 
-# Git operations
-In some case you do not have permissions to commit.
-In that case, write the commit message and let the user commit it.
+# Persistent Storage
 
+Use `/persistant` for files that must survive after the current process exits.
+
+`/tmp` is a separate tmpfs from the host system. It may be cleared at any point and should only hold disposable logs, caches, and intermediate files.
+
+`/persistant` is mounted so changes persist after the process exits. The underlying host directory is different for each project directory, so files there are isolated per project. Clean up files you no longer need.
+
+Note the path is spelled `/persistant` in this environment.
+
+# Git Operations
+
+Some sessions do not have permission to create commits. If `git commit` fails because of sandbox permissions, leave the working tree intact and provide the commit message for the user to run.
+
+Never use destructive git commands to work around sandbox limitations.
