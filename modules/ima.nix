@@ -15,8 +15,12 @@
         enable = lib.mkEnableOption "IMA support";
         policy = lib.mkOption {
           description = "IMA policy";
-          type = lib.types.str;
-          default = "critical_data";
+          type = lib.types.listOf lib.types.str;
+          apply = lib.unique;
+          default = [
+            "critical_data"
+            "tcb"
+          ];
         };
       };
 
@@ -27,8 +31,6 @@
               name = "ima";
               patch = null;
               structuredExtraConfig = with lib.kernel; {
-                EVM = yes;
-                EVM_ATTR_FSUUID = yes;
                 IMA = yes;
                 IMA_APPRAISE = yes;
                 IMA_APPRAISE_BOOTPARAM = yes;
@@ -40,15 +42,30 @@
                 IMA_QUEUE_EARLY_BOOT_KEYS = yes;
                 IMA_READ_POLICY = yes;
                 IMA_WRITE_POLICY = yes;
+
+                # Make crypto modules builtin.
+                # Crypto modules required to run IMA are not measured.
+                CRYPTO_AEAD = yes;
+                CRYPTO_AES_NI_INTEL = yes;
+                CRYPTO_LIB_GF128MUL = yes;
               };
             }
           ];
           initrd.systemd.enable = true;
           initrd.systemd.tpm2.enable = true;
-          kernelParams = [ "ima_policy=${cfg.policy}" ];
+          kernelParams = map (policy: "ima_policy=${policy}") cfg.policy;
         };
 
-        environment.systemPackages = [ pkgs.ima-evm-utils ];
+        environment = {
+          etc."ima/ima-policy".text = ''
+            measure func=MODULE_CHECK
+            measure func=FIRMWARE_CHECK
+            measure func=POLICY_CHECK
+            measure func=CRITICAL_DATA
+          '';
+
+          systemPackages = [ pkgs.ima-evm-utils ];
+        };
 
         security = {
           tpm2.enable = true;
