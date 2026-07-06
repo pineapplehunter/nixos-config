@@ -33,7 +33,10 @@
           {
             autoupdate = false;
             formatter = true;
-            instructions = [ ./sandbox-instructions.md ];
+            instructions = [
+              ./public-repo-instructions.md
+              ./sandbox-instructions.md
+            ];
             lsp = true;
           }
           (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
