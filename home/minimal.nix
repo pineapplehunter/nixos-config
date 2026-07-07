@@ -115,6 +115,7 @@ in
             enable = true;
             settings = {
               git.overrideGpg = true;
+              keybinding.files.viewResetOptions = "<disabled>";
             };
           };
         };
