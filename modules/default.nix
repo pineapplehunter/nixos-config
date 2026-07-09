@@ -12,6 +12,7 @@
     ./packages.nix
     ./personal.nix
     ./power-targets.nix
+    ./rust.nix
     ./secureboot.nix
     ./selinux.nix
     ./ssh-authorized-keys.nix
