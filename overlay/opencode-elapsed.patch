@@ -96,20 +96,28 @@ index f832174aa..e83fe67dc 100644
    const [expanded, setExpanded] = createSignal(false)
    const maxLines = 10
    const maxChars = createMemo(() => maxLines * Math.max(20, ctx.width - 6))
-@@ -2068,6 +2090,7 @@ function Shell(props: ToolProps) {
+@@ -2068,6 +2090,8 @@ function Shell(props: ToolProps) {
          <BlockTool
            title={title()}
            part={props.part}
++          spinner={isRunning()}
 +          elapsed={isRunning() ? elapsed() : undefined}
            onClick={collapsed().overflow ? () => setExpanded((prev) => !prev) : undefined}
          >
            <box gap={1}>
-@@ -2084,7 +2107,7 @@ function Shell(props: ToolProps) {
+@@ -2084,7 +2107,14 @@ function Shell(props: ToolProps) {
          </BlockTool>
        </Match>
        <Match when={true}>
 -        <InlineTool icon="$" pending="Writing command..." complete={stringValue(props.input.command)} part={props.part}>
-+        <InlineTool icon="$" pending="Writing command..." complete={stringValue(props.input.command)} part={props.part} elapsed={isRunning() ? elapsed() : undefined}>
++        <InlineTool
++          icon="$"
++          pending="Writing command..."
++          complete={stringValue(props.input.command)}
++          part={props.part}
++          spinner={isRunning()}
++          elapsed={isRunning() ? elapsed() : undefined}
++        >
            {stringValue(props.input.command)}
          </InlineTool>
        </Match>
