@@ -1,12 +1,37 @@
+From cd7f501e1734864850ffbe32d4956a4f785778fd Mon Sep 17 00:00:00 2001
+From: Shogo Takata <shogo-takata@st.go.tuat.ac.jp>
+Date: Thu, 9 Jul 2026 18:40:32 +0900
+Subject: [PATCH] tui: show elapsed time on all spinners after 10s
+
+Intent:
+This patch enables elapsed time to be shown beside the spinner in tui views.
+
+Update notes:
+- Keep the elapsed-time logic in the shared TUI spinner component so every spinner in the TUI picks it up.
+- Show the elapsed label only after 10 seconds.
+- Use an explicit separator between the elapsed label and the spinner text; do not rely on trailing spaces in rendered text nodes.
+- If this patch needs to be regenerated, create it from a clean opencode tree with git format-patch so the header stays in standard mail-format form.
+- When updating to a newer opencode release, refresh the patch against the new source tree, then verify the resulting diff still only touches the spinner component.
+- Do not wire elapsed time from tool-specific state; the spinner should own its own timer.
+---
+ packages/tui/src/component/spinner.tsx | 33 ++++++++++++++++++++++++--
+ 1 file changed, 31 insertions(+), 2 deletions(-)
+
 diff --git a/packages/tui/src/component/spinner.tsx b/packages/tui/src/component/spinner.tsx
-index 7007803..90b07fb 100644
+index 7007803..28b7b7c 100644
 --- a/packages/tui/src/component/spinner.tsx
 +++ b/packages/tui/src/component/spinner.tsx
-@@ -7,14 +7,28 @@ import "opentui-spinner/solid"
+@@ -1,4 +1,4 @@
+-import { Show } from "solid-js"
++import { Show, createEffect, createSignal, onCleanup } from "solid-js"
+ import { useTheme } from "../context/theme"
+ import { useKV } from "../context/kv"
+ import type { JSX } from "@opentui/solid"
+@@ -7,14 +7,43 @@ import "opentui-spinner/solid"
  
  export const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
  
--export function Spinner(props: { children?: JSX.Element; color?: RGBA }) {
++// Show elapsed time on every spinner after it has been visible for 10s.
 +function formatElapsed(seconds: number): string {
 +  const h = Math.floor(seconds / 3600)
 +  const m = Math.floor((seconds % 3600) / 60)
@@ -16,110 +41,37 @@ index 7007803..90b07fb 100644
 +  return `${s}s`
 +}
 +
-+export function Spinner(props: { children?: JSX.Element; color?: RGBA; elapsed?: number }) {
+ export function Spinner(props: { children?: JSX.Element; color?: RGBA }) {
    const { theme } = useTheme()
    const kv = useKV()
    const color = () => props.color ?? theme.textMuted
-+  const showElapsed = () => props.elapsed !== undefined && props.elapsed >= 10
-+  const elapsedText = () => (showElapsed() ? `${formatElapsed(props.elapsed!)} ` : "")
-   return (
--    <Show when={kv.get("animations_enabled", true)} fallback={<text fg={color()}>⋯ {props.children}</text>}>
-+    <Show when={kv.get("animations_enabled", true)} fallback={<text fg={color()}>⋯ {elapsedText()}{props.children}</text>}>
-       <box flexDirection="row" gap={1}>
-         <spinner frames={SPINNER_FRAMES} interval={80} color={color()} />
-+        <Show when={showElapsed()}>
-+          <text fg={color()}>{formatElapsed(props.elapsed!)}</text>
-+        </Show>
-         <Show when={props.children}>
-           <text fg={color()}>{props.children}</text>
-         </Show>
-diff --git a/packages/tui/src/routes/session/index.tsx b/packages/tui/src/routes/session/index.tsx
-index f832174..dab7166 100644
---- a/packages/tui/src/routes/session/index.tsx
-+++ b/packages/tui/src/routes/session/index.tsx
-@@ -1831,6 +1831,7 @@ function InlineTool(props: {
-   pending: string
-   failure?: string
-   spinner?: boolean
-+  elapsed?: number
-   separate?: boolean
-   children: JSX.Element
-   part: ToolPart
-@@ -1938,7 +1939,7 @@ export function InlineToolRow(props: {
-     >
-       <Switch>
-         <Match when={props.spinner}>
--          <Spinner color={props.color} children={props.children} />
-+          <Spinner color={props.color} children={props.children} elapsed={props.elapsed} />
-         </Match>
-         <Match when={true}>
-           <Show
-@@ -1987,6 +1988,7 @@ function BlockTool(props: {
-   onClick?: () => void
-   part?: ToolPart
-   spinner?: boolean
-+  elapsed?: number
- }) {
-   const { theme } = useTheme()
-   const renderer = useRenderer()
-@@ -2021,7 +2023,7 @@ function BlockTool(props: {
-               </text>
-             }
-           >
--            <Spinner color={theme.textMuted}>{title().replace(/^# /, "")}</Spinner>
-+            <Spinner color={theme.textMuted} elapsed={props.elapsed}>{title().replace(/^# /, "")}</Spinner>
-           </Show>
-         )}
-       </Show>
-@@ -2039,6 +2041,18 @@ function Shell(props: ToolProps) {
-   const ctx = use()
-   const isRunning = createMemo(() => props.part.state.status === "running")
-   const output = createMemo(() => stripAnsi(stringValue(props.metadata.output)?.trim() ?? ""))
++  const startedAt = Date.now()
 +  const [elapsed, setElapsed] = createSignal(0)
++
 +  createEffect(() => {
-+    if (!isRunning()) return
-+    const update = () => {
-+      const e = Date.now() - props.part.state.time.start
-+      setElapsed(Math.floor(e / 1000))
-+    }
++    const update = () => setElapsed(Math.floor((Date.now() - startedAt) / 1000))
 +    update()
 +    const id = setInterval(update, 1000)
 +    onCleanup(() => clearInterval(id))
 +  })
 +
-   const [expanded, setExpanded] = createSignal(false)
-   const maxLines = 10
-   const maxChars = createMemo(() => maxLines * Math.max(20, ctx.width - 6))
-@@ -2068,11 +2082,15 @@ function Shell(props: ToolProps) {
-         <BlockTool
-           title={title()}
-           part={props.part}
-+          spinner={isRunning()}
-+          elapsed={isRunning() ? elapsed() : undefined}
-           onClick={collapsed().overflow ? () => setExpanded((prev) => !prev) : undefined}
-         >
-           <box gap={1}>
-             <Show when={isRunning()} fallback={<text fg={theme.text}>$ {stringValue(props.input.command)}</text>}>
--              <Spinner color={theme.text}>{stringValue(props.input.command)}</Spinner>
-+              <Spinner color={theme.text} elapsed={isRunning() ? elapsed() : undefined}>
-+                {stringValue(props.input.command)}
-+              </Spinner>
-             </Show>
-             <Show when={output()}>
-               <text fg={theme.text}>{limited()}</text>
-@@ -2084,7 +2102,14 @@ function Shell(props: ToolProps) {
-         </BlockTool>
-       </Match>
-       <Match when={true}>
--        <InlineTool icon="$" pending="Writing command..." complete={stringValue(props.input.command)} part={props.part}>
-+        <InlineTool
-+          icon="$"
-+          pending="Writing command..."
-+          complete={stringValue(props.input.command)}
-+          part={props.part}
-+          spinner={isRunning()}
-+          elapsed={isRunning() ? elapsed() : undefined}
-+        >
-           {stringValue(props.input.command)}
-         </InlineTool>
-       </Match>
++  const showElapsed = () => elapsed() >= 10
++  const separator = () => (showElapsed() && props.children ? " " : "")
++  const elapsedText = () => (showElapsed() ? formatElapsed(elapsed()) : "")
+   return (
+-    <Show when={kv.get("animations_enabled", true)} fallback={<text fg={color()}>⋯ {props.children}</text>}>
++    <Show when={kv.get("animations_enabled", true)} fallback={<text fg={color()}>⋯ {elapsedText()}{separator()}{props.children}</text>}>
+       <box flexDirection="row" gap={1}>
+         <spinner frames={SPINNER_FRAMES} interval={80} color={color()} />
++        <Show when={showElapsed()}>
++          <text fg={color()}>{formatElapsed(elapsed())}</text>
++        </Show>
++        <Show when={showElapsed() && props.children}>
++          <text fg={color()}> </text>
++        </Show>
+         <Show when={props.children}>
+           <text fg={color()}>{props.children}</text>
+         </Show>
+-- 
+2.54.0
+
