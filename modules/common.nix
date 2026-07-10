@@ -28,7 +28,6 @@ in
           mods.packages
           mods.power-targets
           mods.secureboot
-          mods.selinux
           mods.tpm2
           mods.windows-vm
           mods.xe-driver
