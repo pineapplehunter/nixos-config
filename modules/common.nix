@@ -26,7 +26,6 @@ in
           mods.hibernate
           mods.ima
           mods.japanese
-          mods.kernel-rust
           mods.nixos-artwork
           mods.packages
           mods.power-targets
