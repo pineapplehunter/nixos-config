@@ -4,6 +4,7 @@
     ./fonts.nix
     ./gstreamer.nix
     ./hibernate.nix
+    ./ima.nix
     ./japanese.nix
     ./machines/default.nix
     ./nixos-artwork.nix

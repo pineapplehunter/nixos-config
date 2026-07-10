@@ -13,6 +13,7 @@
         delta
         fd
         file
+        fsverity-utils
         git
         github-cli
         glow
@@ -21,6 +22,7 @@
         google-calendar-open
         helix
         htop
+        ima-evm-utils
         jq
         lsof
         ncdu

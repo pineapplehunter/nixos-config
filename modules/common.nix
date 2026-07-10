@@ -23,6 +23,7 @@ in
           mods.fonts
           mods.gstreamer
           mods.hibernate
+          mods.ima
           mods.japanese
           mods.nixos-artwork
           mods.packages
