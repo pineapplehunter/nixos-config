@@ -93,6 +93,7 @@ in
                   dlog = "-c diff.external=${difft} log --ext-diff";
                   dshow = "-c diff.external=${difft} show --ext-diff";
                   ddiff = "-c diff.external=${difft} diff";
+                  blame-all = "blame -w -M -C -C -C";
                 };
               branch.sort = "-committerdate";
               column.ui = "auto";
