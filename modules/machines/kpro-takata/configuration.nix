@@ -144,7 +144,7 @@ in
       # Bootloader.
 
       boot = {
-        kernelPackages = pkgs.linuxPackagesFor pkgs.linux_latest_arrowlake;
+        kernelPackages = pkgs.linuxPackages_latest;
         binfmt.emulatedSystems = [
           "aarch64-linux"
           "riscv64-linux"
