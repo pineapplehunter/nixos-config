@@ -29,8 +29,6 @@ in
           enable = lib.mkDefault true;
           devices = [ "9a49" ];
         };
-        ima.enable = true;
-        fsverity.enable = true;
       };
 
       # nixpkgs.flake.source = lib.mkForce null;
