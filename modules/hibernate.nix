@@ -23,8 +23,6 @@
         systemd.sleep.settings.Sleep = {
           HibernateDelaySec = cfg.delaySec;
         };
-        boot.consoleLogLevel = 6;
-        boot.kernelParams = [ "no_console_suspend" ];
       };
     };
 }
