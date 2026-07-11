@@ -249,6 +249,6 @@ in
         PrivateDevices = "no";
       };
 
-      system.stateVersion = config.system.nixos.release;
+      system.stateVersion = "26.11";
     };
 }

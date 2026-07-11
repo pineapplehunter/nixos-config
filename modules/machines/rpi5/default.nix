@@ -287,8 +287,7 @@ in
 
             users.groups.nix = { };
 
-            # We are stateless, so just default to latest.
-            system.stateVersion = config.system.nixos.release;
+            system.stateVersion = "26.11";
           }
         )
         # Disk configuration
