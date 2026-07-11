@@ -40,6 +40,7 @@ in
           {
             hostName = "kpro-njlab";
             maxJobs = 32;
+            protocol = "ssh-ng";
             speedFactor = 4;
             sshUser = "takata";
             supportedFeatures = [
@@ -57,6 +58,7 @@ in
           {
             hostName = "daniel-njlab-pc";
             maxJobs = 16;
+            protocol = "ssh-ng";
             speedFactor = 2;
             sshUser = "shogo";
             supportedFeatures = [
@@ -68,6 +70,7 @@ in
           {
             hostName = "beast";
             maxJobs = 16;
+            protocol = "ssh-ng";
             speedFactor = 2;
             sshUser = "shogo";
             supportedFeatures = [

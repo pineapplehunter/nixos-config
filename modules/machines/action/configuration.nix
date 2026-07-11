@@ -43,6 +43,7 @@ in
               "x86_64-linux"
             ];
             maxJobs = 32;
+            protocol = "ssh-ng";
             supportedFeatures = [
               "big-parallel"
               "kvm"
@@ -56,6 +57,7 @@ in
           {
             system = "x86_64-linux";
             maxJobs = 16;
+            protocol = "ssh-ng";
             supportedFeatures = [
               "big-parallel"
               "kvm"
@@ -74,6 +76,7 @@ in
               "riscv64-linux"
             ];
             maxJobs = 16;
+            protocol = "ssh-ng";
             supportedFeatures = [
               "big-parallel"
               "kvm"

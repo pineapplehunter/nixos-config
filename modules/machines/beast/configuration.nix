@@ -26,6 +26,7 @@ in
           {
             system = "x86_64-linux";
             maxJobs = 16;
+            protocol = "ssh-ng";
             supportedFeatures = [
               "big-parallel"
               "kvm"
