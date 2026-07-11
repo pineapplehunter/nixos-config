@@ -70,8 +70,6 @@
 
       config = mkIf cfg.not-found-exec.enable {
         programs = {
-          command-not-found.enable = false;
-
           zsh.initContent = ''
             command_not_found_handler() {
               "${getExe not-found-exec}" "$@"

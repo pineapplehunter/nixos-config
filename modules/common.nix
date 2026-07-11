@@ -102,7 +102,6 @@ in
 
       users.groups.nix = { };
 
-      boot.plymouth.enable = lib.mkDefault false;
       boot.tmp.cleanOnBoot = lib.mkDefault true;
       boot.extraModprobeConfig = "install algif_aead /bin/false";
 
@@ -205,8 +204,6 @@ in
           nssmdns4 = true;
           openFirewall = true;
         };
-
-        dbus.implementation = "broker";
       };
 
       users.defaultUserShell = pkgs.zsh;

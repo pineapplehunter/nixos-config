@@ -24,7 +24,6 @@
 
       config = lib.mkIf cfg.enable {
         boot = {
-          initrd.systemd.enable = true;
           initrd.systemd.tpm2.enable = true;
           kernelPatches = [
             {

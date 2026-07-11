@@ -62,7 +62,6 @@ in
           "riscv64-linux"
           "riscv32-linux"
         ];
-        plymouth.enable = false;
       };
 
       systemd.services = {
