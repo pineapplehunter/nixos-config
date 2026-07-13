@@ -46,6 +46,7 @@
         skills = {
           flake = ./flake.md;
           nixpkgs = ./nixpkgs.md;
+          rust = ./rust.md;
           sandbox = ./sandbox.md;
         };
       };
