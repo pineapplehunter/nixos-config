@@ -1,6 +1,6 @@
 ---
 name: sandbox-info
-description: Use when reasoning about sandbox limits, persistent storage, temporary files, Nix tools, or git permission failures.
+description: Use when reasoning about sandbox limits, /tmp persistence, temporary files, repository clones, Nix tools, or git permission failures.
 compatibility: opencode
 ---
 
@@ -12,15 +12,13 @@ You are running in a sandbox. Some filesystem, network, and process operations m
 
 Nix tools and store paths are available under `/nix/store`. Prefer using Nix-provided tools instead of downloading arbitrary binaries.
 
-# Persistent Storage
+# Temporary Storage
 
-Use `/persistant` for files that must survive after the current process exits.
+Use `/tmp` for temporary files, public repository clones, scratch work, and logs.
 
-`/tmp` is a separate tmpfs from the host system. It may be cleared at any point and should only hold disposable logs, caches, and intermediate files.
+In this sandbox, `/tmp` is backed by a persistent per-project host directory, so files there survive opencode restarts and can be reused across sessions for the same project.
 
-`/persistant` is mounted so changes persist after the process exits. The underlying host directory is different for each project directory, so files there are isolated per project. Clean up files you no longer need.
-
-Note the path is spelled `/persistant` in this environment.
+The underlying persistent directory is different for each project directory, so `/tmp` contents are isolated per project. Clean up files you no longer need.
 
 # Git Operations
 

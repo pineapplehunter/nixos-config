@@ -1,3 +1,3 @@
 # Sandbox Environment
 
-You are running in a sandbox. For details about persistent storage, temporary files, Nix tools, and git permission limits, use the `sandbox-info` skill when relevant.
+You are running in a sandbox. Before saving temporary files, cloning repositories, downloading tools, or handling git permission failures, use the `sandbox-info` skill. In this sandbox, `/tmp` is persistent per project.

@@ -37,7 +37,6 @@ bwrap_args=(
   --die-with-parent
   --cap-drop ALL
   --share-net
-  --tmpfs /tmp
   --dev /dev
   --proc /proc
   --ro-bind /nix /nix
@@ -115,11 +114,13 @@ if [[ -f "$PROJECT_ROOT/.git" ]]; then
   fi
 fi
 
-# persistant dir
+# Persistent per-project temporary directory. This is mounted as /tmp inside the
+# sandbox so normal tooling defaults survive across opencode restarts.
 DIR_HASH=$(echo "$PROJECT_ROOT" | sha256sum | cut -F 1)
-PERSISTANT_DIR="$HOME"/.local/share/opencode-persistant/"$DIR_HASH"
-mkdir -p "$PERSISTANT_DIR"
-append_args --bind "$PERSISTANT_DIR" /persistant
+SANDBOX_TMP_DIR="$HOME"/.local/share/opencode-tmp/"$DIR_HASH"
+mkdir -p "$SANDBOX_TMP_DIR"
+chmod 700 "$SANDBOX_TMP_DIR"
+append_args --bind "$SANDBOX_TMP_DIR" /tmp
 
 # Parse special arguments (only before first non-@ argument or @@)
 while [[ "${1:-}" == @* ]]; do
