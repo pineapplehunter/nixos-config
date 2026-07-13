@@ -49,6 +49,10 @@ bwrap_args=(
   --setenv LANG C
   --setenv HOME "$HOME"
   --setenv PWD "$PWD"
+  --setenv GIT_AUTHOR_NAME 'OpenCode'
+  --setenv GIT_AUTHOR_EMAIL 'opencode@example.com'
+  --setenv GIT_COMMITTER_NAME 'OpenCode'
+  --setenv GIT_COMMITTER_EMAIL 'opencode@example.com'
 )
 
 if [[ -v OPENCODE_CONFIG_CONTENT ]]; then

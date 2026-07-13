@@ -38,11 +38,15 @@
               ./sandbox-instructions.md
             ];
             lsp = true;
+            plugin = [ "@prevalentware/opencode-goal-plugin" ];
           }
           (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
             permission = "allow";
           })
         ];
+        tui = {
+          plugin = [ "@prevalentware/opencode-goal-plugin" ];
+        };
         skills = {
           flake = ./flake.md;
           nixpkgs = ./nixpkgs.md;
