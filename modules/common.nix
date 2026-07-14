@@ -69,10 +69,10 @@ in
           sandbox = true;
           sandbox-fallback = false;
           substituters = [
-            "https://niks3.gweb.ihavenojob.work?priority=99"
+            "https://niks3.gweb.ihavenojob.work"
           ];
           trusted-substituters = [
-            "https://niks3.gweb.ihavenojob.work?priority=99"
+            "https://niks3.gweb.ihavenojob.work"
             "https://nixos-raspberrypi.cachix.org"
           ];
           trusted-public-keys = [
