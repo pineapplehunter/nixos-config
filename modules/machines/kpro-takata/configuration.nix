@@ -33,6 +33,8 @@ in
         };
       };
 
+      services.linux-tpm-fido2.enable = true;
+
       # nixpkgs.flake.source = lib.mkForce null;
       nix = {
         distributedBuilds = true;

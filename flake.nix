@@ -26,6 +26,11 @@
       url = "github:peterldowns/nix-search-cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    tpm-fido2 = {
+      url = "github:pineapplehunter/linux-tpm-fido2";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.rust-overlay.follows = "rust-overlay";
+    };
     rust-overlay.url = "github:oxalica/rust-overlay?ref=stable";
     lanzaboote = {
       url = "github:nix-community/lanzaboote?ref=v1.1.0";
