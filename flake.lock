@@ -629,11 +629,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1784103318,
-        "narHash": "sha256-SDujnY4WgqztDSnH8K4dm0OuSNH12M4E9tqqtJalChs=",
+        "lastModified": 1784182512,
+        "narHash": "sha256-yuO+BedYbOevdRdrzJKtlbow5UXSShg0rvdx/s83fw4=",
         "owner": "pineapplehunter",
         "repo": "linux-tpm-fido2",
-        "rev": "4478018746f4751da3c135bf9a5b5c727182bd0b",
+        "rev": "c922d64dd6233d444f6a627872cee14ec298e91a",
         "type": "github"
       },
       "original": {
