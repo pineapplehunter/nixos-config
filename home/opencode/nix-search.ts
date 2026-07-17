@@ -1,4 +1,3 @@
-import { tool } from "@opencode-ai/plugin"
 import { spawn } from "node:child_process"
 
 const DEFAULT_TIMEOUT = 10 * 1000
@@ -27,12 +26,19 @@ function formatResults(results: NixSearchResult[]): string {
     .join("\n")
 }
 
-const nixSearchTool = tool({
+interface ToolContext {
+  directory: string
+}
+
+const nixSearchTool = {
   description: "Search for packages in nixpkgs by name or attribute path using the search.nixos.org index",
   args: {
-    query: tool.schema.string().describe("Package name or command to search for"),
+    query: {
+      type: "string",
+      description: "Package name or command to search for",
+    },
   },
-  async execute(args, ctx) {
+  async execute(args: { query: string }, ctx: ToolContext) {
     return new Promise((resolve) => {
       const proc = spawn("nix-search", ["--json", args.query], {
         cwd: ctx.directory,
@@ -55,6 +61,11 @@ const nixSearchTool = tool({
         setTimeout(() => proc.kill("SIGKILL"), 3000)
       }, DEFAULT_TIMEOUT)
 
+      proc.on("error", (err) => {
+        clearTimeout(timer)
+        resolve({ output: `nix-search failed: ${err.message}`, metadata: { exitCode: 1 } })
+      })
+
       proc.on("close", (code) => {
         clearTimeout(timer)
         if (stderr) {
@@ -73,6 +84,6 @@ const nixSearchTool = tool({
       })
     })
   },
-})
+}
 
 export default nixSearchTool
