@@ -1,6 +1,6 @@
 ---
 name: nix-build-preferences
-description: Use when running Nix builds with nix build or nix-build, including package checks, flake builds, and derivation debugging.
+description: Use before running Nix builds with nix build or nix-build, including package checks, flake builds, and derivation debugging.
 compatibility: opencode
 ---
 
