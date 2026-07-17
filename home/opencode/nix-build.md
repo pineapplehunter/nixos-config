@@ -24,6 +24,8 @@ For `nix build`, use `--quiet`:
 nix build --quiet --no-link --print-out-paths .#package-name
 ```
 
+Add quiet options for all nix related subcommands such as `nix flake check` too.
+
 ## Keep The Environment Clean
 
 Always add `--no-link` unless the task explicitly needs a `result` symlink.

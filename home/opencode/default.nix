@@ -54,6 +54,9 @@
           rust = ./rust.md;
           sandbox = ./sandbox.md;
         };
+        tools = {
+          nix-search = ./nix-search.ts;
+        };
       };
     };
 }
