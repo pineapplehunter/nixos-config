@@ -35,6 +35,7 @@
           fuc
           fzf
           git-extras
+          herdr
           hl-log-viewer
           niks3-wrapped
           nix-init
