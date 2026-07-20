@@ -14,6 +14,10 @@
           };
 
           # tailscale hosts
+          action = {
+            hostname = "action";
+            user = "shogo";
+          };
           beast = {
             hostname = "beast";
             user = "shogo";
@@ -24,6 +28,10 @@
           };
           kpro-njlab = {
             hostname = "kpro-njlab";
+            user = "takata";
+          };
+          kpro-takata = {
+            hostname = "kpro-takata";
             user = "takata";
           };
           raspberry-pi-home = {
