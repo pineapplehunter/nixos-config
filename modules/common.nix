@@ -70,7 +70,8 @@ in
           sandbox = true;
           sandbox-fallback = false;
           substituters = [
-            "https://niks3.gweb.ihavenojob.work"
+            "https://cache.nixos.org"
+            "https://niks3.gweb.ihavenojob.work?priority=50"
           ];
           trusted-substituters = [
             "https://niks3.gweb.ihavenojob.work"

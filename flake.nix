@@ -139,7 +139,7 @@
 
   nixConfig = {
     extra-substituters = [
-      "https://niks3.gweb.ihavenojob.work"
+      "https://niks3.gweb.ihavenojob.work?priority=50"
       "https://nixos-raspberrypi.cachix.org"
     ];
     extra-trusted-public-keys = [
