@@ -157,15 +157,16 @@ in
             }
             trap cleanup EXIT
 
+            echo Backing up database sql files
             echo Uncompressing database backups into /tmp/immich-database
             for file in /immich/storage/backups/*.sql.gz; do
-                filename=$(basename "$file" .gz)
-                gunzip -c "$file" > "/tmp/immich-database/$filename"
+              filename=$(basename "$file" .gz)
+              gunzip -c "$file" > "/tmp/immich-database/$filename"
+              restic backup "/tmp/immich-database/$filename" \
+                --skip-if-unchanged \
+                --tag auto,database \
+                --time "$(date -r "$file" '+%Y-%m-%d %H:%M:%S')"
             done
-
-            echo Backing up database sql files
-            restic backup /tmp/immich-database \
-              --tag auto,database
 
             # clean temporary files before backing up images
             rm -rf /tmp/immich-database
