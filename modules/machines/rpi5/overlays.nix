@@ -8,4 +8,10 @@ final: prev: {
       hash = "sha256-ZSKNeFDedqzcVxoLPap2dMjq+F3C1eQ+HikEKuGBOyM=";
     };
   });
+
+  ffmpeg_8-headless = prev.ffmpeg_8-headless.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [
+      ./patches/ffmpeg-svtav1-enable_adaptive_quantization.patch
+    ];
+  });
 }
