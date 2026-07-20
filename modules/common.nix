@@ -117,7 +117,8 @@ in
           content = ''
             access-tokens = github.com=${config.sops.placeholder.access-tokens}
           '';
-          mode = "0400";
+          group = "nix";
+          mode = "0440";
         };
       };
 
