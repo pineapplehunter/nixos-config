@@ -3,7 +3,7 @@
     # Show elapsed time on the TUI spinner after 10 seconds.
     opencode = prev.opencode.overrideAttrs (old: {
       patches = [
-        ./opencode-elapsed.patch
+        ./patches/opencode-elapsed.patch
       ];
     });
   };
