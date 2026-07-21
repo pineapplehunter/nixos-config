@@ -1,4 +1,3 @@
-{ ... }:
 {
   flake.overlays.tpm2-tools = final: prev: {
     # Add Nuvoton TPM certificate support to tpm2-tss.

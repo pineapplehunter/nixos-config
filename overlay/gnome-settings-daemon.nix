@@ -1,4 +1,3 @@
-{ ... }:
 {
   flake.overlays.gnome-settings-daemon = final: prev: {
     # Remove sleep notification.  The notification wakes up the screen

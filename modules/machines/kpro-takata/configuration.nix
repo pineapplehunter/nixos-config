@@ -11,8 +11,6 @@ in
       config,
       ...
     }:
-    let
-    in
     {
       imports = [
         # Include the results of the hardware scan.
@@ -32,8 +30,6 @@ in
           devices = [ "7d51" ];
         };
       };
-
-      services.linux-tpm-fido2.enable = true;
 
       # nixpkgs.flake.source = lib.mkForce null;
       nix = {
@@ -145,6 +141,11 @@ in
 
         tlp.enable = false;
         tuned.enable = true;
+
+        openssh.settings.PasswordAuthentication = false;
+        linux-tpm-fido2.enable = true;
+        fprintd.enable = true;
+        fwupd.enable = true;
       };
 
       # Bootloader.
@@ -242,14 +243,6 @@ in
             text = "systemd-cryptenroll /dev/nvme0n1p5 --wipe-slot tpm2 --tpm2-device=auto --tpm2-pcrs=1,7";
           })
         ];
-      };
-
-      services = {
-        openssh.settings.PasswordAuthentication = false;
-
-        fprintd.enable = true;
-
-        fwupd.enable = true;
       };
 
       systemd = {

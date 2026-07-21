@@ -1,4 +1,3 @@
-{ ... }:
 {
   flake.overlays.linux-latest = final: prev: {
     # Custom -march / -mtune kernel builds for specific microarchitectures.

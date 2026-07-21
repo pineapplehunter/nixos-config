@@ -1,4 +1,3 @@
-{ ... }:
 {
   flake.overlays.flatpak = final: prev: {
     # Fix issue: slow startup time.  Reason unknown (did not search).

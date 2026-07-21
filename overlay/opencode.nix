@@ -1,4 +1,3 @@
-{ ... }:
 {
   flake.overlays.opencode = final: prev: {
     # Show elapsed time on the TUI spinner after 10 seconds.

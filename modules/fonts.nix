@@ -1,8 +1,19 @@
 {
   flake.nixosModules.fonts =
-    { pkgs, ... }:
     {
-      fonts.packages = [
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
+    {
+      options.my.common-fonts.enable = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Enable common fonts";
+      };
+
+      config.fonts.packages = lib.mkIf config.my.common-fonts.enable [
         pkgs.noto-fonts
         pkgs.noto-fonts-color-emoji
         pkgs.fira-code-symbols

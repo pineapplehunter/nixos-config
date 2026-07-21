@@ -19,6 +19,7 @@ in
     ./opencode.nix
     ./ibus-engines.nix
     ./linux-latest.nix
+    ./rpi5.nix
   ];
 
   perSystem =

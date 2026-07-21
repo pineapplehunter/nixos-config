@@ -1,4 +1,3 @@
-{ ... }:
 {
   flake.overlays.ibus-engines = final: prev: {
     # Wire custom mozc / mozc-ut packages into ibus-engines.

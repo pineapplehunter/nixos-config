@@ -1,0 +1,19 @@
+Remove enable_adaptive_quantization from ffmpeg's SVT-AV1 encoder config.
+
+SVT-AV1 v4.x removed the enable_adaptive_quantization field from
+EbSvtAv1EncConfiguration. When setting explicit QP with
+rate_control_mode = 0, the field was redundant anyway, so simply
+remove the assignment.
+
+diff --git a/libavcodec/libsvtav1.c b/libavcodec/libsvtav1.c
+index f1913e0ec0..64f78c8ad5 100644
+--- a/libavcodec/libsvtav1.c
++++ b/libavcodec/libsvtav1.c
+@@ -238,7 +238,6 @@ static int config_enc_params(EbSvtAv1EncConfiguration *param,
+     } else if (svt_enc->qp > 0) {
+         param->qp                   = svt_enc->qp;
+         param->rate_control_mode    = 0;
+-        param->enable_adaptive_quantization = 0;
+     }
+ 
+     desc = av_pix_fmt_desc_get(avctx->pix_fmt);

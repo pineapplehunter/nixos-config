@@ -1,4 +1,3 @@
-{ ... }:
 {
   flake.overlays.eza = final: prev: {
     # Add capability support (security.capability xattr display).

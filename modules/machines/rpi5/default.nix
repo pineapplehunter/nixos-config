@@ -11,94 +11,148 @@ in
         os-mods = config.flake.nixosModules;
       in
       [
-        # os-mods.common
-        # os-mods.personal
+        os-mods.common
         os-mods.ssh-authorized-keys
         os-mods.rpi5-garage
         # Hardware configuration
         pi-mods.raspberry-pi-5.base
         pi-mods.raspberry-pi-5.page-size-16k
         pi-mods.raspberry-pi-5.display-vc4
-        inputs.disko.nixosModules.disko
-        inputs.home-manager.nixosModules.default
-        inputs.sops-nix.nixosModules.sops
         ./pi5-configtxt.nix
         ./modules/nice-looking-console.nix
         (
-          { config, pkgs, ... }:
+          {
+            config,
+            pkgs,
+            lib,
+            ...
+          }:
           {
 
-            sops = {
-              age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-              secrets.access-tokens = {
-                sopsFile = flake-config.sopsFile.common;
-                key = "github-access-token";
-                mode = "0400";
-              };
-              templates."nix-access-tokens" = {
-                content = ''
-                  access-tokens = github.com=${config.sops.placeholder.access-tokens}
-                '';
-                mode = "0400";
-              };
-            };
-            networking.useNetworkd = true;
-            networking.nftables.enable = true;
-            systemd.network.networks = {
-              "99-ethernet-default-dhcp".networkConfig.MulticastDNS = "yes";
-              "99-wireless-client-dhcp".networkConfig.MulticastDNS = "yes";
-            };
-
-            # This comment was lifted from `srvos`
-            # Do not take down the network for too long when upgrading,
-            # This also prevents failures of services that are restarted instead of stopped.
-            # It will use `systemctl restart` rather than stopping it with `systemctl stop`
-            # followed by a delayed `systemctl start`.
-            systemd.services = {
-              systemd-networkd.stopIfChanged = false;
-              # Services that are only restarted might be not able to resolve when resolved is stopped before
-              systemd-resolved.stopIfChanged = false;
-            };
-
-            # Use iwd instead of wpa_supplicant. It has a user friendly CLI
-            networking.wireless.enable = false;
-            networking.wireless.iwd = {
-              enable = true;
-              settings = {
-                Network = {
-                  EnableIPv6 = true;
-                  RoutePriorityOffset = 300;
+            networking = {
+              hostName = "rpi5";
+              useNetworkd = true;
+              wireless = {
+                enable = false;
+                iwd = {
+                  enable = true;
+                  settings = {
+                    Network = {
+                      EnableIPv6 = true;
+                      RoutePriorityOffset = 300;
+                    };
+                    Settings.AutoConnect = true;
+                  };
                 };
-                Settings.AutoConnect = true;
               };
-            };
-            # mdns
-            networking.firewall = {
-              allowedUDPPorts = [ 5353 ];
-              interfaces = {
-                "tailscale0" = {
-                  allowedTCPPorts = [
-                    # prometheus smart
-                    9633
-                  ];
-                  allowedTCPPortRanges = [
-                    # garage original
-                    {
-                      from = 3900;
-                      to = 3905;
-                    }
-                  ];
+              firewall = {
+                allowedUDPPorts = [ 5353 ];
+                interfaces = {
+                  "tailscale0" = {
+                    allowedTCPPorts = [
+                      # prometheus smart
+                      9633
+                    ];
+                    allowedTCPPortRanges = [
+                      # garage original
+                      {
+                        from = 3900;
+                        to = 3905;
+                      }
+                    ];
+                  };
                 };
               };
             };
 
-            services.tailscale = {
-              enable = true;
-              useRoutingFeatures = "both";
+            systemd = {
+              network.networks = {
+                "99-ethernet-default-dhcp".networkConfig.MulticastDNS = "yes";
+                "99-wireless-client-dhcp".networkConfig.MulticastDNS = "yes";
+              };
+              # This comment was lifted from `srvos`
+              # Do not take down the network for too long when upgrading,
+              # This also prevents failures of services that are restarted instead of stopped.
+              # It will use `systemctl restart` rather than stopping it with `systemctl stop`
+              # followed by a delayed `systemctl start`.
+              services = {
+                systemd-networkd.stopIfChanged = false;
+                # Services that are only restarted might be not able to resolve when resolved is stopped before
+                systemd-resolved.stopIfChanged = false;
+              };
             };
 
-            services.prometheus.exporters = {
-              smartctl.enable = true;
+            services = {
+              tailscale = {
+                enable = true;
+                useRoutingFeatures = "both";
+              };
+              prometheus.exporters = {
+                smartctl.enable = true;
+              };
+              samba = {
+                enable = true;
+                openFirewall = true;
+                settings = {
+                  "timemachine" = {
+                    "path" = "/samba/timemachine";
+                    "valid users" = "andy";
+                    "public" = "no";
+                    "writeable" = "yes";
+                    "force user" = "andy";
+                    # Below are the most imporant for macOS compatibility
+                    # Change the above to suit your needs
+                    "fruit:aapl" = "yes";
+                    "fruit:time machine" = "yes";
+                    "vfs objects" = "catia fruit streams_xattr";
+                  };
+                };
+              };
+              # To be discoverable with windows
+              samba-wsdd = {
+                enable = true;
+                openFirewall = true;
+              };
+              udev.extraRules = ''
+                # Ignore partitions with "Required Partition" GPT partition attribute
+                # On our RPis this is firmware (/boot/firmware) partition
+                ENV{ID_PART_ENTRY_SCHEME}=="gpt", \
+                  ENV{ID_PART_ENTRY_FLAGS}=="0x1", \
+                  ENV{UDISKS_IGNORE}="1"
+              '';
+              avahi = {
+                extraServiceFiles = {
+                  timemachine = ''
+                    <?xml version="1.0" standalone='no'?>
+                    <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+                    <service-group>
+                      <name replace-wildcards="yes">%h</name>
+                      <service>
+                        <type>_smb._tcp</type>
+                        <port>445</port>
+                      </service>
+                        <service>
+                        <type>_device-info._tcp</type>
+                        <port>0</port>
+                        <txt-record>model=TimeCapsule8,119</txt-record>
+                      </service>
+                      <service>
+                        <type>_adisk._tcp</type>
+                        <!-- 
+                          change tm_share to share name, if you changed it. 
+                        --> 
+                        <txt-record>dk0=adVN=tm_share,adVF=0x82</txt-record>
+                        <txt-record>sys=waMa=0,adVF=0x100</txt-record>
+                      </service>
+                    </service-group>
+                  '';
+                };
+              };
+              # Disable desktop services not needed on headless server
+              xremap.enable = lib.mkForce false;
+              printing.enable = lib.mkForce false;
+              flatpak.enable = lib.mkForce false;
+              pipewire.enable = lib.mkForce false;
             };
 
             virtualisation.docker = {
@@ -111,84 +165,19 @@ in
               };
             };
 
-            services.samba = {
-              enable = true;
-              openFirewall = true;
-              settings = {
-                "timemachine" = {
-                  "path" = "/samba/timemachine";
-                  "valid users" = "andy";
-                  "public" = "no";
-                  "writeable" = "yes";
-                  "force user" = "andy";
-                  # Below are the most imporant for macOS compatibility
-                  # Change the above to suit your needs
-                  "fruit:aapl" = "yes";
-                  "fruit:time machine" = "yes";
-                  "vfs objects" = "catia fruit streams_xattr";
-                };
-              };
-            };
-
-            # To be discoverable with windows
-            services.samba-wsdd = {
-              enable = true;
-              openFirewall = true;
-            };
-
             programs.atop.enable = true;
-            programs.zsh.enable = true;
-            programs.bandwhich.enable = true;
 
             time.timeZone = "Asia/Tokyo";
-            networking.hostName = "rpi5";
 
-            services.udev.extraRules = ''
-              # Ignore partitions with "Required Partition" GPT partition attribute
-              # On our RPis this is firmware (/boot/firmware) partition
-              ENV{ID_PART_ENTRY_SCHEME}=="gpt", \
-                ENV{ID_PART_ENTRY_FLAGS}=="0x1", \
-                ENV{UDISKS_IGNORE}="1"
-            '';
-
-            services.avahi = {
-              enable = true;
-              nssmdns4 = true;
-              openFirewall = true;
-              extraServiceFiles = {
-                timemachine = ''
-                  <?xml version="1.0" standalone='no'?>
-                  <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
-                  <service-group>
-                    <name replace-wildcards="yes">%h</name>
-                    <service>
-                      <type>_smb._tcp</type>
-                      <port>445</port>
-                    </service>
-                      <service>
-                      <type>_device-info._tcp</type>
-                      <port>0</port>
-                      <txt-record>model=TimeCapsule8,119</txt-record>
-                    </service>
-                    <service>
-                      <type>_adisk._tcp</type>
-                      <!-- 
-                        change tm_share to share name, if you changed it. 
-                      --> 
-                      <txt-record>dk0=adVN=tm_share,adVF=0x82</txt-record>
-                      <txt-record>sys=waMa=0,adVF=0x100</txt-record>
-                    </service>
-                  </service-group>
-                '';
-              };
-            };
+            # Disable desktop services not needed on headless server
+            i18n.inputMethod.enable = lib.mkForce false;
+            pineapplehunter.japanese.enable = lib.mkForce false;
+            nixos-artwork.enable = false;
+            my.common-fonts.enable = false;
+            my.common-packages.enable = false;
 
             environment.systemPackages = with pkgs; [
-              tree
-              helix
               nixd
-              nixfmt
-              git
               ghostty.terminfo
             ];
 
@@ -198,7 +187,6 @@ in
             ];
 
             boot.loader.raspberry-pi.bootloader = "kernel";
-            boot.extraModprobeConfig = "install algif_aead /bin/false";
 
             # This is identical to what nixos installer does in
             # (modulesPash + "profiles/installation-device.nix")
@@ -224,15 +212,8 @@ in
 
             # Root account is locked by default; set a password or add SSH keys to unlock.
 
-            users.defaultUserShell = pkgs.zsh;
-
             # Don't require sudo/root to `reboot` or `poweroff`.
             security.polkit.enable = true;
-
-            # Allow passwordless sudo from nixos user
-            security.sudo-rs = {
-              enable = true;
-            };
 
             # Automatically log in at the virtual consoles.
             services.getty.autologinUser = "shogo";
@@ -242,52 +223,12 @@ in
             # The latter one is particular useful if keys are manually added to
             # installation device for head-less systems i.e. arm boards by manually
             # mounting the storage in a different system.
-            services.openssh = {
-              enable = true;
-              startWhenNeeded = true;
-              settings = {
-                PasswordAuthentication = false;
-                PermitRootLogin = "prohibit-password";
-              };
+            services.openssh.settings = {
+              PasswordAuthentication = false;
+              PermitRootLogin = "prohibit-password";
             };
 
             # allow nix-copy to live system
-            nix = {
-              settings = {
-                sandbox = true;
-                sandbox-fallback = false;
-                experimental-features = [
-                  "auto-allocate-uids"
-                  "cgroups"
-                  "flakes"
-                  "nix-command"
-                ];
-                auto-allocate-uids = true;
-                allowed-users = [ "@nix" ];
-                substituters = [
-                  "https://niks3.gweb.ihavenojob.work?priority=99"
-                ];
-                trusted-substituters = [
-                  "https://niks3.gweb.ihavenojob.work?priority=99"
-                  "https://nixos-raspberrypi.cachix.org"
-                ];
-                trusted-public-keys = [
-                  "niks3-cache:RW+9UW/AgeDvEawJndPbzNVYQcDPjXA4J23srAi5+sE="
-                  "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
-                ];
-                warn-dirty = false;
-                allow-import-from-derivation = false;
-                use-cgroups = true;
-              };
-              extraOptions = ''
-                !include ${config.sops.templates."nix-access-tokens".path}
-                !include /etc/nix/local-trusted-caches.conf
-              '';
-            };
-
-            users.groups.nix = { };
-
-            system.stateVersion = "26.11";
           }
         )
         # Disk configuration
@@ -332,14 +273,11 @@ in
         #     ];
         #   }
         # )
-        (
-          { pkgs, ... }:
-          {
-            nixpkgs.overlays = [
-              (import ./overlays.nix)
-            ];
-          }
-        )
+        {
+          nixpkgs.overlays = [
+            config.flake.overlays.rpi5
+          ];
+        }
       ];
 
     home-manager = {
@@ -355,10 +293,5 @@ in
       };
     };
 
-    environment = {
-      variables = {
-        EDITOR = "hx";
-      };
-    };
   };
 }

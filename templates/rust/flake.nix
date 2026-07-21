@@ -1,11 +1,13 @@
 {
   description = "A basic shell";
 
-  inputs.nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-  inputs.flake-parts.url = "github:hercules-ci/flake-parts";
-  inputs.rust-overlay = {
-    url = "github:oxalica/rust-overlay?ref=stable";
-    inputs.nixpkgs.follows = "nixpkgs";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay?ref=stable";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

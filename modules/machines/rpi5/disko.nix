@@ -117,8 +117,7 @@ in
             postCreateHook =
               let
                 thisBtrfs = config.disko.devices.disk.main.content.partitions.system.content;
-                device = thisBtrfs.device;
-                subvolumes = thisBtrfs.subvolumes;
+                inherit (thisBtrfs) device subvolumes;
 
                 makeBlankSnapshot =
                   btrfsMntPoint: subvol:

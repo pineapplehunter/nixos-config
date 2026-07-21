@@ -50,13 +50,20 @@ in
         };
       };
 
-      users.users.immich = {
-        name = "immich";
-        isSystemUser = true;
-        group = "immich";
-        extraGroups = [ "docker" ];
+      users = {
+        users.immich = {
+          name = "immich";
+          isSystemUser = true;
+          group = "immich";
+          extraGroups = [ "docker" ];
+        };
+        groups.immich = { };
+        users.garage = {
+          isSystemUser = true;
+          group = "garage";
+        };
+        groups.garage = { };
       };
-      users.groups.immich = { };
 
       services.garage = {
         enable = true;
@@ -70,188 +77,178 @@ in
         ];
       };
 
-      systemd.services.garage = {
-        serviceConfig = {
-          User = "garage";
-          Group = "garage";
-          DynamicUser = false;
-          RestartSec = "1min";
-          Restart = "always";
-        };
-        environment = {
-          # I only allow access to the key for garage group
-          GARAGE_ALLOW_WORLD_READABLE_SECRETS = "true";
-        };
-        wantedBy = lib.mkForce [ "default.target" ];
-      };
-
-      users.users.garage = {
-        isSystemUser = true;
-        group = "garage";
-      };
-
-      users.groups.garage = { };
-
-      # to startup immich at boot
-      systemd.services = {
-        immich-up = {
-          enable = true;
-          restartIfChanged = false;
-          path = with pkgs; [
-            docker
-            docker-compose
-          ];
-          requires = [ "docker.socket" ];
-          after = [ "docker.socket" ];
-          script = ''
-            docker compose up
-          '';
-          preStop = ''
-            docker compose down
-          '';
-          serviceConfig = {
-            User = "immich";
-            WorkingDirectory = "/immich";
-            Restart = "always";
-            TimeoutSec = 600;
-            # CapabilityBoundingSet = "";
-            PrivateDevices = true;
-            ProtectKernelTunables = true;
-            ProtectControlGroups = true;
-            ProtectKernelModules = true;
-            ProtectKernelLogs = true;
-            ProtectProc = "invisible";
-            ProcSubset = "pid";
-            NoNewPrivileges = true;
-            ProtectClock = true;
-            SystemCallArchitectures = "native";
-            RestrictNamespaces = true;
-            RestrictSUIDSGID = true;
-            LockPersonality = true;
-            RestrictRealtime = true;
-            MemoryDenyWriteExecute = true;
-            ProtectHostname = true;
-            ProtectHome = "read-only";
-            SystemCallFilter = [
-              "~@privileged"
-              "~@debug"
-              "~@cpu-emulation"
-              "~@obsolete"
-              "~@resources"
-              "~@mount"
-            ];
-            RestrictAddressFamilies = [
-              "AF_UNIX"
-              "AF_INET"
-              "AF_INET6"
-            ];
-            RemoveIPC = true;
+      systemd = {
+        services = {
+          garage = {
+            serviceConfig = {
+              User = "garage";
+              Group = "garage";
+              DynamicUser = false;
+              RestartSec = "1min";
+              Restart = "always";
+            };
+            environment = {
+              GARAGE_ALLOW_WORLD_READABLE_SECRETS = "true";
+            };
+            wantedBy = lib.mkForce [ "default.target" ];
           };
-          wantedBy = [ "default.target" ];
-        };
-        immich-backup = {
-          script = ''
-            mkdir -p /tmp/immich-database
-            cleanup () {
+
+          # to startup immich at boot
+          immich-up = {
+            enable = true;
+            restartIfChanged = false;
+            path = with pkgs; [
+              docker
+              docker-compose
+            ];
+            requires = [ "docker.socket" ];
+            after = [ "docker.socket" ];
+            script = ''
+              docker compose up
+            '';
+            preStop = ''
+              docker compose down
+            '';
+            serviceConfig = {
+              User = "immich";
+              WorkingDirectory = "/immich";
+              Restart = "always";
+              TimeoutSec = 600;
+              PrivateDevices = true;
+              ProtectKernelTunables = true;
+              ProtectControlGroups = true;
+              ProtectKernelModules = true;
+              ProtectKernelLogs = true;
+              ProtectProc = "invisible";
+              ProcSubset = "pid";
+              NoNewPrivileges = true;
+              ProtectClock = true;
+              SystemCallArchitectures = "native";
+              RestrictNamespaces = true;
+              RestrictSUIDSGID = true;
+              LockPersonality = true;
+              RestrictRealtime = true;
+              MemoryDenyWriteExecute = true;
+              ProtectHostname = true;
+              ProtectHome = "read-only";
+              SystemCallFilter = [
+                "~@privileged"
+                "~@debug"
+                "~@cpu-emulation"
+                "~@obsolete"
+                "~@resources"
+                "~@mount"
+              ];
+              RestrictAddressFamilies = [
+                "AF_UNIX"
+                "AF_INET"
+                "AF_INET6"
+              ];
+              RemoveIPC = true;
+            };
+            wantedBy = [ "default.target" ];
+          };
+          immich-backup = {
+            script = ''
+              mkdir -p /tmp/immich-database
+              cleanup () {
+                rm -rf /tmp/immich-database
+              }
+              trap cleanup EXIT
+
+              echo Backing up database sql files
+              echo Uncompressing database backups into /tmp/immich-database
+              for file in /immich/storage/backups/*.sql.gz; do
+                filename=$(basename "$file" .gz)
+                gunzip -c "$file" > "/tmp/immich-database/$filename"
+                restic backup "/tmp/immich-database/$filename" \
+                  --skip-if-unchanged \
+                  --tag auto,database \
+                  --time "$(date -r "$file" '+%Y-%m-%d %H:%M:%S')"
+              done
+
               rm -rf /tmp/immich-database
-            }
-            trap cleanup EXIT
 
-            echo Backing up database sql files
-            echo Uncompressing database backups into /tmp/immich-database
-            for file in /immich/storage/backups/*.sql.gz; do
-              filename=$(basename "$file" .gz)
-              gunzip -c "$file" > "/tmp/immich-database/$filename"
-              restic backup "/tmp/immich-database/$filename" \
-                --skip-if-unchanged \
-                --tag auto,database \
-                --time "$(date -r "$file" '+%Y-%m-%d %H:%M:%S')"
-            done
+              echo Backing up immich data
+              restic backup /immich/storage \
+                --exclude /immich/storage/backups \
+                --exclude /immich/storage/encoded-video \
+                --exclude /immich/storage/thumbs \
+                --tag auto,immich
 
-            # clean temporary files before backing up images
-            rm -rf /tmp/immich-database
+              echo Checking backup integrity
+              restic check
 
-            echo Backing up immich data
-            restic backup /immich/storage \
-              --exclude /immich/storage/backups \
-              --exclude /immich/storage/encoded-video \
-              --exclude /immich/storage/thumbs \
-              --tag auto,immich
-
-            echo Checking backup integrity
-            restic check
-
-            echo Cleaning backups
-            restic forget \
-              --keep-daily 7 \
-              --keep-monthly 12 \
-              --prune \
-              --tag auto \
-              --group-by tags
-          '';
-          restartIfChanged = false;
-          path = [
-            pkgs.restic
-            pkgs.gzip
-          ];
-          environment = {
-            AWS_SHARED_CREDENTIALS_FILE = "%d/aws-credentials";
-            RESTIC_PASSWORD_FILE = "%d/restic-password";
-            RESTIC_REPOSITORY = "s3:http://localhost:3900/immich-backup";
-            XDG_CACHE_HOME = "%C/immich-backup";
-          };
-          serviceConfig = {
-            CacheDirectory = "immich-backup";
-            CapabilityBoundingSet = "";
-            DynamicUser = true;
-            ExecCondition = "systemctl is-active --quiet garage.service";
-            IOSchedulingClass = "best-effort";
-            IOSchedulingPriority = 7;
-            LoadCredential = [
-              "aws-credentials:${config.sops.templates.immich-backup-aws-config.path}"
-              "restic-password:${config.sops.secrets.immich-backup-restic-password.path}"
+              echo Cleaning backups
+              restic forget \
+                --keep-daily 7 \
+                --keep-monthly 12 \
+                --prune \
+                --tag auto \
+                --group-by tags
+            '';
+            restartIfChanged = false;
+            path = [
+              pkgs.restic
+              pkgs.gzip
             ];
-            LockPersonality = true;
-            MemoryDenyWriteExecute = true;
-            Nice = 10;
-            NoNewPrivileges = true;
-            PrivateDevices = true;
-            PrivateUsers = true;
-            PrivateTmp = true;
-            ProcSubset = "pid";
-            ProtectClock = true;
-            ProtectControlGroups = true;
-            ProtectHome = true;
-            ProtectHostname = true;
-            ProtectKernelLogs = true;
-            ProtectKernelModules = true;
-            ProtectKernelTunables = true;
-            ProtectProc = "invisible";
-            RemoveIPC = true;
-            RestrictAddressFamilies = [
-              "AF_UNIX"
-              "AF_INET"
-              "AF_INET6"
-            ];
-            RestrictNamespaces = true;
-            RestrictRealtime = true;
-            RestrictSUIDSGID = true;
-            SystemCallArchitectures = "native";
-            SystemCallFilter = [
-              "~@privileged"
-              "~@debug"
-              "~@cpu-emulation"
-              "~@obsolete"
-              "~@resources"
-              "~@mount"
-            ];
-            Type = "oneshot";
-            UMask = "0077";
+            environment = {
+              AWS_SHARED_CREDENTIALS_FILE = "%d/aws-credentials";
+              RESTIC_PASSWORD_FILE = "%d/restic-password";
+              RESTIC_REPOSITORY = "s3:http://localhost:3900/immich-backup";
+              XDG_CACHE_HOME = "%C/immich-backup";
+            };
+            serviceConfig = {
+              CacheDirectory = "immich-backup";
+              CapabilityBoundingSet = "";
+              DynamicUser = true;
+              ExecCondition = "systemctl is-active --quiet garage.service";
+              IOSchedulingClass = "best-effort";
+              IOSchedulingPriority = 7;
+              LoadCredential = [
+                "aws-credentials:${config.sops.templates.immich-backup-aws-config.path}"
+                "restic-password:${config.sops.secrets.immich-backup-restic-password.path}"
+              ];
+              LockPersonality = true;
+              MemoryDenyWriteExecute = true;
+              Nice = 10;
+              NoNewPrivileges = true;
+              PrivateDevices = true;
+              PrivateUsers = true;
+              PrivateTmp = true;
+              ProcSubset = "pid";
+              ProtectClock = true;
+              ProtectControlGroups = true;
+              ProtectHome = true;
+              ProtectHostname = true;
+              ProtectKernelLogs = true;
+              ProtectKernelModules = true;
+              ProtectKernelTunables = true;
+              ProtectProc = "invisible";
+              RemoveIPC = true;
+              RestrictAddressFamilies = [
+                "AF_UNIX"
+                "AF_INET"
+                "AF_INET6"
+              ];
+              RestrictNamespaces = true;
+              RestrictRealtime = true;
+              RestrictSUIDSGID = true;
+              SystemCallArchitectures = "native";
+              SystemCallFilter = [
+                "~@privileged"
+                "~@debug"
+                "~@cpu-emulation"
+                "~@obsolete"
+                "~@resources"
+                "~@mount"
+              ];
+              Type = "oneshot";
+              UMask = "0077";
+            };
           };
         };
-      };
-      systemd.timers = {
-        immich-backup = {
+        timers.immich-backup = {
           wantedBy = [ "timers.target" ];
           timerConfig = {
             OnCalendar = "daily";
@@ -259,9 +256,7 @@ in
             AccuracySec = "12h";
           };
         };
-      };
-      systemd.targets = {
-        immich = {
+        targets.immich = {
           wantedBy = [ "default.target" ];
         };
       };

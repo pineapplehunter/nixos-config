@@ -1,4 +1,3 @@
-{ ... }:
 {
   flake.overlays.face-recognition-models = final: prev: {
     # Still needed as of 2026-07-20:

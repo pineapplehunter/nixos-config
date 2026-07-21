@@ -1,4 +1,3 @@
-{ ... }:
 {
   flake.overlays.vtk = final: prev: {
     # Fix build with gdal-3.13: const-correctness conversion error with GCC 15.
