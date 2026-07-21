@@ -27,7 +27,6 @@
           age
           age-plugin-tpm
           age-plugin-yubikey
-          sops
           difftastic
           dig
           dust
@@ -35,7 +34,6 @@
           fuc
           fzf
           git-extras
-          herdr
           hl-log-viewer
           niks3-wrapped
           nix-init
@@ -45,6 +43,7 @@
           nixr
           project-init
           pv
+          sops
           starship
           tokei
           tree

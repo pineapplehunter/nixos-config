@@ -13,6 +13,7 @@
           ffmpegthumbnailer
           file
           helix
+          herdr
           htop
           jq
           nix-output-monitor
