@@ -28,6 +28,7 @@ in
           mods.julia
           mods.minimal
           mods.opencode
+          mods.pi-coding-agent
           mods.packages
           mods.shell-config
           mods.ssh

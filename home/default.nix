@@ -80,6 +80,7 @@ in
     ./minimal.nix
     ./nixos-common.nix
     ./opencode/default.nix
+    ./pi-coding-agent/default.nix
     ./packages-minimal.nix
     ./packages.nix
     ./pineapplehunter.nix
