@@ -91,6 +91,15 @@ IFS=$original_ifs
 SANDBOX_PATH=${SANDBOX_PATH%:}
 append_args --setenv PATH "$SANDBOX_PATH"
 
+# Add R/W git states for worktrees
+if [[ -f "$PROJECT_ROOT/.git" ]]; then
+  GITDIR=$(grep gitdir "$PROJECT_ROOT/.git")
+  GITDIR=${GITDIR##gitdir: }
+  COMMON_PATH=$(cat "$GITDIR/commondir")
+  GITDIR=$(realpath "$COMMON_PATH")
+  append_args --bind "$GITDIR" "$GITDIR"
+fi
+
 # Persistent per-project temporary directory. This is mounted as /tmp inside the
 # sandbox so normal tooling defaults survive across pi restarts.
 DIR_HASH=$(echo "$PROJECT_ROOT" | sha256sum | cut -F 1)

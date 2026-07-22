@@ -112,10 +112,9 @@ done
 if [[ -f "$PROJECT_ROOT/.git" ]]; then
   GITDIR=$(grep gitdir "$PROJECT_ROOT/.git")
   GITDIR=${GITDIR##gitdir: }
-  REVGITDIR=$(cat "$GITDIR"/gitdir)
-  if [[ "$REVGITDIR" == "$PROJECT_ROOT/.git" ]]; then
-    append_args --bind "$GITDIR" "$GITDIR"
-  fi
+  COMMON_PATH=$(cat "$GITDIR/commondir")
+  GITDIR=$(realpath "$COMMON_PATH")
+  append_args --bind "$GITDIR" "$GITDIR"
 fi
 
 # Persistent per-project temporary directory. This is mounted as /tmp inside the
