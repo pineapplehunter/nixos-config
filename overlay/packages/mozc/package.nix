@@ -3,7 +3,7 @@
   fetchFromGitHub,
   qt6,
   pkg-config,
-  bazel_8,
+  bazel_9,
   xdg-utils,
   python3,
   libglvnd,
@@ -16,18 +16,18 @@
   merge-ut-dictionaries,
 }:
 let
-  bazel = bazel_8;
+  bazel = bazel_9;
 
   ut-dictionary = merge-ut-dictionaries.override { inherit dictionaries; };
 
   pname = "mozc-server";
-  version = "3.33.6133";
+  version = "3.34.6239";
 
   src = fetchFromGitHub {
     owner = "google";
     repo = "mozc";
     tag = version;
-    hash = "sha256-4ZrCIWoqYjoBwaoXq2QGajIQgWP0m2V3ozWQhZIq138=";
+    hash = "sha256-m7hxJafQVXIaV3l6s5Xix8liXf4NN18Jwv0CzTrdYqM=";
     fetchSubmodules = true;
   };
 
@@ -49,10 +49,15 @@ let
   includePath = lib.makeIncludePath buildInputs;
   libraryPath = lib.makeLibraryPath buildInputs;
 
-  bazelArgs = [
+  bazelCommonArgs = [
     "--config=oss_linux"
     "--config=stable_channel"
     "--config=release_build"
+    # Build protoc from source instead of downloading a host-platform binary.
+    "--@com_google_protobuf//bazel/flags:prefer_prebuilt_protoc=false"
+  ];
+
+  bazelArgs = bazelCommonArgs ++ [
     "--action_env=C_INCLUDE_PATH=${includePath}"
     "--action_env=CPLUS_INCLUDE_PATH=${includePath}"
     "--action_env=LIBRARY_PATH=${libraryPath}"
@@ -60,7 +65,7 @@ let
     "server:mozc_server"
   ];
 
-  bazelPythonPatch = ''
+  bazelPythonConfig = ''
     local_runtime_repo = use_repo_rule(
         "@rules_python//python/local_toolchains:repos.bzl",
         "local_runtime_repo",
@@ -84,51 +89,91 @@ let
     register_toolchains("@local_toolchains//:all")
   '';
 
-  # vendoring: run "bazel vendor" to download all external dependencies,
-  # then clean up sandbox-specific symlinks and markers so the output
-  # is reproducible (fixed-output derivation).
-  vendorDeps = stdenv.mkDerivation (
-    lib.fetchers.normalizeHash { } {
-      pname = "${pname}-vendor";
-      inherit
-        src
-        version
-        nativeBuildInputs
-        buildInputs
-        ;
+  # Run `bazel vendor`, then remove host-local Python repositories and
+  # sandbox-specific symlinks to keep the fixed output platform-independent.
+  mkVendorDeps =
+    {
+      pname,
+      src,
+      version,
+      nativeBuildInputs,
+      buildInputs,
+      bazelArgs,
+      hash,
+    }:
+    stdenv.mkDerivation (
+      lib.fetchers.normalizeHash { } {
+        pname = "${pname}-vendor";
+        inherit
+          src
+          version
+          nativeBuildInputs
+          buildInputs
+          hash
+          ;
+        outputHashMode = "recursive";
 
-      hash = "sha256-yFw2DcwbzGETXlh84VtBHG0HLundx5VJV+qP7PDbMic=";
-      outputHashMode = "recursive";
+        strictDeps = true;
+        __structuredAttrs = true;
 
-      strictDeps = true;
-      __structuredAttrs = true;
+        env.USE_BAZEL_VERSION = bazel.version;
 
-      env.USE_BAZEL_VERSION = bazel.version;
+        buildPhase = ''
+          runHook preBuild
 
-      buildPhase = ''
-        runHook preBuild
+          cd src
 
-        cd src
+          cat >> MODULE.bazel << EOF
+          ${bazelPythonConfig}
+          EOF
 
-        cat >> MODULE.bazel << EOF
-        ${bazelPythonPatch}
-        EOF
+          bazel vendor --lockfile_mode=update --vendor_dir="$out/vendor_dir" ${lib.escapeShellArgs bazelArgs}
+          cp MODULE.bazel.lock "$out"
 
-        bazel vendor --lockfile_mode=update --vendor_dir="$out/vendor_dir" ${lib.escapeShellArgs bazelArgs}
-        cp MODULE.bazel.lock "$out"
+          echo "removing platform-specific repository metadata..."
+          find "$out" -type l -lname '/*' -print -delete
+          find "$out" -xtype l -print -delete
+          find "$out/vendor_dir" -maxdepth 1 -type f -name '*.marker' -print -delete
+          rm -vrf \
+            "$out"/vendor_dir/*local_python3* \
+            "$out"/vendor_dir/*go_sdk+go_toolchains*
 
-        echo "removing broken symlinks and markers..."
-        find "$out" -type l -lname '/*' -print -delete
-        find "$out" -xtype l -print -delete
-        rm -vrf "$out"/vendor_dir/*local_python3*
+          runHook postBuild
+        '';
+        dontInstall = true;
+        dontFixup = true;
+        dontWrapQtApps = true;
+      }
+    );
 
-        runHook postBuild
-      '';
-      dontInstall = true;
-      dontFixup = true;
-      dontWrapQtApps = true;
-    }
-  );
+  setupBazelVendor = vendorDeps: ''
+    cat >> MODULE.bazel << EOF
+    ${bazelPythonConfig}
+    EOF
+
+    cp -r "${vendorDeps}"/* .
+    chmod -R u+w vendor_dir
+    # The local runtime otherwise generates scripts with /usr/bin/env shebangs.
+    substituteInPlace vendor_dir/rules_python*/python/private/local_runtime_repo_setup.bzl \
+      --replace-fail 'interpreter_path = interpreter_path,' \
+        'interpreter_path = interpreter_path, stub_shebang = "#!${lib.getExe python3}",'
+    patchShebangs --build vendor_dir
+    for dir in vendor_dir/*/; do
+      echo "pin(\"@@$(basename "$dir")\")"
+    done > vendor_dir/VENDOR.bazel
+  '';
+
+  vendorDeps = mkVendorDeps {
+    inherit
+      pname
+      src
+      version
+      nativeBuildInputs
+      buildInputs
+      bazelArgs
+      ;
+    hash = "sha256-SK87zyhYbdARJk1qSUURYdm2FMB/KIXEAtdwVDLqirI=";
+  };
 in
 stdenv.mkDerivation {
   inherit
@@ -147,24 +192,11 @@ stdenv.mkDerivation {
   postPatch = ''
     cd src
 
-    cat >> MODULE.bazel << EOF
-    ${bazelPythonPatch}
-    EOF
+    ${setupBazelVendor vendorDeps}
 
     substituteInPlace config.bzl \
       --replace-fail "/usr/bin/xdg-open" "${xdg-utils}/bin/xdg-open" \
       --replace-fail "/usr" "$out"
-
-    cp -r --no-preserve=mode "${vendorDeps}"/* .
-    substituteInPlace \
-      vendor_dir/rules_python*/python/private/py_runtime_info.bzl \
-      vendor_dir/rules_python*/python/private/py_executable.bzl \
-      vendor_dir/rules_python*/python/private/runtime_env_toolchain.bzl \
-      --replace-fail "/usr/bin/env python3" "${lib.getExe python3}"
-    patchShebangs --build vendor_dir
-    for dir in vendor_dir/*/; do
-      echo "pin(\"@@$(basename "$dir")\")"
-    done > vendor_dir/VENDOR.bazel
   ''
   + lib.optionalString (dictionaries != [ ]) ''
     cat ${ut-dictionary}/mozcdic-ut.txt >> data/dictionary_oss/dictionary00.txt
@@ -183,12 +215,19 @@ stdenv.mkDerivation {
 
     install -Dm555 bazel-bin/server/mozc_server "$out/lib/mozc/mozc_server"
     install -Dm555 bazel-bin/gui/tool/mozc_tool "$out/lib/mozc/mozc_tool"
+    install -Dm444 ../LICENSE "$out/share/licenses/$pname/LICENSE"
 
     runHook postInstall
   '';
 
   passthru = {
-    inherit vendorDeps bazel bazelPythonPatch;
+    inherit
+      vendorDeps
+      bazel
+      bazelCommonArgs
+      mkVendorDeps
+      setupBazelVendor
+      ;
   };
   meta = {
     description = "Japanese input method from Google";

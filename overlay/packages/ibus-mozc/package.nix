@@ -21,7 +21,9 @@ let
     version
     src
     bazel
-    bazelPythonPatch
+    bazelCommonArgs
+    mkVendorDeps
+    setupBazelVendor
     ;
 
   nativeBuildInputs = [
@@ -46,10 +48,7 @@ let
   includePath = lib.makeIncludePath buildInputs;
   libraryPath = lib.makeLibraryPath buildInputs;
 
-  bazelArgs = [
-    "--config=oss_linux"
-    "--config=stable_channel"
-    "--config=release_build"
+  bazelArgs = bazelCommonArgs ++ [
     "--action_env=C_INCLUDE_PATH=${includePath}"
     "--action_env=CPLUS_INCLUDE_PATH=${includePath}"
     "--action_env=LIBRARY_PATH=${libraryPath}"
@@ -57,51 +56,17 @@ let
     "unix/ibus:ibus_mozc"
   ];
 
-  # vendoring: run "bazel vendor" to download all external dependencies,
-  # then clean up sandbox-specific symlinks and markers so the output
-  # is reproducible (fixed-output derivation).
-  vendorDeps = stdenv.mkDerivation (
-    lib.fetchers.normalizeHash { } {
-      pname = "${pname}-vendor";
-      inherit
-        src
-        version
-        nativeBuildInputs
-        buildInputs
-        ;
-
-      hash = "sha256-5ZU490czheaya7KB7twcIbzZMlzcwVmV68j9upyItHk=";
-      outputHashMode = "recursive";
-
-      strictDeps = true;
-      __structuredAttrs = true;
-
-      env.USE_BAZEL_VERSION = bazel.version;
-
-      buildPhase = ''
-        runHook preBuild
-
-        cd src
-
-        cat >> MODULE.bazel << EOF
-        ${bazelPythonPatch}
-        EOF
-
-        bazel vendor --lockfile_mode=update --vendor_dir="$out/vendor_dir" ${lib.escapeShellArgs bazelArgs}
-        cp MODULE.bazel.lock "$out"
-
-        echo "removing broken symlinks and markers..."
-        find "$out" -type l -lname '/*' -print -delete
-        find "$out" -xtype l -print -delete
-        rm -vrf "$out"/vendor_dir/*local_python3*
-
-        runHook postBuild
-      '';
-      dontInstall = true;
-      dontFixup = true;
-      dontWrapQtApps = true;
-    }
-  );
+  vendorDeps = mkVendorDeps {
+    inherit
+      pname
+      src
+      version
+      nativeBuildInputs
+      buildInputs
+      bazelArgs
+      ;
+    hash = "sha256-l3J2LyB95Scdz9GLC0YrPXg01jJK60woHVm3AdYQ31w=";
+  };
 in
 stdenv.mkDerivation {
   inherit
@@ -120,24 +85,11 @@ stdenv.mkDerivation {
   postPatch = ''
     cd src
 
-    cat >> MODULE.bazel << EOF
-    ${bazelPythonPatch}
-    EOF
+    ${setupBazelVendor vendorDeps}
 
     substituteInPlace config.bzl \
       --replace-fail "/usr/lib/mozc" "${mozc}/lib/mozc" \
       --replace-fail "/usr" "$out"
-
-    cp -r --no-preserve=mode "${vendorDeps}"/* .
-    substituteInPlace \
-      vendor_dir/rules_python*/python/private/py_runtime_info.bzl \
-      vendor_dir/rules_python*/python/private/py_executable.bzl \
-      vendor_dir/rules_python*/python/private/runtime_env_toolchain.bzl \
-      --replace-fail "/usr/bin/env python3" "${lib.getExe python3}"
-    patchShebangs --build vendor_dir
-    for dir in vendor_dir/*/; do
-      echo "pin(\"@@$(basename "$dir")\")"
-    done > vendor_dir/VENDOR.bazel
   '';
 
   buildPhase = ''
@@ -156,6 +108,9 @@ stdenv.mkDerivation {
     install -Dm555 bazel-bin/unix/ibus/mozc.xml        "$out/share/ibus/component/mozc.xml"
 
     unzip bazel-bin/unix/icons.zip -d "$out/share/ibus-mozc/"
+    install -Dm444 data/images/product_icon_32bpp-128.png "$out/share/ibus-mozc/product_icon.png"
+    install -Dm444 data/images/icon.svg "$out/share/ibus-mozc/product_icon.svg"
+    install -Dm444 ../LICENSE "$out/share/licenses/$pname/LICENSE"
 
     runHook postInstall
   '';
