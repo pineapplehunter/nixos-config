@@ -15,7 +15,6 @@ in
     ./nix-search-cli.nix
     ./eza.nix
     ./tpm2-tools.nix
-    ./vtk.nix
     ./opencode.nix
     ./ibus-engines.nix
     ./linux-latest.nix
@@ -42,7 +41,6 @@ in
       overlays.nix-search-cli
       overlays.eza
       overlays.tpm2-tools
-      overlays.vtk
       overlays.opencode
       overlays.ibus-engines
       overlays.linux-latest
