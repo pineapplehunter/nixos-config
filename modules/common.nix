@@ -82,6 +82,7 @@ in
             "nixos-raspberrypi.cachix.org-1:4iMO9LXa8BqhU+Rpg6LQKiGa2lsNh/j2oiYLNOQ5sPI="
             "nixos-config:Jt5a0d6g6bQnsYOOA9NQ6CuOOySP58PysEpzHiP0CcA="
             "kpro-njlab:jSnc44g1Qheplwi33yiU/cTe2ZJxaV8HSHhwUcFfJJE="
+            "daniel-njlab-pc:V0eZq7oeUT3/Kb1xDROQ/RdD9kkExII7P8KZFqnENqU="
           ];
           secret-key-files = [ config.sops.secrets.nix-signing-key.path ];
           warn-dirty = false;
