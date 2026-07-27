@@ -248,12 +248,11 @@ in
             };
           };
         };
-        timers.immich-backup = {
-          wantedBy = [ "timers.target" ];
-          timerConfig = {
-            OnCalendar = "daily";
-            OnStartupSec = "1h";
-            AccuracySec = "12h";
+        paths.immich-backup = {
+          description = "Run immich backup when db backups are created";
+          wantedBy = [ "default.target" ];
+          pathConfig = {
+            PathChanged = "/immich/storage/backups";
           };
         };
         targets.immich = {
