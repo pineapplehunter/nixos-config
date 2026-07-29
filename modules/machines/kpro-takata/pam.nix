@@ -15,46 +15,24 @@
             linux-pam
             systemd
             ;
-          # this directory will be wiped on every boot
-          stamp-dir = "/var/run/pam-timeout";
-          check-timeout = pkgs.writeShellScript "check-timeout.sh" ''
-            PATH=${lib.makeBinPath [ pkgs.coreutils ]}
-            # FIXME: this uses a plain text file that stores the time of
-            # last login.  Check if this is fine with my threat model.
-            # Hint for me: I assume no one except me has access to root user.
-            if [ -z "$PAM_USER" ]; then
-              echo no user is set
-              exit 1
-            fi
-            STAMP_FILE="${stamp-dir}/$PAM_USER/password_login_time"
-            MAX_AGE=$((12 * 60 * 60))  # 12 hours
-
-            if [[ ! -f "$STAMP_FILE" ]]; then
-              echo no stamp file found
-              exit 1  # Require password
-            fi
-
-            last_time=$(< "$STAMP_FILE")
-            now=$(date +%s)
-
-            if (( now - last_time < MAX_AGE )); then
-              exit 0  # OK to use fingerprint
-            else
-              exit 1  # Too old, force password
-            fi
-          '';
-
-          update-timeout = pkgs.writeShellScript "update-timeout.sh" ''
-            PATH=${lib.makeBinPath [ pkgs.coreutils ]}
-            umask 077
-            if [ -z "$PAM_USER" ]; then
-              echo no user is set
-              exit 1
-            fi
-            STAMP_DIR="${stamp-dir}/$PAM_USER"
-            mkdir -p "$STAMP_DIR"
-            date +%s > "$STAMP_DIR/password_login_time"
-          '';
+          # The helper stores a root-owned timestamp under /run, which is wiped
+          # on every boot. It uses CLOCK_BOOTTIME so wall-clock changes cannot
+          # extend the authentication window.
+          pam-timeout = pkgs.stdenv.mkDerivation {
+            pname = "pam-timeout";
+            version = "1";
+            src = ../pam-timeout.c;
+            dontUnpack = true;
+            buildPhase = ''
+              $CC -std=c11 -Wall -Wextra -Werror -O2 "$src" -o pam-timeout
+            '';
+            installPhase = ''
+              install -Dm0555 pam-timeout "$out/bin/pam-timeout"
+            '';
+          };
+          check-timeout = "${pam-timeout}/bin/pam-timeout check";
+          update-timeout = "${pam-timeout}/bin/pam-timeout update";
+          clear-timeout = "${pam-timeout}/bin/pam-timeout clear-on-close";
 
           # copied from nixpkgs
           # https://github.com/NixOS/nixpkgs/blob/caf5a7d2d10c4cc33d02cf16f540ba79d6ccd004/nixos/modules/security/pam.nix#L1502-L1514
@@ -85,7 +63,7 @@
             auth [success=ignore default=2]      ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${check-timeout}
             auth [success=ignore default=1] ${fprintd}/lib/security/pam_fprintd.so
             auth [success=4 default=ignore]      ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${check-timeout}
-            auth [success=1 default=ignore]      ${linux-pam}/lib/security/pam_unix.so likeauth nullok try_first_pass
+            auth [success=1 default=ignore]      ${linux-pam}/lib/security/pam_unix.so likeauth try_first_pass
             auth requisite                       ${linux-pam}/lib/security/pam_deny.so
             auth optional                        ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${update-timeout}
             auth optional                        ${gnome-keyring}/lib/security/pam_gnome_keyring.so
@@ -114,7 +92,7 @@
             # timed out.  The control flow is created by skipping lines.
             # It calls check-timeout twice to prevent toctou attacks
             # !!! PLEASE CHECK SKIP LINES WHEN MODIFYING !!!
-            auth [success=1 default=ignore] ${linux-pam}/lib/security/pam_unix.so likeauth nullok try_first_pass
+            auth [success=1 default=ignore] ${linux-pam}/lib/security/pam_unix.so likeauth try_first_pass
             auth requisite                  ${linux-pam}/lib/security/pam_deny.so
             auth optional                   ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${update-timeout}
             auth optional                   ${gnome-keyring}/lib/security/pam_gnome_keyring.so
@@ -138,6 +116,7 @@
             password  substack      only-unix-auth
             session   include       only-unix-auth
             session   include       default-with-login
+            session   optional      ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${clear-timeout}
           '';
           gdm-fingerprint = ''
             auth      substack      only-weak
@@ -145,6 +124,7 @@
             password  substack      default-auth
             session   include       default-auth
             session   include       default-with-login
+            session   optional      ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${clear-timeout}
           '';
           use-default-rule = ''
             auth      substack      default-auth
