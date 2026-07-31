@@ -194,7 +194,7 @@ in
           "aarch64-linux"
           "riscv64-linux"
           "riscv32-linux"
-          "wasm32-wasi"
+          "wasm32-wasip1"
         ];
         supportedFilesystems = [ "btrfs" ];
       };
