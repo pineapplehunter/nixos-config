@@ -9,7 +9,6 @@ let
 in
 {
   imports = [
-    ./flatpak.nix
     ./gnome-settings-daemon.nix
     ./nix-search-cli.nix
     ./eza.nix
@@ -35,7 +34,6 @@ in
 
   flake.overlays = {
     default = lib.composeManyExtensions [
-      overlays.flatpak
       overlays.gnome-settings-daemon
       overlays.nix-search-cli
       overlays.eza
