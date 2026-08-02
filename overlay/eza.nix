@@ -1,7 +1,9 @@
 {
   flake.overlays.eza = final: prev: {
     # Add capability support (security.capability xattr display).
+    # This can be dropped when the PR is merged and included in the nixpkgs package.
     # https://github.com/eza-community/eza/pull/1624 (still open)
+    # Last checked: 2026-08-02.
     eza = prev.eza.overrideAttrs (
       finalAttrs: prevAttrs: {
         version = "0-custom";

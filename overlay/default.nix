@@ -11,7 +11,6 @@ in
   imports = [
     ./flatpak.nix
     ./gnome-settings-daemon.nix
-    ./face-recognition-models.nix
     ./nix-search-cli.nix
     ./eza.nix
     ./tpm2-tools.nix
@@ -38,7 +37,6 @@ in
     default = lib.composeManyExtensions [
       overlays.flatpak
       overlays.gnome-settings-daemon
-      overlays.face-recognition-models
       overlays.nix-search-cli
       overlays.eza
       overlays.tpm2-tools
@@ -49,6 +47,10 @@ in
       overlays.custom-packages
     ];
 
+    # Expose packages under ./packages through the default overlay so machine and
+    # Home Manager modules can consume them. There is no linked upstream issue or PR.
+    # Drop this only when this repository no longer contains custom packages.
+    # Last checked: 2026-08-02.
     custom-packages =
       final: prev:
       prev.lib.packagesFromDirectoryRecursive {

@@ -157,7 +157,7 @@ in
       # Bootloader.
 
       boot = {
-        kernelPackages = pkgs.linuxPackages_latest;
+        kernelPackages = pkgs.linuxPackagesFor pkgs.linux_latest_tigerlake;
         loader.grub = {
           enable = true;
           efiSupport = true;

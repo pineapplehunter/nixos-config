@@ -1,15 +1,9 @@
 {
   flake.overlays.rpi5 = final: prev: {
-    libcamera_rpi = prev.libcamera_rpi.overrideAttrs (old: rec {
-      version = "0.7.0+rpt20260205";
-      src = final.fetchFromGitHub {
-        owner = "raspberrypi";
-        repo = "libcamera";
-        rev = "v${version}";
-        hash = "sha256-ZSKNeFDedqzcVxoLPap2dMjq+F3C1eQ+HikEKuGBOyM=";
-      };
-    });
-
+    # The pinned Raspberry Pi FFmpeg 8.0.1 fork references a field removed in
+    # SVT-AV1 4.x, preventing it from building. There is no linked issue or PR.
+    # Drop this when nixos-raspberrypi updates its FFmpeg fork for SVT-AV1 4.x.
+    # Last checked: 2026-08-02.
     ffmpeg_8-headless = prev.ffmpeg_8-headless.overrideAttrs (old: {
       patches = (old.patches or [ ]) ++ [
         ./patches/ffmpeg-svtav1-enable_adaptive_quantization.patch

@@ -1,6 +1,9 @@
 {
   flake.overlays.flatpak = final: prev: {
-    # Fix issue: slow startup time.  Reason unknown (did not search).
+    # Custom workaround for an observed 30-second delay when starting any Flatpak app.
+    # The root cause is unknown and there is no linked upstream issue or PR.
+    # Drop this once the root cause is understood and fixed without disabling document portals.
+    # Last checked: 2026-08-02.
     flatpak = prev.flatpak.overrideAttrs (old: {
       postPatch = (old.postPatch or "") + ''
         substituteInPlace common/flatpak-run.c \

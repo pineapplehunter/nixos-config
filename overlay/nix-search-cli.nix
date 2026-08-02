@@ -1,9 +1,10 @@
 { inputs, lib, ... }:
 {
   flake.overlays.nix-search-cli = final: prev: {
-    # Fix issue: non-standard version representation.
-    # Upstream VERSION file contains "v0.3\n" which builtins.readFile
-    # does not strip, producing an invalid version string.
+    # Upstream's VERSION file contains "v0.3\n", which builtins.readFile does not
+    # strip, producing a non-standard package version. There is no linked issue or PR.
+    # Drop this when upstream normalizes the VERSION value in its Nix package.
+    # Last checked: 2026-08-02.
     nix-search-cli =
       inputs.nix-search-cli.packages.${final.stdenv.hostPlatform.system}.default.overrideAttrs
         (old: {
