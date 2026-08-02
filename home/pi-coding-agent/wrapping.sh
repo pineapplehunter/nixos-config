@@ -57,6 +57,7 @@ bwrap_args=(
   --setenv GIT_AUTHOR_EMAIL 'peshogo+agent@gmail.com'
   --setenv GIT_COMMITTER_NAME 'pi-coding-agent'
   --setenv GIT_COMMITTER_EMAIL 'peshogo+agent@gmail.com'
+  --setenv EDITOR hx
 )
 
 append_args "${bwrap_args[@]}"
