@@ -11,6 +11,7 @@ in
   imports = [
     ./gnome-settings-daemon.nix
     ./nix-search-cli.nix
+    ./niks3.nix
     ./eza.nix
     ./tpm2-tools.nix
     ./opencode.nix
@@ -36,6 +37,7 @@ in
     default = lib.composeManyExtensions [
       overlays.gnome-settings-daemon
       overlays.nix-search-cli
+      overlays.niks3
       overlays.eza
       overlays.tpm2-tools
       overlays.opencode

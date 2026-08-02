@@ -283,6 +283,28 @@
         "type": "github"
       }
     },
+    "niks3": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "treefmt-nix": "treefmt-nix"
+      },
+      "locked": {
+        "lastModified": 1785657973,
+        "narHash": "sha256-Ty+So4SvktH/elWADlSPvS5u7GCtKBkqESV+V11ooNY=",
+        "owner": "pineapplehunter",
+        "repo": "niks3",
+        "rev": "5017cb7868ffc126257b1dd81a7cb6669b8e27e2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pineapplehunter",
+        "ref": "progress",
+        "repo": "niks3",
+        "type": "github"
+      }
+    },
     "nix-filter": {
       "locked": {
         "lastModified": 1710156097,
@@ -551,6 +573,7 @@
         "flake-parts": "flake-parts",
         "home-manager": "home-manager",
         "lanzaboote": "lanzaboote",
+        "niks3": "niks3",
         "nix-index-database": "nix-index-database",
         "nix-search-cli": "nix-search-cli",
         "nixgl": "nixgl",
@@ -626,7 +649,7 @@
         "rust-overlay": [
           "rust-overlay"
         ],
-        "treefmt-nix": "treefmt-nix"
+        "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
         "lastModified": 1784297078,
@@ -643,6 +666,27 @@
       }
     },
     "treefmt-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "niks3",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1780220602,
+        "narHash": "sha256-eynAfOmbmxJnkp7YewvCEbShNnnYJ9gLLqkzsYtBPeM=",
+        "owner": "numtide",
+        "repo": "treefmt-nix",
+        "rev": "db947814a175b7ca6ded66e21383d938df01c227",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "treefmt-nix_2": {
       "inputs": {
         "nixpkgs": [
           "tpm-fido2",

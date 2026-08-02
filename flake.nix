@@ -26,6 +26,10 @@
       url = "github:peterldowns/nix-search-cli";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    niks3 = {
+      url = "github:pineapplehunter/niks3?ref=progress";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     tpm-fido2 = {
       url = "github:pineapplehunter/linux-tpm-fido2";
       inputs.nixpkgs.follows = "nixpkgs";
