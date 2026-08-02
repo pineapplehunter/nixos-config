@@ -6,11 +6,13 @@
     ./hibernate.nix
     ./ima.nix
     ./japanese.nix
+    ./kde-connect.nix
     ./machines/default.nix
     ./nixos-artwork.nix
     ./packages.nix
     ./personal.nix
     ./power-targets.nix
+    ./prometheus-smartctl.nix
     ./secureboot.nix
     ./ssh-authorized-keys.nix
     ./tpm2.nix

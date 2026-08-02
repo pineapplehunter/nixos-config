@@ -28,6 +28,13 @@ in
         };
       };
 
+      networking.firewall.interfaces."tailscale0".allowedTCPPortRanges = [
+        {
+          from = 3900;
+          to = 3905;
+        }
+      ];
+
       services.garage = {
         enable = true;
         package = pkgs.garage_2;

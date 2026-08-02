@@ -25,6 +25,7 @@ in
 
       my = {
         ima.enable = true;
+        kde-connect.firewall.enable = true;
         tpm2.enable = true;
         xe = {
           enable = lib.mkDefault true;

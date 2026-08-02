@@ -26,6 +26,7 @@ in
           pi-mods.raspberry-pi-5.page-size-16k
           pi-mods.raspberry-pi-5.display-vc4
           ./pi5-configtxt.nix
+          ./samba.nix
           # Disk configuration
           # WARNING: formatting disk with disko is DESTRUCTIVE, check if
           # `disko.devices.disk.nvme0.device` is set correctly!
@@ -52,31 +53,9 @@ in
             };
           };
         };
-        firewall = {
-          allowedUDPPorts = [ 5353 ];
-          interfaces = {
-            "tailscale0" = {
-              allowedTCPPorts = [
-                # prometheus smart
-                9633
-              ];
-              allowedTCPPortRanges = [
-                # garage original
-                {
-                  from = 3900;
-                  to = 3905;
-                }
-              ];
-            };
-          };
-        };
       };
 
       systemd = {
-        network.networks = {
-          "99-ethernet-default-dhcp".networkConfig.MulticastDNS = "yes";
-          "99-wireless-client-dhcp".networkConfig.MulticastDNS = "yes";
-        };
         # This comment was lifted from `srvos`
         # Do not take down the network for too long when upgrading,
         # This also prevents failures of services that are restarted instead of stopped.
@@ -94,32 +73,6 @@ in
           enable = true;
           useRoutingFeatures = "both";
         };
-        prometheus.exporters = {
-          smartctl.enable = true;
-        };
-        samba = {
-          enable = true;
-          openFirewall = true;
-          settings = {
-            "timemachine" = {
-              "path" = "/samba/timemachine";
-              "valid users" = "andy";
-              "public" = "no";
-              "writeable" = "yes";
-              "force user" = "andy";
-              # Below are the most imporant for macOS compatibility
-              # Change the above to suit your needs
-              "fruit:aapl" = "yes";
-              "fruit:time machine" = "yes";
-              "vfs objects" = "catia fruit streams_xattr";
-            };
-          };
-        };
-        # To be discoverable with windows
-        samba-wsdd = {
-          enable = true;
-          openFirewall = true;
-        };
         udev.extraRules = ''
           # Ignore partitions with "Required Partition" GPT partition attribute
           # On our RPis this is firmware (/boot/firmware) partition
@@ -127,34 +80,6 @@ in
             ENV{ID_PART_ENTRY_FLAGS}=="0x1", \
             ENV{UDISKS_IGNORE}="1"
         '';
-        avahi = {
-          extraServiceFiles = {
-            timemachine = ''
-              <?xml version="1.0" standalone='no'?>
-              <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
-              <service-group>
-                <name replace-wildcards="yes">%h</name>
-                <service>
-                  <type>_smb._tcp</type>
-                  <port>445</port>
-                </service>
-                  <service>
-                  <type>_device-info._tcp</type>
-                  <port>0</port>
-                  <txt-record>model=TimeCapsule8,119</txt-record>
-                </service>
-                <service>
-                  <type>_adisk._tcp</type>
-                  <!-- 
-                    change tm_share to share name, if you changed it. 
-                  --> 
-                  <txt-record>dk0=adVN=tm_share,adVF=0x82</txt-record>
-                  <txt-record>sys=waMa=0,adVF=0x100</txt-record>
-                </service>
-              </service-group>
-            '';
-          };
-        };
         # Disable desktop services not needed on headless server
         xremap.enable = lib.mkForce false;
         printing.enable = lib.mkForce false;
@@ -180,8 +105,11 @@ in
       i18n.inputMethod.enable = lib.mkForce false;
       pineapplehunter.japanese.enable = lib.mkForce false;
       nixos-artwork.enable = false;
-      my.common-fonts.enable = false;
-      my.common-packages.enable = false;
+      my = {
+        common-fonts.enable = false;
+        common-packages.enable = false;
+        prometheus-smartctl.enable = true;
+      };
 
       environment.systemPackages = with pkgs; [
         nixd
@@ -209,12 +137,6 @@ in
           "wheel"
         ];
         openssh.authorizedKeys.keys = config.my.sshAuthorizedKeys;
-      };
-
-      users.users.andy = {
-        isNormalUser = true;
-        description = "Write-access to samba media shares";
-        extraGroups = [ "users" ];
       };
 
       # Don't require sudo/root to `reboot` or `poweroff`.

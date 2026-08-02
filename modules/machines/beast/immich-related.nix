@@ -7,7 +7,6 @@ in
     {
       pkgs,
       config,
-      lib,
       ...
     }:
     {
@@ -24,20 +23,6 @@ in
           immich-backup-restic-password = {
             sopsFile = flake-config.sopsFile.immich-backup-env;
             key = "restic-password";
-          };
-          garage-rpc-secret = {
-            sopsFile = flake-config.sopsFile.garage-secret;
-            key = "rpc-secret";
-            mode = "0440";
-            owner = "garage";
-            group = "garage";
-          };
-          garage-admin-token = {
-            sopsFile = flake-config.sopsFile.garage-secret;
-            key = "admin-token";
-            mode = "0440";
-            owner = "garage";
-            group = "garage";
           };
         };
         templates."immich-backup-aws-config" = {
@@ -58,41 +43,12 @@ in
           extraGroups = [ "docker" ];
         };
         groups.immich = { };
-        users.garage = {
-          isSystemUser = true;
-          group = "garage";
-        };
-        groups.garage = { };
       };
 
-      services.garage = {
-        enable = true;
-        package = pkgs.garage_2;
-        settings = lib.mkMerge [
-          (lib.importTOML ./garage-config.toml)
-          {
-            rpc_secret_file = config.sops.secrets.garage-rpc-secret.path;
-            admin.admin_token_file = config.sops.secrets.garage-admin-token.path;
-          }
-        ];
-      };
+      networking.firewall.interfaces."tailscale0".allowedTCPPorts = [ 2283 ];
 
       systemd = {
         services = {
-          garage = {
-            serviceConfig = {
-              User = "garage";
-              Group = "garage";
-              DynamicUser = false;
-              RestartSec = "1min";
-              Restart = "always";
-            };
-            environment = {
-              GARAGE_ALLOW_WORLD_READABLE_SECRETS = "true";
-            };
-            wantedBy = lib.mkForce [ "default.target" ];
-          };
-
           # to startup immich at boot
           immich-up = {
             enable = true;

@@ -5,6 +5,7 @@
     ./action/pam.nix
 
     ./beast/configuration.nix
+    ./beast/garage.nix
     ./beast/hardware-configuration.nix
     ./beast/immich-related.nix
 

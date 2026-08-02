@@ -26,9 +26,11 @@ in
           mods.hibernate
           mods.ima
           mods.japanese
+          mods.kde-connect
           mods.nixos-artwork
           mods.packages
           mods.power-targets
+          mods.prometheus-smartctl
           mods.secureboot
           mods.tpm2
           mods.windows-vm

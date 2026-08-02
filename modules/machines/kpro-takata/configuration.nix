@@ -23,6 +23,7 @@ in
 
       my = {
         ima.enable = true;
+        kde-connect.firewall.enable = true;
         secureboot.enable = true;
         tpm2.enable = true;
         xe = {
@@ -169,25 +170,6 @@ in
         hostName = "kpro-takata"; # Define your hostname.
         # Enable networking
         networkmanager.enable = true;
-
-        firewall.interfaces = {
-          "tailscale0" = {
-            allowedTCPPortRanges = [
-              {
-                # kde connect
-                from = 1714;
-                to = 1764;
-              }
-            ];
-            allowedUDPPortRanges = [
-              {
-                # kde connect
-                from = 1714;
-                to = 1764;
-              }
-            ];
-          };
-        };
       };
 
       virtualisation = {

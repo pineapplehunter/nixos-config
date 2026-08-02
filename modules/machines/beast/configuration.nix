@@ -15,10 +15,15 @@ in
         # Include the results of the hardware scan.
         os-mods.common
         os-mods.personal
+        os-mods.beast-garage
         os-mods.beast-hardware
         os-mods.beast-immich-related
         os-mods.ssh-authorized-keys
+        ./firewall/nextcloud.nix
+        ./firewall/switchbot-exporter.nix
       ];
+
+      my.prometheus-smartctl.enable = true;
 
       nix = {
         distributedBuilds = true;
@@ -122,18 +127,6 @@ in
           fileSystems = [ "/" ];
         };
         snapper.configs = {
-          garage = {
-            SUBVOLUME = "/garage";
-            ALLOW_USERS = [ "shogo" ];
-            TIMELINE_CREATE = true;
-            TIMELINE_CLEANUP = true;
-            TIMELINE_LIMIT_HOURLY = 3;
-            TIMELINE_LIMIT_DAILY = 2;
-            TIMELINE_LIMIT_WEEKLY = 0;
-            TIMELINE_LIMIT_MONTHLY = 3;
-            TIMELINE_LIMIT_YEARLY = 0;
-          };
-
           immich = {
             SUBVOLUME = "/immich";
             ALLOW_USERS = [ "shogo" ];
@@ -158,10 +151,6 @@ in
             TIMELINE_LIMIT_YEARLY = 2;
           };
         };
-        prometheus.exporters = {
-          smartctl.enable = true;
-        };
-
         fwupd.enable = true;
 
         smartd.enable = true;
@@ -176,43 +165,6 @@ in
       networking = {
         hostName = "beast"; # Define your hostname.
         networkmanager.enable = true;
-        firewall.interfaces = {
-          "tailscale0" = {
-            allowedTCPPorts = [
-              # prometheus smart
-              9633
-              # ollama
-              4000
-              # immich
-              2283
-              # prometheus switchbot-exporter
-              3725
-              # nextcloud
-              9304
-            ];
-            allowedTCPPortRanges = [
-              # garage original
-              {
-                from = 3900;
-                to = 3905;
-              }
-              #garage proxied
-              {
-                from = 3950;
-                to = 3955;
-              }
-            ];
-          };
-          "wlp36s0" = {
-            allowedTCPPortRanges = [
-              # garage original
-              {
-                from = 3900;
-                to = 3905;
-              }
-            ];
-          };
-        };
       };
 
       virtualisation = {
