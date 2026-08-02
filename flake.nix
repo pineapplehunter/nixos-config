@@ -109,34 +109,30 @@
                 '';
               };
 
-            packages.ci =
+            checks =
               let
                 check-build = drv: pkgs.runCommand "${drv.name}-check" { dummy = drv; } "touch $out";
+                individualChecks = {
+                  dev-shell = config.flake.devShells.${system}.default;
+                  user-shogo = config.flake.homeConfigurations."shogo-${system}".activationPackage;
+                  user-minimal-shogo = config.flake.homeConfigurations."minimal-shogo-${system}".activationPackage;
+                }
+                // lib.optionalAttrs (system == "x86_64-linux") {
+                  action = config.flake.nixosConfigurations.action.config.system.build.toplevel;
+                  beast = config.flake.nixosConfigurations.beast.config.system.build.toplevel;
+                  kpro-takata = config.flake.nixosConfigurations.kpro-takata.config.system.build.toplevel;
+                }
+                // lib.optionalAttrs (system == "aarch64-linux") {
+                  rpi5 = config.flake.nixosConfigurations.rpi5.config.system.build.toplevel;
+                }
+                // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+                  inherit (pkgs)
+                    stl2pov
+                    nautilus-thumbnailer-stl
+                    ;
+                };
               in
-              pkgs.runCommand "fast-check" {
-                dummy = map check-build (lib.attrValues config.flake.checks.${system}) ++ [
-                  (check-build config.flake.devShells.${system}.default)
-                ];
-              } "touch $out";
-
-            checks = {
-              user-shogo = config.flake.homeConfigurations."shogo-${system}".activationPackage;
-              user-minimal-shogo = config.flake.homeConfigurations."minimal-shogo-${system}".activationPackage;
-            }
-            // lib.optionalAttrs (system == "x86_64-linux") {
-              action = config.flake.nixosConfigurations.action.config.system.build.toplevel;
-              beast = config.flake.nixosConfigurations.beast.config.system.build.toplevel;
-              kpro-takata = config.flake.nixosConfigurations.kpro-takata.config.system.build.toplevel;
-            }
-            // lib.optionalAttrs (system == "aarch64-linux") {
-              rpi5 = config.flake.nixosConfigurations.rpi5.config.system.build.toplevel;
-            }
-            // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
-              inherit (pkgs)
-                stl2pov
-                nautilus-thumbnailer-stl
-                ;
-            };
+              lib.mapAttrs (_: check-build) individualChecks;
           };
       }
     );
