@@ -13,10 +13,14 @@ on:
 permissions:
   id-token: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         system:
           - "aarch64-darwin"
