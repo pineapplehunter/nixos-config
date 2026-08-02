@@ -19,6 +19,7 @@ in
     ./ibus-engines.nix
     ./linux-latest.nix
     ./rpi5.nix
+    ./fwupd.nix
   ];
 
   perSystem =
@@ -44,6 +45,7 @@ in
       overlays.opencode
       overlays.ibus-engines
       overlays.linux-latest
+      overlays.fwupd
       overlays.custom-packages
     ];
 
