@@ -1,19 +1,23 @@
 # Overlays
 
-This directory contains Nix overlays used by this repository. They provide local
-package customizations, workarounds for upstream issues, newer package variants,
-and packages maintained directly in this configuration.
+This directory contains Nix overlays used by this repository.
+They provide
+- Local package customizations
+- Workarounds for upstream issues
+- Newer package variants
+- Packages maintained directly in this configuration
 
-The overlays are assembled in `default.nix`. Most are included in the default
-overlay, while hardware-specific overlays may be enabled only by the relevant
-machine configuration.
+## Adding an overlay
 
-Each workaround or package override should have a comment explaining:
+All overlays must be registered in `default.nix`.
+Add comments covering the following to the overlay file:
 
-- why it is needed;
-- the relevant upstream issue, pull request, or commit, when one exists;
-- when the override can be removed; and
-- when its relevance was last checked.
+- Why it is needed
+- The relevant upstream issue, pull request, or commit, when one exists
+- When the override can be removed
+- When its relevance was last checked
+
+Most should be included in the default overlay, while hardware-specific overlays may be enabled only by the relevant machine configuration.
 
 ## Instructions for agents
 
