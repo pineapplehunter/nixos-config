@@ -8,7 +8,12 @@ compatibility: pi
 
 Use this skill for tasks that require running `nix build` or `nix-build`.
 
-For long-running builds/checks, run them with `pueue add -- <command>` and then `pueue wait <id>` before collecting status/logs.
+For long-running builds/checks, run them with pueue:
+
+```shell
+pueue add -- <command> && pueue wait
+pueue log <id>
+````
 
 ## Reduce Output
 
@@ -17,7 +22,7 @@ Suppress build output by default to reduce token usage.
 For `nix-build`, use both quiet flags:
 
 ```shell
-nix-build -Q -q --no-link --print-out-paths -A package-name
+nix-build -Q --no-link -A package-name
 ```
 
 For `nix build`, use `--quiet`:
@@ -32,7 +37,7 @@ Add quiet options for all nix related subcommands such as `nix flake check` too.
 
 Always add `--no-link` unless the task explicitly needs a `result` symlink.
 
-Always add `--print-out-paths` so successful builds print the output path for easier debugging and follow-up inspection.
+Always add `--print-out-paths` for nix commands so successful builds print the output path for easier debugging and follow-up inspection.
 
 ## Debug Build Output
 
