@@ -5,8 +5,19 @@
       isLinux = pkgs.stdenv.hostPlatform.isLinux;
       wrapper = pkgs.writeShellApplication {
         name = "bubble-wrapper";
-        runtimeInputs = [ pkgs.bubblewrap ];
+        runtimeInputs = [ pkgs.bubblewrap pkgs.pueue ];
         text = lib.readFile ./wrapping.sh;
+      };
+
+      pueueConfig = pkgs.writeText "pi-pueue.yml" (lib.readFile ./pueue.yml);
+
+      piWithPueue = pkgs.writeShellApplication {
+        name = "pi-with-pueue";
+        runtimeInputs = [ pkgs.pueue ];
+        text = builtins.replaceStrings
+          [ "@PI_EXECUTABLE@" ]
+          [ (lib.getExe pkgs.pi-coding-agent) ]
+          (lib.readFile ./pi-with-pueue.sh);
       };
 
       piCodingAgentWrapped =
@@ -19,8 +30,9 @@
               rm -rf "$out/bin"
               mkdir "$out/bin"
               makeWrapper "${lib.getExe wrapper}" "$out/bin/pi" \
-                --set EXECUTABLE "${lib.getExe pkgs.pi-coding-agent}" \
-                --set PROJECT_ROOT_FILE flake.nix
+                --set EXECUTABLE "${lib.getExe piWithPueue}" \
+                --set PROJECT_ROOT_FILE flake.nix \
+                --set PUEUE_CONFIG_PATH "${pueueConfig}"
             '';
           }
         else
@@ -44,6 +56,7 @@
         ".pi/agent/skills/flake.md".source = ./flake.md;
         ".pi/agent/skills/nix-build.md".source = ./nix-build.md;
         ".pi/agent/skills/nixpkgs.md".source = ./nixpkgs.md;
+        ".pi/agent/skills/pueue.md".source = ./pueue.md;
         ".pi/agent/skills/rust.md".source = ./rust.md;
         ".pi/agent/skills/sandbox-info.md".source = ./sandbox.md;
       };

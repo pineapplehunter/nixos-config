@@ -8,6 +8,8 @@ compatibility: pi
 
 Use this skill for tasks that require running `nix build` or `nix-build`.
 
+For long-running builds/checks, run them with `pueue add -- <command>` and then `pueue wait <id>` before collecting status/logs.
+
 ## Reduce Output
 
 Suppress build output by default to reduce token usage.

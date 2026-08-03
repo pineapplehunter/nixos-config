@@ -1,0 +1,6 @@
+shared:
+  pueue_directory: /tmp/pi-pueue
+  runtime_directory: /tmp/pi-pueue
+  use_unix_socket: true
+  unix_socket_path: /tmp/pi-pueue/pueue.socket
+  pid_path: /tmp/pi-pueue/pueue.pid

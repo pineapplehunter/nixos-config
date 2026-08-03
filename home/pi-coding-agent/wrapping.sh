@@ -53,6 +53,7 @@ bwrap_args=(
   --setenv LANG C
   --setenv HOME "$HOME"
   --setenv PWD "$PWD"
+  --setenv PUEUE_CONFIG_PATH "$PUEUE_CONFIG_PATH"
   --setenv GIT_AUTHOR_NAME 'pi-coding-agent'
   --setenv GIT_AUTHOR_EMAIL 'peshogo+agent@gmail.com'
   --setenv GIT_COMMITTER_NAME 'pi-coding-agent'
