@@ -9,6 +9,7 @@
   mozcdic-ut-skk-jisyo,
   mozcdic-ut-sudachidict,
 }:
+# Associated PR: https://github.com/NixOS/nixpkgs/pull/531687.
 mozc.override {
   dictionaries = [
     mozcdic-ut-alt-cannadic

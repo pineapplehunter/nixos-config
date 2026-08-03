@@ -15,6 +15,7 @@
   dictionaries ? [ ],
   merge-ut-dictionaries,
 }:
+# Associated PR: https://github.com/NixOS/nixpkgs/pull/531687.
 let
   bazel = bazel_9;
 

@@ -15,6 +15,7 @@
   copyDesktopItems,
   mozc,
 }:
+# Associated PR: https://github.com/NixOS/nixpkgs/pull/531687.
 let
   pname = "ibus-mozc";
   inherit (mozc)
