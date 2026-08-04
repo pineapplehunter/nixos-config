@@ -14,7 +14,6 @@ in
     ./niks3.nix
     ./eza.nix
     ./tpm2-tools.nix
-    ./opencode.nix
     ./ibus-engines.nix
     ./linux-latest.nix
     ./rpi5.nix
@@ -40,7 +39,6 @@ in
       overlays.niks3
       overlays.eza
       overlays.tpm2-tools
-      overlays.opencode
       overlays.ibus-engines
       overlays.linux-latest
       overlays.fwupd
