@@ -19,5 +19,5 @@ See README.md in each subdirectory for more information.
 When modifying the source, be sure to check that it evaluates correctly.
 
 ```shell
-nix flake check --no-build
+nix flake check --no-build --all-systems
 ```
