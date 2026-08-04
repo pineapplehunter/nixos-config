@@ -1,6 +1,6 @@
 ---
 name: pueue
-description: Use pueue to run, inspect, wait for, and read logs of background tasks via a local pueued daemon.
+description: Use pueue to run commands in the background. Use for build testing and other long running commands.
 ---
 
 # Pueue
