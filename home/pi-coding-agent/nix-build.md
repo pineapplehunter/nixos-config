@@ -31,19 +31,13 @@ Since it is significantly faster to run builds on remote builders, retry buildin
 
 Always add `--no-link` unless the task explicitly needs a `result` symlink.
 
-## Use pueue
-
-Many nix operation take significan amount of time which causes the bash tool to timeout.
-Use pueue and run the commands in the background.
-
-```shell
-pueue add -- <command> && pueue wait
-pueue log <id>
-````
-
 ## NixOS Tests
 
 Set sensible timeouts in NixOS tests. Avoid unbounded waits such as `wait_until_succeeds` without a timeout when a service, network condition, or VM state may hang.
 
 Prefer explicit bounded waits that match the expected startup time, and keep them as short as practical while avoiding flakes.
 
+## Use pueue
+
+Many nix operations take a significant amount of time, which causes the bash tool to timeout.
+Use pueue and run the commands in the background.

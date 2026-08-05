@@ -5,7 +5,10 @@
       isLinux = pkgs.stdenv.hostPlatform.isLinux;
       wrapper = pkgs.writeShellApplication {
         name = "bubble-wrapper";
-        runtimeInputs = [ pkgs.bubblewrap pkgs.pueue ];
+        runtimeInputs = [
+          pkgs.bubblewrap
+          pkgs.pueue
+        ];
         text = lib.readFile ./wrapping.sh;
       };
 
@@ -14,10 +17,9 @@
       piWithPueue = pkgs.writeShellApplication {
         name = "pi-with-pueue";
         runtimeInputs = [ pkgs.pueue ];
-        text = builtins.replaceStrings
-          [ "@PI_EXECUTABLE@" ]
-          [ (lib.getExe pkgs.pi-coding-agent) ]
-          (lib.readFile ./pi-with-pueue.sh);
+        text = builtins.replaceStrings [ "@PI_EXECUTABLE@" ] [ (lib.getExe pkgs.pi-coding-agent) ] (
+          lib.readFile ./pi-with-pueue.sh
+        );
       };
 
       piCodingAgentWrapped =
@@ -58,7 +60,6 @@
         ".pi/agent/skills/flake.md".source = ./flake.md;
         ".pi/agent/skills/nix-build.md".source = ./nix-build.md;
         ".pi/agent/skills/nixpkgs.md".source = ./nixpkgs.md;
-        ".pi/agent/skills/pueue.md".source = ./pueue.md;
         ".pi/agent/skills/rust.md".source = ./rust.md;
         ".pi/agent/skills/sandbox-info.md".source = ./sandbox.md;
       };

@@ -17,7 +17,9 @@ export default function (pi: ExtensionAPI) {
   pi.on("before_agent_start", (event) => ({
     systemPrompt:
       `${event.systemPrompt}\n\n` +
-      "Bash commands run through `nix develop` by default. If entering the development shell fails or a command must run outside it, begin the bash command with `# pi:native` on its own line to bypass the wrapper for that call.",
+      `All commands will run through the "nix develop -c" wrapper by default for convenience. ` +
+      `When you need to debug the behaviour of nix develop itself, prefix the bash command ` +
+      "with `# pi:native` on its own line to bypass the wrapper.",
   }));
 
   pi.on("tool_call", (event) => {

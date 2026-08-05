@@ -12,22 +12,6 @@ Use this skill when a command needs tools that are provided by a project's `flak
 
 Check for `flake.nix` at the project root or in an ancestor directory. The `devShells` outputs define development environments and the command-line tools available inside them.
 
-## Run Commands In The Dev Shell
-
-Prefer running commands through `nix develop` instead of asking the user to install tools globally:
-
-```shell
-nix develop -c command arg1 arg2
-```
-
-For commands that need shell features such as pipes, redirects, variable expansion, or `&&`, run an explicit shell inside the dev environment:
-
-```shell
-nix develop -c bash -lc 'command arg1 | tee /tmp/output.log'
-```
-
-Use the repository root as the working directory unless the task requires a specific subdirectory.
-
 ## Find Missing Packages
 
 Use the `nix-search` tool to find package attribute names before editing a flake. Prefer package attributes that already exist in nixpkgs over ad-hoc downloads.
@@ -52,7 +36,7 @@ After changing a flake, run the smallest useful check, such as:
 
 ```shell
 nix flake check
-nix develop -c command --version
+command --version
 ```
 
 Avoid expensive checks unless the user requested them or the change is risky.
