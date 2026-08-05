@@ -53,6 +53,8 @@
           You are running in a sandbox created with linux namespacing.
           For more information, see skill `sandbox-info`.
         '';
+        ".pi/agent/extensions/bash-nix-develop.ts".source = ./bash-nix-develop.ts;
+        ".pi/agent/extensions/pueue.ts".source = ./pueue.ts;
         ".pi/agent/skills/flake.md".source = ./flake.md;
         ".pi/agent/skills/nix-build.md".source = ./nix-build.md;
         ".pi/agent/skills/nixpkgs.md".source = ./nixpkgs.md;
