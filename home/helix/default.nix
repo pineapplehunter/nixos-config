@@ -87,6 +87,23 @@
             comment-tokens = [ "//" ];
             file-types = [ "spthy" ];
           }
+          {
+            name = "veryl";
+            source = pkgs.fetchFromGitHub {
+              owner = "veryl-lang";
+              repo = "tree-sitter-veryl";
+              rev = "f38156e6fa97e7386cdfbcbcc537dc970a13c3ce";
+              hash = "sha256-EoxR2W3Kc+U/kw7TQLPZOu8KvYZX5KcuFUfwSsP+5n0=";
+            };
+            comment-tokens = [ "//" ];
+            block-comment-tokens = [
+              {
+                start = "/*";
+                end = "*/";
+              }
+            ];
+            file-types = [ "veryl" ];
+          }
         ];
         languages = lib.importTOML ./helix-languages.toml;
         settings = {
