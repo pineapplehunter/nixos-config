@@ -18,6 +18,9 @@ export default function (pi: ExtensionAPI) {
     promptSnippet: "Queue commands and optionally wait with a timeout",
     promptGuidelines: [
       "Use pueue for background commands and when multiple commands can be queued together.",
+      "After using pueue, inspect a task's results with `pueue log <id>` with the bash tool.",
+      "After using pueue, wait for all queued tasks to finish with `pueue wait` with bash tool.",
+      "Use `pueue --help` for more information about pueue commands.",
     ],
     parameters: Type.Object({
       commands: Type.Array(
