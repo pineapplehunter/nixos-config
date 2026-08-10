@@ -45,6 +45,7 @@ jobs:
           extra_nix_config: |
             fallback = true
             accept-flake-config = true
+            max-jobs = 1
             system = ${{ matrix.system }}
 
       - name: Build niks3
