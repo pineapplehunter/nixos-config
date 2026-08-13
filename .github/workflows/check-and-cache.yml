@@ -31,6 +31,8 @@ jobs:
       || (matrix.system == 'aarch64-linux' && 'ubuntu-26.04-arm')
       || (matrix.system == 'aarch64-darwin' && 'macos-latest') }}
 
+    timeout-minutes: 720 # 12 hours
+
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: enable unprivileged userns clone
