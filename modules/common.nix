@@ -50,6 +50,7 @@ in
           lib.elem (pkgs.lib.getName pkg) [
             "libfprint-2-tod1-goodix"
             "vscode"
+            "tss2"
             # printer drivers
             "brgenml1lpr"
             "cnijfilter2"
