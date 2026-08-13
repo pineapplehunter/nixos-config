@@ -1,5 +1,24 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { Container, Text } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
+
+function formatDuration(ms: number): string {
+  return `${(ms / 1000).toFixed(1)}s`;
+}
+
+function getTextOutput(result: { content: Array<{ type: string; text?: string }> }): string {
+  return result.content
+    .filter((item) => item.type === "text")
+    .map((item) => item.text ?? "")
+    .join("\n");
+}
+
+function styleOutput(output: string, color: (text: string) => string): string {
+  return output
+    .split("\n")
+    .map(color)
+    .join("\n");
+}
 
 function shellQuote(value: string): string {
   return `'${value.replaceAll("'", `'\\''`)}'`;
@@ -102,12 +121,12 @@ export default function (pi: ExtensionAPI) {
 
       if (waitResult.killed) {
         throw new Error(
-          `Timed out after ${timeoutSeconds} seconds waiting for pueue tasks ${taskIds.join(", ")}. The tasks remain managed by pueue.`,
+          `Timed out after ${timeoutSeconds} seconds waiting for pueue tasks. The tasks remain managed by pueue.\n\nQueued pueue tasks:\n${queuedTasks}`,
         );
       }
       if (waitResult.code !== 0) {
         throw new Error(
-          `Failed while waiting for pueue tasks ${taskIds.join(", ")}: ${waitResult.stderr || waitResult.stdout}`,
+          `Failed while waiting for pueue tasks: ${waitResult.stderr || waitResult.stdout}\n\nQueued pueue tasks:\n${queuedTasks}`,
         );
       }
 
@@ -122,6 +141,69 @@ export default function (pi: ExtensionAPI) {
           timeoutSeconds,
         },
       };
+    },
+
+    renderCall(_args, theme, context) {
+      const state = context.state as {
+        startedAt?: number;
+        endedAt?: number;
+        interval?: ReturnType<typeof setInterval>;
+      };
+      if (context.executionStarted && state.startedAt === undefined) {
+        state.startedAt = Date.now();
+        state.endedAt = undefined;
+      }
+
+      const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);
+      text.setText(theme.fg("toolTitle", theme.bold("Pueue")));
+      return text;
+    },
+
+    renderResult(result, options, theme, context) {
+      const state = context.state as {
+        startedAt?: number;
+        endedAt?: number;
+        interval?: ReturnType<typeof setInterval>;
+      };
+      if (state.startedAt !== undefined && options.isPartial && !state.interval) {
+        state.interval = setInterval(() => context.invalidate(), 1000);
+      }
+      if (!options.isPartial || context.isError) {
+        state.endedAt ??= Date.now();
+        if (state.interval) {
+          clearInterval(state.interval);
+          state.interval = undefined;
+        }
+      }
+
+      const component =
+        (context.lastComponent as Container | undefined) ?? new Container();
+      component.clear();
+
+      const output = getTextOutput(result);
+      if (output) {
+        component.addChild(
+          new Text(
+            `\n${styleOutput(output, (line) => theme.fg("toolOutput", line))}`,
+            0,
+            0,
+          ),
+        );
+      }
+      if (state.startedAt !== undefined) {
+        const label = options.isPartial ? "Elapsed" : "Took";
+        const endTime = state.endedAt ?? Date.now();
+        component.addChild(
+          new Text(
+            `\n${theme.fg("muted", `${label} ${formatDuration(endTime - state.startedAt)}`)}`,
+            0,
+            0,
+          ),
+        );
+      }
+
+      component.invalidate();
+      return component;
     },
   });
 }
