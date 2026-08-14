@@ -56,6 +56,7 @@
           For more information, see skill `sandbox-info`.
         '';
         ".pi/agent/extensions/bash-nix-develop.ts".source = ./bash-nix-develop.ts;
+        ".pi/agent/extensions/nix-search.ts".source = ./nix-search.ts;
         ".pi/agent/extensions/pueue.ts".source = ./pueue.ts;
         ".pi/agent/skills/flake.md".source = ./flake.md;
         ".pi/agent/skills/nix-build.md".source = ./nix-build.md;
