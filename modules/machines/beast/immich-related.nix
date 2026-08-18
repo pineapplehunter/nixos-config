@@ -109,6 +109,7 @@ in
               mkdir -p /tmp/immich-database
               cleanup () {
                 rm -rf /tmp/immich-database
+                restic unlock
               }
               trap cleanup EXIT
 
