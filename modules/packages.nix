@@ -23,6 +23,7 @@
           btrfs-assistant
           curlFull
           delta
+          e2fsprogs
           fd
           file
           fsverity-utils
