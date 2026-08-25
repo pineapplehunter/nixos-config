@@ -5,8 +5,8 @@
     # The fork packages each executable separately, so join them to preserve the three
     # binaries provided by nixpkgs' niks3 package.
     # Drop this override once the progress UI is available in the upstream niks3 package.
-    # Fork commit: https://github.com/pineapplehunter/niks3/commit/5017cb7868ffc126257b1dd81a7cb6669b8e27e2
-    # Last checked: 2026-08-02.
+    # Fork commit: https://github.com/pineapplehunter/niks3/commit/e66149e0ff04b06d6fdc94965f2cdeb2a7dbaf04
+    # Last checked: 2026-08-26.
     niks3 =
       let
         packages = inputs.niks3.packages.${final.stdenv.hostPlatform.system};

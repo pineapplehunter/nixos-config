@@ -13,7 +13,6 @@ in
     ./nix-search-cli.nix
     ./niks3.nix
     ./eza.nix
-    ./tpm2-tools.nix
     ./ibus-engines.nix
     ./linux-latest.nix
     ./rpi5.nix
@@ -38,7 +37,6 @@ in
       overlays.nix-search-cli
       overlays.niks3
       overlays.eza
-      overlays.tpm2-tools
       overlays.ibus-engines
       overlays.linux-latest
       overlays.fwupd
@@ -48,7 +46,7 @@ in
     # Expose packages under ./packages through the default overlay so machine and
     # Home Manager modules can consume them. There is no linked upstream issue or PR.
     # Drop this only when this repository no longer contains custom packages.
-    # Last checked: 2026-08-02.
+    # Last checked: 2026-08-26.
     custom-packages =
       final: prev:
       prev.lib.packagesFromDirectoryRecursive {

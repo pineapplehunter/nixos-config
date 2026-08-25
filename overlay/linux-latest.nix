@@ -4,7 +4,7 @@
     # There is no linked upstream issue or PR; implementation reference:
     # https://www.reddit.com/r/NixOS/comments/1b77j9i/build_with_marchnative_and_etc/
     # Drop individual variants when their corresponding machines no longer use them.
-    # Last checked: 2026-08-02.
+    # Last checked: 2026-08-26.
     linux_latest_arrowlake = prev.linux_latest.overrideAttrs (old: {
       env = (old.env or { }) // {
         KCFLAGS = "-march=arrowlake -mtune=arrowlake";
