@@ -26,10 +26,6 @@ in
         kde-connect.firewall.enable = true;
         secureboot.enable = true;
         tpm2.enable = true;
-        xe = {
-          enable = lib.mkDefault true;
-          devices = [ "7d51" ];
-        };
       };
 
       # nixpkgs.flake.source = lib.mkForce null;
@@ -257,9 +253,6 @@ in
       security.tpm2.fapi.profileName = "P_ECCP384SHA384";
 
       specialisation = {
-        no-xe.configuration = {
-          my.xe.enable = false;
-        };
         noresume.configuration = {
           boot.kernelParams = [ "noresume" ];
         };

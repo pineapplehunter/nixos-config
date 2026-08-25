@@ -34,7 +34,6 @@ in
           mods.secureboot
           mods.tpm2
           mods.windows-vm
-          mods.xe-driver
         ];
 
       pineapplehunter.japanese.enable = true;

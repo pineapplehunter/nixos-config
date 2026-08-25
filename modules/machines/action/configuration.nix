@@ -27,10 +27,6 @@ in
         ima.enable = true;
         kde-connect.firewall.enable = true;
         tpm2.enable = true;
-        xe = {
-          enable = lib.mkDefault true;
-          devices = [ "9a49" ];
-        };
       };
 
       # nixpkgs.flake.source = lib.mkForce null;
@@ -288,9 +284,6 @@ in
       services.openssh.settings.PasswordAuthentication = false;
 
       specialisation = {
-        no-xe.configuration = {
-          my.xe.enable = false;
-        };
         noresume.configuration = {
           boot.kernelParams = [ "noresume" ];
         };
