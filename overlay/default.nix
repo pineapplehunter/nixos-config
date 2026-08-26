@@ -14,7 +14,6 @@ in
     ./niks3.nix
     ./eza.nix
     ./ibus-engines.nix
-    ./linux-latest.nix
     ./rpi5.nix
     ./fwupd.nix
   ];
@@ -38,7 +37,6 @@ in
       overlays.niks3
       overlays.eza
       overlays.ibus-engines
-      overlays.linux-latest
       overlays.fwupd
       overlays.custom-packages
     ];
