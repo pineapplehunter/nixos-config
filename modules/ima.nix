@@ -25,29 +25,6 @@
       config = lib.mkIf cfg.enable {
         boot = {
           initrd.systemd.tpm2.enable = true;
-          kernelPatches = [
-            {
-              name = "builtin-crypto";
-              patch = null;
-              structuredExtraConfig = with lib.kernel; {
-                # IMA initializes before modules are measured, so its crypto
-                # dependencies must be available without module loading.
-                CRYPTO = yes;
-                CRYPTO_ALGAPI = yes;
-                CRYPTO_HASH = yes;
-                CRYPTO_HASH_INFO = yes;
-                CRYPTO_HMAC = yes;
-                CRYPTO_MANAGER = yes;
-                CRYPTO_SHA1 = yes;
-                CRYPTO_SHA256 = yes;
-
-                # Used by the asymmetric-key path that NixOS enables for IMA.
-                CRYPTO_AKCIPHER = yes;
-                CRYPTO_RSA = yes;
-                CRYPTO_SIG = yes;
-              };
-            }
-          ];
           kernelParams = map (p: "ima_policy=${p}") cfg.policy;
         };
 
