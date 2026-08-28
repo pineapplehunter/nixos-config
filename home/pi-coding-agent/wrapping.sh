@@ -106,13 +106,15 @@ if [[ -f "$PROJECT_ROOT/.git" ]]; then
   append_args --bind "$GITDIR" "$GITDIR"
 fi
 
-# Persistent per-project temporary directory. This is mounted as /tmp inside the
-# sandbox so normal tooling defaults survive across pi restarts.
+# Persistent per-project temporary directory. Keep it visible at its host path
+# as well as /tmp so a nested pi wrapper resolves and reuses the same directory.
 DIR_HASH=$(echo "$PROJECT_ROOT" | sha256sum | cut -F 1)
 SANDBOX_TMP_DIR="$HOME"/.local/share/pi-tmp/"$DIR_HASH"
 mkdir -p "$SANDBOX_TMP_DIR"
 chmod 700 "$SANDBOX_TMP_DIR"
-append_args --bind "$SANDBOX_TMP_DIR" /tmp
+append_args \
+  --bind "$SANDBOX_TMP_DIR" "$SANDBOX_TMP_DIR" \
+  --bind "$SANDBOX_TMP_DIR" /tmp
 
 # Parse special arguments (only before first non-@ argument or @@)
 while [[ "${1:-}" == @* ]]; do
