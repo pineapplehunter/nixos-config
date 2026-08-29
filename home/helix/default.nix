@@ -75,6 +75,26 @@
             file-types = [ "ninja" ];
           }
           {
+            # ProVerif
+            name = "proverif";
+            source = pkgs.fetchFromGitHub {
+              owner = "maribu";
+              repo = "tree-sitter-proverif";
+              rev = "7741807092c4009c1fe4c3648da60ca72b1b80f1";
+              hash = "sha256-fMtGQsEbZHNIamrz3hoGvCJn5Dtu0oHhuLmMxOjFhGU=";
+            };
+            block-comment-tokens = [
+              {
+                start = "(*";
+                end = "*)";
+              }
+            ];
+            file-types = [
+              "pv"
+              "pvl"
+            ];
+          }
+          {
             # Tamarin
             name = "spthy";
             source = pkgs.fetchFromGitHub {
