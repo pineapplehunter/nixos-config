@@ -21,6 +21,7 @@ in
           inputs.xremap-flake.nixosModules.default
           inputs.disko.nixosModules.disko
           inputs.tpm-fido2.nixosModules.default
+          mods.captive
           mods.fonts
           mods.gstreamer
           mods.hibernate

@@ -24,6 +24,7 @@ in
       ];
 
       my = {
+        captive.tailescale.enable = true;
         ima.enable = true;
         kde-connect.firewall.enable = true;
         tpm2.enable = true;

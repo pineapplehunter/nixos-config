@@ -1,5 +1,6 @@
 {
   imports = [
+    ./captive.nix
     ./common.nix
     ./fonts.nix
     ./gstreamer.nix
