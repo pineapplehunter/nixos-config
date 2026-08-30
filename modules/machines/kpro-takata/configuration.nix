@@ -124,7 +124,6 @@ in
         };
 
         ollama.enable = true;
-        llama-cpp.enable = true;
 
         tailscale = {
           enable = true;
