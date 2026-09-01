@@ -62,23 +62,22 @@ in
       nix = {
         package = pkgs.nixVersions.latest;
         settings = {
+          allow-import-from-derivation = false;
+          allowed-users = [ "@nix" ];
+          auto-allocate-uids = true;
+          builders-use-substitutes = true;
           experimental-features = [
             "auto-allocate-uids"
             "cgroups"
             "flakes"
             "nix-command"
           ];
-          auto-allocate-uids = true;
-          allowed-users = [ "@nix" ];
           sandbox = true;
           sandbox-fallback = false;
+          secret-key-files = [ config.sops.secrets.nix-signing-key.path ];
           substituters = [
             "https://cache.nixos.org"
             "https://niks3.gweb.ihavenojob.work?priority=50"
-          ];
-          trusted-substituters = [
-            "https://niks3.gweb.ihavenojob.work"
-            "https://nixos-raspberrypi.cachix.org"
           ];
           trusted-public-keys = [
             "niks3-cache:RW+9UW/AgeDvEawJndPbzNVYQcDPjXA4J23srAi5+sE="
@@ -87,10 +86,12 @@ in
             "kpro-njlab:jSnc44g1Qheplwi33yiU/cTe2ZJxaV8HSHhwUcFfJJE="
             "daniel-njlab-pc:V0eZq7oeUT3/Kb1xDROQ/RdD9kkExII7P8KZFqnENqU="
           ];
-          secret-key-files = [ config.sops.secrets.nix-signing-key.path ];
-          warn-dirty = false;
-          allow-import-from-derivation = false;
+          trusted-substituters = [
+            "https://niks3.gweb.ihavenojob.work"
+            "https://nixos-raspberrypi.cachix.org"
+          ];
           use-cgroups = true;
+          warn-dirty = false;
         };
         gc = {
           automatic = true;

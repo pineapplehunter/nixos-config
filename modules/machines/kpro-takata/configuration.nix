@@ -76,11 +76,6 @@ in
             system = "x86_64-linux";
           }
         ];
-        settings = {
-          builders-use-substitutes = true;
-          connect-timeout = 10;
-        };
-        # channel.enable = false;
       };
 
       services = {

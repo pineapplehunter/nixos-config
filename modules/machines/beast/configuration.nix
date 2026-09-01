@@ -43,9 +43,6 @@ in
             speedFactor = 1;
           }
         ];
-        extraOptions = ''
-          builders-use-substitutes = true
-        '';
       };
 
       environment.systemPackages = [

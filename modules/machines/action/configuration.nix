@@ -87,11 +87,6 @@ in
             speedFactor = 2;
           }
         ];
-        settings = {
-          connect-timeout = 10;
-          builders-use-substitutes = true;
-        };
-        # channel.enable = false;
       };
 
       services = {
