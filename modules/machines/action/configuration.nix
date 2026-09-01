@@ -200,11 +200,6 @@ in
       systemd = {
         # speedup boot
         services = {
-          docker.wantedBy = lib.mkForce [ "default.target" ];
-          ollama.wantedBy = lib.mkForce [ "default.target" ];
-          libvirtd.wantedBy = lib.mkForce [ "default.target" ];
-          libvirt-guests.wantedBy = lib.mkForce [ "default.target" ];
-
           btrfs-reclaim = {
             description = "Initial setup for btrfs reclaim";
             wantedBy = [ "default.target" ];
