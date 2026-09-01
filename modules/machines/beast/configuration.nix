@@ -9,7 +9,7 @@ let
 in
 {
   flake.nixosModules.beast =
-    { pkgs, config, ... }:
+    { pkgs, lib, config, ... }:
     {
       imports = [
         # Include the results of the hardware scan.
@@ -110,14 +110,6 @@ in
       services = {
         logind.settings.Login.HandlePowerKey = "poweroff";
 
-        # Enable the GNOME Desktop Environment.
-        desktopManager.gnome = {
-          enable = true;
-        };
-        displayManager.gdm = {
-          enable = true;
-          autoSuspend = false;
-        };
         tailscale = {
           enable = true;
           useRoutingFeatures = "both";
@@ -161,6 +153,8 @@ in
         tlp.enable = false;
         tuned.enable = true;
 
+        flatpak.enable = lib.mkForce false;
+
         # explicitly set to disable warnings
         xremap.enable = false;
 
@@ -197,6 +191,18 @@ in
       };
 
       # Define a user account. Don't forget to set a password with ‘passwd’.
+      specialisation = {
+        gui.configuration = {
+          services.displayManager.gdm = {
+            enable = true;
+            autoSuspend = false;
+          };
+          services.desktopManager.gnome.enable = true;
+          services.flatpak.enable = true;
+          xdg.portal.enable = true;
+        };
+      };
+
       users.users.shogo = {
         isNormalUser = true;
         extraGroups = [
