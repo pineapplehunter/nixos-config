@@ -51,6 +51,7 @@ in
       environment.systemPackages = [
         pkgs.podman-compose
         pkgs.smartmontools
+        pkgs.rocmPackages.rocm-smi
       ];
 
       # Use the systemd-boot EFI boot loader.
@@ -160,6 +161,11 @@ in
 
         # explicitly set to disable warnings
         xremap.enable = false;
+
+        ollama = {
+          enable = true;
+          package = pkgs.ollama-rocm;
+        };
       };
 
       networking = {
