@@ -125,7 +125,10 @@ in
         };
         btrfs.autoScrub = {
           enable = true;
-          fileSystems = [ "/" ];
+          fileSystems = [
+            "/"
+            "/nix"
+          ];
         };
         snapper.configs = {
           immich = {
