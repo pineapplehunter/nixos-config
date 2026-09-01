@@ -108,6 +108,8 @@ in
         };
 
       services = {
+        logind.settings.Login.HandlePowerKey = "poweroff";
+
         # Enable the GNOME Desktop Environment.
         desktopManager.gnome = {
           enable = true;
