@@ -50,6 +50,22 @@
             "nosuid"
             "space_cache=v2"
             "subvol=@"
+            "nossd"
+          ];
+        };
+
+        "/nix" = {
+          device = "/dev/disk/by-uuid/ace763ca-2f3d-4e79-8282-682fc5999e87";
+          fsType = "btrfs";
+          options = [
+            "defaults"
+
+            "autodefrag"
+            "compress=zstd"
+            "noatime"
+            "nosuid"
+            "space_cache=v2"
+            "subvol=@nix"
           ];
         };
 
