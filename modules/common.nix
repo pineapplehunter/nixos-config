@@ -253,7 +253,10 @@ in
 
       documentation = {
         dev.enable = true;
-        man.cache.generateAtRuntime = true;
+        man.cache = {
+          enable = true;
+          generateAtRuntime = true;
+        };
       };
 
       # Fix for howdy
