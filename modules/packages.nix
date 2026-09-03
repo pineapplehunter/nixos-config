@@ -72,8 +72,6 @@
 
           # other
           gnome-firmware
-          man-pages
-          man-pages-posix
           # orca-slicer
           udisks2
           nautilus-open-any-terminal

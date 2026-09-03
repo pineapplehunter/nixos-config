@@ -8,6 +8,7 @@
     ./ima.nix
     ./japanese.nix
     ./kde-connect.nix
+    ./man-pages.nix
     ./machines/default.nix
     ./nixos-artwork.nix
     ./packages.nix

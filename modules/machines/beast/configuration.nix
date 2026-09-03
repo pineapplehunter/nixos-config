@@ -9,7 +9,12 @@ let
 in
 {
   flake.nixosModules.beast =
-    { pkgs, lib, config, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     {
       imports = [
         # Include the results of the hardware scan.

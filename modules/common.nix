@@ -28,6 +28,7 @@ in
           mods.ima
           mods.japanese
           mods.kde-connect
+          mods.man-pages
           mods.nixos-artwork
           mods.packages
           mods.power-targets
@@ -39,6 +40,13 @@ in
 
       pineapplehunter.japanese.enable = true;
       nixos-artwork.enable = lib.mkDefault true;
+
+      my.man-pages.packages = [
+        pkgs.man-pages
+        pkgs.man-pages-posix
+        pkgs.linux-manual
+        pkgs.liburing
+      ];
 
       nixpkgs = {
         overlays = [
