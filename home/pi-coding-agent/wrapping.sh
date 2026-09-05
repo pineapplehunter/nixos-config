@@ -34,6 +34,36 @@ append_args(){
 
 mkdir -p "$HOME/.pi" "$HOME/.cache/nix"
 
+PI_WRAPPER_PROFILE=${PI_WRAPPER_PROFILE:-personal}
+case "$PI_WRAPPER_PROFILE" in
+  personal)
+    PI_AGENT_DIR="$HOME/.pi/agent"
+    ;;
+  work)
+    PI_AGENT_DIR="$HOME/.pi/agent-work"
+    mkdir -p "$PI_AGENT_DIR"
+    chmod 700 "$PI_AGENT_DIR"
+
+    # Share configuration and installed resources while keeping auth.json and
+    # other runtime state profile-specific.
+    for entry in \
+      AGENTS.md APPEND_SYSTEM.md SYSTEM.md \
+      extensions skills prompts themes npm git \
+      settings.json keybindings.json models.json trust.json pi-usage.json
+    do
+      source_path="$HOME/.pi/agent/$entry"
+      profile_path="$PI_AGENT_DIR/$entry"
+      if [[ -e "$source_path" && ! -e "$profile_path" && ! -L "$profile_path" ]]; then
+        ln -s "$source_path" "$profile_path"
+      fi
+    done
+    ;;
+  *)
+    echo "Unknown Pi wrapper profile: $PI_WRAPPER_PROFILE" >&2
+    exit 1
+    ;;
+esac
+
 bwrap_args=(
   --unshare-all
   --die-with-parent
@@ -53,6 +83,9 @@ bwrap_args=(
   --setenv LANG C
   --setenv HOME "$HOME"
   --setenv PWD "$PWD"
+  --setenv PI_CODING_AGENT_DIR "$PI_AGENT_DIR"
+  --setenv PI_CODING_AGENT_SESSION_DIR "$HOME/.pi/agent/sessions"
+  --setenv PI_WRAPPER_PROFILE "$PI_WRAPPER_PROFILE"
   --setenv PUEUE_CONFIG_PATH "$PUEUE_CONFIG_PATH"
   --setenv GIT_AUTHOR_NAME 'pi-coding-agent'
   --setenv GIT_AUTHOR_EMAIL 'peshogo+agent@gmail.com'

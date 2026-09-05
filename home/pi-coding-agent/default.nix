@@ -35,6 +35,11 @@
                 --set EXECUTABLE "${lib.getExe piWithPueue}" \
                 --set PROJECT_ROOT_FILE flake.nix \
                 --set PUEUE_CONFIG_PATH "${pueueConfig}"
+              makeWrapper "${lib.getExe wrapper}" "$out/bin/pi-work" \
+                --set EXECUTABLE "${lib.getExe piWithPueue}" \
+                --set PROJECT_ROOT_FILE flake.nix \
+                --set PUEUE_CONFIG_PATH "${pueueConfig}" \
+                --set PI_WRAPPER_PROFILE work
             '';
           }
         else
