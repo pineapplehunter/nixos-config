@@ -73,18 +73,6 @@ in
       };
 
       systemd.services = {
-        bcache-setup = {
-          description = "Initial setup for bcache";
-          path = [ pkgs.bcache-tools ];
-          script = ''
-            bcache set-cachemode /dev/disk/by-uuid/fed831d5-efca-4101-a6e8-5abde217964c writearound
-            bcache set-cachemode /dev/disk/by-uuid/97d0acab-c4d0-4987-8f46-055cfc9a06c1 writearound
-            echo $((1024 * 1024)) | tee /sys/block/bcache0/bcache/sequential_cutoff
-          '';
-          serviceConfig.Type = "oneshot";
-          wantedBy = [ "default.target" ];
-        };
-
         btrfs-reclaim = {
           description = "Initial setup for btrfs reclaim";
           wantedBy = [ "default.target" ];

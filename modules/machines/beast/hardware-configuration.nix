@@ -22,20 +22,12 @@
           "usbhid"
           "sd_mod"
         ];
-        initrd.kernelModules = [
-          "bcache"
-          "dm-cache"
-          "dm-cache-default"
-          "dm-mod"
-          "dm-raid"
-        ];
+        initrd.kernelModules = [ ];
         kernelModules = [
           "kvm-amd"
         ];
         extraModulePackages = [ ];
       };
-
-      services.lvm.boot.thin.enable = true;
 
       fileSystems = {
         "/" = {
