@@ -39,7 +39,6 @@
             "compress=zstd"
             "noatime"
             "nosuid"
-            "space_cache=v2"
             "subvol=@"
             "nossd"
           ];
@@ -54,7 +53,6 @@
             "compress=zstd"
             "noatime"
             "nosuid"
-            "space_cache=v2"
             "subvol=@nix"
           ];
         };

@@ -46,7 +46,6 @@ let
     "noatime"
     "nosuid"
     "compress=zstd"
-    "space_cache=v2"
   ];
 
 in

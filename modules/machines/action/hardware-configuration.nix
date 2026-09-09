@@ -40,7 +40,6 @@
             "compress=zstd"
             "noatime"
             "nosuid"
-            "space_cache=v2"
             "subvol=${subvol}"
           ];
           boot-part-options = [
