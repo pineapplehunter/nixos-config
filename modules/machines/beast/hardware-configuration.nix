@@ -44,7 +44,6 @@
           options = [
             "defaults"
 
-            "autodefrag"
             "compress=zstd"
             "noatime"
             "nosuid"
@@ -60,7 +59,6 @@
           options = [
             "defaults"
 
-            "autodefrag"
             "compress=zstd"
             "noatime"
             "nosuid"

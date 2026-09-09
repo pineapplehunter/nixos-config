@@ -41,7 +41,6 @@
         options = [
           "defaults"
 
-          "autodefrag"
           "commit=120"
           "compress=zstd"
           "noatime"
