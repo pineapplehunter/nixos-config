@@ -271,7 +271,7 @@ in
       # https://github.com/NixOS/nixpkgs/issues/483867
       systemd.services."polkit-agent-helper@".serviceConfig = lib.mkIf config.services.howdy.enable {
         DeviceAllow = "char-video4linux rw";
-        PrivateDevices = "no";
+        PrivateDevices = false;
       };
 
       system.stateVersion = "26.11";
