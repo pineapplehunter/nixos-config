@@ -34,8 +34,6 @@
       fileSystems =
         let
           btrfs-options = subvol: [
-            "defaults"
-
             "commit=120"
             "compress=zstd"
             "noatime"
@@ -43,8 +41,6 @@
             "subvol=${subvol}"
           ];
           boot-part-options = [
-            "defaults"
-
             "dmask=0077"
             "fmask=0177"
             "nodev"

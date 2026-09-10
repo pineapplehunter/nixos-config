@@ -39,8 +39,6 @@
         device = "/dev/disk/by-uuid/77b7cb82-87a1-45ec-8306-1a8edad64fd1";
         fsType = "btrfs";
         options = [
-          "defaults"
-
           "commit=120"
           "compress=zstd"
           "noatime"
@@ -53,8 +51,6 @@
         device = "/dev/disk/by-uuid/41EB-3189";
         fsType = "vfat";
         options = [
-          "defaults"
-
           "dmask=0077"
           "fmask=0177"
           "nodev"

@@ -34,13 +34,10 @@
           device = "/dev/disk/by-uuid/20f60216-a9ad-46c7-bbc5-fd6cc4a17a39";
           fsType = "btrfs";
           options = [
-            "defaults"
-
             "compress=zstd"
             "noatime"
             "nosuid"
             "subvol=@"
-            "nossd"
           ];
         };
 
@@ -48,8 +45,6 @@
           device = "/dev/disk/by-uuid/ace763ca-2f3d-4e79-8282-682fc5999e87";
           fsType = "btrfs";
           options = [
-            "defaults"
-
             "compress=zstd"
             "noatime"
             "nosuid"
@@ -61,8 +56,6 @@
           device = "/dev/disk/by-uuid/5B2D-4C85";
           fsType = "vfat";
           options = [
-            "defaults"
-
             "dmask=0077"
             "fmask=0177"
             "nodev"
