@@ -59,6 +59,9 @@ in
       # Use the systemd-boot EFI boot loader.
       boot = {
         kernelPackages = pkgs.linuxPackages_latest;
+        kernelParams = [
+          "nvme_core.default_ps_max_latency_us=0"
+        ];
         loader.systemd-boot = {
           enable = true;
           consoleMode = "0";
