@@ -15,7 +15,6 @@ in
     ./eza.nix
     ./ibus-engines.nix
     ./rpi5.nix
-    ./fwupd.nix
   ];
 
   perSystem =
@@ -37,14 +36,13 @@ in
       overlays.niks3
       overlays.eza
       overlays.ibus-engines
-      overlays.fwupd
       overlays.custom-packages
     ];
 
     # Expose packages under ./packages through the default overlay so machine and
     # Home Manager modules can consume them. There is no linked upstream issue or PR.
     # Drop this only when this repository no longer contains custom packages.
-    # Last checked: 2026-08-26.
+    # Last checked: 2026-09-14.
     custom-packages =
       final: prev:
       prev.lib.packagesFromDirectoryRecursive {
