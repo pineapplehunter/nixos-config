@@ -172,6 +172,10 @@ in
       i18n.inputMethod = {
         enable = true;
         type = "ibus";
+        # GNOME Shell provides the IBus frontend on Wayland. Avoid forcing the
+        # toolkit IBus modules, which can create competing input contexts.
+        # https://github.com/NixOS/nixpkgs/issues/300597
+        ibus.waylandFrontend = true;
       };
 
       i18n.supportedLocales = [ "all" ];
