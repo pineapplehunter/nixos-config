@@ -195,6 +195,7 @@ in
           shogo = {
             imports = [
               home-mods.minimal
+              home-mods.pi-coding-agent
               home-mods.shogo
             ];
           };
