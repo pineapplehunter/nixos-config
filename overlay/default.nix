@@ -42,7 +42,6 @@ in
     # Expose packages under ./packages through the default overlay so machine and
     # Home Manager modules can consume them. There is no linked upstream issue or PR.
     # Drop this only when this repository no longer contains custom packages.
-    # Last checked: 2026-09-14.
     custom-packages =
       final: prev:
       prev.lib.packagesFromDirectoryRecursive {

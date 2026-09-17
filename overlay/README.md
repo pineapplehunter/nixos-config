@@ -15,9 +15,14 @@ Add comments covering the following to the overlay file:
 - Why it is needed
 - The relevant upstream issue, pull request, or commit, when one exists
 - When the override can be removed
-- When its relevance was last checked
+
+Record the common batch-audit date below rather than in each overlay file.
 
 Most should be included in the default overlay, while hardware-specific overlays may be enabled only by the relevant machine configuration.
+
+## Last checked
+
+All overlays were last checked together on 2026-09-18.
 
 ## Instructions for agents
 
@@ -41,8 +46,8 @@ When checking whether an overlay is still relevant:
 7. After changing an overlay, evaluate every affected NixOS or Home Manager
    configuration. Build the smallest relevant derivation when evaluation alone
    cannot prove that a patch applies or that the package works.
-8. Update the overlay's removal guidance and `Last checked` date after completing
-   the audit.
+8. Update the overlays' removal guidance and the common `Last checked` date
+   after completing the batch audit.
 
 Prefer removing obsolete overrides completely, including their imports,
 composition entries, patches, and now-unused files. Before finishing, run
