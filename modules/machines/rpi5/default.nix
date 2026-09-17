@@ -113,7 +113,7 @@ in
 
       environment.systemPackages = with pkgs; [
         nixd
-        ghostty.terminfo
+        ghostty-terminfo
       ];
 
       system.nixos.tags = [
