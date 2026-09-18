@@ -30,7 +30,7 @@
       portalClients = pkgs.runCommand "pi-portal-clients" { } ''
         mkdir -p "$out/bin" "$out/libexec"
         ln -s ${lib.getExe' portalClient "pi-portal-client"} "$out/libexec/pi-portal-client"
-        for command in pi-open-uri pi-open-file pi-choose-file; do
+        for command in pi-open-uri pi-choose-file; do
           ln -s ../libexec/pi-portal-client "$out/bin/$command"
         done
       '';

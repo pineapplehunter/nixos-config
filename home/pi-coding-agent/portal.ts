@@ -1,5 +1,3 @@
-import { stat } from "node:fs/promises";
-import { resolve } from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 
@@ -50,29 +48,6 @@ export default function (pi: ExtensionAPI) {
       const result = await runPortal(pi, "pi-open-uri", ["--timeout", "120", params.uri], signal);
       return "code" in result
         ? resultText("URI opened through the desktop portal.")
-        : result;
-    },
-  });
-
-  pi.registerTool({
-    name: "open_file",
-    label: "Open File",
-    description: "Ask the user, then open a sandbox-visible regular file in a host application",
-    promptSnippet: "Open an explicitly requested file through the desktop portal",
-    promptGuidelines: [
-      "Use open_file only when the user explicitly asks to open a file. To open generated or raw content, first write it to a project or /tmp file and pass that path to open_file.",
-    ],
-    parameters: Type.Object({ path: Type.String({ description: "Project or /tmp file path" }) }),
-    async execute(_id, params, signal, _update, ctx) {
-      const path = resolve(ctx.cwd, params.path.replace(/^@/, ""));
-      const info = await stat(path);
-      if (!info.isFile()) throw new Error(`Not a regular file: ${path}`);
-      if (!(await confirm(ctx, `Open this file on the host?\n${path}`))) {
-        return resultText("Opening the file was cancelled by the user.");
-      }
-      const result = await runPortal(pi, "pi-open-file", ["--timeout", "120", path], signal);
-      return "code" in result
-        ? resultText(`File opened through the desktop portal: ${path}`)
         : result;
     },
   });

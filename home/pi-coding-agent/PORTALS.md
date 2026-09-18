@@ -15,7 +15,7 @@ The document portal was not visible from the pre-existing Pi sandbox: `/run/user
 - The portal reads `$XDG_RUNTIME_DIR/.flatpak/<instance-id>/bwrapinfo.json`, requires a positive `child-pid`, and opens a pidfd for that Bubblewrap child.
 - The Documents FUSE layout is `<mount>/by-app/<application-id>/<document-id>/...`.
 - Bubblewrap 0.12.0 supplies `--info-fd` and `--block-fd`; the wrapper uses them to publish `bwrapinfo.json` atomically before Pi starts.
-- xdg-dbus-proxy 0.1.7 passes Unix file descriptors. The filtered rules permit the two OpenURI calls, FileChooser.OpenFile, request cancellation, and request responses; they do not permit calls to `org.freedesktop.portal.Documents`.
+- The filtered xdg-dbus-proxy 0.1.7 rules permit OpenURI.OpenURI, FileChooser.OpenFile, request cancellation, and request responses; they do not permit calls to `org.freedesktop.portal.Documents`.
 
 At launch, the host-side wrapper activates `org.freedesktop.portal.Documents`, resolves `GetMountPoint`, and exposes only `by-app/io.github.pineapplehunter.Pi` as `/run/flatpak/doc`. If the host has no document portal, Pi still starts but file choosing is unavailable and a warning is printed.
 
@@ -27,13 +27,12 @@ The Python implementation is longer, but process ownership is explicit: proxy an
 
 ## Manual checks
 
-After activating the Home Manager generation, run Pi from a graphical session and use the `open_uri`, `open_file`, and `choose_file` tools. Useful boundary checks are:
+After activating the Home Manager generation, run Pi from a graphical session and use the `open_uri` and `choose_file` tools. Useful boundary checks are:
 
 1. Open an HTTPS URI; verify `file://` is rejected.
-2. Create HTML, PNG, and PDF files under the project or `/tmp`, and open each.
-3. Choose one host file and verify the returned path begins with `/run/flatpak/doc/` and is readable.
-4. Verify an unselected host path is absent from the sandbox.
-5. Cancel a chooser and interrupt another request; neither should leave a dialog behind.
-6. While Pi runs, inspect `$XDG_RUNTIME_DIR/.flatpak/pi-*` and `$XDG_RUNTIME_DIR/pi-dbus-proxy/session-*`; after exit both must be gone.
-7. Start two Pi sessions and verify their instance IDs and sockets differ.
-8. Verify `notify` and the Pueue completion hook still send notifications.
+2. Choose one host file and verify the returned path begins with `/run/flatpak/doc/` and is readable.
+3. Verify an unselected host path is absent from the sandbox.
+4. Cancel a chooser and interrupt another request; neither should leave a dialog behind.
+5. While Pi runs, inspect `$XDG_RUNTIME_DIR/.flatpak/pi-*` and `$XDG_RUNTIME_DIR/pi-dbus-proxy/session-*`; after exit both must be gone.
+6. Start two Pi sessions and verify their instance IDs and sockets differ.
+7. Verify `notify` and the Pueue completion hook still send notifications.

@@ -1,10 +1,8 @@
 """Small xdg-desktop-portal clients used inside the Pi sandbox."""
 
 import argparse
-import os
 import secrets
 import signal
-import stat
 import sys
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -12,7 +10,8 @@ from urllib.parse import unquote, urlparse
 import gi
 
 gi.require_version("Gio", "2.0")
-from gi.repository import Gio, GLib  # noqa: E402
+gi.require_version("GLibUnix", "2.0")
+from gi.repository import Gio, GLib, GLibUnix  # noqa: E402
 
 BUS = "org.freedesktop.portal.Desktop"
 DESKTOP_PATH = "/org/freedesktop/portal/desktop"
@@ -27,21 +26,12 @@ class Cancelled(PortalError):
     pass
 
 
-def _options(
-    token: str, extra: dict[str, GLib.Variant] | None = None
-) -> GLib.Variant:
-    values = {"handle_token": GLib.Variant("s", token)}
-    values.update(extra or {})
-    return GLib.Variant("a{sv}", values)
-
-
 def request(
     interface: str,
     method: str,
     parameters: GLib.Variant,
     token: str,
     timeout: int,
-    fd_list: Gio.UnixFDList | None = None,
 ) -> dict[str, object]:
     connection = Gio.bus_get_sync(Gio.BusType.SESSION, None)
     sender = connection.get_unique_name().lstrip(":").replace(".", "_")
@@ -68,31 +58,17 @@ def request(
     )
     handle = expected
     try:
-        if fd_list is None:
-            reply = connection.call_sync(
-                BUS,
-                DESKTOP_PATH,
-                interface,
-                method,
-                parameters,
-                GLib.VariantType.new("(o)"),
-                Gio.DBusCallFlags.NONE,
-                10_000,
-                None,
-            )
-        else:
-            reply, _out_fds = connection.call_with_unix_fd_list_sync(
-                BUS,
-                DESKTOP_PATH,
-                interface,
-                method,
-                parameters,
-                GLib.VariantType.new("(o)"),
-                Gio.DBusCallFlags.NONE,
-                10_000,
-                fd_list,
-                None,
-            )
+        reply = connection.call_sync(
+            BUS,
+            DESKTOP_PATH,
+            interface,
+            method,
+            parameters,
+            GLib.VariantType.new("(o)"),
+            Gio.DBusCallFlags.NONE,
+            10_000,
+            None,
+        )
         handle = reply.unpack()[0]
         if handle != expected:
             connection.signal_unsubscribe(subscription)
@@ -113,7 +89,7 @@ def request(
             lambda: (timed_out.__setitem__(0, True), loop.quit(), False)[2],
         )
         signal_ids = [
-            GLib.unix_signal_add(
+            GLibUnix.signal_add(
                 GLib.PRIORITY_DEFAULT, sig, lambda: (loop.quit(), False)[1]
             )
             for sig in (signal.SIGINT, signal.SIGTERM)
@@ -158,7 +134,7 @@ def request(
 def open_uri(uri: str, timeout: int) -> None:
     parsed = urlparse(uri)
     if parsed.scheme.lower() == "file":
-        raise PortalError("file:// URIs are not accepted; use pi-open-file")
+        raise PortalError("file:// URIs are not accepted")
     if parsed.scheme.lower() not in {"http", "https"}:
         raise PortalError("only http:// and https:// URIs are accepted")
     token = "pi_" + secrets.token_hex(16)
@@ -171,31 +147,6 @@ def open_uri(uri: str, timeout: int) -> None:
         token,
         timeout,
     )
-
-
-def open_file(path: str, timeout: int) -> None:
-    target = Path(path).resolve(strict=True)
-    mode = target.stat().st_mode
-    if not stat.S_ISREG(mode):
-        raise PortalError(f"not a regular file: {target}")
-    fd = os.open(target, os.O_RDONLY | os.O_CLOEXEC)
-    try:
-        fd_list = Gio.UnixFDList.new()
-        index = fd_list.append(fd)
-        token = "pi_" + secrets.token_hex(16)
-        request(
-            "org.freedesktop.portal.OpenURI",
-            "OpenFile",
-            GLib.Variant(
-                "(sha{sv})",
-                ("", index, {"handle_token": GLib.Variant("s", token)}),
-            ),
-            token,
-            timeout,
-            fd_list,
-        )
-    finally:
-        os.close(fd)
 
 
 def choose_file(title: str, timeout: int) -> str:
@@ -241,8 +192,6 @@ def main() -> int:
     parser.add_argument("--timeout", type=int, default=120)
     if command == "pi-open-uri":
         parser.add_argument("uri")
-    elif command == "pi-open-file":
-        parser.add_argument("path")
     elif command == "pi-choose-file":
         parser.add_argument("--title", default="Choose a file for Pi")
     else:
@@ -256,8 +205,6 @@ def main() -> int:
             )
         if command == "pi-open-uri":
             open_uri(args.uri, args.timeout)
-        elif command == "pi-open-file":
-            open_file(args.path, args.timeout)
         else:
             print(choose_file(args.title, args.timeout))
         return 0

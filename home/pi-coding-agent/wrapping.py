@@ -291,10 +291,6 @@ def main() -> int:
                 f".OpenURI@{PORTAL_PATH}"
             ),
             (
-                f"--call={PORTAL}=org.freedesktop.portal.OpenURI"
-                f".OpenFile@{PORTAL_PATH}"
-            ),
-            (
                 f"--call={PORTAL}=org.freedesktop.portal.FileChooser"
                 f".OpenFile@{PORTAL_PATH}"
             ),
