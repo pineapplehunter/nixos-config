@@ -1,30 +1,36 @@
 {
   lib,
-  buildGoModule,
+  stdenvNoCC,
+  python3,
+  makeWrapper,
 }:
 
-buildGoModule {
+let
+  python = python3.withPackages (ps: [ ps.pygobject3 ]);
+in
+stdenvNoCC.mkDerivation {
   pname = "local-notify";
   version = "1.0.0";
 
-  src = ./.;
-  vendorHash = null;
-  subPackages = [
-    "cmd/local-notify"
-    "cmd/local-notifyd"
-  ];
+  src = ./src;
+  nativeBuildInputs = [ makeWrapper ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
-
-  doCheck = false;
+  installPhase = ''
+    runHook preInstall
+    install -Dm644 notification.py "$out/libexec/local-notify/notification.py"
+    install -Dm644 local-notify.py "$out/libexec/local-notify/local-notify.py"
+    install -Dm644 local-notifyd.py "$out/libexec/local-notify/local-notifyd.py"
+    makeWrapper ${python}/bin/python3 "$out/bin/local-notify" \
+      --add-flags "$out/libexec/local-notify/local-notify.py"
+    makeWrapper ${python}/bin/python3 "$out/bin/local-notifyd" \
+      --add-flags "$out/libexec/local-notify/local-notifyd.py"
+    runHook postInstall
+  '';
 
   meta = {
-    description = "Local Unix-socket to Discord notification bridge";
+    description = "Local D-Bus to Discord notification bridge";
     license = lib.licenses.mit;
-    platforms = lib.platforms.unix;
+    platforms = lib.platforms.linux;
     mainProgram = "local-notify";
   };
 }

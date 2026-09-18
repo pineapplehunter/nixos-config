@@ -161,31 +161,25 @@ in
         };
       };
 
-      systemd.user = lib.mkIf isLinux {
-        sockets.local-notify = {
-          Unit.Description = "Local notification socket";
-          Socket = {
-            ListenStream = "%t/local-notify/notify.sock";
-            SocketMode = "0600";
-            DirectoryMode = "0700";
-            Accept = true;
-            RemoveOnStop = true;
-          };
-          Install.WantedBy = [ "sockets.target" ];
-        };
-
-        services."local-notify@" = {
-          Unit.Description = "Send a local notification to Discord";
-          Service = {
-            ExecStart = "${lib.getExe' pkgs.local-notify "local-notifyd"} --webhook-file ${config.sops.secrets.pueue-discord-webhook.path}";
-            StandardInput = "socket";
-            UMask = "0077";
-          };
+      systemd.user.services.local-notify = lib.mkIf isLinux {
+        Unit.Description = "Send local notifications to Discord";
+        Service = {
+          Type = "dbus";
+          BusName = "io.github.pineapplehunter.LocalNotify1";
+          ExecStart = "${lib.getExe' pkgs.local-notify "local-notifyd"} --webhook-file ${config.sops.secrets.pueue-discord-webhook.path}";
         };
       };
 
       xdg = {
         enable = true;
+        dataFile."dbus-1/services/io.github.pineapplehunter.LocalNotify1.service" = lib.mkIf isLinux {
+          text = ''
+            [D-BUS Service]
+            Name=io.github.pineapplehunter.LocalNotify1
+            Exec=${lib.getExe' pkgs.local-notify "local-notifyd"} --webhook-file ${config.sops.secrets.pueue-discord-webhook.path}
+            SystemdService=local-notify.service
+          '';
+        };
         mimeApps.associations.added = {
           "x-scheme-handler/slack" = [ "com.slack.Slack.desktop" ];
           "x-scheme-handler/zoomus" = [ "us.zoom.Zoom.desktop" ];

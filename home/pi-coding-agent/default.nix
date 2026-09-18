@@ -8,6 +8,7 @@
         runtimeInputs = [
           pkgs.bubblewrap
           pkgs.pueue
+          pkgs.xdg-dbus-proxy
         ];
         text = lib.readFile ./wrapping.sh;
       };

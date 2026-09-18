@@ -38,9 +38,11 @@ if [[ -z ${XDG_RUNTIME_DIR:-} ]]; then
   echo "XDG_RUNTIME_DIR is not set" >&2
   exit 1
 fi
-NOTIFY_RUNTIME_DIR="$XDG_RUNTIME_DIR/local-notify"
-mkdir -p "$NOTIFY_RUNTIME_DIR"
-chmod 700 "$NOTIFY_RUNTIME_DIR"
+DBUS_PROXY_DIR="$XDG_RUNTIME_DIR/pi-dbus-proxy"
+DBUS_PROXY_SOCKET="$DBUS_PROXY_DIR/session-$BASHPID-$RANDOM"
+HOST_DBUS_SESSION_BUS_ADDRESS=${DBUS_SESSION_BUS_ADDRESS:-"unix:path=$XDG_RUNTIME_DIR/bus"}
+mkdir -p "$DBUS_PROXY_DIR"
+chmod 700 "$DBUS_PROXY_DIR"
 
 PI_WRAPPER_PROFILE=${PI_WRAPPER_PROFILE:-personal}
 case "$PI_WRAPPER_PROFILE" in
@@ -72,6 +74,37 @@ case "$PI_WRAPPER_PROFILE" in
     ;;
 esac
 
+xdg-dbus-proxy \
+  "$HOST_DBUS_SESSION_BUS_ADDRESS" \
+  "$DBUS_PROXY_SOCKET" \
+  --filter \
+  --call=io.github.pineapplehunter.LocalNotify1=io.github.pineapplehunter.LocalNotify1.Notify@/io/github/pineapplehunter/LocalNotify1 &
+DBUS_PROXY_PID=$!
+# Invoked by the EXIT trap below.
+# shellcheck disable=SC2329
+cleanup_dbus_proxy() {
+  kill "$DBUS_PROXY_PID" 2> /dev/null || true
+  wait "$DBUS_PROXY_PID" 2> /dev/null || true
+  rm -f "$DBUS_PROXY_SOCKET"
+}
+trap cleanup_dbus_proxy EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+for _ in $(seq 1 100); do
+  [[ -S "$DBUS_PROXY_SOCKET" ]] && break
+  if ! kill -0 "$DBUS_PROXY_PID" 2> /dev/null; then
+    echo "Failed to start the D-Bus proxy" >&2
+    exit 1
+  fi
+  sleep 0.01
+done
+if [[ ! -S "$DBUS_PROXY_SOCKET" ]]; then
+  echo "Timed out waiting for the D-Bus proxy" >&2
+  exit 1
+fi
+
 bwrap_args=(
   --unshare-all
   --die-with-parent
@@ -85,7 +118,7 @@ bwrap_args=(
   --tmpfs /run
   --dir /run/user
   --dir "$XDG_RUNTIME_DIR"
-  --bind "$NOTIFY_RUNTIME_DIR" "$NOTIFY_RUNTIME_DIR"
+  --ro-bind "$DBUS_PROXY_SOCKET" "$XDG_RUNTIME_DIR/bus"
   --tmpfs /var
   --bind "$HOME/.pi" "$HOME/.pi"
   --bind "$HOME/.cache/nix" "$HOME/.cache/nix"
@@ -95,6 +128,7 @@ bwrap_args=(
   --setenv HOME "$HOME"
   --setenv PWD "$PWD"
   --setenv XDG_RUNTIME_DIR "$XDG_RUNTIME_DIR"
+  --setenv DBUS_SESSION_BUS_ADDRESS "unix:path=$XDG_RUNTIME_DIR/bus"
   --setenv PI_CODING_AGENT_DIR "$PI_AGENT_DIR"
   --setenv PI_CODING_AGENT_SESSION_DIR "$HOME/.pi/agent/sessions"
   --setenv PI_WRAPPER_PROFILE "$PI_WRAPPER_PROFILE"
@@ -187,8 +221,10 @@ while [[ "${1:-}" == @* ]]; do
 done
 
 exec {fd}< "$ARG_PATH"
+status=0
 if [[ "${DEBUG_MODE:-0}" = 0 ]]; then
-  exec bwrap --args "$fd" -- "$EXECUTABLE" "$@"
+  bwrap --args "$fd" -- "$EXECUTABLE" "$@" || status=$?
 else
-  exec bwrap --args "$fd" -- "$SHELL" "$@"
+  bwrap --args "$fd" -- "$SHELL" "$@" || status=$?
 fi
+exit "$status"
