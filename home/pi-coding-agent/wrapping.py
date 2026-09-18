@@ -371,8 +371,6 @@ def main() -> int:
             "/run/user",
             "--dir",
             str(runtime),
-            "--dir",
-            "/run/wrappers",
             "--ro-bind",
             str(proxy_socket),
             str(runtime / "bus"),
@@ -468,15 +466,14 @@ def main() -> int:
         ):
             bwrap.extend(("--ro-bind-try", entry, entry))
 
-        sandbox_path: list[str] = []
-        for entry in os.environ.get("PATH", "").split(os.pathsep):
-            if entry and Path(entry).exists():
-                resolved = str(Path(entry).resolve(strict=True))
-                sandbox_path.append(resolved)
-                if resolved.startswith("/run/"):
-                    bwrap.extend(("--dir", resolved))
-                bwrap.extend(("--ro-bind-try", resolved, resolved))
-        bwrap.extend(("--setenv", "PATH", os.pathsep.join(sandbox_path)))
+        sandbox_path = os.environ.get("PI_SANDBOX_PATH")
+        if not sandbox_path:
+            raise RuntimeError("PI_SANDBOX_PATH is not set")
+        for entry in sandbox_path.split(os.pathsep):
+            path = Path(entry)
+            if not path.is_absolute() or not path.is_dir():
+                raise RuntimeError(f"Invalid sandbox PATH entry: {entry}")
+        bwrap.extend(("--setenv", "PATH", sandbox_path))
 
         git_file = root / ".git"
         if git_file.is_file():
@@ -495,7 +492,6 @@ def main() -> int:
         os.chmod(sandbox_tmp, 0o700)
         add_bind(bwrap, "--bind", sandbox_tmp, sandbox_tmp)
         add_bind(bwrap, "--bind", sandbox_tmp, "/tmp")
-
         debug, arguments = parse_wrapper_args(sys.argv[1:], bwrap)
         info_read, info_write = os.pipe()
         block_read, block_write = os.pipe()

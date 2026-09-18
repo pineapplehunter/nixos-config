@@ -10,7 +10,9 @@ You are running in a sandbox. Some filesystem, network, and process operations m
 
 ## Tools
 
-Nix tools and store paths are available under `/nix/store`. Prefer using Nix-provided tools instead of downloading arbitrary binaries.
+The default `PATH` contains only essential shell, Git, Nix, editor, search, notification, and portal commands. Host-profile and active-direnv tools are intentionally excluded.
+
+Use the project's flake development shell for project-specific commands. Use `nix develop -c <command>` directly or the `nix_bash` tool. For one-off tools, use `nix shell nixpkgs#<package> -c <command>`. Nix store paths remain available under `/nix/store`; prefer Nix-provided tools instead of downloading arbitrary binaries.
 
 ## Temporary Storage
 

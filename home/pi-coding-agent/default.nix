@@ -7,22 +7,6 @@
         libraries = [ pkgs.python3Packages.pygobject3 ];
       } (lib.readFile ./wrapping.py);
 
-      wrapper = pkgs.symlinkJoin {
-        name = "bubble-wrapper";
-        paths = [ rawWrapper ];
-        nativeBuildInputs = [ pkgs.makeWrapper ];
-        postBuild = ''
-          wrapProgram "$out/bin/bubble-wrapper" \
-            --prefix PATH : ${
-              lib.makeBinPath [
-                pkgs.bubblewrap
-                pkgs.pueue
-                pkgs.xdg-dbus-proxy
-              ]
-            }
-        '';
-      };
-
       portalClient = pkgs.writers.writePython3Bin "pi-portal-client" {
         libraries = [ pkgs.python3Packages.pygobject3 ];
       } (lib.readFile ./portal_client.py);
@@ -34,6 +18,48 @@
           ln -s ../libexec/pi-portal-client "$out/bin/$command"
         done
       '';
+
+      sandboxTools = pkgs.buildEnv {
+        name = "pi-sandbox-tools";
+        paths = [
+          pkgs.bash
+          pkgs.coreutils
+          pkgs.diffutils
+          pkgs.fd
+          pkgs.findutils
+          pkgs.gawk
+          pkgs.git
+          pkgs.gnugrep
+          pkgs.gnused
+          pkgs.helix
+          pkgs.local-notify
+          pkgs.nix
+          pkgs.nix-search-cli
+          pkgs.nodejs
+          pkgs.openssh
+          pkgs.patch
+          pkgs.pueue
+          pkgs.ripgrep
+          portalClients
+        ];
+        pathsToLink = [ "/bin" ];
+      };
+
+      wrapper = pkgs.symlinkJoin {
+        name = "bubble-wrapper";
+        paths = [ rawWrapper ];
+        nativeBuildInputs = [ pkgs.makeWrapper ];
+        postBuild = ''
+          wrapProgram "$out/bin/bubble-wrapper" \
+            --prefix PATH : ${
+              lib.makeBinPath [
+                pkgs.bubblewrap
+                pkgs.xdg-dbus-proxy
+              ]
+            } \
+            --set PI_SANDBOX_PATH ${lib.escapeShellArg "${sandboxTools}/bin"}
+        '';
+      };
 
       pueueConfig = pkgs.writeText "pi-pueue.yml" (lib.readFile ./pueue.yml);
 
