@@ -62,6 +62,7 @@
         '';
         ".pi/agent/extensions/nix-bash.ts".source = ./nix-bash.ts;
         ".pi/agent/extensions/nix-search.ts".source = ./nix-search.ts;
+        ".pi/agent/extensions/notify.ts".source = ./notify.ts;
         ".pi/agent/skills/flake.md".source = ./flake.md;
         ".pi/agent/skills/nix-build.md".source = ./nix-build.md;
         ".pi/agent/skills/nixpkgs.md".source = ./nixpkgs.md;

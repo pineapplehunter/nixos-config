@@ -13,6 +13,14 @@ in
     let
       inherit (pkgs.stdenv.hostPlatform) isLinux system;
       inherit (config.pineapplehunter) isNixos;
+      pueueNotifyHook = pkgs.writeShellApplication {
+        name = "pueue-notify-hook";
+        runtimeInputs = [
+          pkgs.coreutils
+          pkgs.local-notify
+        ];
+        text = lib.readFile ./pueue-notify-hook.sh;
+      };
     in
     {
       imports =
@@ -119,6 +127,8 @@ in
       };
 
       home = {
+        packages = lib.optionals isLinux [ pkgs.local-notify ];
+
         shellAliases = {
           wget = "wget --hsts-file=${config.xdg.dataHome}";
         };
@@ -137,16 +147,39 @@ in
           settings = {
             daemon = {
               callback = lib.replaceString "\n" " " ''
-                "${lib.getExe pkgs.pueue-discord-notify}"
-                --webhook-file "${config.sops.secrets.pueue-discord-webhook.path}"
+                "${lib.getExe pueueNotifyHook}"
                 --id "{{id}}"
                 --command "{{command}}"
                 --result "{{result}}"
                 --exit-code "{{exit_code}}"
                 --group "{{group}}"
+                || true
               '';
               callback_log_lines = 10;
             };
+          };
+        };
+      };
+
+      systemd.user = lib.mkIf isLinux {
+        sockets.local-notify = {
+          Unit.Description = "Local notification socket";
+          Socket = {
+            ListenStream = "%t/local-notify/notify.sock";
+            SocketMode = "0600";
+            DirectoryMode = "0700";
+            Accept = true;
+            RemoveOnStop = true;
+          };
+          Install.WantedBy = [ "sockets.target" ];
+        };
+
+        services."local-notify@" = {
+          Unit.Description = "Send a local notification to Discord";
+          Service = {
+            ExecStart = "${lib.getExe' pkgs.local-notify "local-notifyd"} --webhook-file ${config.sops.secrets.pueue-discord-webhook.path}";
+            StandardInput = "socket";
+            UMask = "0077";
           };
         };
       };

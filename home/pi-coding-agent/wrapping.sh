@@ -34,6 +34,14 @@ append_args(){
 
 mkdir -p "$HOME/.pi" "$HOME/.cache/nix"
 
+if [[ -z ${XDG_RUNTIME_DIR:-} ]]; then
+  echo "XDG_RUNTIME_DIR is not set" >&2
+  exit 1
+fi
+NOTIFY_RUNTIME_DIR="$XDG_RUNTIME_DIR/local-notify"
+mkdir -p "$NOTIFY_RUNTIME_DIR"
+chmod 700 "$NOTIFY_RUNTIME_DIR"
+
 PI_WRAPPER_PROFILE=${PI_WRAPPER_PROFILE:-personal}
 case "$PI_WRAPPER_PROFILE" in
   personal)
@@ -75,6 +83,9 @@ bwrap_args=(
   --tmpfs "$HOME"
   --tmpfs /etc
   --tmpfs /run
+  --dir /run/user
+  --dir "$XDG_RUNTIME_DIR"
+  --bind "$NOTIFY_RUNTIME_DIR" "$NOTIFY_RUNTIME_DIR"
   --tmpfs /var
   --bind "$HOME/.pi" "$HOME/.pi"
   --bind "$HOME/.cache/nix" "$HOME/.cache/nix"
@@ -83,6 +94,7 @@ bwrap_args=(
   --setenv LANG C
   --setenv HOME "$HOME"
   --setenv PWD "$PWD"
+  --setenv XDG_RUNTIME_DIR "$XDG_RUNTIME_DIR"
   --setenv PI_CODING_AGENT_DIR "$PI_AGENT_DIR"
   --setenv PI_CODING_AGENT_SESSION_DIR "$HOME/.pi/agent/sessions"
   --setenv PI_WRAPPER_PROFILE "$PI_WRAPPER_PROFILE"
