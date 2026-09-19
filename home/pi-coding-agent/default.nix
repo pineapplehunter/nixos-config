@@ -63,6 +63,7 @@
           pkgs.nodejs
           pkgs.openssh
           pkgs.patch
+          pkgs.pi-coding-agent
           pkgs.pueue
           pkgs.ripgrep
           skillPython
