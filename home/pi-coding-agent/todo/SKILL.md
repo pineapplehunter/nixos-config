@@ -5,7 +5,7 @@ description: >-
   metadata, reporting prioritized status, reviewing relevance and baselines,
   completing tasks, and advancing through tasks. Use for task-list creation,
   status, counts, priorities, validation, selection, resolution, completion, or
-  requests to move to the next task in a managed in-tree or /tmp TODO list.
+  review-and-close requests using “next” in a managed in-tree or /tmp TODO list.
 ---
 
 # TODO Management
@@ -50,10 +50,10 @@ Use this frontmatter schema:
 ```markdown
 ---
 title: A short task title
-created: 2026-09-15
+created: 2026-09-15 14:30:00
 status: pending
 priority: P1
-base: v6
+base: a1b2c3d
 tag: review
 ---
 ```
@@ -61,22 +61,27 @@ tag: review
 Required fields:
 
 - `title`: a nonempty task title.
-- `created`: an ISO date (`YYYY-MM-DD`).
+- `created`: a human-readable local date and time with seconds
+  (`YYYY-MM-DD HH:MM:SS`). Record both the date and the time; a date alone is
+  invalid.
 - `status`: one of `pending`, `in-progress`, `blocked`, `deferred`, or
   `completed`.
 - `priority`: one of `P0`, `P1`, `P2`, or `P3`, where P0 is highest.
 
 Optional fields:
 
-- `base`: the task-specific baseline. In a Git workspace this is normally a tag
-  or commit. For non-Git work it may identify a dated snapshot, document
-  version, ticket state, or other concrete baseline.
+- `base`: the task-specific baseline. In a Git workspace, represent it as a
+  short commit ID such as `a1b2c3d`, obtained with `git rev-parse --short
+  <revision>`; do not store a branch name, tag, or full commit ID. For non-Git
+  work it may identify a dated snapshot, document version, ticket state, or
+  other concrete baseline.
 - `tag`: one provenance or grouping category.
-- `finished`: the completion date in ISO format. It is required exactly when
+- `finished`: a human-readable local date and time with seconds, using the same
+  `YYYY-MM-DD HH:MM:SS` format as `created`. It is required exactly when
   `status` is `completed` and must be absent otherwise.
 
 Use `base` when a meaningful comparison baseline exists; do not invent one just
-to populate metadata.
+to populate metadata. Generate timestamps with `date '+%Y-%m-%d %H:%M:%S'`.
 
 Use this body structure when creating or repairing a task:
 
@@ -181,29 +186,27 @@ Use this presentation order:
 
 ## Handle “next”
 
-When the user says “next” or asks to move to the next task, close out the current
-task before presenting another one.
+When the user says “next” or asks to move to the next task, review the current
+task without fixing anything. This rule overrides instructions elsewhere in this
+skill to repair validation failures or modify work when handling that request.
 
-1. Recheck the current artifacts, task checklist, and relevant validation.
-2. If the task is complete or superseded:
-   - Set `status` to `completed`.
-   - Add the current date as `finished`.
-   - Reconcile its checklist and add completion notes with evidence or the
-     superseding decision.
-   - Run validation appropriate to the changed artifacts and `git diff --check`
-     when working in a Git tree.
-   - If the workspace uses version control, commit only the current tracked
-     changes that belong to the completed task. Do not create an empty commit;
-     report when no commit was needed. Never try to commit a task file stored in
-     `/tmp` as though it were part of the work tree.
-   - Re-run the list command for the selected location and present the next
-     unfinished task using this workflow.
-3. If the task is not complete:
-   - Do not mark it completed, commit unrelated work, or advance.
-   - Report the unresolved checklist items or validation failures.
+1. Review the current task using the relevance, baseline, feedback, and
+   suggested-resolution workflow above.
+2. Report validation failures, unresolved checklist items, and any recommended
+   changes without fixing them.
+3. If the task is complete or superseded, commit only the existing tracked
+   changes that belong to that task. Do not create an empty commit; report when
+   no commit is needed. Never commit a task file stored in `/tmp` as though it
+   were part of the work tree.
+4. Whether a commit was created or no commit was needed, move on to the next
+   unfinished task in the reported order and review it using the same workflow.
+   Select the task after the current one rather than selecting the current task
+   again. If there is no next task, report that the list is exhausted. If the
+   current task is not complete, do not advance.
 
-Do not interpret “next” as merely displaying another task while silently leaving
-a resolvable current task pending.
+Do not edit task files or work artifacts, change status or checklist items, add
+completion notes, or run formatters or other mutating commands. The commit of
+already-complete work is the only mutation permitted while handling “next”.
 
 ## Validate helper changes
 

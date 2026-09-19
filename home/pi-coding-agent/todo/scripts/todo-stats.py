@@ -2,7 +2,7 @@
 """Validate and list Markdown task files in priority order."""
 
 import argparse
-from datetime import date
+from datetime import datetime
 from pathlib import Path
 
 
@@ -12,13 +12,16 @@ PRIORITIES = {f"P{number}": number for number in range(4)}
 STATUSES = {"pending", "in-progress", "blocked", "deferred", "completed"}
 
 
-def validate_date(path: Path, field: str, value: str) -> None:
+TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+
+def validate_timestamp(path: Path, field: str, value: str) -> None:
     try:
-        parsed = date.fromisoformat(value)
+        parsed = datetime.strptime(value, TIMESTAMP_FORMAT)
     except ValueError:
-        raise ValueError(f"{path}: invalid {field} date: {value}") from None
-    if parsed.isoformat() != value:
-        raise ValueError(f"{path}: invalid {field} date: {value}")
+        raise ValueError(f"{path}: invalid {field} timestamp: {value}") from None
+    if parsed.strftime(TIMESTAMP_FORMAT) != value:
+        raise ValueError(f"{path}: invalid {field} timestamp: {value}")
 
 
 def read_frontmatter(path: Path) -> dict[str, str]:
@@ -56,14 +59,14 @@ def read_frontmatter(path: Path) -> dict[str, str]:
     if fields["status"] not in STATUSES:
         raise ValueError(f"{path}: invalid status: {fields['status']}")
 
-    validate_date(path, "created", fields["created"])
+    validate_timestamp(path, "created", fields["created"])
     finished = fields.get("finished", "")
     if finished:
-        validate_date(path, "finished", finished)
+        validate_timestamp(path, "finished", finished)
     if fields["status"] == "completed" and not finished:
-        raise ValueError(f"{path}: completed task has no finished date")
+        raise ValueError(f"{path}: completed task has no finished timestamp")
     if fields["status"] != "completed" and finished:
-        raise ValueError(f"{path}: unfinished task has a finished date")
+        raise ValueError(f"{path}: unfinished task has a finished timestamp")
     return fields
 
 
