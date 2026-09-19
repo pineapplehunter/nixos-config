@@ -1,8 +1,32 @@
+{ inputs, ... }:
 {
   flake.homeModules.pi-coding-agent =
     { pkgs, lib, ... }:
     let
       isLinux = pkgs.stdenv.hostPlatform.isLinux;
+
+      anthropicSkillNames = [
+        "algorithmic-art"
+        "canvas-design"
+        "discernment-nudge"
+        "doc-coauthoring"
+        "docx"
+        "frontend-design"
+        "internal-comms"
+        "pdf"
+        "pptx"
+        "theme-factory"
+        "webapp-testing"
+        "xlsx"
+      ];
+
+      anthropicSkills = pkgs.runCommand "anthropic-skills" { } ''
+        mkdir -p "$out"
+        for skill in ${lib.escapeShellArgs anthropicSkillNames}; do
+          cp -R "${inputs.anthropic-skills}/skills/$skill" "$out/"
+        done
+      '';
+
       rawWrapper = pkgs.writers.writePython3Bin "bubble-wrapper" {
         libraries = [ pkgs.python3Packages.pygobject3 ];
       } (lib.readFile ./wrapping.py);
@@ -121,12 +145,15 @@
           NoDisplay=true
           X-Flatpak=io.github.pineapplehunter.Pi
         '';
+        ".pi/agent/skills/anthropic".source = anthropicSkills;
         ".pi/agent/skills/flake.md".source = ./flake.md;
         ".pi/agent/skills/nix-build.md".source = ./nix-build.md;
         ".pi/agent/skills/nixpkgs.md".source = ./nixpkgs.md;
         ".pi/agent/skills/pueue.md".source = ./pueue.md;
         ".pi/agent/skills/rust.md".source = ./rust.md;
         ".pi/agent/skills/sandbox-info.md".source = ./sandbox.md;
+        ".pi/agent/skills/skill-creator".source = ./skill-creator;
+        ".pi/agent/skills/todo".source = ./todo;
       };
     };
 }
