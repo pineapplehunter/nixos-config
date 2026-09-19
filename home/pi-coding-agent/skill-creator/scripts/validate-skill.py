@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
-"""Perform dependency-free structural validation of an Agent Skill."""
+"""Validate the structure and YAML frontmatter of an Agent Skill."""
 
 import argparse
 import re
 from pathlib import Path
 
+import yaml
+
 
 VALID_NAME = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-FIELD = re.compile(r"^([A-Za-z0-9_-]+):(?:[ \t]*(.*))?$")
 
 
-def frontmatter(path: Path) -> tuple[dict[str, str], str]:
+def read_skill(path: Path) -> tuple[dict[str, object], str]:
     text = path.read_text(encoding="utf-8")
     lines = text.splitlines()
     if not lines or lines[0] != "---":
@@ -20,19 +21,14 @@ def frontmatter(path: Path) -> tuple[dict[str, str], str]:
     except ValueError:
         raise ValueError("SKILL.md has unterminated YAML frontmatter") from None
 
-    fields: dict[str, str] = {}
-    current = ""
-    for line in lines[1:end]:
-        match = FIELD.match(line)
-        if match:
-            current, value = match.groups()
-            if current in fields:
-                raise ValueError(f"duplicate frontmatter field: {current}")
-            fields[current] = (value or "").strip()
-        elif current and (line.startswith(" ") or line.startswith("\t")):
-            fields[current] = f"{fields[current]} {line.strip()}".strip()
-        elif line.strip():
-            raise ValueError(f"unsupported frontmatter syntax: {line}")
+    try:
+        fields = yaml.safe_load("\n".join(lines[1:end]))
+    except yaml.YAMLError as error:
+        raise ValueError(f"invalid YAML frontmatter: {error}") from None
+    if not isinstance(fields, dict):
+        raise ValueError("frontmatter must be a YAML mapping")
+    if not all(isinstance(key, str) for key in fields):
+        raise ValueError("frontmatter field names must be strings")
     return fields, "\n".join(lines[end + 1 :]).strip()
 
 
@@ -46,21 +42,29 @@ def main() -> int:
     try:
         if not path.is_file():
             raise ValueError(f"missing file: {path}")
-        fields, body = frontmatter(path)
-        name = fields.get("name", "").strip("'\"")
-        description = fields.get("description", "").strip("'\"")
-        if not name:
-            raise ValueError("missing or empty name")
+        fields, body = read_skill(path)
+        name = fields.get("name")
+        description = fields.get("description")
+        if not isinstance(name, str) or not name:
+            raise ValueError("name must be a nonempty string")
         if len(name) > 64 or not VALID_NAME.fullmatch(name):
             raise ValueError("name must be lowercase hyphenated text of at most 64 characters")
         if directory.name != name:
             raise ValueError(f"directory name {directory.name!r} does not match skill name {name!r}")
-        if not description or description in {">", "|", ">-", "|-"}:
-            raise ValueError("missing or empty description")
-        if "TODO" in description:
+        if not isinstance(description, str) or not description.strip():
+            raise ValueError("description must be a nonempty string")
+        if description.lstrip().startswith("TODO"):
             raise ValueError("description still contains a TODO placeholder")
         if len(description) > 1024:
             raise ValueError("description exceeds 1024 characters")
+        compatibility = fields.get("compatibility")
+        if compatibility is not None and (
+            not isinstance(compatibility, str) or len(compatibility) > 500
+        ):
+            raise ValueError("compatibility must be a string of at most 500 characters")
+        metadata = fields.get("metadata")
+        if metadata is not None and not isinstance(metadata, dict):
+            raise ValueError("metadata must be a mapping")
         if not body:
             raise ValueError("skill instruction body is empty")
     except (OSError, UnicodeError, ValueError) as error:

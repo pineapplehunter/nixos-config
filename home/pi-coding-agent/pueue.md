@@ -14,11 +14,12 @@ Assume local `pueued` is running.
 
 See `pueue --help` for more subcommands.
 
-# Chaining
+## Chaining
+
 You can add multiple tasks to the queue and wait on all of them to finish. Prefer using this when running multiple commands.
 
 ```shell
-pueue add -- <cmd1> && pueue add -- <cmd2> && pueue wait && pueue status`
+pueue add -- <cmd1> && pueue add -- <cmd2> && pueue wait && pueue status
 ```
 
 Use wait many times if the bash tool times out.

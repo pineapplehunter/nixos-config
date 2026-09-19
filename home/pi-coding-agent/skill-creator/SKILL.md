@@ -82,16 +82,17 @@ Use this structure only as needed:
 
 ### 4. Scaffold the skill
 
-For a new skill, run the bundled initializer from this skill directory:
+For a new skill, run the bundled initializer using its installed path:
 
 ```bash
-python3 scripts/init-skill.py <name> --path <parent-directory>
+SKILL_CREATOR="$HOME/.pi/agent/skills/skill-creator"
+python3 "$SKILL_CREATOR/scripts/init-skill.py" <name> --path <parent-directory>
 ```
 
 Create optional resource directories only when they are useful:
 
 ```bash
-python3 scripts/init-skill.py <name> --path <parent-directory> \
+python3 "$SKILL_CREATOR/scripts/init-skill.py" <name> --path <parent-directory> \
   --resources scripts,references,assets
 ```
 
@@ -145,10 +146,10 @@ Test every bundled script that is created or changed.
 
 ### 7. Validate and test
 
-Run the bundled structural check:
+Run the bundled structural check using the `SKILL_CREATOR` path resolved above:
 
 ```bash
-python3 scripts/validate-skill.py <path-to-skill-directory>
+python3 "$SKILL_CREATOR/scripts/validate-skill.py" <path-to-skill-directory>
 ```
 
 Also:

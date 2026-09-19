@@ -1,6 +1,11 @@
 ---
 name: todo
-description: Manages generic Markdown task lists: creates and locates lists, validates metadata, reports prioritized status, reviews task relevance and baselines, completes tasks, and advances to the next task. Use for task-list creation, status, counts, priorities, validation, task selection, resolution, completion, or “next,” with either an in-tree or /tmp list.
+description: >-
+  Manages generic Markdown task lists by creating and locating lists, validating
+  metadata, reporting prioritized status, reviewing relevance and baselines,
+  completing tasks, and advancing through tasks. Use for task-list creation,
+  status, counts, priorities, validation, selection, resolution, completion, or
+  requests to move to the next task in a managed in-tree or /tmp TODO list.
 ---
 
 # TODO Management

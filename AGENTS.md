@@ -16,6 +16,8 @@ See README.md in each subdirectory for more information.
 
 # Evaluation test
 
+Before evaluating the flake, add any new source files referenced by Nix to the Git index; flakes ignore untracked files. Do not stage unrelated files.
+
 When modifying the source, be sure to check that it evaluates correctly.
 
 ```shell

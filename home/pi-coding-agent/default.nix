@@ -4,6 +4,7 @@
     { pkgs, lib, ... }:
     let
       isLinux = pkgs.stdenv.hostPlatform.isLinux;
+      skillPython = pkgs.python3.withPackages (pythonPackages: [ pythonPackages.pyyaml ]);
 
       anthropicSkillNames = [
         "algorithmic-art"
@@ -64,6 +65,7 @@
           pkgs.patch
           pkgs.pueue
           pkgs.ripgrep
+          skillPython
           portalClients
         ];
         pathsToLink = [ "/bin" ];
@@ -119,9 +121,22 @@
           pkgs.pi-coding-agent;
     in
     {
-      home.packages = [ piCodingAgentWrapped ] ++ lib.optionals isLinux [ portalClients ];
+      home.packages = [
+        piCodingAgentWrapped
+        skillPython
+      ]
+      ++ lib.optionals isLinux [ portalClients ];
 
-      home.file = lib.mkIf isLinux {
+      home.file = {
+        ".pi/agent/skills/anthropic".source = anthropicSkills;
+        ".pi/agent/skills/flake.md".source = ./flake.md;
+        ".pi/agent/skills/nix-build.md".source = ./nix-build.md;
+        ".pi/agent/skills/nixpkgs.md".source = ./nixpkgs.md;
+        ".pi/agent/skills/rust.md".source = ./rust.md;
+        ".pi/agent/skills/skill-creator".source = ./skill-creator;
+        ".pi/agent/skills/todo".source = ./todo;
+      }
+      // lib.optionalAttrs isLinux {
         ".pi/agent/AGENTS.md".text = ''
           # Public Repository Research
 
@@ -145,15 +160,8 @@
           NoDisplay=true
           X-Flatpak=io.github.pineapplehunter.Pi
         '';
-        ".pi/agent/skills/anthropic".source = anthropicSkills;
-        ".pi/agent/skills/flake.md".source = ./flake.md;
-        ".pi/agent/skills/nix-build.md".source = ./nix-build.md;
-        ".pi/agent/skills/nixpkgs.md".source = ./nixpkgs.md;
         ".pi/agent/skills/pueue.md".source = ./pueue.md;
-        ".pi/agent/skills/rust.md".source = ./rust.md;
         ".pi/agent/skills/sandbox-info.md".source = ./sandbox.md;
-        ".pi/agent/skills/skill-creator".source = ./skill-creator;
-        ".pi/agent/skills/todo".source = ./todo;
       };
     };
 }
