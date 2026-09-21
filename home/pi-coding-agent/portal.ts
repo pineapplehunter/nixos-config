@@ -1,3 +1,4 @@
+import { StringEnum } from "@earendil-works/pi-ai";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 
@@ -54,22 +55,40 @@ export default function (pi: ExtensionAPI) {
 
   pi.registerTool({
     name: "choose_file",
-    label: "Choose File",
-    description: "Show the host file chooser and return one read-only sandbox-visible file path",
-    promptSnippet: "Choose a host file through the desktop portal when explicitly requested",
+    label: "Choose File or Folder",
+    description:
+      "Show the host file chooser and return one sandbox-visible file or folder path with the requested read-only or read/write access",
+    promptSnippet:
+      "Choose a host file or folder with read-only or read/write access through the desktop portal",
     promptGuidelines: [
-      "Use choose_file only when the user explicitly asks to choose a host file; use its returned /run/flatpak/doc path to read the selected file.",
+      "Use choose_file only when the user explicitly asks to choose a host file or folder; request read/write access only when the user explicitly needs to modify it, and use the returned /run/flatpak/doc or /run/flatpak/doc-rw path.",
     ],
     parameters: Type.Object({
       title: Type.Optional(Type.String({ description: "Optional file chooser title" })),
+      kind: Type.Optional(
+        StringEnum(["file", "folder"] as const, {
+          description: "Type of item to choose (default: file)",
+        }),
+      ),
+      access: Type.Optional(
+        StringEnum(["read", "read-write"] as const, {
+          description: "Required sandbox access (default: read)",
+        }),
+      ),
     }),
     async execute(_id, params, signal) {
+      const kind = params.kind ?? "file";
+      const access = params.access ?? "read";
       const args = ["--timeout", "120"];
       if (params.title) args.push("--title", params.title);
+      if (kind === "folder") args.push("--directory");
+      if (access === "read-write") args.push("--writable");
       const result = await runPortal(pi, "pi-choose-file", args, signal);
       if ("code" in result) {
         const path = result.stdout.trim();
-        return resultText(`Selected sandbox-visible file: ${path}`);
+        return resultText(
+          `Selected sandbox-visible ${kind} (${access}): ${path}`,
+        );
       }
       return result;
     },

@@ -399,6 +399,9 @@ def main() -> int:
                     "--ro-bind",
                     str(documents),
                     "/run/flatpak/doc",
+                    "--bind",
+                    str(documents),
+                    "/run/flatpak/doc-rw",
                 )
             )
             bwrap.extend(

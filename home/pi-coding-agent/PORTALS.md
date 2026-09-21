@@ -17,7 +17,7 @@ The document portal was not visible from the pre-existing Pi sandbox: `/run/user
 - Bubblewrap 0.12.0 supplies `--info-fd` and `--block-fd`; the wrapper uses them to publish `bwrapinfo.json` atomically before Pi starts.
 - The filtered xdg-dbus-proxy 0.1.7 rules permit OpenURI.OpenURI, FileChooser.OpenFile, request cancellation, and request responses; they do not permit calls to `org.freedesktop.portal.Documents`.
 
-At launch, the host-side wrapper activates `org.freedesktop.portal.Documents`, resolves `GetMountPoint`, and exposes only `by-app/io.github.pineapplehunter.Pi` as `/run/flatpak/doc`. If the host has no document portal, Pi still starts but file choosing is unavailable and a warning is printed.
+At launch, the host-side wrapper activates `org.freedesktop.portal.Documents`, resolves `GetMountPoint`, and exposes only `by-app/io.github.pineapplehunter.Pi`. It is mounted read-only at `/run/flatpak/doc` and read/write at `/run/flatpak/doc-rw`; the chooser returns a path from the view requested by the tool. The Documents portal still enforces the per-document permissions granted by the chooser backend. If the host has no document portal, Pi still starts but file choosing is unavailable and a warning is printed.
 
 ## Python wrapper comparison
 
@@ -30,9 +30,11 @@ The Python implementation is longer, but process ownership is explicit: proxy an
 After activating the Home Manager generation, run Pi from a graphical session and use the `open_uri` and `choose_file` tools. Useful boundary checks are:
 
 1. Open an HTTPS URI; verify `file://` is rejected.
-2. Choose one host file and verify the returned path begins with `/run/flatpak/doc/` and is readable.
-3. Verify an unselected host path is absent from the sandbox.
-4. Cancel a chooser and interrupt another request; neither should leave a dialog behind.
-5. While Pi runs, inspect `$XDG_RUNTIME_DIR/.flatpak/pi-*` and `$XDG_RUNTIME_DIR/pi-dbus-proxy/session-*`; after exit both must be gone.
-6. Start two Pi sessions and verify their instance IDs and sockets differ.
-7. Verify `notify` and the Pueue completion hook still send notifications.
+2. Choose a host file with `access: "read"`; verify the returned path begins with `/run/flatpak/doc/`, is readable, and rejects writes.
+3. Choose a host file with `access: "read-write"`; verify the returned path begins with `/run/flatpak/doc-rw/` and can be modified.
+4. Choose folders in both modes; verify directory traversal works and that creating a file succeeds only in the read/write view.
+5. Verify an unselected host path is absent from both Documents views.
+6. Cancel a chooser and interrupt another request; neither should leave a dialog behind.
+7. While Pi runs, inspect `$XDG_RUNTIME_DIR/.flatpak/pi-*` and `$XDG_RUNTIME_DIR/pi-dbus-proxy/session-*`; after exit both must be gone.
+8. Start two Pi sessions and verify their instance IDs and sockets differ.
+9. Verify `notify` and the Pueue completion hook still send notifications.

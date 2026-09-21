@@ -1,6 +1,7 @@
 """Small xdg-desktop-portal clients used inside the Pi sandbox."""
 
 import argparse
+import os
 import secrets
 import signal
 import sys
@@ -149,7 +150,9 @@ def open_uri(uri: str, timeout: int) -> None:
     )
 
 
-def choose_file(title: str, timeout: int) -> str:
+def choose_file(
+    title: str, timeout: int, directory: bool, writable: bool
+) -> str:
     token = "pi_" + secrets.token_hex(16)
     results = request(
         "org.freedesktop.portal.FileChooser",
@@ -162,7 +165,7 @@ def choose_file(title: str, timeout: int) -> str:
                 {
                     "handle_token": GLib.Variant("s", token),
                     "multiple": GLib.Variant("b", False),
-                    "directory": GLib.Variant("b", False),
+                    "directory": GLib.Variant("b", directory),
                 },
             ),
         ),
@@ -170,19 +173,32 @@ def choose_file(title: str, timeout: int) -> str:
         timeout,
     )
     uris = results.get("uris", [])
+    item = "folder" if directory else "file"
     if len(uris) != 1:
-        raise PortalError("the portal did not return exactly one file")
+        raise PortalError(f"the portal did not return exactly one {item}")
     parsed = urlparse(uris[0])
     if parsed.scheme != "file" or parsed.netloc not in {"", "localhost"}:
         raise PortalError("the portal returned a non-file URI")
+
     path = Path(unquote(parsed.path)).resolve(strict=True)
     documents = Path("/run/flatpak/doc")
-    if documents not in path.parents:
+    try:
+        relative = path.relative_to(documents)
+    except ValueError as error:
         raise PortalError(
             "the portal returned a path outside Pi's Documents view"
-        )
-    if not path.is_file():
+        ) from error
+
+    if writable:
+        path = (Path("/run/flatpak/doc-rw") / relative).resolve(strict=True)
+    if directory and not path.is_dir():
+        raise PortalError("the selected document is not a directory")
+    if not directory and not path.is_file():
         raise PortalError("the selected document is not a regular file")
+    if writable and not os.access(path, os.W_OK):
+        raise PortalError(
+            f"the portal did not grant write access to the selected {item}"
+        )
     return str(path)
 
 
@@ -193,7 +209,9 @@ def main() -> int:
     if command == "pi-open-uri":
         parser.add_argument("uri")
     elif command == "pi-choose-file":
-        parser.add_argument("--title", default="Choose a file for Pi")
+        parser.add_argument("--title")
+        parser.add_argument("--directory", action="store_true")
+        parser.add_argument("--writable", action="store_true")
     else:
         parser.error(f"unknown command name: {command}")
     args = parser.parse_args()
@@ -206,7 +224,16 @@ def main() -> int:
         if command == "pi-open-uri":
             open_uri(args.uri, args.timeout)
         else:
-            print(choose_file(args.title, args.timeout))
+            title = args.title or (
+                "Choose a folder for Pi"
+                if args.directory
+                else "Choose a file for Pi"
+            )
+            print(
+                choose_file(
+                    title, args.timeout, args.directory, args.writable
+                )
+            )
         return 0
     except Cancelled as error:
         print(error, file=sys.stderr)
