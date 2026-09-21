@@ -6,6 +6,16 @@
       isLinux = pkgs.stdenv.hostPlatform.isLinux;
       skillPython = pkgs.python3.withPackages (pythonPackages: [ pythonPackages.pyyaml ]);
 
+      piPackages = [
+        "npm:@narumitw/pi-usage"
+        "npm:pi-web-access"
+        "npm:pi-codex-image-gen"
+      ];
+
+      updatePiSettings = pkgs.writers.writePython3Bin "update-pi-settings" { } (
+        lib.readFile ./update-settings.py
+      );
+
       anthropicSkillNames = [
         "algorithmic-art"
         "canvas-design"
@@ -127,6 +137,12 @@
         skillPython
       ]
       ++ lib.optionals isLinux [ portalClients ];
+
+      home.activation.piPackages = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        ${lib.getExe updatePiSettings} \
+          "$HOME/.pi/agent/settings.json" \
+          ${lib.escapeShellArgs piPackages}
+      '';
 
       home.file = {
         ".pi/agent/skills/anthropic".source = anthropicSkills;
