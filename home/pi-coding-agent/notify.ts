@@ -23,8 +23,12 @@ export default function (pi: ExtensionAPI) {
     }),
     async execute(_toolCallId, params, signal) {
       const args = [
+        "--username",
+        "pi",
+        "--icon",
+        "https://raw.githubusercontent.com/pineapplehunter/nixos-config/main/home/notification-icons/pi.png",
         "--title",
-        `Coding Agent: ${params.title}`,
+        params.title,
         "--content",
         params.content,
       ];

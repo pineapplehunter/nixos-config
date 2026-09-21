@@ -53,7 +53,12 @@ if [[ -n "$group" && "$group" != default ]]; then
   printf -v content '%s\n**Group:** %s' "$content" "$group"
 fi
 
-title="Pueue: Task #${task_id} ${result} [$(hostname)]"
-if ! local-notify --title "$title" --content "$content" "${color_args[@]}"; then
+title="Task #${task_id} ${result}"
+if ! local-notify \
+  --username pueue \
+  --icon https://raw.githubusercontent.com/pineapplehunter/nixos-config/main/home/notification-icons/pueue.png \
+  --title "$title" \
+  --content "$content" \
+  "${color_args[@]}"; then
   echo "pueue-notify-hook: notification delivery failed" >&2
 fi

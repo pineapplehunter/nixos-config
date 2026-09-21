@@ -13,13 +13,15 @@ from notification import BUS_NAME, INTERFACE, OBJECT_PATH, ValidationError, vali
 
 def main() -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--username", required=True)
+    parser.add_argument("--icon", required=True, help="HTTPS URL for the Discord avatar")
     parser.add_argument("--title", required=True)
     parser.add_argument("--content", required=True)
     parser.add_argument("--color", default="", help="Discord embed color in #RRGGBB form")
     args = parser.parse_args()
 
     try:
-        validate(args.title, args.content, args.color)
+        validate(args.username, args.icon, args.title, args.content, args.color)
         if not os.environ.get("DBUS_SESSION_BUS_ADDRESS"):
             runtime_directory = os.environ.get("XDG_RUNTIME_DIR")
             if not runtime_directory:
@@ -36,7 +38,10 @@ def main() -> int:
             OBJECT_PATH,
             INTERFACE,
             "Notify",
-            GLib.Variant("(sss)", (args.title, args.content, args.color)),
+            GLib.Variant(
+                "(sssss)",
+                (args.username, args.icon, args.title, args.content, args.color),
+            ),
             None,
             Gio.DBusCallFlags.NONE,
             20_000,

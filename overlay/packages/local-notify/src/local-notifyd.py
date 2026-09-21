@@ -20,6 +20,8 @@ INTROSPECTION_XML = f"""
 <node>
   <interface name="{INTERFACE}">
     <method name="Notify">
+      <arg name="username" type="s" direction="in"/>
+      <arg name="icon" type="s" direction="in"/>
       <arg name="title" type="s" direction="in"/>
       <arg name="content" type="s" direction="in"/>
       <arg name="color" type="s" direction="in"/>
@@ -69,9 +71,11 @@ def main() -> int:
                     BUS_NAME + ".Error.UnknownMethod", "unknown method"
                 )
                 return
-            title, content, color = parameters.unpack()
+            username, icon, title, content, color = parameters.unpack()
             try:
-                send_discord(webhook_url, title, content, color)
+                send_discord(
+                    webhook_url, username, icon, title, content, color
+                )
                 invocation.return_value(None)
             except ValidationError as error:
                 invocation.return_dbus_error(
