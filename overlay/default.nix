@@ -10,7 +10,6 @@ in
 {
   imports = [
     ./gnome-settings-daemon.nix
-    ./nix-search-cli.nix
     ./niks3.nix
     ./eza.nix
     ./ibus-engines.nix
@@ -32,7 +31,6 @@ in
   flake.overlays = {
     default = lib.composeManyExtensions [
       overlays.gnome-settings-daemon
-      overlays.nix-search-cli
       overlays.niks3
       overlays.eza
       overlays.ibus-engines

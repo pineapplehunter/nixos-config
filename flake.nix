@@ -27,10 +27,6 @@
       url = "github:pineapplehunter/nixGL?ref=fix-system";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nix-search-cli = {
-      url = "github:peterldowns/nix-search-cli";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     niks3 = {
       url = "github:pineapplehunter/niks3?ref=progress";
       inputs.nixpkgs.follows = "nixpkgs";

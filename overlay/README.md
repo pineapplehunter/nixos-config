@@ -22,7 +22,7 @@ Most should be included in the default overlay, while hardware-specific overlays
 
 ## Last checked
 
-All overlays were last checked together on 2026-09-18.
+All overlays were last checked together on 2026-09-22.
 
 ## Instructions for agents
 
