@@ -76,6 +76,7 @@
           pkgs.pi-coding-agent
           pkgs.pueue
           pkgs.ripgrep
+          pkgs.wl-clipboard
           skillPython
           portalClients
         ];

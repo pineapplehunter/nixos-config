@@ -184,6 +184,19 @@ def main() -> int:
     home = Path.home()
     runtime = Path(runtime_text)
     root = project_root(marker)
+    wayland_display = os.environ.get("WAYLAND_DISPLAY")
+    wayland_socket = None
+    if wayland_display:
+        wayland_socket = Path(wayland_display)
+        if not wayland_socket.is_absolute():
+            wayland_socket = runtime / wayland_socket
+        if not wayland_socket.is_socket():
+            print(
+                f"warning: Wayland socket not found: {wayland_socket}",
+                file=sys.stderr,
+            )
+            wayland_display = None
+            wayland_socket = None
     (home / ".pi").mkdir(parents=True, exist_ok=True)
     (home / ".cache/nix").mkdir(parents=True, exist_ok=True)
 
@@ -390,6 +403,9 @@ def main() -> int:
             str(root),
             "--clearenv",
         ]
+        if wayland_socket is not None:
+            add_bind(bwrap, "--ro-bind", wayland_socket, wayland_socket)
+            bwrap.extend(("--setenv", "WAYLAND_DISPLAY", wayland_display))
         documents = portal_mount()
         if documents is not None and documents.is_dir():
             bwrap.extend(
