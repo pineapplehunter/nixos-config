@@ -42,6 +42,14 @@
         libraries = [ pkgs.python3Packages.pygobject3 ];
       } (lib.readFile ./wrapping.py);
 
+      clipboardClient = pkgs.writers.writePython3Bin "wl-copy" {
+        libraries = [ pkgs.python3Packages.pygobject3 ];
+      } (lib.readFile ./clipboard_client.py);
+
+      clipboardDaemon = pkgs.writers.writePython3Bin "pi-clipboardd" {
+        libraries = [ pkgs.python3Packages.pygobject3 ];
+      } (lib.readFile ./clipboard_daemon.py);
+
       portalClient = pkgs.writers.writePython3Bin "pi-portal-client" {
         libraries = [ pkgs.python3Packages.pygobject3 ];
       } (lib.readFile ./portal_client.py);
@@ -76,7 +84,7 @@
           pkgs.pi-coding-agent
           pkgs.pueue
           pkgs.ripgrep
-          pkgs.wl-clipboard
+          clipboardClient
           skillPython
           portalClients
         ];
@@ -144,6 +152,27 @@
           "$HOME/.pi/agent/settings.json" \
           ${lib.escapeShellArgs piPackages}
       '';
+
+      systemd.user.services.pi-clipboard = lib.mkIf isLinux {
+        Unit = {
+          Description = "Copy text from Pi to the host clipboard";
+          After = [ "graphical-session.target" ];
+        };
+        Service = {
+          Type = "dbus";
+          BusName = "io.github.pineapplehunter.LocalClipboard1";
+          ExecStart = "${lib.getExe clipboardDaemon} --wl-copy ${lib.getExe' pkgs.wl-clipboard "wl-copy"}";
+        };
+      };
+
+      xdg.dataFile."dbus-1/services/io.github.pineapplehunter.LocalClipboard1.service" = lib.mkIf isLinux {
+        text = ''
+          [D-BUS Service]
+          Name=io.github.pineapplehunter.LocalClipboard1
+          Exec=${lib.getExe clipboardDaemon} --wl-copy ${lib.getExe' pkgs.wl-clipboard "wl-copy"}
+          SystemdService=pi-clipboard.service
+        '';
+      };
 
       home.file = {
         ".pi/agent/skills/anthropic".source = anthropicSkills;

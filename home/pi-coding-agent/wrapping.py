@@ -184,19 +184,7 @@ def main() -> int:
     home = Path.home()
     runtime = Path(runtime_text)
     root = project_root(marker)
-    wayland_display = os.environ.get("WAYLAND_DISPLAY")
-    wayland_socket = None
-    if wayland_display:
-        wayland_socket = Path(wayland_display)
-        if not wayland_socket.is_absolute():
-            wayland_socket = runtime / wayland_socket
-        if not wayland_socket.is_socket():
-            print(
-                f"warning: Wayland socket not found: {wayland_socket}",
-                file=sys.stderr,
-            )
-            wayland_display = None
-            wayland_socket = None
+    has_wayland_clipboard = bool(os.environ.get("WAYLAND_DISPLAY"))
     (home / ".pi").mkdir(parents=True, exist_ok=True)
     (home / ".cache/nix").mkdir(parents=True, exist_ok=True)
 
@@ -298,6 +286,11 @@ def main() -> int:
                 "--call=io.github.pineapplehunter.LocalNotify1="
                 "io.github.pineapplehunter.LocalNotify1.Notify@"
                 "/io/github/pineapplehunter/LocalNotify1"
+            ),
+            (
+                "--call=io.github.pineapplehunter.LocalClipboard1="
+                "io.github.pineapplehunter.LocalClipboard1.Copy@"
+                "/io/github/pineapplehunter/LocalClipboard1"
             ),
             (
                 f"--call={PORTAL}=org.freedesktop.portal.OpenURI"
@@ -403,9 +396,10 @@ def main() -> int:
             str(root),
             "--clearenv",
         ]
-        if wayland_socket is not None:
-            add_bind(bwrap, "--ro-bind", wayland_socket, wayland_socket)
-            bwrap.extend(("--setenv", "WAYLAND_DISPLAY", wayland_display))
+        if has_wayland_clipboard:
+            # Pi uses WAYLAND_DISPLAY only to select its wl-copy backend. The
+            # compatibility client talks to the host broker, not to Wayland.
+            bwrap.extend(("--setenv", "WAYLAND_DISPLAY", "pi-clipboard"))
         documents = portal_mount()
         if documents is not None and documents.is_dir():
             bwrap.extend(
