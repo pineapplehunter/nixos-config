@@ -203,10 +203,17 @@ function withSummary(tail: string, summary: string): string {
   return tail.length === 0 ? summary : `${tail}\n\n${summary}`;
 }
 
+interface PueueWaitProgress {
+  taskId: number;
+  elapsedSeconds: number;
+  timeoutRemainingSeconds: number;
+}
+
 async function waitForPueueTask(
   timeout: number,
   taskId: number | undefined,
   signal?: AbortSignal,
+  onProgress?: (progress: PueueWaitProgress) => void,
 ): Promise<PueueWaitResult> {
   if (!Number.isSafeInteger(timeout) || timeout <= 0) {
     throw new Error("timeout must be an integer greater than zero.");
@@ -235,17 +242,36 @@ async function waitForPueueTask(
 
   const tail = new TailBuffer();
   let timer: NodeJS.Timeout | undefined;
+  let progressTimer: NodeJS.Timeout | undefined;
+  let startedAt = 0;
+  let timeoutAt = 0;
   let stale = false;
   let cancelled = false;
   let spawned = false;
 
+  const reportProgress = () => {
+    if (!spawned || stale || cancelled) return;
+    const now = Date.now();
+    onProgress?.({
+      taskId: selectedId,
+      elapsedSeconds: Math.floor((now - startedAt) / 1000),
+      timeoutRemainingSeconds: Math.max(0, Math.ceil((timeoutAt - now) / 1000)),
+    });
+  };
   const resetTimer = () => {
     if (!spawned || stale || cancelled) return;
     if (timer !== undefined) clearTimeout(timer);
+    timeoutAt = Date.now() + timeout * 1000;
     timer = setTimeout(() => {
       stale = true;
+      onProgress?.({
+        taskId: selectedId,
+        elapsedSeconds: Math.floor((Date.now() - startedAt) / 1000),
+        timeoutRemainingSeconds: 0,
+      });
       void terminateChild(child);
     }, timeout * 1000);
+    reportProgress();
   };
   const onData = (chunk: Buffer) => {
     tail.append(chunk);
@@ -255,13 +281,16 @@ async function waitForPueueTask(
   child.stderr.on("data", onData);
   child.once("spawn", () => {
     spawned = true;
+    startedAt = Date.now();
     resetTimer();
+    progressTimer = setInterval(reportProgress, 1000);
   });
 
   const onAbort = () => {
     if (cancelled) return;
     cancelled = true;
     if (timer !== undefined) clearTimeout(timer);
+    if (progressTimer !== undefined) clearInterval(progressTimer);
     void terminateChild(child);
   };
   signal?.addEventListener("abort", onAbort, { once: true });
@@ -296,9 +325,17 @@ async function waitForPueueTask(
     throw new Error(withSummary(tail.toString(), `pueue follow for task ${selectedId} exited with status ${code}.`));
   } finally {
     if (timer !== undefined) clearTimeout(timer);
+    if (progressTimer !== undefined) clearInterval(progressTimer);
     signal?.removeEventListener("abort", onAbort);
     await terminateChild(child);
   }
+}
+
+function formatElapsed(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+  return [hours, minutes, remainingSeconds].map((value) => String(value).padStart(2, "0")).join(":");
 }
 
 export default function (pi: ExtensionAPI) {
@@ -324,8 +361,18 @@ export default function (pi: ExtensionAPI) {
         }),
       ),
     }),
-    async execute(_toolCallId, params, signal) {
-      const result = await waitForPueueTask(params.timeout, params.task_id, signal);
+    async execute(_toolCallId, params, signal, onUpdate) {
+      const result = await waitForPueueTask(params.timeout, params.task_id, signal, (progress) => {
+        onUpdate?.({
+          content: [
+            {
+              type: "text",
+              text: `Waiting for Pueue task ${progress.taskId} — elapsed ${formatElapsed(progress.elapsedSeconds)}; inactivity timeout ${progress.timeoutRemainingSeconds}s`,
+            },
+          ],
+          details: progress,
+        });
+      });
       return {
         content: [{ type: "text", text: result.text }],
         details: {
