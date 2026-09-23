@@ -199,6 +199,7 @@
         ".pi/agent/extensions/nix-search.ts".source = ./nix-search.ts;
         ".pi/agent/extensions/notify.ts".source = ./notify.ts;
         ".pi/agent/extensions/portal.ts".source = ./portal.ts;
+        ".pi/agent/extensions/pueue-wait.ts".source = ./pueue-wait.ts;
         ".local/share/applications/io.github.pineapplehunter.Pi.desktop".text = ''
           [Desktop Entry]
           Type=Application
