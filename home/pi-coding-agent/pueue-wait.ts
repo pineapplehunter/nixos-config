@@ -8,6 +8,7 @@ type PueueChild = ChildProcessByStdio<null, Readable, Readable>;
 const MAX_TAIL_BYTES = 4096;
 const MAX_TAIL_LINES = 20;
 const KILL_GRACE_MS = 250;
+const DEFAULT_TIMEOUT_SECONDS = 30 * 60;
 
 interface PueueWaitResult {
   taskId: number;
@@ -350,10 +351,13 @@ export default function (pi: ExtensionAPI) {
       "Omit task_id only when exactly one Pueue task is running; specify it when multiple tasks run.",
     ],
     parameters: Type.Object({
-      timeout: Type.Integer({
-        description: "Maximum seconds with no output from pueue follow; every output byte resets it",
-        exclusiveMinimum: 0,
-      }),
+      timeout: Type.Optional(
+        Type.Integer({
+          description: "Maximum seconds with no output from pueue follow; defaults to 1800 (30 minutes)",
+          exclusiveMinimum: 0,
+          default: DEFAULT_TIMEOUT_SECONDS,
+        }),
+      ),
       task_id: Type.Optional(
         Type.Integer({
           description: "Optional ID of a task that is currently running",
@@ -362,7 +366,8 @@ export default function (pi: ExtensionAPI) {
       ),
     }),
     async execute(_toolCallId, params, signal, onUpdate) {
-      const result = await waitForPueueTask(params.timeout, params.task_id, signal, (progress) => {
+      const timeout = params.timeout ?? DEFAULT_TIMEOUT_SECONDS;
+      const result = await waitForPueueTask(timeout, params.task_id, signal, (progress) => {
         onUpdate?.({
           content: [
             {
