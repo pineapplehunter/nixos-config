@@ -15,7 +15,10 @@
   dictionaries ? [ ],
   merge-ut-dictionaries,
 }:
+# Provide the newer, split Mozc server/tool package while nixpkgs still ships 2.x.
 # Associated PR: https://github.com/NixOS/nixpkgs/pull/531687.
+# Drop this when the pinned nixpkgs provides equivalent split packages, including
+# UT-dictionary support and a sandbox-compatible Bazel/Python build.
 let
   bazel = bazel_9;
 

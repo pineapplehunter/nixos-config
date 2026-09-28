@@ -9,7 +9,10 @@
   mozcdic-ut-skk-jisyo,
   mozcdic-ut-sudachidict,
 }:
+# Keep nixpkgs' eight UT dictionaries with the local split Mozc package: the
+# pinned nixpkgs wrapper still passes the removed withIbus argument.
 # Associated PR: https://github.com/NixOS/nixpkgs/pull/531687.
+# Drop this when nixpkgs' mozc-ut supports the split package without withIbus.
 mozc.override {
   dictionaries = [
     mozcdic-ut-alt-cannadic

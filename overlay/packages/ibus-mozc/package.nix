@@ -15,7 +15,10 @@
   copyDesktopItems,
   mozc,
 }:
+# Build the IBus frontend separately against the local Mozc server (including UT).
 # Associated PR: https://github.com/NixOS/nixpkgs/pull/531687.
+# Drop this with the local Mozc package once the pinned nixpkgs supplies an
+# equivalent split IBus frontend and its GNOME setup desktop entry.
 let
   pname = "ibus-mozc";
   inherit (mozc)
