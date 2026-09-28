@@ -5,7 +5,7 @@
 
 stdenv.mkDerivation {
   pname = "stl2pov";
-  version = "0-unstable-2018-12-12";
+  version = "2.5.1";
 
   src = fetchFromGitHub {
     owner = "Spiritdude";
