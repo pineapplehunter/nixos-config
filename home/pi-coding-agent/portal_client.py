@@ -132,24 +132,6 @@ def request(
         connection.signal_unsubscribe(subscription)
 
 
-def open_uri(uri: str, timeout: int) -> None:
-    parsed = urlparse(uri)
-    if parsed.scheme.lower() == "file":
-        raise PortalError("file:// URIs are not accepted")
-    if parsed.scheme.lower() not in {"http", "https"}:
-        raise PortalError("only http:// and https:// URIs are accepted")
-    token = "pi_" + secrets.token_hex(16)
-    request(
-        "org.freedesktop.portal.OpenURI",
-        "OpenURI",
-        GLib.Variant(
-            "(ssa{sv})", ("", uri, {"handle_token": GLib.Variant("s", token)})
-        ),
-        token,
-        timeout,
-    )
-
-
 def choose_file(
     title: str, timeout: int, directory: bool, writable: bool
 ) -> str:
@@ -206,14 +188,11 @@ def main() -> int:
     command = Path(sys.argv[0]).name
     parser = argparse.ArgumentParser(prog=command)
     parser.add_argument("--timeout", type=int, default=120)
-    if command == "pi-open-uri":
-        parser.add_argument("uri")
-    elif command == "pi-choose-file":
-        parser.add_argument("--title")
-        parser.add_argument("--directory", action="store_true")
-        parser.add_argument("--writable", action="store_true")
-    else:
+    if command != "pi-choose-file":
         parser.error(f"unknown command name: {command}")
+    parser.add_argument("--title")
+    parser.add_argument("--directory", action="store_true")
+    parser.add_argument("--writable", action="store_true")
     args = parser.parse_args()
     try:
         if not Path("/.flatpak-info").is_file():
@@ -221,19 +200,14 @@ def main() -> int:
                 "Pi has no desktop portal identity; restart Pi after "
                 "activating the updated Home Manager generation"
             )
-        if command == "pi-open-uri":
-            open_uri(args.uri, args.timeout)
-        else:
-            title = args.title or (
-                "Choose a folder for Pi"
-                if args.directory
-                else "Choose a file for Pi"
-            )
-            print(
-                choose_file(
-                    title, args.timeout, args.directory, args.writable
-                )
-            )
+        title = args.title or (
+            "Choose a folder for Pi"
+            if args.directory
+            else "Choose a file for Pi"
+        )
+        print(
+            choose_file(title, args.timeout, args.directory, args.writable)
+        )
         return 0
     except Cancelled as error:
         print(error, file=sys.stderr)

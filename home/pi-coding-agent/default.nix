@@ -57,9 +57,7 @@
       portalClients = pkgs.runCommand "pi-portal-clients" { } ''
         mkdir -p "$out/bin" "$out/libexec"
         ln -s ${lib.getExe' portalClient "pi-portal-client"} "$out/libexec/pi-portal-client"
-        for command in pi-open-uri pi-choose-file; do
-          ln -s ../libexec/pi-portal-client "$out/bin/$command"
-        done
+        ln -s ../libexec/pi-portal-client "$out/bin/pi-choose-file"
       '';
 
       sandboxTools = pkgs.buildEnv {
@@ -198,7 +196,7 @@
         ".pi/agent/extensions/nix-bash.ts".source = ./nix-bash.ts;
         ".pi/agent/extensions/nix-search.ts".source = ./nix-search.ts;
         ".pi/agent/extensions/notify.ts".source = ./notify.ts;
-        ".pi/agent/extensions/portal.ts".source = ./portal.ts;
+        ".pi/agent/extensions/open-file.ts".source = ./open-file.ts;
         ".pi/agent/extensions/pueue-wait.ts".source = ./pueue-wait.ts;
         ".local/share/applications/io.github.pineapplehunter.Pi.desktop".text = ''
           [Desktop Entry]

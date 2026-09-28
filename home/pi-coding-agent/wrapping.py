@@ -293,10 +293,6 @@ def main() -> int:
                 "/io/github/pineapplehunter/LocalClipboard1"
             ),
             (
-                f"--call={PORTAL}=org.freedesktop.portal.OpenURI"
-                f".OpenURI@{PORTAL_PATH}"
-            ),
-            (
                 f"--call={PORTAL}=org.freedesktop.portal.FileChooser"
                 f".OpenFile@{PORTAL_PATH}"
             ),
