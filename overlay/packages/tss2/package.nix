@@ -10,12 +10,12 @@
 stdenv.mkDerivation rec {
   # package name taken from the same package in fedora linux
   pname = "tss2";
-  version = "2.4.1";
+  version = "2.5.0";
 
   src = fetchgit {
     url = "https://git.code.sf.net/p/ibmtpm20tss/tss";
     tag = "v${version}";
-    hash = "sha256-P48Zu/JhQopzgQH2CFVvaSMjy2k7EKgkIUqJ3l3nnDg=";
+    hash = "sha256-Kl0ci40Dpbi1FRsMVv1ed+ehjdQe1iaNbsSig2gve/A=";
   };
 
   enableParallelBuilding = true;
