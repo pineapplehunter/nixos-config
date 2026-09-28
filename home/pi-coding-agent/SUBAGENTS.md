@@ -18,7 +18,7 @@ and activates three tools:
 | `subagent_status` | Return the paths belonging to one or more named children. |
 | `subagent_cleanup` | Delete a named snapshot after its task has finished or been stopped. |
 
-`subagent_start` returns only the state directory. Its `task-id` file contains the globally unique Pueue task ID. Pueue is the source of truth for execution state. Use existing shell tools and `pueue-wait`, for example:
+`subagent_start` returns the state directory and the globally unique Pueue `task_id`. The same ID is stored in the state directory's `task-id` file. Pueue is the source of truth for execution state. Use existing shell tools and `pueue-wait`, for example:
 
 ```console
 pueue status --json
@@ -85,7 +85,7 @@ pi --print \
   </dev/null
 ```
 
-`PI_SUBAGENT_ROLE=child` makes the extension return without registering parent tools. The child retains the normal coding tools and skills. Its entire `/run` is a private tmpfs. It reuses the main `pueue.yml`, with `/run/pi-pueue` providing private sockets and daemon state.
+`PI_SUBAGENT_ROLE=child` prevents the extension from registering parent tools. The child retains the normal coding tools and skills except D-Bus-dependent tools (`notify`), which are made inactive. Its entire `/run` is a private tmpfs. It reuses the main `pueue.yml`, with `/run/pi-pueue` providing private sockets and daemon state.
 
 ## Communication
 
@@ -101,7 +101,7 @@ The generated prompt tells the child to:
 
 The main-agent flow is:
 
-1. Call `subagent_start` and read `task-id` from the returned state directory.
+1. Call `subagent_start` and use the returned Pueue `task_id` (also available in the state directory's `task-id` file).
 2. Wait with `pueue-wait` or inspect with raw Pueue commands.
 3. Read `response.md`; use `subagent_status` if the state paths must be looked up again.
 4. Inspect `stdout.log` when the complete child output is needed.

@@ -384,13 +384,19 @@ export class SubagentSupervisor {
 // Extension
 
 const LOADER_NAME = "subagents_enable";
+const CHILD_DISABLED_TOOLS = new Set(["notify"]);
 
 function parentTools(pi: ExtensionAPI): string[] {
 	return pi.getAllTools().map(tool => tool.name).filter(name => name.startsWith("subagent_"));
 }
 
 export default function (pi: ExtensionAPI) {
-	if (process.env.PI_SUBAGENT_ROLE === "child") return;
+	if (process.env.PI_SUBAGENT_ROLE === "child") {
+		pi.on("session_start", () => {
+			pi.setActiveTools(pi.getActiveTools().filter(name => !CHILD_DISABLED_TOOLS.has(name)));
+		});
+		return;
+	}
 
 	const supervisor = new SubagentSupervisor();
 
@@ -442,7 +448,10 @@ export default function (pi: ExtensionAPI) {
 				trustedProject: ctx.isProjectTrusted(),
 			});
 			return {
-				content: [{ type: "text" as const, text: `Subagent state: \`${state.statePath}\`` }],
+				content: [{
+					type: "text" as const,
+					text: `Subagent state: \`${state.statePath}\`\nPueue task_id: \`${state.pueueTaskId}\``,
+				}],
 				details: state,
 			};
 		},
