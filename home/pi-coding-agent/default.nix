@@ -108,6 +108,14 @@
 
       pueueConfig = pkgs.writeText "pi-pueue.yml" (lib.readFile ./pueue.yml);
 
+      subagentsExtension = pkgs.replaceVars ./subagents.ts {
+        bash = lib.getExe pkgs.bash;
+        bubblewrap = lib.getExe pkgs.bubblewrap;
+        coreutilsCp = lib.getExe' pkgs.coreutils "cp";
+        pi = lib.getExe pkgs.pi-coding-agent;
+        pueue = lib.getExe' pkgs.pueue "pueue";
+      };
+
       piWithPueue = pkgs.writeShellApplication {
         name = "pi-with-pueue";
         runtimeInputs = [ pkgs.pueue ];
@@ -198,7 +206,9 @@
         ".pi/agent/extensions/nix-search.ts".source = ./nix-search.ts;
         ".pi/agent/extensions/notify.ts".source = ./notify.ts;
         ".pi/agent/extensions/open-file.ts".source = ./open-file.ts;
+        ".pi/agent/extensions/pueue-status.ts".source = ./pueue-status.ts;
         ".pi/agent/extensions/pueue-wait.ts".source = ./pueue-wait.ts;
+        ".pi/agent/extensions/subagents.ts".source = subagentsExtension;
         ".local/share/applications/io.github.pineapplehunter.Pi.desktop".text = ''
           [Desktop Entry]
           Type=Application

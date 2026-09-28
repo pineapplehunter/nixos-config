@@ -1,10 +1,10 @@
 set -euo pipefail
 
-mkdir -p /tmp/pi-pueue
-chmod 700 /tmp/pi-pueue
+mkdir -p /run/pi-pueue
+chmod 700 /run/pi-pueue
 
 if ! pueue status >/dev/null 2>&1; then
-  rm -f /tmp/pi-pueue/pueue.pid /tmp/pi-pueue/pueue.socket
+  rm -f /run/pi-pueue/pueue.pid /run/pi-pueue/pueue.socket
   pueued -d
   for _ in $(seq 1 50); do
     pueue status >/dev/null 2>&1 && break
