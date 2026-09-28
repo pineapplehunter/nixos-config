@@ -4,6 +4,8 @@
     # and sensor support not yet included in the upstream libcamera release.
     # nixos-raspberrypi's older 0.7.0 fork no longer accepts flags inherited
     # from nixpkgs' 0.7.2 expression, so use the matching Raspberry Pi release.
+    # https://github.com/raspberrypi/libcamera/releases/tag/v0.7.2+rpt20260817
+    # Drop this version override once nixos-raspberrypi supplies a compatible fork.
     libcamera_rpi = prev.libcamera_rpi.overrideAttrs (old: rec {
       version = "0.7.2+rpt20260817";
       src = final.fetchFromGitHub {
