@@ -67,6 +67,7 @@
           pkgs.coreutils
           pkgs.diffutils
           pkgs.fd
+          pkgs.file
           pkgs.findutils
           pkgs.gawk
           pkgs.git
