@@ -11,6 +11,7 @@
         "npm:@narumitw/pi-usage"
         "npm:pi-web-access"
         "npm:pi-codex-image-gen"
+        "https://github.com/monotykamary/pi-double-esc@main"
       ]
       ++ map toString localPiPackages;
 
