@@ -2,7 +2,7 @@
 
 ```text
 pi-subagent <name> <directory> <prompt_file> [--model <model>]
-            [--thinking <level>] [--resume <session_id>]
+            [--thinking <level>] [--resume <session_id>] [--context <text>]
 ```
 
 Home Manager packages `launcher.py` with `pkgs.writers.writePython3Bin` (including
@@ -63,6 +63,12 @@ daemon. Desktop service sockets and the parent Pueue socket are not mounted.
 The task file is copied unchanged to `prompt.md` and supplied via Pi's `@file`
 input. `--append-system-prompt` supplies fixed environment/reporting instructions
 separately, so the task file need not describe the sandbox or report location.
+Optional `--context` (`-c`) adds literal per-worker context to those system
+instructions without modifying the task file. This permits independent agents
+to share a task document while receiving different assignments. Context is
+forwarded to the queued worker and preserved in the printed resume command;
+manual resume can supply different context without a separate metadata registry.
+
 Those instructions describe overlays, native sessions, private Pueue, changed
 workspace scope, relative changed-file paths, test results, missing-input
 requests, and the report at `/run/pi-subagent/response.md`. Nested agents are

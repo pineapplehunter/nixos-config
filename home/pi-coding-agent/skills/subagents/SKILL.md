@@ -63,6 +63,26 @@ own defaults or saved session settings. There is no separate model metadata.
 The supplied project is trusted by default. The Nix daemon socket and
 configuration are always exposed for builds and `nix develop`.
 
+## Shared instructions, different workers
+
+Use `--context` (or `-c`) to give each agent a role while reusing one task file:
+
+```bash
+pi-subagent frontend /tmp/frontend /tmp/tasks.md \
+  -c "You are the frontend worker. Execute only the Frontend task."
+pi-subagent tests /tmp/tests /tmp/tasks.md \
+  -c "You are the test worker. Execute only the Tests task."
+```
+
+Context is literal text appended to system instructions, not a file path. The
+shared task file remains unchanged. Define clear responsibilities in that file
+and give each agent its own workspace and session. Tasks with dependencies
+should run in separate waves rather than concurrently.
+
+Context is forwarded to the queued worker and included in the printed resume
+command. Supply it again on manual resume to retain the same role, or pass new
+context to change the assignment. No separate role metadata is stored.
+
 ## Environment and resources
 
 The child inherits the parent's PATH and environment, including API keys and
@@ -136,5 +156,6 @@ resources. The launcher appends system instructions explaining workspace scope,
 resource overlays, persisted sessions, tools, and response expectations. It
 requires a report at `/run/pi-subagent/response.md`, relative changed-file paths,
 test outcomes, requests for missing inputs, and no nested subagents. The prompt
-file supplies only the task as a user message. Resume also includes native saved
+file supplies only the task as a user message. Optional `--context` text is
+appended separately to the system instructions. Resume also includes native saved
 conversation history; the parent's transcript is never copied.

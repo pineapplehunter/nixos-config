@@ -178,6 +178,9 @@ def sandbox_command(options, state, agent_source):
     }
     for key, value in environment.items():
         args.extend(["--setenv", key, value])
+    instructions = CHILD_INSTRUCTIONS
+    if options.context:
+        instructions += "\n## Additional context\n\n" + options.context + "\n"
     args.extend(
         [
             "--chdir",
@@ -196,7 +199,7 @@ def sandbox_command(options, state, agent_source):
             options.name,
             "--approve",
             "--append-system-prompt",
-            CHILD_INSTRUCTIONS,
+            instructions,
         ]
     )
     if options.model:
@@ -219,17 +222,17 @@ def run_child(options, state, agent_source):
         print(f"Report: {state / 'response.md'}", flush=True)
         print(f"Output: {state / 'stdout.log'}", flush=True)
         if result.returncode == 0:
-            resume = shlex.join(
-                [
-                    "pi-subagent",
-                    options.name,
-                    options.directory,
-                    "/path/to/follow-up.md",
-                    "--resume",
-                    options.session_id,
-                ]
-            )
-            print(f"Resume: {resume}", flush=True)
+            command = [
+                "pi-subagent",
+                options.name,
+                options.directory,
+                "/path/to/follow-up.md",
+                "--resume",
+                options.session_id,
+            ]
+            if options.context:
+                command.append(f"--context={options.context}")
+            print(f"Resume: {shlex.join(command)}", flush=True)
         return result.returncode
 
 
@@ -241,6 +244,11 @@ def parser():
     cli.add_argument("--resume", help="Native Pi session ID to resume")
     cli.add_argument("--model")
     cli.add_argument("--thinking", choices=THINKING_LEVELS)
+    cli.add_argument(
+        "-c",
+        "--context",
+        help="Additional system context, such as a worker role",
+    )
     internal = cli.add_argument_group("internal arguments")
     internal.add_argument(
         "--run",
@@ -330,6 +338,8 @@ def main():
             command.extend(["--model", options.model])
         if options.thinking:
             command.extend(["--thinking", options.thinking])
+        if options.context:
+            command.append(f"--context={options.context}")
         result = subprocess.run(
             [
                 "pueue",
