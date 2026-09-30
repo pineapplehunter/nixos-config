@@ -4,7 +4,9 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { getSupportedThinkingLevels, type ModelThinkingLevel } from "@earendil-works/pi-ai";
+import { type ExtensionAPI, type ExtensionContext, getAgentDir } from "@earendil-works/pi-coding-agent";
+import { SelectList } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 
 const execFileAsync = promisify(execFile);
@@ -384,6 +386,7 @@ export class SubagentSupervisor {
 // Extension
 
 const LOADER_NAME = "subagents_enable";
+const MODEL_CONFIG = "subagents.json";
 const CHILD_DISABLED_TOOLS = new Set(["notify"]);
 
 function parentTools(pi: ExtensionAPI): string[] {
@@ -399,6 +402,96 @@ export default function (pi: ExtensionAPI) {
 	}
 
 	const supervisor = new SubagentSupervisor();
+	const configPath = path.join(getAgentDir(), MODEL_CONFIG);
+	let defaultModel: string | undefined;
+	let defaultThinking: ModelThinkingLevel | undefined;
+	const thinkingLevels = ["off", "minimal", "low", "medium", "high", "xhigh", "max"] as const;
+
+	function loadDefaults(): void {
+		try {
+			const config: unknown = JSON.parse(fs.readFileSync(configPath, "utf8"));
+			if (typeof config !== "object" || config === null || !("model" in config) || (config.model !== null && typeof config.model !== "string")) {
+				throw new Error("expected a model string or null");
+			}
+			const thinking = "thinkingLevel" in config ? config.thinkingLevel : undefined;
+			if (thinking !== undefined && thinking !== null &&
+				(typeof thinking !== "string" || !thinkingLevels.some(level => level === thinking))) {
+				throw new Error("expected a valid thinkingLevel or null");
+			}
+			defaultModel = config.model ?? undefined;
+			defaultThinking = (thinking ?? undefined) as ModelThinkingLevel | undefined;
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+				defaultModel = undefined;
+				defaultThinking = undefined;
+				return;
+			}
+			throw new Error(`Could not read ${configPath}: ${error instanceof Error ? error.message : String(error)}`);
+		}
+	}
+
+	function saveDefaults(model: string | undefined, thinking: ModelThinkingLevel | undefined): void {
+		// Keep Pi's own settings.json untouched; this file belongs to the extension.
+		fs.mkdirSync(path.dirname(configPath), { recursive: true });
+		const temporary = `${configPath}.${process.pid}.tmp`;
+		try {
+			fs.writeFileSync(temporary, `${JSON.stringify({ model: model ?? null, thinkingLevel: thinking ?? null }, null, 2)}\n`, { mode: 0o600 });
+			fs.renameSync(temporary, configPath);
+		} finally {
+			fs.rmSync(temporary, { force: true });
+		}
+		defaultModel = model;
+		defaultThinking = thinking;
+	}
+
+	pi.registerCommand("subagent-model", {
+		description: "Choose the default model and thinking level for future subagent turns",
+		handler: async (_args, ctx) => {
+			if (ctx.mode !== "tui") {
+				ctx.ui.notify("/subagent-model requires TUI mode", "error");
+				return;
+			}
+			const select = (title: string, choices: string[], current: string) => ctx.ui.custom<string | undefined>((tui, theme, _kb, done) => {
+				const list = new SelectList(choices.map(value => ({
+					value,
+					label: value === current ? `${value} (current)` : value,
+				})), 12, {
+					selectedPrefix: text => theme.fg("accent", text),
+					selectedText: text => theme.fg("accent", text),
+					description: text => theme.fg("muted", text),
+					scrollInfo: text => theme.fg("dim", text),
+					noMatch: text => theme.fg("warning", text),
+				});
+				list.setSelectedIndex(Math.max(0, choices.indexOf(current)));
+				list.onSelect = item => done(item.value);
+				list.onCancel = () => done(undefined);
+				return {
+					render: width => [theme.fg("accent", title), ...list.render(width)],
+					invalidate: () => list.invalidate(),
+					handleInput: data => { list.handleInput(data); tui.requestRender(); },
+				};
+			});
+			const models = ctx.modelRegistry.getAvailable();
+			const inheritModel = "(inherit parent model)";
+			const modelChoice = await select("Subagent model",
+				[inheritModel, ...models.map(model => `${model.provider}/${model.id}`).sort()], defaultModel ?? inheritModel);
+			if (modelChoice === undefined) return;
+			const model = modelChoice === inheritModel ? undefined : modelChoice;
+			const selected = model ? models.find(entry => `${entry.provider}/${entry.id}` === model) : ctx.model;
+			const supported = selected ? getSupportedThinkingLevels(selected) : [...thinkingLevels];
+			const inheritThinking = "(inherit parent thinking level)";
+			const thinkingChoice = await select(`Subagent thinking level (${model ?? "parent model"})`,
+				[inheritThinking, ...supported], defaultThinking ?? inheritThinking);
+			if (thinkingChoice === undefined) return;
+			const thinking = thinkingChoice === inheritThinking ? undefined : thinkingChoice as ModelThinkingLevel;
+			try {
+				saveDefaults(model, thinking);
+				ctx.ui.notify(`Subagents: ${model ?? "parent model"}, thinking: ${thinking ?? "inherit parent"}`, "info");
+			} catch (error) {
+				ctx.ui.notify(`Could not save ${configPath}: ${error instanceof Error ? error.message : String(error)}`, "error");
+			}
+		},
+	});
 
 	pi.registerTool({
 		name: LOADER_NAME,
@@ -440,11 +533,20 @@ export default function (pi: ExtensionAPI) {
 		}, { additionalProperties: false }),
 		executionMode: "sequential",
 		async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+			const selected = defaultModel
+				? ctx.modelRegistry.getAvailable().find(model => `${model.provider}/${model.id}` === defaultModel)
+				: ctx.model;
+			if (defaultModel && !selected) {
+				throw new Error(`Configured subagent model ${defaultModel} is unavailable. Run /subagent-model to choose another.`);
+			}
+			if (defaultThinking && selected && !getSupportedThinkingLevels(selected).includes(defaultThinking)) {
+				throw new Error(`Thinking level ${defaultThinking} is unsupported by ${selected.provider}/${selected.id}. Run /subagent-model to choose another.`);
+			}
 			const state = await supervisor.start({
 				name: params.name,
 				task: params.task,
-				model: ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : undefined,
-				thinkingLevel: ctx.thinkingLevel,
+				model: defaultModel ?? (ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : undefined),
+				thinkingLevel: defaultThinking ?? ctx.thinkingLevel,
 				trustedProject: ctx.isProjectTrusted(),
 			});
 			return {
@@ -485,6 +587,7 @@ export default function (pi: ExtensionAPI) {
 	});
 
 	pi.on("session_start", (_event, ctx) => {
+		loadDefaults();
 		const tools = parentTools(pi);
 		pi.setActiveTools([...pi.getActiveTools().filter(name => !tools.includes(name)), LOADER_NAME]);
 		supervisor.initialize(ctx);

@@ -28,6 +28,10 @@ pueue kill <task-id>
 
 The extension does not poll, cancel, remove, or recover Pueue tasks.
 
+## Default child model
+
+Run `/subagent-model` in interactive Pi to select an available model and then a thinking level supported by that model. Both choices are saved as `model` and `thinkingLevel` in `<agent-dir>/subagents.json` (normally `~/.pi/agent/subagents.json`) and apply to future subagent turns, including turns in later Pi sessions. Select `(inherit parent model)` or `(inherit parent thinking level)` to leave either setting tied to the parent; the config stores `null` for inherited settings. Existing configs without `thinkingLevel` also inherit the parent level. The command does not change the parent or any already submitted task. If a saved model becomes unavailable or the saved thinking level is unsupported by the selected model, `subagent_start` fails with a prompt to choose again rather than silently changing the setting.
+
 ## Snapshot layout
 
 Each named child has a directly inspectable directory:
