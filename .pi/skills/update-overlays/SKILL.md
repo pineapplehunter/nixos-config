@@ -14,7 +14,8 @@ Perform the overlay update; do not stop after describing or planning it.
 5. If the audit results in an overlay-related repository change, set the common `Last checked` date in `overlay/README.md` to the date on which the audit was actually completed. If nothing changes, leave the date untouched. Update the common date only after completing the full batch; for a partial audit, state the scope instead of falsely dating the full batch.
 6. Run the validation required by `overlay/README.md`, the repository's `AGENTS.md`, and any more specific instructions. At minimum, run `git diff --check`, search for stale references, and run `nix flake check --no-build --all-systems`. Build the smallest relevant derivation when evaluation cannot verify an override or patch.
 7. Report overlays removed, changed, and retained; include the evidence or reason for each decision and any validation that could not be completed.
-8. After the work and validation finish, use `notify` with a concise Markdown report. Make this the final tool call for the task:
-   - If no overlay-related repository change was needed, say that the audit found no changes and omit `color`.
-   - If at least one overlay-related change was made and the task completed without errors, use green (`#57F287`) and summarize the changes and validation.
-   - If any update, audit, or validation error occurred, or the task could not be completed, use red (`#ED4245`) and report the error, completed work, and any required user action.
+8. After the work and validation finish, use `notify` with a concise Markdown report focused only on packages actually updated or affected by an overlay change or removal. Make this the final tool call for the task:
+   - List only changed packages and briefly describe what changed (include old and new versions when applicable). Do not list retained or unchanged packages, audit evidence, successful validation details, documentation-only edits, or unrelated working-tree issues; keep those in the final chat report.
+   - If no packages changed, say only "No packages updated." and omit `color`. Documentation-only edits and audit-date updates do not count as package changes.
+   - If packages changed and their update and validation completed without errors, use green (`#57F287`).
+   - If a package update or its validation failed, use red (`#ED4245`) and briefly identify the affected package, failure, and required user action. Do not include unrelated errors.
