@@ -179,24 +179,11 @@
 
       home.file = {
         ".pi/agent/skills/anthropic".source = anthropicSkills;
-        ".pi/agent/skills/flake.md".source = ./flake.md;
-        ".pi/agent/skills/nix-build.md".source = ./nix-build.md;
-        ".pi/agent/skills/nixpkgs.md".source = ./nixpkgs.md;
-        ".pi/agent/skills/rust.md".source = ./rust.md;
-        ".pi/agent/skills/skill-creator".source = ./skill-creator;
-        ".pi/agent/skills/todo".source = ./todo;
-      }
-      // lib.optionalAttrs isLinux {
+        ".pi/agent/skills/pinaepplehunter".source = ./skills;
         ".pi/agent/AGENTS.md".text = ''
-          # Public Repository Research
-
-          When researching code in a public repository, prefer cloning and inspecting it locally over repeated remote searches.
-          Use a shallow clone when history is not needed.
-          Put the repository clones under /tmp.
-
-          # Sandbox Environment
-          You are running in a sandbox created with linux namespacing.
-          For more information, see skill `sandbox-info`.
+          Prefer shallow clones in /tmp over repeated remote searches of public repositories.
+          If a file or tool is missing, see skill `sandbox-info`.
+          Nix tooling is available; use `nix develop` or `nix shell` for project tools.
         '';
         ".pi/agent/extensions/nix-bash.ts".source = ./nix-bash.ts;
         ".pi/agent/extensions/nix-search.ts".source = ./nix-search.ts;
@@ -213,8 +200,6 @@
           NoDisplay=true
           X-Flatpak=io.github.pineapplehunter.Pi
         '';
-        ".pi/agent/skills/pueue.md".source = ./pueue.md;
-        ".pi/agent/skills/sandbox-info.md".source = ./sandbox.md;
       };
     };
 }

@@ -4,7 +4,7 @@ description: Use pueue to run commands in the background. Use for build testing 
 ---
 
 # Pueue
-Assume local `pueued` is running.
+Pi's wrapper starts an isolated `pueued` for the Pi session; Pueue commands inside Pi do not control the host daemon.
 
 - `pueue add -- <cmd>`: add command to the task queue. Returns a task id to stdout.
 - `pueue-wait` tool: wait for an already-running task. Its timeout measures output inactivity and stops only the local follow client.

@@ -18,7 +18,7 @@ and activates three tools:
 | `subagent_status` | Return the paths belonging to one or more named children. |
 | `subagent_cleanup` | Delete a named snapshot after its task has finished or been stopped. |
 
-`subagent_start` returns the state directory and the globally unique Pueue `task_id`. The same ID is stored in the state directory's `task-id` file. Pueue is the source of truth for execution state. Use existing shell tools and `pueue-wait`, for example:
+`subagent_start` returns the state directory and the globally unique Pueue `task_id`. The same ID is stored in the state directory's `task-id` file. Pi uses its own Pueue daemon in the sandbox; these commands do not inspect the host's Pueue daemon. Pueue is the source of truth for execution state. Use existing shell tools and `pueue-wait`, for example:
 
 ```console
 pueue status --json
@@ -46,7 +46,7 @@ Each named child has a directly inspectable directory:
 └── bwrap-info.json # Bubblewrap child PID in the parent PID namespace
 ```
 
-Snapshots are direct Btrfs reflink copies:
+Snapshots use Btrfs reflinks in `/tmp`, so unchanged files share storage with the source and only changed blocks consume additional disk space:
 
 ```console
 cp -a --reflink=always "$PWD/." "$baseline/"
@@ -55,7 +55,7 @@ cp -a --reflink=always "$baseline/." "$workspace/"
 
 If copying fails, creation fails and removes the partial directory. No special handling is applied to Git metadata, symlinks, or nested mounts.
 
-Paths and session IDs exist only in extension memory. A restarted Pi does not recover earlier children. Normal shutdown removes `/tmp/pi-subagents`. Only one parent Pi process should manage subagents in a project at a time. The main agent must stop active Pueue tasks before cleanup or shutdown.
+Paths and session IDs exist only in extension memory. A restarted Pi does not recover earlier children. Normal Pi shutdown removes `/tmp/pi-subagents`; because `/tmp` is host-backed, an unclean shutdown may leave stale files. Only one parent Pi process should manage subagents in a project at a time. Stop active Pueue tasks before cleanup or shutdown.
 
 ## Starting a turn
 
@@ -85,7 +85,7 @@ pi --print \
   </dev/null
 ```
 
-`PI_SUBAGENT_ROLE=child` prevents the extension from registering parent tools. The child retains the normal coding tools and skills except D-Bus-dependent tools (`notify`), which are made inactive. Its entire `/run` is a private tmpfs. It reuses the main `pueue.yml`, with `/run/pi-pueue` providing private sockets and daemon state.
+`PI_SUBAGENT_ROLE=child` prevents the extension from registering parent tools. The child retains the normal coding tools and skills except D-Bus-dependent tools (`notify`), which are made inactive. Its entire `/run` is a private tmpfs. It reuses the main `pueue.yml`, with `/run/pi-pueue` providing private sockets and daemon state. This is separate from the parent Pi sandbox's Pueue daemon.
 
 ## Communication
 

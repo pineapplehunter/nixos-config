@@ -28,7 +28,7 @@ The workspace root is the Git top level when available, otherwise the current
 directory. Resolve or create the directory with the bundled helper:
 
 ```bash
-TODO_SKILL="$HOME/.pi/agent/skills/todo"
+TODO_SKILL="$HOME/.pi/agent/skills/pinaepplehunter/todo"
 TASK_DIR=$(python3 "$TODO_SKILL/scripts/task-dir.py" intree)
 # Or:
 TASK_DIR=$(python3 "$TODO_SKILL/scripts/task-dir.py" tmp)

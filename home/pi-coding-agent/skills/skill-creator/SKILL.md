@@ -85,7 +85,7 @@ Use this structure only as needed:
 For a new skill, run the bundled initializer using its installed path:
 
 ```bash
-SKILL_CREATOR="$HOME/.pi/agent/skills/skill-creator"
+SKILL_CREATOR="$HOME/.pi/agent/skills/pinaepplehunter/skill-creator"
 python3 "$SKILL_CREATOR/scripts/init-skill.py" <name> --path <parent-directory>
 ```
 
