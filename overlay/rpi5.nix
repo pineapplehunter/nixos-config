@@ -19,9 +19,11 @@
       };
     });
 
-    # The pinned Raspberry Pi FFmpeg 8.0.1 fork references a field removed in
-    # SVT-AV1 4.x, preventing it from building. Backport upstream's field rename
-    # to preserve constant-QP behavior (disabling adaptive quantization).
+    # The RPi package replaces nixpkgs' FFmpeg 8.1.2 source with its 8.0.1
+    # fork, but inherits the 8.1.2 patch list (which omits nixpkgs' 4.x
+    # compatibility patch). The fork still references a field removed in
+    # SVT-AV1 4.x; backport the rename to preserve constant-QP behavior
+    # (disabling adaptive quantization).
     # https://github.com/FFmpeg/FFmpeg/commit/a5d4c398b411a00ac09d8fe3b66117222323844c
     # Drop this when nixos-raspberrypi includes that fix in its FFmpeg fork.
     ffmpeg_8-headless = prev.ffmpeg_8-headless.overrideAttrs (old: {
