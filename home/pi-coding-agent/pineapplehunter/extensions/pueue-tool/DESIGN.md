@@ -45,8 +45,10 @@ or host-wide notification broker is required.
   notifications and those included in model context; persist processed keys in
   Pi session entries after a completed run. Rebuild from the active branch on
   reload. Full crash-level exactly-once execution is not promised.
-- Completion messages contain IDs, terminal results, and log commands, not
-  automatically injected task logs. Failed and cancelled tasks also notify.
+- Completion messages contain IDs, terminal results, queued commands, labels,
+  and non-default groups, not automatically injected task logs. The TUI renderer
+  shows only the task summaries; log-inspection and continuation instructions
+  remain in model-facing content. Failed and cancelled tasks also notify.
 - Watchers and timers start at session startup and are cleaned up on shutdown
   or reload. `PI_PUEUE_NOTIFY_DIR` gates activation so host queues are not watched.
 - After an abort/error, interactive automatic turns pause. A new user prompt or
