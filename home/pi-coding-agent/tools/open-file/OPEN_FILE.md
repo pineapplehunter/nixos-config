@@ -25,7 +25,7 @@ Both paths are temporary portal grants and may disappear. The command tells the 
 
 ## Wrapper implementation
 
-`wrapping.py` preserves root discovery, personal/work profiles, PATH and `/etc` read-only bindings, worktree Git state, persistent project `/tmp`, `@debug-shell`, `@allow`, `@allow-rw`, `@@`, and the existing environment contract.
+`../../wrapper/wrapping.py` preserves root discovery, personal/work profiles, PATH and `/etc` read-only bindings, worktree Git state, persistent project `/tmp`, `@debug-shell`, `@allow`, `@allow-rw`, `@@`, and the existing environment contract.
 
 Process ownership is explicit: proxy and Pi children are tracked, signals are forwarded, file descriptors are passed deliberately, startup failures share one cleanup path, JSON from `--info-fd` is validated, and metadata writes are atomic. PyGObject is required by the portal client and lets the wrapper resolve the Documents mount without parsing command output.
 

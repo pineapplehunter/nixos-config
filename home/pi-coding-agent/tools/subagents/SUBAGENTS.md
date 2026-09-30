@@ -63,7 +63,7 @@ Paths and session IDs exist only in extension memory. A restarted Pi does not re
 
 ## Starting a turn
 
-The Pueue submission section in `subagents.ts` performs one operation: `pueue add --immediate`. Each task uses a label such as `reviewer:turn-2`, making agent turns easy to identify within the `subagent` group. The same file contains the two short shell commands used around Bubblewrap. Before submission, the extension creates an empty `queued` marker. When Pueue starts the task, the outer command removes that marker and opens `bwrap-info.json` for Bubblewrap's `--info-fd 3`; inside Bubblewrap, the launcher command starts the private Pueue daemon and child Pi. The resulting `child-pid` is in the parent PID namespace. Start and cleanup reject a name while either the queued marker exists or that PID is alive. The submitted command mounts:
+The Pueue submission section in `index.ts` performs one operation: `pueue add --immediate`. Each task uses a label such as `reviewer:turn-2`, making agent turns easy to identify within the `subagent` group. The same file contains the two short shell commands used around Bubblewrap. Before submission, the extension creates an empty `queued` marker. When Pueue starts the task, the outer command removes that marker and opens `bwrap-info.json` for Bubblewrap's `--info-fd 3`; inside Bubblewrap, the launcher command starts the private Pueue daemon and child Pi. The resulting `child-pid` is in the parent PID namespace. Start and cleanup reject a name while either the queued marker exists or that PID is alive. The submitted command mounts:
 
 ```text
 tmpfs               → /run
@@ -89,7 +89,7 @@ pi --print \
   </dev/null
 ```
 
-`PI_SUBAGENT_ROLE=child` prevents the extension from registering parent tools. The child retains the normal coding tools and skills except D-Bus-dependent tools (`notify`), which are made inactive. Its entire `/run` is a private tmpfs. It reuses the main `pueue.yml`, with `/run/pi-pueue` providing private sockets and daemon state. This is separate from the parent Pi sandbox's Pueue daemon.
+`PI_SUBAGENT_ROLE=child` prevents the extension from registering parent tools. The child retains the normal coding tools and skills except D-Bus-dependent tools (`notify`), which are made inactive. Its entire `/run` is a private tmpfs. It reuses the main `../../wrapper/pueue.yml`, with `/run/pi-pueue` providing private sockets and daemon state. This is separate from the parent Pi sandbox's Pueue daemon.
 
 ## Communication
 
@@ -117,7 +117,7 @@ The child Pi output is redirected to `stdout.log`. On success, the Pueue output 
 
 ## Pueue footer status
 
-The separate, model-invisible `pueue-status.ts` extension runs:
+The separate, model-invisible `../pueue-status.ts` extension runs:
 
 ```console
 pueue status --json status=running

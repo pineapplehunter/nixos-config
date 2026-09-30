@@ -40,19 +40,19 @@
 
       rawWrapper = pkgs.writers.writePython3Bin "bubble-wrapper" {
         libraries = [ pkgs.python3Packages.pygobject3 ];
-      } (lib.readFile ./wrapping.py);
+      } (lib.readFile ./wrapper/wrapping.py);
 
       clipboardClient = pkgs.writers.writePython3Bin "wl-copy" {
         libraries = [ pkgs.python3Packages.pygobject3 ];
-      } (lib.readFile ./clipboard_client.py);
+      } (lib.readFile ./wrapper/clipboard_client.py);
 
       clipboardDaemon = pkgs.writers.writePython3Bin "pi-clipboardd" {
         libraries = [ pkgs.python3Packages.pygobject3 ];
-      } (lib.readFile ./clipboard_daemon.py);
+      } (lib.readFile ./wrapper/clipboard_daemon.py);
 
       portalClient = pkgs.writers.writePython3Bin "pi-portal-client" {
         libraries = [ pkgs.python3Packages.pygobject3 ];
-      } (lib.readFile ./portal_client.py);
+      } (lib.readFile ./wrapper/portal_client.py);
 
       portalClients = pkgs.runCommand "pi-portal-clients" { } ''
         mkdir -p "$out/bin" "$out/libexec"
@@ -106,21 +106,13 @@
         '';
       };
 
-      pueueConfig = pkgs.writeText "pi-pueue.yml" (lib.readFile ./pueue.yml);
-
-      subagentsExtension = pkgs.replaceVars ./subagents.ts {
-        bash = lib.getExe pkgs.bash;
-        bubblewrap = lib.getExe pkgs.bubblewrap;
-        coreutilsCp = lib.getExe' pkgs.coreutils "cp";
-        pi = lib.getExe pkgs.pi-coding-agent;
-        pueue = lib.getExe' pkgs.pueue "pueue";
-      };
+      pueueConfig = pkgs.writeText "pi-pueue.yml" (lib.readFile ./wrapper/pueue.yml);
 
       piWithPueue = pkgs.writeShellApplication {
         name = "pi-with-pueue";
         runtimeInputs = [ pkgs.pueue ];
         text = builtins.replaceStrings [ "@PI_EXECUTABLE@" ] [ (lib.getExe pkgs.pi-coding-agent) ] (
-          lib.readFile ./pi-with-pueue.sh
+          lib.readFile ./wrapper/pi-with-pueue.sh
         );
       };
 
@@ -185,13 +177,19 @@
           If a file or tool is missing, see skill `sandbox-info`.
           Nix tooling is available; use `nix develop` or `nix shell` for project tools.
         '';
-        ".pi/agent/extensions/nix-bash.ts".source = ./nix-bash.ts;
-        ".pi/agent/extensions/nix-search.ts".source = ./nix-search.ts;
-        ".pi/agent/extensions/notify.ts".source = ./notify.ts;
-        ".pi/agent/extensions/open-file.ts".source = ./open-file.ts;
-        ".pi/agent/extensions/pueue-status.ts".source = ./pueue-status.ts;
-        ".pi/agent/extensions/pueue-wait.ts".source = ./pueue-wait.ts;
-        ".pi/agent/extensions/subagents.ts".source = subagentsExtension;
+        ".pi/agent/extensions/nix-bash.ts".source = ./tools/nix-bash.ts;
+        ".pi/agent/extensions/nix-search.ts".source = ./tools/nix-search.ts;
+        ".pi/agent/extensions/notify.ts".source = ./tools/notify.ts;
+        ".pi/agent/extensions/open-file".source = ./tools/open-file;
+        ".pi/agent/extensions/pueue-status.ts".source = ./tools/pueue-status.ts;
+        ".pi/agent/extensions/pueue-wait.ts".source = ./tools/pueue-wait.ts;
+        ".pi/agent/extensions/subagents/index.ts".source = pkgs.replaceVars ./tools/subagents/index.ts {
+          bash = lib.getExe pkgs.bash;
+          bubblewrap = lib.getExe pkgs.bubblewrap;
+          coreutilsCp = lib.getExe' pkgs.coreutils "cp";
+          pi = lib.getExe pkgs.pi-coding-agent;
+          pueue = lib.getExe' pkgs.pueue "pueue";
+        };
         ".local/share/applications/io.github.pineapplehunter.Pi.desktop".text = ''
           [Desktop Entry]
           Type=Application
