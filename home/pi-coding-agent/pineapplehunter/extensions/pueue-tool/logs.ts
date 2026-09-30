@@ -1,6 +1,6 @@
 import { spawn, type ChildProcess } from "node:child_process";
 import type { ExtensionAPI, Theme } from "@earendil-works/pi-coding-agent";
-import { matchesKey, Text, truncateToWidth, type TUI } from "@earendil-works/pi-tui";
+import { matchesKey, Text, truncateToWidth, visibleWidth, type TUI } from "@earendil-works/pi-tui";
 
 export interface Task {
   id: number;
@@ -22,6 +22,27 @@ export function taskStatus(task: Task): string {
 
 const MAX_LINES = 5_000;
 const MAX_LINE_LENGTH = 16_384;
+
+function taskName(task: Task): string {
+  return (task.label?.replace(/^subagent:[^:]+:/, "") || task.original_command || task.command).replace(/\s+/g, " ");
+}
+
+function statusLabel(task: Task): string {
+  const result = typeof task.status === "object" ? task.status.Done?.result : undefined;
+  if (result && typeof result === "object") {
+    const [name, detail] = Object.entries(result)[0];
+    return name === "Failed" ? `Failed (${detail})` : name;
+  }
+  return taskStatus(task);
+}
+
+function statusColor(task: Task): Parameters<Theme["fg"]>[0] {
+  const status = taskStatus(task);
+  if (status === "Success") return "success";
+  if (status === "Running") return "warning";
+  if (typeof task.status === "object" && task.status.Done) return status === "Killed" ? "muted" : "error";
+  return "muted";
+}
 
 function contentText(content: any): string {
   if (typeof content === "string") return content;
@@ -108,9 +129,9 @@ export class LogViewer {
     if (this.disposed || this.refreshing) return;
     this.refreshing = true;
     try {
-      const selectedId = this.tasks[this.selected]?.id;
       const tasks = await this.queryTasks();
       if (this.disposed) return;
+      const selectedId = this.tasks[this.selected]?.id;
       this.tasks = tasks.sort((a, b) => b.id - a.id);
       this.selected = Math.max(0, this.tasks.findIndex((task) => task.id === selectedId));
       this.error = "";
@@ -181,7 +202,10 @@ export class LogViewer {
     this.process = undefined;
   }
 
-  private height(): number { return Math.max(1, Math.min(22, this.tui.terminal.rows - 8)); }
+  private height(): number {
+    const chrome = this.tui.terminal.rows < 16 ? 5 : 8;
+    return Math.max(1, Math.min(18, Math.floor(this.tui.terminal.rows * 0.9) - chrome));
+  }
 
   handleInput(data: string): void {
     if (matchesKey(data, "ctrl+c")) return this.close();
@@ -216,27 +240,74 @@ export class LogViewer {
   }
 
   render(width: number): string[] {
+    const th = this.theme;
+    const inner = Math.max(1, width - 4);
+    const compact = this.tui.terminal.rows < 16;
+    const pad = (text: string, size = inner) => truncateToWidth(text.replace(/[\r\n\t]/g, " "), size, "…", true);
+    const row = (text = "") => th.fg("borderMuted", "│ ") + pad(text) + th.fg("borderMuted", " │");
+    const rule = () => th.fg("borderMuted", `├${"─".repeat(Math.max(0, width - 2))}┤`);
     const task = this.tasks.find((task) => task.id === this.opened);
-    const title = task ? `Task ${task.id}: ${taskStatus(task)}${task.label ? ` (${task.label})` : ""}${task.group !== "default" ? ` (${task.group})` : ""}` : "Pueue tasks";
-    const header = [this.theme.fg("accent", truncateToWidth(title, width))];
-    if (task) header.push(truncateToWidth((task.original_command ?? task.command).replace(/\s+/g, " "), width));
+    const selected = this.tasks[this.selected];
+    const title = pad(th.fg("accent", th.bold(task ? ` Task ${task.id}  ${taskName(task)} ` : " Pueue tasks ")), Math.max(1, width - 2)).trimEnd();
+    const top = th.fg("borderAccent", "╭") + title + th.fg("borderAccent", "─".repeat(Math.max(0, width - 2 - visibleWidth(title))) + "╮");
+    const output = [top];
     let body: string[];
+    let information: string;
+    let help: string;
+    let height = this.height();
     if (this.opened === undefined) {
-      const start = Math.max(0, this.selected - this.height() + 1);
-      body = this.tasks.slice(start, start + this.height()).map((task, index) =>
-        truncateToWidth(`${start + index === this.selected ? "›" : " "} ${task.id}: ${taskStatus(task)}${task.label ? ` (${task.label})` : ""}${task.group !== "default" ? ` (${task.group})` : ""}  ${task.original_command ?? task.command}`, width));
-      if (!body.length) body = ["No tasks in this private Pueue queue."];
+      height = Math.min(height, Math.max(3, this.tasks.length));
+      if (!compact) {
+        const running = this.tasks.filter((task) => taskStatus(task) === "Running").length;
+        const failed = this.tasks.filter((task) => statusColor(task) === "error").length;
+        output.push(row(th.fg("muted", `${this.tasks.length} tasks   ${running} running   ${failed} failed`)), rule());
+      }
+      const narrow = inner < 40;
+      const idWidth = Math.min(6, Math.max(3, String(Math.max(0, ...this.tasks.map((task) => task.id))).length));
+      const groupWidth = inner >= 70 ? 12 : 0;
+      const nameWidth = Math.max(1, inner - 2 - idWidth - (narrow ? 3 : 16) - (groupWidth ? groupWidth + 2 : 0));
+      const columns = (cursor: string, id: string, status: string, name: string, group: string) =>
+        cursor + pad(id, idWidth) + " " + pad(status, narrow ? 1 : 12) + " " + pad(name, nameWidth) + (groupWidth ? "  " + pad(group, groupWidth) : "");
+      output.push(row(th.fg("dim", columns("  ", "ID", narrow ? "" : "Status", "Task", "Group"))));
+      const start = Math.max(0, this.selected - height + 1);
+      body = this.tasks.slice(start, start + height).map((task, index) => {
+        const focused = start + index === this.selected;
+        const label = statusLabel(task);
+        const glyph = taskStatus(task) === "Running" ? "●" : taskStatus(task) === "Success" ? "✓" : statusColor(task) === "error" ? "✕" : "○";
+        const text = columns(
+          focused ? th.fg("accent", "› ") : "  ",
+          th.fg("muted", String(task.id)),
+          th.fg(statusColor(task), narrow ? glyph : label),
+          th.fg(focused ? "accent" : "text", taskName(task)),
+          th.fg("dim", task.group === "default" ? "—" : task.group),
+        );
+        return focused ? th.bg("selectedBg", pad(text)) : text;
+      });
+      if (!body.length) body = [th.fg("muted", "No retained tasks. Queue a command to see its logs.")];
+      information = selected
+        ? th.fg("dim", "Command  ") + th.fg("toolOutput", (selected.original_command ?? selected.command).replace(/\s+/g, " "))
+        : th.fg("dim", "Only this session's Pueue queue is shown.");
+      help = inner < 30 ? "↑↓  Enter  Esc" : inner < 40 ? "↑↓ select  Enter logs  Esc close" : "↑↓ Select    Enter Open logs    Esc Close";
     } else {
-      // Text wraps ANSI/Unicode safely; offset is measured in displayed rows.
-      const rows = this.text.render(width);
-      const bottom = Math.max(0, rows.length - this.height());
+      const status = task ? th.fg(statusColor(task), statusLabel(task)) : th.fg("error", "Task removed");
+      const mode = task?.group === "subagent" && !this.raw ? "Activity" : "Raw output";
+      if (!compact) output.push(row(`${status}${task?.group !== "default" && task ? th.fg("muted", `   ${task.group}`) : ""}${th.fg("dim", `   ${mode}`)}`), rule());
+      output.push(row(th.fg("dim", "$ ") + (task?.original_command ?? task?.command ?? "")));
+      const rows = this.text.render(inner);
+      const bottom = Math.max(0, rows.length - height);
       this.offset = this.follow ? bottom : Math.min(this.offset, bottom);
-      body = rows.slice(this.offset, this.offset + this.height());
-      if (!this.lines.length && !this.partial) body = ["Waiting for output…"];
+      body = rows.slice(this.offset, this.offset + height).map((line) => th.fg("toolOutput", line));
+      if (!this.lines.length && !this.partial) body = [th.fg("muted", "Waiting for output…")];
+      information = th.fg("dim", `Lines ${this.offset + 1}–${Math.min(rows.length, this.offset + height)} / ${rows.length}   `)
+        + th.fg(this.follow ? "success" : "muted", `follow ${this.follow ? "ON" : "OFF"}`) + th.fg("dim", `   raw ${this.raw ? "ON" : "OFF"}`);
+      help = inner < 30 ? "↑↓ f v Esc back" : inner < 60 ? "↑↓ Scroll  f Follow  v Raw  Esc Back" : "↑↓/PgUp/PgDn Scroll    f Follow    v Raw    Esc Tasks    Ctrl+C Close";
     }
-    if (this.error) body = [truncateToWidth(this.error, width), ...body].slice(0, this.height());
-    const footer = this.opened === undefined ? "↑↓ select · Enter logs · Esc close" : `↑↓/PgUp/PgDn scroll · f follow ${this.follow ? "ON" : "OFF"} · v raw ${this.raw ? "ON" : "OFF"} · Esc list · Ctrl+C close · last ${MAX_LINES} lines`;
-    return [...header, ...body, this.theme.fg("dim", truncateToWidth(footer, width))];
+    if (this.error) body = [th.fg("error", this.error), ...body].slice(0, height);
+    while (body.length < height) body.push("");
+    output.push(...body.map((line) => row(line)));
+    if (!compact) output.push(rule(), row(information));
+    output.push(row(th.fg("dim", help)), th.fg("borderMuted", `╰${"─".repeat(Math.max(0, width - 2))}╯`));
+    return output;
   }
 
   invalidate(): void { this.text.invalidate(); }
@@ -262,10 +333,15 @@ export function registerLogViewer(pi: ExtensionAPI, queryTasks: () => Promise<Ta
         if (taskId !== undefined && !tasks.some((task) => task.id === taskId)) {
           ctx.ui.notify(`Pueue task ${taskId} does not exist.`, "warning"); return;
         }
+        let terminal: TUI | undefined;
         await ctx.ui.custom<void>((tui, theme, _keys, done) => {
+          terminal = tui;
           active = new LogViewer(tui, theme, done, queryTasks, tasks, taskId);
           return active;
-        }, { overlay: true, overlayOptions: { width: "95%", maxHeight: "95%", anchor: "center" } });
+        }, { overlay: true, overlayOptions: () => ({
+          width: Math.min(110, Math.max(1, (terminal?.terminal.columns ?? 80) - 4)),
+          maxHeight: "90%", anchor: "center", margin: 1,
+        }) });
       } catch (error) { ctx.ui.notify(`Cannot open Pueue logs: ${String(error)}`, "error"); }
       finally { active?.dispose(); active = undefined; }
     },

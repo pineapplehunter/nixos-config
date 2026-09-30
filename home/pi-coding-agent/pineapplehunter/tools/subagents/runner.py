@@ -1,6 +1,7 @@
 """Run child Pi until its Pueue completion extension requests shutdown."""
 
 import json
+import os
 from pathlib import Path
 import signal
 import subprocess
@@ -41,6 +42,9 @@ def main():
         # remain idle forever after the initial prompt.
         send({"id": "bootstrap", "type": "get_commands"})
         for line in process.stdout:
+            # The child can change flags on inherited stderr sharing our sink.
+            # Restore blocking mode for every record, not just at startup.
+            os.set_blocking(sys.stdout.fileno(), True)
             sys.stdout.buffer.write(line)
             sys.stdout.buffer.flush()
             record = json.loads(line)

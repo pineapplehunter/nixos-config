@@ -220,6 +220,7 @@ def sandbox_command(options, state, agent_source):
 
 
 def run_child(options, state, agent_source):
+    os.set_blocking(sys.stdout.fileno(), True)
     with lock(state, "execution.lock"):
         with (state / "stdout.log").open("wb") as output:
             with subprocess.Popen(

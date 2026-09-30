@@ -45,10 +45,13 @@ or host-wide notification broker is required.
   notifications and those included in model context; persist processed keys in
   Pi session entries after a completed run. Rebuild from the active branch on
   reload. Full crash-level exactly-once execution is not promised.
-- Completion messages contain IDs, terminal results, queued commands, labels,
-  and non-default groups, not automatically injected task logs. The TUI renderer
-  shows only the task summaries; log-inspection and continuation instructions
-  remain in model-facing content. Failed and cancelled tasks also notify.
+- Completion messages use Pi's default labelled, coloured custom-message popup,
+  not a custom plain-text renderer. They show `Task N "label" (group): "result".`,
+  the queued command as Markdown code, and a short log-inspection/continuation
+  instruction. Missing labels and the default group are omitted. The same concise
+  content reaches the user and model; task logs are not automatically injected.
+  Failed and cancelled tasks also notify. Backtick-containing commands use safe
+  code delimiters, and explicit Markdown breaks keep the three-line layout.
 - Watchers and timers start at session startup and are cleaned up on shutdown
   or reload. `PI_PUEUE_NOTIFY_DIR` gates activation so host queues are not watched.
 - After an abort/error, interactive automatic turns pause. A new user prompt or
@@ -80,6 +83,31 @@ task lists are deliberately not exposed.
 
 The browser requires interactive Pi; RPC and print modes cannot open it.
 
+### Layout and references
+
+The browser uses a rounded, padded panel, a theme-highlighted selected row,
+semantic status colours, and aligned ID/status/name/group columns. Commands
+appear only in a selected-task preview instead of crowding every row. Subagent
+names omit the internal session UUID. A capped, fixed-height log viewport
+separates status/command metadata from output and scroll/follow information.
+Narrow terminals use status glyphs and shorter help; short terminals omit
+secondary chrome. Width, height, clipping, and wrapping adapt to resizing.
+
+Research was run alongside baseline tests. Useful existing patterns:
+
+- [Pi session manager](https://github.com/vahidkowsari/pi-session-manager/blob/08856696489b1c737050f9b8e426516972ee96a8/extensions/session-manager.ts):
+  a framed selector, concise human titles, dim secondary metadata, and bounded
+  list height. Its older `@mariozechner` imports are not copied; this package
+  uses the installed `@earendil-works` APIs. Its idle wait is unnecessary for
+  this read-only observer and would interfere with viewing ongoing work.
+- [Pi checklist](https://github.com/championswimmer/pi-checklist/blob/be4c84abf4bb10f0913422b14a3d4ca804ff8636/src/render.ts):
+  rounded dialog chrome, semantic status colours, readable status glyphs, and
+  compact summaries. We use ordinary Unicode instead of requiring Nerd Fonts.
+- Installed Pi 0.87.1 `examples/extensions/preset.ts` and
+  `overlay-qa-tests.ts`: themed borders, selection styling, streaming viewport
+  sizing, and correct `visibleWidth`/`truncateToWidth` handling. Theme roles and
+  callable overlay options are checked against installed declarations.
+
 ## Persistent subagents
 
 `--print` exits after one invocation and cannot receive a later completion.
@@ -93,6 +121,14 @@ The extension checks at every pre-settlement boundary:
 2. Every task completion has been included in model context.
 3. A completed agent run has processed those notifications.
 4. No queued completion or automatic continuation remains.
+
+The launcher sets stdout to blocking mode and the RPC runner restores blocking
+mode before each forwarded record. A child can change flags on inherited stderr
+sharing the same sink after startup, so a startup-only setting is insufficient.
+A non-blocking pipe can otherwise truncate a large RPC record and fail when its
+reader briefly falls behind; the former file-only sink did not expose this.
+Slow-reader tests cover records larger than pipe capacity, including a child's
+post-startup flag change, while preserving exit status and the compatibility copy.
 
 Only after these checks and final `agent_settled` does the extension request
 shutdown. This avoids a separate runtime-state-file protocol: the runner drains

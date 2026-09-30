@@ -50,10 +50,11 @@ Subagents inherit the same package paths through the read-only Nix store.
 ## Browse background work
 
 Use `/pueue-logs` to select a task or `/pueue-logs <id>` to open one directly.
-Finished tasks remain browsable until cleaned. The interactive viewer follows
-live output, supports arrows/Page Up/Page Down scrolling, and uses `f` to
-switch auto-follow on/off. Escape returns to the task list or closes it;
-Ctrl+C closes without cancelling work.
+Finished tasks remain browsable until cleaned. A compact, themed task table
+shows statuses and human labels, with the selected command in a separate preview.
+The framed log viewer follows live output, supports arrows/Page Up/Page Down
+scrolling, and uses `f` to switch auto-follow on/off. Escape returns to the task
+list or closes it; Ctrl+C closes without cancelling work.
 
 Subagents show readable assistant output, tool calls/results, and errors from
 their recorded RPC stream. Press `v` for raw output. The viewer keeps the last
