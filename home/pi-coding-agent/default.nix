@@ -124,35 +124,31 @@
         );
       };
 
-      piCodingAgentWrapped =
-        if isLinux then
-          pkgs.symlinkJoin {
-            name = "pi-coding-agent-wrapped";
-            paths = [ pkgs.pi-coding-agent ];
-            nativeBuildInputs = [ pkgs.makeWrapper ];
-            postBuild = ''
-              rm -rf "$out/bin"
-              mkdir "$out/bin"
-              makeWrapper "${lib.getExe' wrapper "bubble-wrapper"}" "$out/bin/pi" \
-                --set EXECUTABLE "${lib.getExe piWithPueue}" \
-                --set PROJECT_ROOT_FILE flake.nix \
-                --set PUEUE_CONFIG_PATH "${pueueConfig}"
-              makeWrapper "${lib.getExe' wrapper "bubble-wrapper"}" "$out/bin/pi-work" \
-                --set EXECUTABLE "${lib.getExe piWithPueue}" \
-                --set PROJECT_ROOT_FILE flake.nix \
-                --set PUEUE_CONFIG_PATH "${pueueConfig}" \
-                --set PI_WRAPPER_PROFILE work
-            '';
-          }
-        else
-          pkgs.pi-coding-agent;
+      piCodingAgentWrapped = pkgs.symlinkJoin {
+        name = "pi-coding-agent-wrapped";
+        paths = [ pkgs.pi-coding-agent ];
+        nativeBuildInputs = [ pkgs.makeWrapper ];
+        postBuild = ''
+          rm -rf "$out/bin"
+          mkdir "$out/bin"
+          makeWrapper "${lib.getExe' wrapper "bubble-wrapper"}" "$out/bin/pi" \
+            --set EXECUTABLE "${lib.getExe piWithPueue}" \
+            --set PROJECT_ROOT_FILE flake.nix \
+            --set PUEUE_CONFIG_PATH "${pueueConfig}"
+          makeWrapper "${lib.getExe' wrapper "bubble-wrapper"}" "$out/bin/pi-work" \
+            --set EXECUTABLE "${lib.getExe piWithPueue}" \
+            --set PROJECT_ROOT_FILE flake.nix \
+            --set PUEUE_CONFIG_PATH "${pueueConfig}" \
+            --set PI_WRAPPER_PROFILE work
+        '';
+      };
     in
-    {
+    lib.mkIf isLinux {
       home.packages = [
         piCodingAgentWrapped
         skillPython
-      ]
-      ++ lib.optionals isLinux [ portalClients ];
+        portalClients
+      ];
 
       home.activation.piPackages = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         ${lib.getExe updatePiSettings} \
@@ -160,7 +156,7 @@
           ${lib.escapeShellArgs piPackages}
       '';
 
-      systemd.user.services.pi-clipboard = lib.mkIf isLinux {
+      systemd.user.services.pi-clipboard = {
         Unit = {
           Description = "Copy text from Pi to the host clipboard";
           After = [ "graphical-session.target" ];
@@ -172,7 +168,7 @@
         };
       };
 
-      xdg.dataFile."dbus-1/services/io.github.pineapplehunter.LocalClipboard1.service" = lib.mkIf isLinux {
+      xdg.dataFile."dbus-1/services/io.github.pineapplehunter.LocalClipboard1.service" = {
         text = ''
           [D-BUS Service]
           Name=io.github.pineapplehunter.LocalClipboard1
