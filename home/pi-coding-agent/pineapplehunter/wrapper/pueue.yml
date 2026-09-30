@@ -4,3 +4,6 @@ shared:
   use_unix_socket: true
   unix_socket_path: /run/pi-pueue/pueue.socket
   pid_path: /run/pi-pueue/pueue.pid
+daemon:
+  callback: '"@PUEUE_COMPLETE@" --id {{id}}'
+  callback_log_lines: 0

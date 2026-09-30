@@ -6,8 +6,9 @@ pi-subagent <name> <directory> <prompt_file> [--model <model>]
 ```
 
 Home Manager packages `launcher.py` with `pkgs.writers.writePython3Bin` (including
-build-time flake8 linting) and puts it directly in `sandboxTools`. Commands run by
-binary name using the inherited parent PATH. There is no CLI-specific wrapper.
+build-time flake8 linting), substitutes the shared Pueue configuration and RPC
+runner paths, and puts it directly in `sandboxTools`. Commands run by binary
+name using the inherited parent PATH. There is no CLI-specific wrapper.
 
 See [the subagents skill](../../skills/subagents/SKILL.md) for the workflow.
 
@@ -40,7 +41,7 @@ control.lock
 execution.lock
 sessions/        # Native Pi JSONL conversation files
 prompt.md        # Snapshot of the task file only
-pueue.yml        # Fixed configuration for the child's private daemon
+pueue.yml        # Shared hook configuration copied for the child's private daemon
 response.md
 stdout.log
 tmp/
@@ -75,14 +76,28 @@ daemon. Desktop service sockets and the parent Pueue socket are not mounted.
 
 ## Prompt and results
 
-The task file is copied unchanged to `prompt.md` and supplied via Pi's `@file`
-input. `--append-system-prompt` supplies fixed environment/reporting instructions
+The task file is copied unchanged to `prompt.md` and sent as an RPC prompt by
+`runner.py`. `--append-system-prompt` supplies fixed environment/reporting instructions
 separately, so the task file need not describe the sandbox or report location.
 Optional `--context` (`-c`) adds literal per-worker context to those system
 instructions without modifying the task file. This permits independent agents
 to share a task document while receiving different assignments. Context is
 forwarded to the queued worker and preserved in the printed resume command;
 manual resume can supply different context without a separate metadata registry.
+
+The runner uses persistent `pi --mode rpc`, not single-shot `--print`. The
+combined `pueue-tool/index.ts` extension observes every private task completion and
+starts a turn while idle, or queues a follow-up while busy. Agents end responses
+naturally when waiting; there are no watch/yield tools.
+
+Before settlement the extension reconciles authoritative Pueue status, so a
+late callback cannot cause premature exit. It tracks notifications included in
+model context, marks them processed after a completed run, and requests RPC
+shutdown only after all task results have been processed and Pi is settled.
+Provider errors, aborts, daemon-check failures, and extension failures cause a
+nonzero runner exit rather than successful completion. The runner validates
+that the extension is loaded and continuously drains JSONL stdout into
+`stdout.log`; native sessions and `response.md` remain the result contract.
 
 Those instructions describe overlays, native sessions, private Pueue, changed
 workspace scope, relative changed-file paths, test results, missing-input

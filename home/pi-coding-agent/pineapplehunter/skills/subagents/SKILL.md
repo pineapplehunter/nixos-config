@@ -119,10 +119,16 @@ loaded. Networking and Nix daemon capabilities are shared; this is not a
 credential or network security boundary. The child's `/etc`, `/bin`, and `/usr`
 are whole read-only mounts inherited from the existing parent sandbox.
 
-## Wait and inspect
+## Completion and inspection
 
-Use `pueue-wait` with the returned task ID once running. Inspect Pueue first if
-queued; do not use a silent unbounded `pueue wait`.
+The parent's Pueue extension automatically notifies you when the returned task
+finishes. Do independent work, then end your response if only children remain;
+do not wait or poll. On notification, inspect the report and outputs.
+
+Each child runs persistent RPC Pi with its own completion extension. It remains
+alive across intermediate responses until all private Pueue tasks are terminal
+and their completion messages have been followed by a completed model run. The
+outer task finishes only afterward, or on explicit failure/cancellation.
 
 ```bash
 pueue status

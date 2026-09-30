@@ -14,13 +14,14 @@ import uuid
 
 THINKING_LEVELS = ("off", "minimal", "low", "medium", "high", "xhigh", "max")
 STATE_ROOT = Path("/tmp/pi-subagent-state")
-PUEUE_CONFIG = """shared:
-  pueue_directory: /run/pi-pueue
-  runtime_directory: /run/pi-pueue
-  use_unix_socket: true
-  unix_socket_path: /run/pi-pueue/pueue.socket
-  pid_path: /run/pi-pueue/pueue.pid
-"""
+# Substituted when packaging, so parent and child use the same hook config.
+PUEUE_CONFIG_PATH = (
+    "@PUEUE_CONFIG@"
+)
+SUBAGENT_RUNNER = (
+    "@SUBAGENT_RUNNER@"
+    "/bin/pi-subagent-runner"
+)
 CHILD_INSTRUCTIONS = """You are a subagent of the parent Pi agent.
 Your working directory is a caller-prepared, possibly incomplete workspace
 mounted at the original project path. The original project is not accessible.
@@ -31,9 +32,15 @@ Your ~/.pi resources are writable tmpfs overlays: changes there are discarded
 when this process exits and never propagate to the parent. Symlink targets in
 the Nix store remain immutable; replace the link with a copy if you need edits.
 Nix store/daemon and networking are available.
-Your Pueue daemon is private to this sandbox.
+Your Pueue daemon is private to this sandbox. Every task completion starts
+another turn, or queues a follow-up if you are busy. Do independent work, then
+end your response naturally when only background tasks remain; do not wait or
+poll. You remain alive until all tasks finish and you process their completion
+notifications. Inspect task logs when needed, and continue the original task.
 Your conversation is saved separately in /run/pi-subagent/sessions.
-Write your report to /run/pi-subagent/response.md before ending the turn.
+Write your final report to /run/pi-subagent/response.md after processing all
+results, before ending your final response. Intermediate responses are not
+final.
 The parent reads that file, not your ordinary final message. Include concise
 results, test outcomes, and changed files using project-relative paths.
 If inputs are missing, report exactly what the parent should provide before
@@ -173,6 +180,7 @@ def sandbox_command(options, state, agent_source):
         "PI_CODING_AGENT_DIR": str(agent_source),
         "PI_CODING_AGENT_SESSION_DIR": "/run/pi-subagent/sessions",
         "PUEUE_CONFIG_PATH": "/run/pi-subagent/pueue.yml",
+        "PI_PUEUE_NOTIFY_DIR": "/run/pi-pueue",
         "PI_SKIP_VERSION_CHECK": "1",
         "NIX_REMOTE": "daemon",
     }
@@ -188,9 +196,11 @@ def sandbox_command(options, state, agent_source):
             "--",
             "bash",
             "-c",
-            'pueued -d && exec pi "$@"',
+            'pueued -d && exec "$@"',
             "subagent-launch",
-            "--print",
+            SUBAGENT_RUNNER,
+            "/run/pi-subagent/prompt.md",
+            "--",
             "--session-dir",
             "/run/pi-subagent/sessions",
             "--session-id",
@@ -206,7 +216,6 @@ def sandbox_command(options, state, agent_source):
         args.extend(["--model", options.model])
     if options.thinking:
         args.extend(["--thinking", options.thinking])
-    args.append("@/run/pi-subagent/prompt.md")
     return args
 
 
@@ -314,7 +323,7 @@ def main():
         for entry in ("sessions", "tmp"):
             (state / entry).mkdir(exist_ok=True, mode=0o700)
         (state / "prompt.md").write_text(prompt)
-        (state / "pueue.yml").write_text(PUEUE_CONFIG)
+        (state / "pueue.yml").write_text(Path(PUEUE_CONFIG_PATH).read_text())
         (state / "response.md").write_text("")
         (state / "stdout.log").write_text("")
         group = subprocess.run(

@@ -82,10 +82,12 @@ Use this structure only as needed:
 
 ### 4. Scaffold the skill
 
-For a new skill, run the bundled initializer using its installed path:
+For a new skill, run the bundled initializer using its installed path. Set
+`SKILL_CREATOR` to the directory containing this loaded `SKILL.md`; a Pi package
+may supply it from the Nix store rather than a fixed home skills directory:
 
 ```bash
-SKILL_CREATOR="$HOME/.pi/agent/skills/pinaepplehunter/skill-creator"
+SKILL_CREATOR="/path/to/package/skills/skill-creator"
 python3 "$SKILL_CREATOR/scripts/init-skill.py" <name> --path <parent-directory>
 ```
 

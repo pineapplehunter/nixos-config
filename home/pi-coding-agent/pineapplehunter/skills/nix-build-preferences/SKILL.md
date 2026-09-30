@@ -40,4 +40,7 @@ Prefer explicit bounded waits that match the expected startup time, and keep the
 ## Use pueue
 
 Many nix operations take a significant amount of time, which causes the bash tool to timeout.
-Use pueue and run the commands in the background.
+Use pueue and run the commands in the background. Task completions automatically
+start a new agent turn or queue a follow-up. Do independent work, then end your
+response naturally; do not block with a wait tool or poll for completion.
+Inspect `pueue log <task_id>` when notified.

@@ -6,53 +6,33 @@
       isLinux = pkgs.stdenv.hostPlatform.isLinux;
       skillPython = pkgs.python3.withPackages (pythonPackages: [ pythonPackages.pyyaml ]);
 
+      localPiPackages = import ./packages.nix { inherit pkgs lib inputs; };
       piPackages = [
         "npm:@narumitw/pi-usage"
         "npm:pi-web-access"
         "npm:pi-codex-image-gen"
-      ];
+      ]
+      ++ map toString localPiPackages;
 
       updatePiSettings = pkgs.writers.writePython3Bin "update-pi-settings" { } (
         lib.readFile ./update-settings.py
       );
 
-      anthropicSkillNames = [
-        "algorithmic-art"
-        "canvas-design"
-        "discernment-nudge"
-        "doc-coauthoring"
-        "docx"
-        "frontend-design"
-        "internal-comms"
-        "pdf"
-        "pptx"
-        "theme-factory"
-        "webapp-testing"
-        "xlsx"
-      ];
-
-      anthropicSkills = pkgs.runCommand "anthropic-skills" { } ''
-        mkdir -p "$out"
-        for skill in ${lib.escapeShellArgs anthropicSkillNames}; do
-          cp -R "${inputs.anthropic-skills}/skills/$skill" "$out/"
-        done
-      '';
-
       rawWrapper = pkgs.writers.writePython3Bin "bubble-wrapper" {
         libraries = [ pkgs.python3Packages.pygobject3 ];
-      } (lib.readFile ./wrapper/wrapping.py);
+      } (lib.readFile ./pineapplehunter/wrapper/wrapping.py);
 
       clipboardClient = pkgs.writers.writePython3Bin "wl-copy" {
         libraries = [ pkgs.python3Packages.pygobject3 ];
-      } (lib.readFile ./wrapper/clipboard_client.py);
+      } (lib.readFile ./pineapplehunter/wrapper/clipboard_client.py);
 
       clipboardDaemon = pkgs.writers.writePython3Bin "pi-clipboardd" {
         libraries = [ pkgs.python3Packages.pygobject3 ];
-      } (lib.readFile ./wrapper/clipboard_daemon.py);
+      } (lib.readFile ./pineapplehunter/wrapper/clipboard_daemon.py);
 
       portalClient = pkgs.writers.writePython3Bin "pi-portal-client" {
         libraries = [ pkgs.python3Packages.pygobject3 ];
-      } (lib.readFile ./wrapper/portal_client.py);
+      } (lib.readFile ./pineapplehunter/wrapper/portal_client.py);
 
       portalClients = pkgs.runCommand "pi-portal-clients" { } ''
         mkdir -p "$out/bin" "$out/libexec"
@@ -64,6 +44,8 @@
         name = "pi-sandbox-tools";
         paths = [
           subagent
+          subagentRunner
+          pueueComplete
           pkgs.bubblewrap
           pkgs.bash
           pkgs.coreutils
@@ -92,7 +74,20 @@
         pathsToLink = [ "/bin" ];
       };
 
-      subagent = pkgs.writers.writePython3Bin "pi-subagent" { } ./tools/subagents/launcher.py;
+      subagentRunner =
+        pkgs.writers.writePython3Bin "pi-subagent-runner" { }
+          ./pineapplehunter/tools/subagents/runner.py;
+
+      pueueComplete =
+        pkgs.writers.writePython3Bin "pi-pueue-complete" { }
+          ./pineapplehunter/wrapper/pueue-complete.py;
+
+      subagent = pkgs.writers.writePython3Bin "pi-subagent" { } (
+        builtins.replaceStrings
+          [ "@PUEUE_CONFIG@" "@SUBAGENT_RUNNER@" ]
+          [ (toString pueueConfig) (toString subagentRunner) ]
+          (lib.readFile ./pineapplehunter/tools/subagents/launcher.py)
+      );
 
       wrapper = pkgs.symlinkJoin {
         name = "bubble-wrapper";
@@ -110,13 +105,17 @@
         '';
       };
 
-      pueueConfig = pkgs.writeText "pi-pueue.yml" (lib.readFile ./wrapper/pueue.yml);
+      pueueConfig = pkgs.writeText "pi-pueue.yml" (
+        builtins.replaceStrings [ "@PUEUE_COMPLETE@" ] [ (lib.getExe pueueComplete) ] (
+          lib.readFile ./pineapplehunter/wrapper/pueue.yml
+        )
+      );
 
       piWithPueue = pkgs.writeShellApplication {
         name = "pi-with-pueue";
         runtimeInputs = [ pkgs.pueue ];
         text = builtins.replaceStrings [ "@PI_EXECUTABLE@" ] [ (lib.getExe pkgs.pi-coding-agent) ] (
-          lib.readFile ./wrapper/pi-with-pueue.sh
+          lib.readFile ./pineapplehunter/wrapper/pi-with-pueue.sh
         );
       };
 
@@ -175,19 +174,11 @@
       };
 
       home.file = {
-        ".pi/agent/skills/anthropic".source = anthropicSkills;
-        ".pi/agent/skills/pinaepplehunter".source = ./skills;
         ".pi/agent/AGENTS.md".text = ''
           Prefer shallow clones in /tmp over repeated remote searches of public repositories.
           If a file or tool is missing, see skill `sandbox-info`.
           Nix tooling is available; use `nix develop` or `nix shell` for project tools.
         '';
-        ".pi/agent/extensions/nix-bash.ts".source = ./tools/nix-bash.ts;
-        ".pi/agent/extensions/nix-search.ts".source = ./tools/nix-search.ts;
-        ".pi/agent/extensions/notify.ts".source = ./tools/notify.ts;
-        ".pi/agent/extensions/open-file".source = ./tools/open-file;
-        ".pi/agent/extensions/pueue-status.ts".source = ./tools/pueue-status.ts;
-        ".pi/agent/extensions/pueue-wait.ts".source = ./tools/pueue-wait.ts;
         ".local/share/applications/io.github.pineapplehunter.Pi.desktop".text = ''
           [Desktop Entry]
           Type=Application

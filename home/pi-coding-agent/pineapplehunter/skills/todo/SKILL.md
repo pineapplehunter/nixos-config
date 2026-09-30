@@ -25,10 +25,12 @@ workspace:
   be deleted by system cleanup; do not use this mode as the sole durable record.
 
 The workspace root is the Git top level when available, otherwise the current
-directory. Resolve or create the directory with the bundled helper:
+directory. Set `TODO_SKILL` to the directory containing this loaded `SKILL.md`;
+with package-based installation it lives in the Nix store, not a fixed home
+skills directory. Resolve or create the task directory with the bundled helper:
 
 ```bash
-TODO_SKILL="$HOME/.pi/agent/skills/pinaepplehunter/todo"
+TODO_SKILL="/path/to/package/skills/todo"
 TASK_DIR=$(python3 "$TODO_SKILL/scripts/task-dir.py" intree)
 # Or:
 TASK_DIR=$(python3 "$TODO_SKILL/scripts/task-dir.py" tmp)

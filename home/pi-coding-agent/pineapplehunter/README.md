@@ -1,0 +1,50 @@
+# Pineapplehunter Pi package
+
+This directory is a ready-to-load Pi package. Its static `package.json` uses
+Pi's conventional resource discovery; no generated manifest or per-file Nix
+mapping is needed.
+
+```text
+package.json
+extensions/
+  nix-bash.ts
+  nix-search.ts
+  notify.ts
+  open-file/index.ts        # with OPEN_FILE.md
+  pueue-tool/index.ts       # with DESIGN.md
+skills/                    # complete personal skill directories
+tools/subagents/           # launcher/runner sources and SUBAGENTS.md
+wrapper/                   # sandbox/helper sources
+sandbox-instructions.md
+```
+
+Try this directory directly from the repository root:
+
+```sh
+pi -e ./home/pi-coding-agent/pineapplehunter
+```
+
+Home Manager registers a Nix-store copy of this directory in `piPackages`,
+alongside the existing npm packages. The separate `anthropic-skills` package is
+assembled by a small `runCommand` that copies its static manifest and the curated
+skills from the pinned upstream input. Both packages include complete skill
+scripts/assets and design documentation.
+
+Adding an extension under `extensions/` or a complete skill under `skills/`
+requires no Nix or manifest edits. Pi supplies the declared peer dependencies;
+no npm dependencies or second copies of Pi are bundled. Resolve helper paths
+relative to the loaded skill's `SKILL.md`, not an assumed home resource path.
+
+The parent `default.nix` still builds Python executables, sandbox services, and
+Pueue configuration from these sources. `/open-file`, notifications, and automatic
+Pueue turns require the corresponding sandbox/host runtime; installing resources
+alone does not provide those services.
+
+The parent's `update-settings.py` replaces the managed package list while
+preserving unrelated Pi settings. Home Manager's activation script references
+the package store paths, keeping them alive with the generation. On activation,
+Home Manager removes resource links owned by the previous generation; unmanaged
+user/project resources remain untouched. Restart Pi or reload after activation.
+Subagents inherit the same package paths through the read-only Nix store.
+
+Edit repository sources rather than immutable installed packages.
