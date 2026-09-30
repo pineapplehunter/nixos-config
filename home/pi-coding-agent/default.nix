@@ -63,6 +63,8 @@
       sandboxTools = pkgs.buildEnv {
         name = "pi-sandbox-tools";
         paths = [
+          subagent
+          pkgs.bubblewrap
           pkgs.bash
           pkgs.coreutils
           pkgs.diffutils
@@ -89,6 +91,8 @@
         ];
         pathsToLink = [ "/bin" ];
       };
+
+      subagent = pkgs.writers.writePython3Bin "pi-subagent" { } ./tools/subagents/launcher.py;
 
       wrapper = pkgs.symlinkJoin {
         name = "bubble-wrapper";
@@ -138,6 +142,7 @@
     lib.mkIf isLinux {
       home.packages = [
         piCodingAgentWrapped
+        subagent
         skillPython
         portalClients
       ];
@@ -183,13 +188,6 @@
         ".pi/agent/extensions/open-file".source = ./tools/open-file;
         ".pi/agent/extensions/pueue-status.ts".source = ./tools/pueue-status.ts;
         ".pi/agent/extensions/pueue-wait.ts".source = ./tools/pueue-wait.ts;
-        ".pi/agent/extensions/subagents/index.ts".source = pkgs.replaceVars ./tools/subagents/index.ts {
-          bash = lib.getExe pkgs.bash;
-          bubblewrap = lib.getExe pkgs.bubblewrap;
-          coreutilsCp = lib.getExe' pkgs.coreutils "cp";
-          pi = lib.getExe pkgs.pi-coding-agent;
-          pueue = lib.getExe' pkgs.pueue "pueue";
-        };
         ".local/share/applications/io.github.pineapplehunter.Pi.desktop".text = ''
           [Desktop Entry]
           Type=Application

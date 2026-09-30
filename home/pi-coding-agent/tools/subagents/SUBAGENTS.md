@@ -1,126 +1,79 @@
-# Pi snapshot subagents
-
-Pi can submit child-agent turns to Pueue in private copies of the current project. The extension only creates snapshots, starts turns, and remembers their paths. The main agent manages Pueue tasks and reads Markdown responses directly.
-
-## Tools
-
-Only `subagents_enable` is initially active. It runs:
-
-```console
-pueue group add --parallel 4 subagent
-```
-
-and activates three tools:
-
-| Tool | Purpose |
-|---|---|
-| `subagent_start` | Create a named child turn, or send another prompt to an existing child session. |
-| `subagent_status` | Return the paths belonging to one or more named children. |
-| `subagent_cleanup` | Delete a named snapshot after its task has finished or been stopped. |
-
-`subagent_start` returns the state directory and the globally unique Pueue `task_id`. The same ID is stored in the state directory's `task-id` file. Pi uses its own Pueue daemon in the sandbox; these commands do not inspect the host's Pueue daemon. Pueue is the source of truth for execution state. Use existing shell tools and `pueue-wait`, for example:
-
-```console
-pueue status --json
-pueue log <task-id>
-pueue kill <task-id>
-```
-
-The extension does not poll, cancel, remove, or recover Pueue tasks.
-
-## Default child model
-
-Run `/subagent-model` in interactive Pi to select an available model and then a thinking level supported by that model. Both choices are saved as `model` and `thinkingLevel` in `<agent-dir>/subagents.json` (normally `~/.pi/agent/subagents.json`) and apply to future subagent turns, including turns in later Pi sessions. Select `(inherit parent model)` or `(inherit parent thinking level)` to leave either setting tied to the parent; the config stores `null` for inherited settings. Existing configs without `thinkingLevel` also inherit the parent level. The command does not change the parent or any already submitted task. If a saved model becomes unavailable or the saved thinking level is unsupported by the selected model, `subagent_start` fails with a prompt to choose again rather than silently changing the setting.
-
-## Snapshot layout
-
-Each named child has a directly inspectable directory:
+# Pi subagent launcher
 
 ```text
-/tmp/pi-subagents/<name>/
-├── baseline/     # initial project copy
-├── workspace/    # writable child copy
-├── tmp/          # private child /tmp and Pueue runtime
-├── sessions/     # child Pi conversation context
-├── prompt.md       # current prompt from the main agent
-├── response.md     # current response from the child
-├── stdout.log      # complete text output from child Pi
-├── task-id         # latest Pueue task ID
-├── queued          # exists while the Pueue task has not started
-└── bwrap-info.json # Bubblewrap child PID in the parent PID namespace
+pi-subagent <name> <directory> <prompt_file> [--model <model>]
+            [--thinking <level>] [--resume <session_id>]
 ```
 
-Snapshots use Btrfs reflinks in `/tmp`, so unchanged files share storage with the source and only changed blocks consume additional disk space:
+Home Manager packages `launcher.py` with `pkgs.writers.writePython3Bin` (including
+build-time flake8 linting) and puts it directly in `sandboxTools`. Commands run by
+binary name using the inherited parent PATH. There is no CLI-specific wrapper.
 
-```console
-cp -a --reflink=always "$PWD/." "$baseline/"
-cp -a --reflink=always "$baseline/." "$workspace/"
-```
+See [the subagents skill](../../skills/subagents/SKILL.md) for the workflow.
 
-If copying fails, creation fails and removes the partial directory. No special handling is applied to Git metadata, symlinks, or nested mounts.
+## Native sessions, not a metadata registry
 
-Paths and session IDs exist only in extension memory. A restarted Pi does not recover earlier children. Normal Pi shutdown removes `/tmp/pi-subagents`; because `/tmp` is host-backed, an unclean shutdown may leave stale files. Only one parent Pi process should manage subagents in a project at a time. Stop active Pueue tasks before cleanup or shutdown.
+A new invocation generates a native Pi session ID. Resume takes that ID explicitly
+alongside the label, workspace, and task file. These values need not be recorded
+in a separate metadata structure: Pi owns the conversation, Pueue owns execution
+status, and the caller owns the workspace.
 
-## Starting a turn
-
-The Pueue submission section in `index.ts` performs one operation: `pueue add --immediate`. Each task uses a label such as `reviewer:turn-2`, making agent turns easy to identify within the `subagent` group. The same file contains the two short shell commands used around Bubblewrap. Before submission, the extension creates an empty `queued` marker. When Pueue starts the task, the outer command removes that marker and opens `bwrap-info.json` for Bubblewrap's `--info-fd 3`; inside Bubblewrap, the launcher command starts the private Pueue daemon and child Pi. The resulting `child-pid` is in the parent PID namespace. Start and cleanup reject a name while either the queued marker exists or that PID is alive. The submitted command mounts:
+Session state lives at `/tmp/pi-subagent-state/<session_id>`:
 
 ```text
-tmpfs               → /run
---dir                  /run/pi-pueue
---dir                  /run/pi-subagent
-<state>/workspace   → <original-project-path>
-<state>/sessions    → /run/pi-subagent/sessions
-<state>/prompt.md   → /run/pi-subagent/prompt.md (read-only)
-<state>/response.md → /run/pi-subagent/response.md
-<state>/stdout.log  → /run/pi-subagent/stdout.log
-<state>/tmp         → /tmp
+control.lock
+execution.lock
+sessions/        # Native Pi JSONL conversation files
+prompt.md        # Snapshot of the task file only
+pueue.yml        # Fixed configuration for the child's private daemon
+response.md
+stdout.log
+tmp/
 ```
 
-The child sees the copied workspace at the same absolute path as the parent. It also gets private PID and `/proc` views. Other restrictions come from the outer Pi sandbox.
+The launcher supplies `--session-dir` and `--session-id` to Pi. A resume must find
+an existing native session under the fixed state root. Changing the backing
+workspace or label does not change the session. Always invoke from the same
+original project directory; the mount path is the calling cwd and state storage
+is fixed at `/tmp/pi-subagent-state`. Neither has a CLI override.
 
-Child Pi uses the same generated session ID for every turn:
+Control operations use flock. A separate lock is held while Bubblewrap runs.
+Queued/running/paused Pueue tasks are matched by a session-specific label prefix,
+preventing concurrent reuse without persisted task metadata. There is no status
+or cleanup command. Inspect tasks with Pueue and remove finished state using
+`rm -rf -- <state_directory>`.
 
-```console
-pi --print \
-  --session-dir /run/pi-subagent/sessions \
-  --session-id <session-id> \
-  @/run/pi-subagent/prompt.md \
-  </dev/null
-```
+## Sandbox
 
-`PI_SUBAGENT_ROLE=child` prevents the extension from registering parent tools. The child retains the normal coding tools and skills except D-Bus-dependent tools (`notify`), which are made inactive. Its entire `/run` is a private tmpfs. It reuses the main `../../wrapper/pueue.yml`, with `/run/pi-pueue` providing private sockets and daemon state. This is separate from the parent Pi sandbox's Pueue daemon.
+Bubblewrap starts with an empty root, mounts the supplied workspace at the
+original project path, exposes the Nix store/daemon, inherits whole read-only
+`/etc`, `/bin`, and `/usr` mounts from the parent sandbox, and provides private
+tmp and runtime directories. Networking and environment/PATH are inherited. The supplied project is trusted by default.
 
-## Communication
+`~/.pi` and any custom agent directory outside it are writable `--tmp-overlay`
+mounts. Existing skills, extensions/tools, settings, auth, and packages load
+normally; their upper-layer changes vanish on exit and never modify the parent.
+Nix-store symlink targets remain immutable unless copied into the writable
+resource overlay. Parent session directories are hidden with tmpfs, and only
+child session storage is bound persistently. Each child starts its own Pueue
+daemon. Desktop service sockets and the parent Pueue socket are not mounted.
 
-Communication uses only `prompt.md` and `response.md`.
+## Prompt and results
 
-The generated prompt tells the child to:
+The task file is copied unchanged to `prompt.md` and supplied via Pi's `@file`
+input. `--append-system-prompt` supplies fixed environment/reporting instructions
+separately, so the task file need not describe the sandbox or report location.
+Those instructions describe overlays, native sessions, private Pueue, changed
+workspace scope, relative changed-file paths, test results, missing-input
+requests, and the report at `/run/pi-subagent/response.md`. Nested agents are
+prohibited by guidance, not by an execution security boundary.
 
-- freely modify the copied project;
-- write its response to `/run/pi-subagent/response.md` before ending;
-- request missing information in that file;
-- report tests and changed files using paths relative to the current directory;
-- avoid creating other subagents.
-
-The main-agent flow is:
-
-1. Call `subagent_start` and use the returned Pueue `task_id` (also available in the state directory's `task-id` file).
-2. Wait with `pueue-wait` or inspect with raw Pueue commands.
-3. Read `response.md`; use `subagent_status` if the state paths must be looked up again.
-4. Inspect `stdout.log` when the complete child output is needed.
-5. If another turn is needed, call `subagent_start` with the same name and a new prompt.
-
-The child Pi output is redirected to `stdout.log`. On success, the Pueue output is only `The subagent has run successfully. The response can be found at \`path\``. Reusing a name overwrites `prompt.md`, clears `response.md`, and resumes the same workspace and Pi session. The queued marker and Bubblewrap PID check prevent a new turn while the previous one is queued or running.
-
-`subagent_cleanup` deletes only the snapshot directory and in-memory entry. It does not change Pueue task records.
-
-## Pueue footer status
-
-The separate, model-invisible `../pueue-status.ts` extension runs:
-
-```console
-pueue status --json status=running
-```
-
-every ten seconds. It displays nothing when idle, `pueue: N` for default-group work, or grouped counts such as `pueue: N(default) M(subagent)`. Its key is `usage-pueue`, placing it immediately after pi-usage's `usage` status.
+The submitter receives JSON with native session ID, Pueue task ID, and result
+paths. On successful completion, task stdout includes a complete resume command.
+Native saved history is reused on resume; the parent's transcript is not copied.
+Pueue calls the launcher with `--run`, an internal worker argument documented in
+a separate help section. It executes the child instead of submitting another
+task. Pueue retains the original project's working directory, so no project-path
+argument is needed.
+Model/thinking choices come from CLI overrides, then parent `subagents.json`,
+then parent Pi environment. No separate model/approval registry is maintained.
