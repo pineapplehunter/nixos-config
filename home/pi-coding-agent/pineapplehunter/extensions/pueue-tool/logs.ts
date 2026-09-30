@@ -1,0 +1,274 @@
+import { spawn, type ChildProcess } from "node:child_process";
+import type { ExtensionAPI, Theme } from "@earendil-works/pi-coding-agent";
+import { matchesKey, Text, truncateToWidth, type TUI } from "@earendil-works/pi-tui";
+
+export interface Task {
+  id: number;
+  command: string;
+  original_command?: string;
+  label?: string | null;
+  group: string;
+  status: string | { Done?: { start?: string; end: string; result: unknown } };
+}
+
+export function taskStatus(task: Task): string {
+  if (typeof task.status === "string") return task.status;
+  if (task.status.Done) {
+    const result = task.status.Done.result;
+    return typeof result === "string" ? result : JSON.stringify(result);
+  }
+  return Object.keys(task.status)[0];
+}
+
+const MAX_LINES = 5_000;
+const MAX_LINE_LENGTH = 16_384;
+
+function contentText(content: any): string {
+  if (typeof content === "string") return content;
+  return Array.isArray(content) ? content.map((part) => part.type === "text" ? part.text : `[${part.type}]`).join("\n") : "";
+}
+
+// Parse only observable RPC activity, not hidden reasoning or model context.
+export class ActivityParser {
+  private streamed = false;
+
+  parse(line: string): string {
+    let event: any;
+    try { event = JSON.parse(line); } catch { return line + "\n"; }
+    if (!event || typeof event !== "object") return line + "\n";
+    switch (event.type) {
+      case "agent_start": return "[Agent started]\n";
+      case "message_start":
+        if (event.message?.role === "assistant") { this.streamed = false; return "\n[Assistant]\n"; }
+        return "";
+      case "message_update":
+        if (event.assistantMessageEvent?.type === "text_delta") {
+          this.streamed = true;
+          return event.assistantMessageEvent.delta;
+        }
+        return "";
+      case "message_end":
+        if (event.message?.role === "assistant") {
+          const text = this.streamed ? "" : contentText(event.message.content);
+          return text + (event.message.errorMessage ? `\n[Error] ${event.message.errorMessage}` : "") + "\n";
+        }
+        if (event.message?.role === "custom" && event.message.customType === "pueue-completion") {
+          return `\n[Task completion]\n${event.message.details?.summary ?? contentText(event.message.content)}\n`;
+        }
+        return "";
+      case "tool_execution_start": return `\n[Tool] ${event.toolName} ${JSON.stringify(event.args)}\n`;
+      case "tool_execution_end": return `\n[${event.isError ? "Tool error" : "Result"}] ${event.toolName}\n${contentText(event.result?.content)}\n`;
+      case "agent_end": return "\n[Agent run ended]\n";
+      case "extension_error": return `[Error] ${event.error}\n`;
+      case "response": return event.success === false ? `[Error] ${event.error}\n` : "";
+      case "extension_ui_request": return event.method === "notify" ? `[Notice] ${event.message}\n` : "";
+      case "entry_appended":
+        if (event.entry?.customType === "pueue-subagent-exit") {
+          return event.entry.data?.success ? "[Subagent finished]\n" : `[Subagent failed] ${event.entry.data?.error}\n`;
+        }
+        return "";
+      default: return "";
+    }
+  }
+}
+
+export class LogViewer {
+  private tasks: Task[];
+  private selected = 0;
+  private opened: number | undefined;
+  private lines: string[] = [];
+  private partial = "";
+  private text = new Text("", 0, 0);
+  private offset = 0;
+  private follow = true;
+  private raw = false;
+  private source = "";
+  private process: ChildProcess | undefined;
+  private timer: ReturnType<typeof setInterval>;
+  private disposed = false;
+  private refreshing = false;
+  private error = "";
+
+  constructor(
+    private tui: TUI,
+    private theme: Theme,
+    private done: () => void,
+    private queryTasks: () => Promise<Task[]>,
+    tasks: Task[],
+    taskId?: number,
+  ) {
+    this.tasks = tasks.sort((a, b) => b.id - a.id);
+    this.opened = taskId;
+    this.timer = setInterval(() => void this.refresh(), 1_000);
+    this.timer.unref?.();
+    void this.refresh();
+  }
+
+  private async refresh(): Promise<void> {
+    if (this.disposed || this.refreshing) return;
+    this.refreshing = true;
+    try {
+      const selectedId = this.tasks[this.selected]?.id;
+      const tasks = await this.queryTasks();
+      if (this.disposed) return;
+      this.tasks = tasks.sort((a, b) => b.id - a.id);
+      this.selected = Math.max(0, this.tasks.findIndex((task) => task.id === selectedId));
+      this.error = "";
+      const task = this.tasks.find((task) => task.id === this.opened);
+      if (task) {
+        const activity = task.group === "subagent" && task.label?.startsWith("subagent:") && !this.raw;
+        const running = taskStatus(task) === "Running";
+        const source = `${task.id}:${JSON.stringify(task.status)}:${this.raw}`;
+        if (source !== this.source) {
+          this.stopSource();
+          this.source = source;
+          this.lines = [];
+          this.partial = "";
+          this.text.setText("");
+          this.offset = 0;
+          const parser = new ActivityParser();
+          let pending = "";
+          this.process = spawn("pueue", running ? ["follow", "--lines", String(MAX_LINES), String(task.id)] : ["log", "--full", String(task.id)]);
+          const append = (text: string) => {
+            if (this.disposed || this.source !== source) return;
+            this.append(text);
+            this.tui.requestRender();
+          };
+          this.process.stdout?.setEncoding("utf8");
+          this.process.stdout?.on("data", (chunk: string) => {
+            if (!activity) return append(chunk);
+            pending += chunk;
+            let newline: number;
+            while ((newline = pending.indexOf("\n")) !== -1) {
+              append(parser.parse(pending.slice(0, newline)));
+              pending = pending.slice(newline + 1);
+            }
+          });
+          this.process.stderr?.setEncoding("utf8");
+          this.process.stderr?.on("data", append);
+          this.process.on("error", (error) => append(`[Viewer error] ${error.message}\n`));
+          this.process.on("close", () => {
+            if (pending) append(parser.parse(pending));
+          });
+        }
+      } else if (this.opened !== undefined) {
+        this.stopSource();
+        this.error = "Task no longer exists (it may have been cleaned). Esc returns to the list.";
+      }
+    } catch (error) {
+      if (!this.disposed) this.error = `Cannot read Pueue tasks: ${String(error)}`;
+    } finally {
+      this.refreshing = false;
+      if (!this.disposed) this.tui.requestRender();
+    }
+  }
+
+  private append(text: string): void {
+    const parts = (this.partial + text).split("\n");
+    this.partial = parts.pop()!.slice(-MAX_LINE_LENGTH);
+    this.lines.push(...parts.map((line) => line.slice(0, MAX_LINE_LENGTH)));
+    if (this.lines.length > MAX_LINES) {
+      const removed = this.lines.length - MAX_LINES;
+      this.lines.splice(0, removed);
+      this.offset = Math.max(0, this.offset - removed);
+    }
+    this.text.setText([...this.lines, this.partial].join("\n"));
+  }
+
+  private stopSource(): void {
+    this.source = "";
+    this.process?.kill(); // Only pueue log/follow, never the underlying task.
+    this.process = undefined;
+  }
+
+  private height(): number { return Math.max(1, Math.min(22, this.tui.terminal.rows - 8)); }
+
+  handleInput(data: string): void {
+    if (matchesKey(data, "ctrl+c")) return this.close();
+    if (matchesKey(data, "escape")) {
+      if (this.opened === undefined) return this.close();
+      this.stopSource();
+      this.opened = undefined;
+      this.error = "";
+    } else if (this.opened === undefined) {
+      if (matchesKey(data, "up")) this.selected = Math.max(0, this.selected - 1);
+      if (matchesKey(data, "down")) this.selected = Math.max(0, Math.min(this.tasks.length - 1, this.selected + 1));
+      if (matchesKey(data, "enter") && this.tasks[this.selected]) {
+        this.opened = this.tasks[this.selected].id;
+        this.follow = true;
+        this.raw = false;
+        void this.refresh();
+      }
+    } else {
+      if (matchesKey(data, "up") || matchesKey(data, "pageUp")) {
+        this.follow = false;
+        this.offset = Math.max(0, this.offset - (matchesKey(data, "pageUp") ? this.height() : 1));
+      }
+      if (matchesKey(data, "down") || matchesKey(data, "pageDown")) {
+        this.follow = false;
+        this.offset += matchesKey(data, "pageDown") ? this.height() : 1;
+      }
+      if (data === "f" || matchesKey(data, "end")) this.follow = !this.follow || matchesKey(data, "end");
+      if (matchesKey(data, "home")) { this.follow = false; this.offset = 0; }
+      if (data === "v") { this.raw = !this.raw; void this.refresh(); }
+    }
+    this.tui.requestRender();
+  }
+
+  render(width: number): string[] {
+    const task = this.tasks.find((task) => task.id === this.opened);
+    const title = task ? `Task ${task.id}: ${taskStatus(task)}${task.label ? ` (${task.label})` : ""}${task.group !== "default" ? ` (${task.group})` : ""}` : "Pueue tasks";
+    const header = [this.theme.fg("accent", truncateToWidth(title, width))];
+    if (task) header.push(truncateToWidth((task.original_command ?? task.command).replace(/\s+/g, " "), width));
+    let body: string[];
+    if (this.opened === undefined) {
+      const start = Math.max(0, this.selected - this.height() + 1);
+      body = this.tasks.slice(start, start + this.height()).map((task, index) =>
+        truncateToWidth(`${start + index === this.selected ? "›" : " "} ${task.id}: ${taskStatus(task)}${task.label ? ` (${task.label})` : ""}${task.group !== "default" ? ` (${task.group})` : ""}  ${task.original_command ?? task.command}`, width));
+      if (!body.length) body = ["No tasks in this private Pueue queue."];
+    } else {
+      // Text wraps ANSI/Unicode safely; offset is measured in displayed rows.
+      const rows = this.text.render(width);
+      const bottom = Math.max(0, rows.length - this.height());
+      this.offset = this.follow ? bottom : Math.min(this.offset, bottom);
+      body = rows.slice(this.offset, this.offset + this.height());
+      if (!this.lines.length && !this.partial) body = ["Waiting for output…"];
+    }
+    if (this.error) body = [truncateToWidth(this.error, width), ...body].slice(0, this.height());
+    const footer = this.opened === undefined ? "↑↓ select · Enter logs · Esc close" : `↑↓/PgUp/PgDn scroll · f follow ${this.follow ? "ON" : "OFF"} · v raw ${this.raw ? "ON" : "OFF"} · Esc list · Ctrl+C close · last ${MAX_LINES} lines`;
+    return [...header, ...body, this.theme.fg("dim", truncateToWidth(footer, width))];
+  }
+
+  invalidate(): void { this.text.invalidate(); }
+  close(): void { if (this.disposed) return; this.dispose(); this.done(); }
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    clearInterval(this.timer);
+    this.stopSource();
+  }
+}
+
+export function registerLogViewer(pi: ExtensionAPI, queryTasks: () => Promise<Task[]>): void {
+  let active: LogViewer | undefined;
+  pi.registerCommand("pueue-logs", {
+    description: "Browse Pueue tasks and live/finished logs, optionally by task ID",
+    handler: async (args, ctx) => {
+      if (ctx.mode !== "tui") { ctx.ui.notify("Pueue log browsing requires interactive Pi.", "warning"); return; }
+      if (args.trim() && !/^\d+$/.test(args.trim())) { ctx.ui.notify("Usage: /pueue-logs [task-id]", "warning"); return; }
+      const taskId = args.trim() ? Number(args.trim()) : undefined;
+      try {
+        const tasks = await queryTasks();
+        if (taskId !== undefined && !tasks.some((task) => task.id === taskId)) {
+          ctx.ui.notify(`Pueue task ${taskId} does not exist.`, "warning"); return;
+        }
+        await ctx.ui.custom<void>((tui, theme, _keys, done) => {
+          active = new LogViewer(tui, theme, done, queryTasks, tasks, taskId);
+          return active;
+        }, { overlay: true, overlayOptions: { width: "95%", maxHeight: "95%", anchor: "center" } });
+      } catch (error) { ctx.ui.notify(`Cannot open Pueue logs: ${String(error)}`, "error"); }
+      finally { active?.dispose(); active = undefined; }
+    },
+  });
+  pi.on("session_shutdown", () => active?.close());
+}

@@ -54,6 +54,32 @@ or host-wide notification broker is required.
 - After an abort/error, interactive automatic turns pause. A new user prompt or
   `/pueue-notifications` resumes them; `off` pauses them without cancelling tasks.
 
+## Interactive log browser
+
+`/pueue-logs` opens an automatically refreshed task list, including queued,
+running, failed, cancelled, and other retained finished tasks. Arrow keys select
+and Enter opens logs; `/pueue-logs <id>` opens a task directly. Running tasks use
+`pueue follow`; other tasks stream `pueue log --full`. The viewer retains the
+last 5,000 lines rather than loading arbitrarily large logs into memory.
+
+Use arrows/Page Up/Page Down to scroll, Home/End to jump, and `f` to toggle
+following the bottom. Escape returns to the list, then closes it; Ctrl+C closes
+immediately. Closing, reloading, or shutting down kills only viewer processes
+and clears its refresh timer, never cancelling the task. Completion handling
+remains independent, and viewed output is not sent to the model.
+
+Subagent-labelled tasks display readable activity parsed from the RPC events
+streamed into their parent Pueue task's stdout: assistant text, tool calls/results,
+errors, and final lifecycle events. `v` toggles raw output. The launcher tees the
+same bytes to `stdout.log` for compatibility, flushing both destinations as
+output arrives. Pueue retains output separately for each task, so later resumes
+do not overwrite earlier tasks' activity. No file mapping or state-directory
+lookup is needed. Older launches that only logged to a file have no archived
+activity in Pueue. Cleaned Pueue tasks cannot be browsed. Child-private Pueue
+task lists are deliberately not exposed.
+
+The browser requires interactive Pi; RPC and print modes cannot open it.
+
 ## Persistent subagents
 
 `--print` exits after one invocation and cannot receive a later completion.

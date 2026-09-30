@@ -43,7 +43,7 @@ sessions/        # Native Pi JSONL conversation files
 prompt.md        # Snapshot of the task file only
 pueue.yml        # Shared hook configuration copied for the child's private daemon
 response.md
-stdout.log
+stdout.log       # Latest-run compatibility copy of task stdout
 tmp/
 ```
 
@@ -96,8 +96,13 @@ model context, marks them processed after a completed run, and requests RPC
 shutdown only after all task results have been processed and Pi is settled.
 Provider errors, aborts, daemon-check failures, and extension failures cause a
 nonzero runner exit rather than successful completion. The runner validates
-that the extension is loaded and continuously drains JSONL stdout into
-`stdout.log`; native sessions and `response.md` remain the result contract.
+that the extension is loaded and continuously drains JSONL stdout. The launcher
+streams this output (including stderr) into the parent Pueue task's stdout and
+tees it to `stdout.log`, flushing both as bytes arrive. `/pueue-logs` displays
+readable activity from the task's Pueue output, with a raw-output toggle. Pueue
+retains each task's log independently across resumes until cleaned.
+Native sessions and `response.md` remain the result contract; `stdout.log` and
+the final report are latest-run state, not per-task archives.
 
 Those instructions describe overlays, native sessions, private Pueue, changed
 workspace scope, relative changed-file paths, test results, missing-input

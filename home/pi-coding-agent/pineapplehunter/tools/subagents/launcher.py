@@ -221,16 +221,24 @@ def sandbox_command(options, state, agent_source):
 
 def run_child(options, state, agent_source):
     with lock(state, "execution.lock"):
-        with (state / "stdout.log").open("w") as output:
-            result = subprocess.run(
+        with (state / "stdout.log").open("wb") as output:
+            with subprocess.Popen(
                 sandbox_command(options, state, agent_source),
                 stdin=subprocess.DEVNULL,
-                stdout=output,
+                stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
-            )
+                bufsize=0,
+            ) as process:
+                assert process.stdout is not None
+                while chunk := process.stdout.read(65536):
+                    output.write(chunk)
+                    output.flush()
+                    sys.stdout.buffer.write(chunk)
+                    sys.stdout.buffer.flush()
+                returncode = process.wait()
         print(f"Report: {state / 'response.md'}", flush=True)
         print(f"Output: {state / 'stdout.log'}", flush=True)
-        if result.returncode == 0:
+        if returncode == 0:
             command = [
                 "pi-subagent",
                 options.name,
@@ -242,7 +250,7 @@ def run_child(options, state, agent_source):
             if options.context:
                 command.append(f"--context={options.context}")
             print(f"Resume: {shlex.join(command)}", flush=True)
-        return result.returncode
+        return returncode
 
 
 def parser():

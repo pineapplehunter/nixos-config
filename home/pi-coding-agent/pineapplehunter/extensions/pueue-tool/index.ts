@@ -3,20 +3,12 @@ import { mkdirSync, readdirSync, unlinkSync, watch, type FSWatcher } from "node:
 import { join } from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { Text } from "@earendil-works/pi-tui";
+import { registerLogViewer, type Task } from "./logs.js";
 
 const MESSAGE_TYPE = "pueue-completion";
 const PROCESSED_TYPE = "pueue-completions-processed";
 const RECONCILE_MS = 10_000;
 const STATUS_KEY = "usage-pueue";
-
-interface Task {
-  id: number;
-  command: string;
-  original_command?: string;
-  label?: string | null;
-  group: string;
-  status: string | { Done?: { start?: string; end: string; result: unknown } };
-}
 
 function taskKey(task: Task): string | undefined {
   if (typeof task.status !== "object" || !task.status.Done) return undefined;
@@ -82,6 +74,8 @@ export default function (pi: ExtensionAPI) {
 
   const directory = process.env.PI_PUEUE_NOTIFY_DIR;
   if (!directory) return; // Never subscribe to the host daemon accidentally.
+
+  registerLogViewer(pi, queryTasks);
 
   const child = process.env.PI_SUBAGENT_ROLE === "child";
   const inbox = join(directory, "completions");

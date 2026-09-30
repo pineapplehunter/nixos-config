@@ -47,4 +47,17 @@ Home Manager removes resource links owned by the previous generation; unmanaged
 user/project resources remain untouched. Restart Pi or reload after activation.
 Subagents inherit the same package paths through the read-only Nix store.
 
+## Browse background work
+
+Use `/pueue-logs` to select a task or `/pueue-logs <id>` to open one directly.
+Finished tasks remain browsable until cleaned. The interactive viewer follows
+live output, supports arrows/Page Up/Page Down scrolling, and uses `f` to
+switch auto-follow on/off. Escape returns to the task list or closes it;
+Ctrl+C closes without cancelling work.
+
+Subagents show readable assistant output, tool calls/results, and errors from
+their recorded RPC stream. Press `v` for raw output. The viewer keeps the last
+5,000 lines and does not insert logs into the agent's context. Child-private
+Pueue queues are not browsed. See `extensions/pueue-tool/DESIGN.md` for limits.
+
 Edit repository sources rather than immutable installed packages.
