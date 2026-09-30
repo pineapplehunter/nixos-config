@@ -16,6 +16,13 @@ queued work.
 
 See `pueue --help` for more subcommands.
 
+## Parallel execution
+
+Use `pueue parallel 4` when running multiple small, independent tasks to allow
+up to four tasks to run at once. For larger tasks, keep the default serial
+execution to avoid resource contention. If parallelism was increased earlier,
+restore serial execution with `pueue parallel 1` before enqueueing larger tasks.
+
 ## Automatic completion
 
 Every task completion automatically starts a new agent turn when idle, or
