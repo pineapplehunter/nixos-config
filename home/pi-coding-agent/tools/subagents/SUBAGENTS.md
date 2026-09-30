@@ -11,6 +11,21 @@ binary name using the inherited parent PATH. There is no CLI-specific wrapper.
 
 See [the subagents skill](../../skills/subagents/SKILL.md) for the workflow.
 
+## SIMA: Single Instruction, Multiple Agents
+
+**SIMA is the recommended pattern for parallel agents with similar context but
+different jobs.** Give every agent the same task file containing common
+requirements and named jobs, then select its job with `--context` (`-c`). Keep
+workspaces and sessions independent; the parent integrates results.
+
+Just as SIMT (Single Instruction, Multiple Threads) uses a common program with
+per-thread data, SIMA uses a common instruction document with per-agent roles.
+This is a conceptual analogy, not GPU-style synchronized execution: agents may
+follow different steps, and shared instructions do not imply shared writable
+state. Use separate task files for unrelated contexts.
+
+See the skill's SIMA section for concrete launch examples.
+
 ## Native sessions, not a metadata registry
 
 A new invocation generates a native Pi session ID. Resume takes that ID explicitly

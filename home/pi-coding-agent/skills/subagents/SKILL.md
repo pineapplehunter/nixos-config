@@ -1,6 +1,6 @@
 ---
 name: subagents
-description: Delegate tasks to independent Pi subagents using caller-prepared workspaces and the pi-subagent launcher. Use for parallel implementation, focused reviews, launching or resuming native Pi sessions, and inspecting their results.
+description: Delegate tasks to independent Pi subagents with the pi-subagent launcher. Use when asked for SIMA (Single Instruction, Multiple Agents), parallel implementation, focused reviews, or launching/resuming agents. SIMA is the recommended pattern for multiple agents sharing context but doing different jobs, using one task file and per-worker --context assignments.
 compatibility: Linux, Bubblewrap with tmp-overlay support, Pi, and a running Pueue daemon; provided by this configuration.
 ---
 
@@ -10,6 +10,9 @@ Use `pi-subagent` through Bash. You manage input files, comparisons, integration
 and cleanup. The launcher runs an isolated Pi process and retains its native
 session files, reports, and logs. Never invoke this workflow from a child
 (`PI_SUBAGENT_ROLE=child`).
+
+For multiple agents with similar context but different jobs, prefer **SIMA**,
+described below. Use separate task files when their contexts are unrelated.
 
 ## Prepare
 
@@ -63,9 +66,22 @@ own defaults or saved session settings. There is no separate model metadata.
 The supplied project is trusted by default. The Nix daemon socket and
 configuration are always exposed for builds and `nix develop`.
 
-## Shared instructions, different workers
+## SIMA: Single Instruction, Multiple Agents (recommended)
 
-Use `--context` (or `-c`) to give each agent a role while reusing one task file:
+SIMA means one shared instruction document, multiple independent agents, and a
+specific job assignment for each agent. It is the recommended way to run agents
+that need similar context but should perform different jobs.
+
+The analogy is **SIMT (Single Instruction, Multiple Threads)**: GPU threads run
+a common program with different per-thread data; SIMA agents read a common task
+document with different per-agent roles. Here, "instruction" means a shared
+brief, not a hardware instruction. The analogy does not imply GPU-style
+instruction scheduling or synchronization: agents have independent conversations
+and workspaces and may take different steps. SIMA shares context, not mutable
+state or an identical execution sequence.
+
+Write common requirements and clearly named jobs in one task file. Use
+`--context` (or `-c`) to assign each agent exactly one of those jobs:
 
 ```bash
 pi-subagent frontend /tmp/frontend /tmp/tasks.md \
