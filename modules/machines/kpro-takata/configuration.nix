@@ -125,7 +125,7 @@ in
           useRoutingFeatures = "client";
         };
 
-        # pcscd.enable = true;
+        pcscd.enable = true;
 
         # disable for security purposes
         avahi.enable = true;
