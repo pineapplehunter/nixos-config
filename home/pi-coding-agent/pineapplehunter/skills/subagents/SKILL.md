@@ -1,183 +1,129 @@
 ---
 name: subagents
-description: Delegate tasks to independent Pi subagents with the pi-subagent launcher. Use when asked for SIMA (Single Instruction, Multiple Agents), parallel implementation, focused reviews, or launching/resuming agents. SIMA is the recommended pattern for multiple agents sharing context but doing different jobs, using one task file and per-worker --context assignments.
-compatibility: Linux, Bubblewrap with tmp-overlay support, Pi, and a running Pueue daemon; provided by this configuration.
+description: "Launch, resume, and inspect Pi subagents. Use for focused reviews or SIMA parallel work: one shared task file, independent workspaces, and per-worker --context roles."
 ---
 
 # Subagents
 
-Use `pi-subagent` through Bash. You manage input files, comparisons, integration,
-and cleanup. The launcher runs an isolated Pi process and retains its native
-session files, reports, and logs. Never invoke this workflow from a child
-(`PI_SUBAGENT_ROLE=child`).
+## Rules
 
-For multiple agents with similar context but different jobs, prefer **SIMA**,
-described below. Use separate task files when their contexts are unrelated.
+- Use Bash from the **original project root**, never as `PI_SUBAGENT_ROLE=child`.
+  The child sees project files at that cwd, **not** the parent's backing path.
+  Parent-side `/tmp` baselines/reports are invisible: copy required inputs into
+  the workspace or task file. The original checkout is not mounted.
+  Launch cwd must not be `/`, home itself, or **at/below** `/tmp`, `/run`, `/nix`,
+  `/proc`, `/dev`, `/etc`, `/bin`, `/usr`. `/tmp` backing workspaces are fine;
+  never `cd` into them to launch.
+- Copy inputs (including hidden instructions/configs, imports, manifests,
+  lockfiles, tests) with relative paths preserved; keep a baseline. No live
+  checkout, hard links, or concurrent shared workspace. Launcher copies/merges
+  no project files. **Task files** specify scope, constraints, output, verification.
+- `pi-subagent NAME WORKSPACE TASK_FILE` enqueues asynchronously. Save its JSON:
+  `name`, `session_id`, `task_id`, `state_directory`, `response_path`, `stdout_path`.
+  Name is a label. `--run` is internal; no launcher status/cleanup commands or
+  state-root overrides exist. State is `/tmp/pi-subagent-state/SESSION_ID`.
+- SIMA: one brief with common requirements/named jobs, independent copies/sessions,
+  each assigned one job via `--context 'Execute only JOB.'`/`-c` (literal system
+  text, not a file). No shared mutable state/synchronized execution or shell `&`.
+  Unrelated contexts may use separate briefs. Dependencies need waves: copy
+  accepted earlier results into later workspaces.
+- Model/thinking: `--model provider/model`, `--thinking LEVEL` >
+  `<parent-agent-dir>/subagents.json` (`model`, `thinkingLevel`) > parent's
+  `PI_PROVIDER/PI_MODEL` and `PI_REASONING_LEVEL` > Pi defaults/saved session.
+  Missing/null config values inherit; env model combines provider and model.
 
-## Prepare
+## Examples
 
-1. Create a dedicated workspace, normally under `/tmp`. Never use the live
-   project or share a writable workspace between concurrent children.
-2. Copy only inputs needed for the task, preserving project-relative paths.
-   Include relevant instructions, imports, manifests, lockfiles, and tests.
-   For a full copy, use `cp -a "$project/." "$workspace/"`. Do not use hard
-   links: child edits would affect the originals.
-3. Keep your own baseline copies if comparing changes. The launcher does not
-   copy project files, maintain a baseline, or merge results.
-4. Write the task to a prompt file. Include scope, constraints, expected output,
-   and verification. Environment/reporting guidance is supplied separately by
-   the launcher as appended system instructions; do not repeat it in the file.
+From this configuration repository's root (adapt paths elsewhere), run each
+whole block in **one Bash tool call**. Variables do not persist; retain the
+printed directory and read its saved launch JSON in later calls.
 
-## Launch
-
-```bash
-pi-subagent review /tmp/review-workspace /tmp/review-task.md
-```
-
-The three positional arguments are a human-readable name, prepared directory,
-and prompt-file path (not literal prompt text). Always run from the original
-project root: the calling directory is the project mount path. The workspace is
-mounted at that absolute path; the original project is not mounted. Runtime
-paths such as `/tmp`, `/run`, `/nix`, and the home directory itself cannot be
-project targets.
-
-The result is JSON containing `name`, `session_id`, `task_id`, `state_directory`,
-`response_path`, and `stdout_path`. Retain the session ID and task ID. There is no
-separate metadata registry or status command. State lives at
-`/tmp/pi-subagent-state/<session_id>` and survives parent Pi exit/restart, but
-not necessarily system tmp cleanup. This state root is fixed; it cannot be
-overridden by arguments or environment variables. `--run` is an internal
-Pueue worker argument, not part of the delegation workflow.
-
-### Model and thinking
-
-Each invocation reads `<parent-agent-dir>/subagents.json`, the same file used by
-the former subagent tool:
-
-```json
-{"model": "provider/model", "thinkingLevel": "high"}
-```
-
-Explicit `--model provider/model` and `--thinking level` take precedence.
-Configured null/missing values inherit the parent's current model/thinking from
-Pi's environment. With neither defaults nor parent environment, Pi chooses its
-own defaults or saved session settings. There is no separate model metadata.
-
-The supplied project is trusted by default. The Nix daemon socket and
-configuration are always exposed for builds and `nix develop`.
-
-## SIMA: Single Instruction, Multiple Agents (recommended)
-
-SIMA means one shared instruction document, multiple independent agents, and a
-specific job assignment for each agent. It is the recommended way to run agents
-that need similar context but should perform different jobs.
-
-The analogy is **SIMT (Single Instruction, Multiple Threads)**: GPU threads run
-a common program with different per-thread data; SIMA agents read a common task
-document with different per-agent roles. Here, "instruction" means a shared
-brief, not a hardware instruction. The analogy does not imply GPU-style
-instruction scheduling or synchronization: agents have independent conversations
-and workspaces and may take different steps. SIMA shares context, not mutable
-state or an identical execution sequence.
-
-Write common requirements and clearly named jobs in one task file. Use
-`--context` (or `-c`) to assign each agent exactly one of those jobs:
+### Single: launch-validation review
 
 ```bash
-pi-subagent frontend /tmp/frontend /tmp/tasks.md \
-  -c "You are the frontend worker. Execute only the Frontend task."
-pi-subagent tests /tmp/tests /tmp/tasks.md \
-  -c "You are the test worker. Execute only the Tests task."
+set -euo pipefail
+r=$(mktemp -d /tmp/pi-one.XXXXXX)
+mkdir "$r/base" "$r/work"
+cp -a "$PWD/." "$r/base/"
+cp -a "$r/base/." "$r/work/"
+cat > "$r/task.md" <<'TASK'
+Review home/pi-coding-agent/pineapplehunter/tools/subagents/launcher.py against
+adjacent SUBAGENTS.md: check path/session validation. Do not edit or commit.
+Trace findings; report file/line, impact, triggering input, checked cases, and
+untested assumptions. Verify project files are unchanged.
+TASK
+printf 'Files: %s\n' "$r"
+pi-subagent launch-review "$r/work" "$r/task.md" | tee "$r/launch.json"
 ```
 
-Context is literal text appended to system instructions, not a file path. The
-shared task file remains unchanged. Define clear responsibilities in that file
-and give each agent its own workspace and session. Tasks with dependencies
-should run in separate waves rather than concurrently.
-
-Context is forwarded to the queued worker and included in the printed resume
-command. Supply it again on manual resume to retain the same role, or pass new
-context to change the assignment. No separate role metadata is stored.
-
-## Environment and resources
-
-The child inherits the parent's PATH and environment, including API keys and
-proxies. Child home, agent-directory, session, and Pueue configuration variables
-are set explicitly. `~/.pi` is exposed through a writable tmpfs overlay, so skills,
-extensions/tools, settings, credentials, and packages are available. A custom
-agent directory outside `~/.pi` receives its own overlay. Changes in these
-overlays are discarded after each run, including OAuth updates; they do not
-propagate to the parent. Immutable Nix-store symlink targets remain read-only;
-replace a symlink with a copied file/directory inside the overlay if edits are
-needed. Do not edit the parent's resource directories to help a running child.
-
-Parent session directories are hidden. Only the child's own conversation is
-persisted separately at `/run/pi-subagent/sessions`. The child has a private
-Pueue daemon, not the parent's task queue. Host desktop sockets/portals are not
-mounted, so tools depending on those services may be unavailable despite being
-loaded. Networking and Nix daemon capabilities are shared; this is not a
-credential or network security boundary. The child's `/etc`, `/bin`, and `/usr`
-are whole read-only mounts inherited from the existing parent sandbox.
-
-## Completion and inspection
-
-The parent's Pueue extension automatically notifies you when the returned task
-finishes. Do independent work, then end your response if only children remain;
-do not wait or poll. On notification, inspect the report and outputs.
-
-Each child runs persistent RPC Pi with its own completion extension. It remains
-alive across intermediate responses until all private Pueue tasks are terminal
-and their completion messages have been followed by a completed model run. The
-outer task finishes only afterward, or on explicit failure/cancellation.
+### SIMA: independent sandbox and completion reviews
 
 ```bash
-pueue status
-pueue log <task_id>
+set -euo pipefail
+r=$(mktemp -d /tmp/pi-sima.XXXXXX)
+mkdir "$r/base" "$r/sandbox" "$r/completion"
+cp -a "$PWD/." "$r/base/"
+for job in sandbox completion; do
+  cp -a "$r/base/." "$r/$job/"
+done
+cat > "$r/task.md" <<'TASK'
+Review home/pi-coding-agent/pineapplehunter/ against tools/subagents/SUBAGENTS.md.
+Execute only your job. Do not edit or commit. Trace findings; report file/line,
+impact, triggering scenario, checked cases, and untested assumptions. Verify
+project files are unchanged.
+## Sandbox job
+Review mounts/resource isolation in tools/subagents/launcher.py only.
+## Completion job
+Review early success, notifications, and report delivery in
+tools/subagents/runner.py and extensions/pueue-tool/index.ts only.
+TASK
+printf 'Files: %s\n' "$r"
+pi-subagent sandbox-review "$r/sandbox" "$r/task.md" \
+  -c 'Execute only the Sandbox job.' | tee "$r/sandbox.json"
+pi-subagent completion-review "$r/completion" "$r/task.md" \
+  -c 'Execute only the Completion job.' | tee "$r/completion.json"
 ```
 
-Read the report and stdout paths with the read tool. Inspect workspace changes
-and verification results before integration. A successful Pi exit alone does not
-establish task correctness. Successful task stdout prints a resumable command.
+After either example completes, read its `response_path` first; skip logs for a
+usable report. For failed tasks or missing/incomplete reports, start with
+`pueue log --lines 3 TASK_ID`, increasing `--lines` if needed (or read `stdout_path`).
 
-## Resume with the same or different inputs
+## Results, resume, cleanup
 
-```bash
-pi-subagent review /tmp/new-workspace /tmp/follow-up.md --resume <session_id>
-```
+- Do independent work, then end your response; completion notifications resume
+  you. **Do not wait/poll.** Intermediate replies are not outer completion:
+  ALL private tasks must be terminal AND their notifications processed in a
+  model run, or explicit failure/cancellation occurs. Inspect workers separately.
+- Require a nonempty report and verify findings/diffs/tests: success proves
+  neither delivery nor correctness. Compare read-only workspaces with
+  `diff -qr --exclude=.git BASE WORKSPACE`
+  (Git may refresh its index). Integrate selected changes, never entire workspace
+  overwrites; run combined tests in the original project.
+- From the **same original cwd**:
+  `pi-subagent NAME NEW_WORKSPACE FOLLOW_UP_FILE --resume SESSION_ID`.
+  **First verify the session is terminal/unlocked and native history exists.**
+  Task ID/label cannot resume it. Repeat the original `--context` exactly unless
+  reassignment was requested (no stored role). Explain changed inputs so files
+  are reread. Archive results:
+  turns replace prompt/report/stdout. Never alter active workspace/state or reuse
+  queued/running/locked sessions.
+- State survives parent Pi restart, not necessarily tmp cleanup. Before deletion,
+  stop active tasks and verify terminal status with `pueue status`; then
+  `rm -rf -- /tmp/pi-subagent-state/SESSION_ID` deletes history/logs/tmp, not Pueue
+  task records. Clean workspace/baseline separately after integration/follow-ups.
 
-Supply the name, directory, and prompt file each time. The name is only a label;
-`--resume` identifies the native conversation. A different backing directory is
-allowed. Keep the original project mount path by invoking from the same project
-root. Explain changed inputs in the brief because saved history can contain
-observations about old files. The launcher tells the child to reread relevant
-files.
+## Child environment/report
 
-The native session must already exist under the fixed state root. Each turn
-replaces the prompt/report/stdout; retain previous reports separately if needed.
-Never modify workspace files or remove state while a child is running. The
-launcher rejects reuse while the session has a queued/running task or an active
-execution lock. Pueue owns task status; it is not duplicated in a metadata file.
+Children inherit PATH/env/API keys/proxies/skills/tools/auth. `~/.pi` and custom
+agent directories use temporary writable overlays: settings/OAuth changes vanish,
+never reach the parent. Do not edit parent resources to repair children. Nix-store
+targets are immutable: replace links with copies inside the child overlay to edit.
+Trusted project, shared Nix store/daemon/network permit builds/`nix develop`;
+**not a network/credential security boundary**. Desktop sockets/portals absent;
+private Pueue/`/tmp`; parent sessions/transcript hidden, not copied. Conversations
+persist at `/run/pi-subagent/sessions`.
 
-## Cleanup
-
-Confirm completion with Pueue first. Stop and verify termination of active tasks
-before deleting anything. Then remove the exact returned state path:
-
-```bash
-rm -rf -- /tmp/pi-subagent-state/<session_id>
-```
-
-This deletes saved conversation history, logs, and temporary files. Remove your
-workspace and baseline copies separately after integration. There is no cleanup
-command; removing files does not remove Pueue task records.
-
-## Child prompt
-
-Pi loads its normal system prompt and applicable user/project instructions and
-resources. The launcher appends system instructions explaining workspace scope,
-resource overlays, persisted sessions, tools, and response expectations. It
-requires a report at `/run/pi-subagent/response.md`, relative changed-file paths,
-test outcomes, requests for missing inputs, and no nested subagents. The prompt
-file supplies only the task as a user message. Optional `--context` text is
-appended separately to the system instructions. Resume also includes native saved
-conversation history; the parent's transcript is never copied.
+Launcher supplies these mechanics separately: no nested subagents; after all
+results, write `/run/pi-subagent/response.md` with project-relative changed paths,
+test outcomes, and precise missing-input requests for parent follow-up. Parent
+reads this report, not the ordinary final reply.
