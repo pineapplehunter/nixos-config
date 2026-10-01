@@ -1,49 +1,48 @@
 ---
 name: pueue
-description: Use pueue to run commands in the background and receive automatic completion turns.
+description: Run background commands in Pi's private Pueue queue, inspect results, manage concurrency, and diagnose automatic completion turns.
 ---
 
 # Pueue
 
-Pi's wrapper starts an isolated `pueued` for the Pi session; Pueue commands
-inside Pi do not control the host daemon. Assume the same Pi session throughout
-queued work.
+Pi's wrapper starts an isolated `pueued`, not the host daemon. Keep the same
+living interactive/RPC Pi session: ordinary `--print`/JSON cannot wake after
+exit; exiting Pi or destroying the sandbox ends delivery.
 
-- `pueue add -- <cmd>`: enqueue a command. Retain the returned task ID.
-- `pueue log <task_id>`: inspect task output after completion.
-- `pueue status`: inspect task states when diagnosing a problem.
-- `pueue clean`: remove finished tasks after processing their results.
+## Enqueue → process
 
-See `pueue --help` for more subcommands.
+Pueue executes shell commands. Quote the whole command to keep operators in the
+queued shell and quote spaced arguments inside it. From the project root, with
+script/inputs prepared:
 
-## Parallel execution
+```bash
+pueue add --print-task-id -- 'python3 "scripts/check files.py" && printf "check complete\n"'
+```
 
-Use `pueue parallel 4` when running multiple small, independent tasks to allow
-up to four tasks to run at once. For larger tasks, keep the default serial
-execution to avoid resource contention. If parallelism was increased earlier,
-restore serial execution with `pueue parallel 1` before enqueueing larger tasks.
+Retain the returned ID. After its completion, substitute it for `TASK_ID`:
 
-## Automatic completion
+```bash
+pueue log --lines 3 TASK_ID
+```
 
-Every task completion automatically starts a new agent turn when idle, or
-queues a follow-up when busy. No subscription or yield tool is needed.
+Expand `--lines` or use `--full` only as needed; read a usable subagent report
+first instead of redundant logs. Verify the terminal result and required outputs
+before claiming success; failure/cancellation is terminal, not success. Continue
+the original request.
 
-After enqueueing work, do any independent work. When there is nothing else to
-do, end your response naturally. Do not call `pueue wait`, follow logs merely
-to wait, or repeatedly poll status. A completion message will resume you;
-inspect the task logs as needed and continue the original request.
+Every completion starts a turn when idle or queues a follow-up when busy; no
+subscription/yield tool. Do independent work, then end your response naturally
+**without exiting Pi**. Never `pueue wait`, follow logs merely to wait, or poll.
+A subagent writes its final report only after **all** private tasks are terminal
+and completion notifications processed in a model run; newly enqueued work
+repeats this cycle. Intermediate replies do not finish the worker.
 
-A subagent stays alive until all its private Pueue tasks are terminal and their
-completion notifications have been processed in a model run. Write the final
-report only after processing results. Failures and cancellations are terminal
-results too; they are not evidence of successful work.
+## Manage and diagnose
 
-Notifications require a living interactive/RPC Pi process. Ordinary `--print`
-and JSON invocations are single-shot and do not support this idle-wakeup
-workflow. Exiting Pi or destroying the sandbox also ends notification delivery.
-A task that never finishes produces no completion; investigate with status or
-cancel it rather than assuming an inactivity timeout still exists.
-
-After an aborted/failed interactive run, automatic turns pause. A new user
-prompt or `/pueue-notifications` resumes them; `/pueue-notifications off` pauses
-notifications without stopping tasks.
+- `pueue parallel 4`: multiple small independent tasks, default group. Restore
+  `pueue parallel 1` before enqueueing larger tasks; lowering does not stop
+  already-running jobs.
+- `pueue status`/`--json`: diagnosis, not waiting. Nonfinishing tasks produce no
+  completion and have no inactivity timeout; diagnose and repair/cancel them.
+- `pueue clean` removes **all finished tasks and logs**: first process every
+  needed finished result and retain evidence. Use `pueue --help` for other commands.
