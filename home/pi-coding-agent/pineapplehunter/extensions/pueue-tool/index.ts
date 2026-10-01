@@ -156,7 +156,7 @@ export default function (pi: ExtensionAPI) {
           ctx.ui.setStatus("pueue-notify", undefined);
           if (fresh.length) {
             enqueue(fresh);
-            pi.sendMessage(completionMessage(fresh), { triggerTurn: true, deliverAs: "followUp" });
+            pi.sendMessage(completionMessage(fresh), { triggerTurn: true, deliverAs: "steer" });
           }
         } catch (error) {
           if (current === generation) warn(ctx, error);
