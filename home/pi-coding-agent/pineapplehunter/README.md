@@ -46,6 +46,10 @@ the package store paths, keeping them alive with the generation. On activation,
 Home Manager removes resource links owned by the previous generation; unmanaged
 user/project resources remain untouched. Restart Pi or reload after activation.
 Subagents inherit the same package paths through the read-only Nix store.
+Optional `pi-subagent --no-inherit-resources` suppresses automatic extension and
+skill loading while explicitly retaining the pinned Pueue completion extension;
+package resolution, other settings, prompts, and themes are unchanged. See
+[the launcher documentation](tools/subagents/SUBAGENTS.md).
 
 ## Browse background work
 

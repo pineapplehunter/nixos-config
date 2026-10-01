@@ -22,6 +22,10 @@ description: "Launch, resume, and inspect Pi subagents. Use for focused reviews 
   `name`, `session_id`, `task_id`, `state_directory`, `response_path`, `stdout_path`.
   Name is a label. `--run` is internal; no launcher status/cleanup commands or
   state-root overrides exist. State is `/tmp/pi-subagent-state/SESSION_ID`.
+- Optional `--no-inherit-resources` disables extension/skill discovery except
+  the pinned Pueue completion extension. Pi built-ins/tools/auth/settings remain;
+  prompts/themes and package resolution are unchanged. Repeat it on resume;
+  existing history is not erased. Use fresh sessions for clean-reference tests.
 - SIMA: one brief with common requirements/named jobs, independent copies/sessions,
   each assigned one job via `--context 'Execute only JOB.'`/`-c` (literal system
   text, not a file). No shared mutable state/synchronized execution or shell `&`.
@@ -53,7 +57,8 @@ Trace findings; report file/line, impact, triggering input, checked cases, and
 untested assumptions. Verify project files are unchanged.
 TASK
 printf 'Files: %s\n' "$r"
-pi-subagent launch-review "$r/work" "$r/task.md" | tee "$r/launch.json"
+pi-subagent launch-review "$r/work" "$r/task.md" \
+  --no-inherit-resources | tee "$r/launch.json"
 ```
 
 ### SIMA: independent sandbox and completion reviews
@@ -114,8 +119,9 @@ usable report. For failed tasks or missing/incomplete reports, start with
 
 ## Child environment/report
 
-Children inherit PATH/env/API keys/proxies/skills/tools/auth. `~/.pi` and custom
-agent directories use temporary writable overlays: settings/OAuth changes vanish,
+Children inherit PATH/env/API keys/proxies/auth; extensions/skills load by default.
+`--no-inherit-resources` changes loading, not mounts. `~/.pi` and custom agent
+directories use temporary writable overlays: settings/OAuth changes vanish,
 never reach the parent. Do not edit parent resources to repair children. Nix-store
 targets are immutable: replace links with copies inside the child overlay to edit.
 Trusted project, shared Nix store/daemon/network permit builds/`nix develop`;

@@ -114,6 +114,9 @@ Research was run alongside baseline tests. Useful existing patterns:
 Replace it with `tools/subagents/runner.py`, which starts persistent RPC Pi and
 sends the unchanged prompt-file contents through RPC. Preserve model/session
 arguments, sandbox mounts, native conversations, and the report file contract.
+With launcher `--no-inherit-resources`, child Pi disables automatic extensions
+and skills but explicitly loads the Nix-pinned `pueue-tool/index.ts`; the required
+completion lifecycle remains active without loading other inherited extensions.
 
 The extension checks at every pre-settlement boundary:
 

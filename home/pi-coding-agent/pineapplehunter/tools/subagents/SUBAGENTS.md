@@ -3,14 +3,46 @@
 ```text
 pi-subagent <name> <directory> <prompt_file> [--model <model>]
             [--thinking <level>] [--resume <session_id>] [--context <text>]
+            [--no-inherit-resources]
 ```
 
 Home Manager packages `launcher.py` with `pkgs.writers.writePython3Bin` (including
-build-time flake8 linting), substitutes the shared Pueue configuration and RPC
-runner paths, and puts it directly in `sandboxTools`. Commands run by binary
+build-time flake8 linting), substitutes the shared Pueue configuration, RPC
+runner, and pinned Pueue completion extension paths, and puts it directly in
+`sandboxTools`. Commands run by binary
 name using the inherited parent PATH. There is no CLI-specific wrapper.
 
 See [the subagents skill](../../skills/subagents/SKILL.md) for the workflow.
+
+## Optional extension/skill isolation
+
+By default, children load the parent's configured/discovered extensions and
+skills. Add `--no-inherit-resources` to avoid those automatic loads:
+
+```bash
+pi-subagent review /tmp/review-workspace /tmp/review-task.md \
+  --no-inherit-resources
+```
+
+The launcher passes `--no-extensions --no-skills` to child Pi and explicitly loads
+`--extension <pinned-pueue-completion-extension>`. Home Manager pins that file
+inside the same Nix-store package directory, including its sibling imports.
+This preserves private-task notifications and runner shutdown; disabling the
+completion extension would make the runner fail its bootstrap check.
+
+Built-in tool selection, authentication, model/thinking settings, project
+instructions, prompts, and themes are unchanged. Pi's built-in inline helpers
+(such as its `llama` command) can still load; the flags suppress discovered and
+configured resources, not those built-ins. Configured packages are still
+resolved by Pi; this is resource-loading suppression, not package removal or a
+filesystem/credential security boundary. Other custom tools/providers supplied
+by extensions are unavailable in this mode; use normal inheritance if needed.
+
+The flag is forwarded to the queued worker and printed resume command. Repeat
+it on manual resume to keep this mode; there is no separate mode metadata.
+Switching modes does not erase existing native conversation history. For a
+clean-reference evaluation, start a fresh session and supply reference files in
+the workspace or task document.
 
 ## SIMA: Single Instruction, Multiple Agents
 
@@ -67,8 +99,10 @@ original project path, exposes the Nix store/daemon, inherits whole read-only
 tmp and runtime directories. Networking and environment/PATH are inherited. The supplied project is trusted by default.
 
 `~/.pi` and any custom agent directory outside it are writable `--tmp-overlay`
-mounts. Existing skills, extensions/tools, settings, auth, and packages load
-normally; their upper-layer changes vanish on exit and never modify the parent.
+mounts. Existing settings/auth and package files remain available. Extensions
+and skills load normally unless `--no-inherit-resources` is supplied; this flag
+changes discovery, not the mounts. Upper-layer changes vanish on exit and never
+modify the parent.
 Nix-store symlink targets remain immutable unless copied into the writable
 resource overlay. Parent session directories are hidden with tmpfs, and only
 child session storage is bound persistently. Each child starts its own Pueue

@@ -85,8 +85,16 @@
 
       subagent = pkgs.writers.writePython3Bin "pi-subagent" { } (
         builtins.replaceStrings
-          [ "@PUEUE_CONFIG@" "@SUBAGENT_RUNNER@" ]
-          [ (toString pueueConfig) (toString subagentRunner) ]
+          [
+            "@PUEUE_CONFIG@"
+            "@SUBAGENT_RUNNER@"
+            "@PI_PACKAGE@"
+          ]
+          [
+            (toString pueueConfig)
+            (toString subagentRunner)
+            "${./pineapplehunter}"
+          ]
           (lib.readFile ./pineapplehunter/tools/subagents/launcher.py)
       );
 

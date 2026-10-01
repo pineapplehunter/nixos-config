@@ -22,12 +22,16 @@ SUBAGENT_RUNNER = (
     "@SUBAGENT_RUNNER@"
     "/bin/pi-subagent-runner"
 )
+PUEUE_EXTENSION = (
+    "@PI_PACKAGE@"
+    "/extensions/pueue-tool/index.ts"
+)
 CHILD_INSTRUCTIONS = """You are a subagent of the parent Pi agent.
 Your working directory is a caller-prepared, possibly incomplete workspace
 mounted at the original project path. The original project is not accessible.
 The workspace can change between turns: reread relevant files before editing.
-You inherit the parent's environment, tools, and skills. Your supplied project
-is trusted by default.
+You inherit the parent's environment, authentication, and settings. Built-in
+tool selection is unchanged. Your supplied project is trusted by default.
 Your ~/.pi resources are writable tmpfs overlays: changes there are discarded
 when this process exits and never propagate to the parent. Symlink targets in
 the Nix store remain immutable; replace the link with a copy if you need edits.
@@ -187,6 +191,13 @@ def sandbox_command(options, state, agent_source):
     for key, value in environment.items():
         args.extend(["--setenv", key, value])
     instructions = CHILD_INSTRUCTIONS
+    if options.no_inherit_resources:
+        instructions += (
+            "\nAutomatic extension and skill loading "
+            "is disabled for this run.\n"
+            "Only the pinned Pueue completion extension "
+            "is explicitly loaded.\n"
+        )
     if options.context:
         instructions += "\n## Additional context\n\n" + options.context + "\n"
     args.extend(
@@ -212,6 +223,10 @@ def sandbox_command(options, state, agent_source):
             instructions,
         ]
     )
+    if options.no_inherit_resources:
+        args.extend([
+            "--no-extensions", "--no-skills", "--extension", PUEUE_EXTENSION,
+        ])
     if options.model:
         args.extend(["--model", options.model])
     if options.thinking:
@@ -250,6 +265,8 @@ def run_child(options, state, agent_source):
             ]
             if options.context:
                 command.append(f"--context={options.context}")
+            if options.no_inherit_resources:
+                command.append("--no-inherit-resources")
             print(f"Resume: {shlex.join(command)}", flush=True)
         return returncode
 
@@ -266,6 +283,11 @@ def parser():
         "-c",
         "--context",
         help="Additional system context, such as a worker role",
+    )
+    cli.add_argument(
+        "--no-inherit-resources",
+        action="store_true",
+        help="Skip automatic extension/skill loading; retain pinned Pueue",
     )
     internal = cli.add_argument_group("internal arguments")
     internal.add_argument(
@@ -358,6 +380,8 @@ def main():
             command.extend(["--thinking", options.thinking])
         if options.context:
             command.append(f"--context={options.context}")
+        if options.no_inherit_resources:
+            command.append("--no-inherit-resources")
         result = subprocess.run(
             [
                 "pueue",
