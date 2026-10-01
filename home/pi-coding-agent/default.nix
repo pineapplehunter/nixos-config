@@ -12,6 +12,7 @@
         "npm:pi-web-access"
         "npm:pi-codex-image-gen"
         "https://github.com/monotykamary/pi-double-esc@main"
+        "https://github.com/pineapplehunter/pi-remote-server@main"
       ]
       ++ map toString localPiPackages;
 
