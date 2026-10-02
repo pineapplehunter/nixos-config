@@ -12,7 +12,6 @@ in
     ./gnome-settings-daemon.nix
     ./niks3.nix
     ./eza.nix
-    ./herdr.nix
     ./ibus-engines.nix
     ./rpi5.nix
   ];
@@ -34,7 +33,6 @@ in
       overlays.gnome-settings-daemon
       overlays.niks3
       overlays.eza
-      overlays.herdr
       overlays.ibus-engines
       overlays.custom-packages
     ];
