@@ -11,6 +11,7 @@
         "npm:@narumitw/pi-usage"
         "npm:pi-web-access"
         "npm:pi-codex-image-gen"
+        "npm:pi-compact-tools"
         "https://github.com/monotykamary/pi-double-esc@main"
         "https://github.com/pineapplehunter/pi-remote-server@main"
       ]
