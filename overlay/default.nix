@@ -13,6 +13,7 @@ in
     ./niks3.nix
     ./eza.nix
     ./ibus-engines.nix
+    ./mozc-dictionaries.nix
     ./rpi5.nix
   ];
 
@@ -34,6 +35,7 @@ in
       overlays.niks3
       overlays.eza
       overlays.ibus-engines
+      overlays.mozc-dictionaries
       overlays.custom-packages
     ];
 

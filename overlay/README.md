@@ -24,6 +24,14 @@ Most should be included in the default overlay, while hardware-specific overlays
 
 All overlays were last checked together on 2026-10-02.
 
+## Backports
+
+- Mozc UT dictionary updates and the pinned-input merger from
+  [nixpkgs PR #570751](https://github.com/NixOS/nixpkgs/pull/570751) are backported
+  onto the local split Mozc package. The legacy merger attribute is not overridden;
+  Fcitx configuration is unchanged. This is a partial update, not a new full-batch
+  audit.
+
 ## Instructions for agents
 
 When checking whether an overlay is still relevant:

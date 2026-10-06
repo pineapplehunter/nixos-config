@@ -13,16 +13,20 @@
   lndir,
 
   dictionaries ? [ ],
-  merge-ut-dictionaries,
+  jawiki-all-titles-in-ns0,
+  writers,
 }:
 # Provide the newer, split Mozc server/tool package while nixpkgs still ships 2.x.
 # Associated PR: https://github.com/NixOS/nixpkgs/pull/531687.
 # Drop this when the pinned nixpkgs provides equivalent split packages, including
 # UT-dictionary support and a sandbox-compatible Bazel/Python build.
+# Backport the pinned-input dictionary merger from PR #570751 without reverting
+# to its older Mozc package: https://github.com/NixOS/nixpkgs/pull/570751.
+# Remove the merger backport when the split package provides equivalent support.
 let
   bazel = bazel_9;
 
-  ut-dictionary = merge-ut-dictionaries.override { inherit dictionaries; };
+  merge-dictionaries = writers.writePython3 "merge-mozc-ut-dictionaries" { } ./merge-dictionaries.py;
 
   pname = "mozc-server";
   version = "3.34.6239";
@@ -203,7 +207,11 @@ stdenv.mkDerivation {
       --replace-fail "/usr" "$out"
   ''
   + lib.optionalString (dictionaries != [ ]) ''
-    cat ${ut-dictionary}/mozcdic-ut.txt >> data/dictionary_oss/dictionary00.txt
+    # Use this exact Mozc source so duplicate filtering and context IDs match.
+    ${merge-dictionaries} mozcdic-ut.txt \
+      ${src} ${jawiki-all-titles-in-ns0}/jawiki-all-titles-in-ns0.gz \
+      ${lib.concatMapStringsSep " " (dictionary: "${dictionary}/mozcdic-ut-*.txt.bz2") dictionaries}
+    cat mozcdic-ut.txt >> data/dictionary_oss/dictionary00.txt
   '';
 
   buildPhase = ''
