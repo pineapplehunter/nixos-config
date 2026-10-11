@@ -49,12 +49,27 @@ Revert "original subject"
 
 ## Body
 
-A body is optional and usually unnecessary for a straightforward change. Add one when the reason, tradeoff, migration, or non-obvious combination of changes would otherwise be lost.
+Include a body by default for nontrivial changes. A subject alone is fine only when the change is trivial and its purpose is already clear from the subject.
 
 - Separate it from the subject with a blank line.
-- Explain why the change is needed and summarize important consequences; do not repeat the diff.
+- Summarize what changed and explain why it was made, including the problem or motivation. Do not merely restate the subject or enumerate the diff.
+- Include relevant consequences, tradeoffs, or removal conditions when they help future readers understand the change.
 - Use complete sentences and short paragraphs, wrapping prose near 72 characters.
 - Do not add issue references, sign-offs, co-author trailers, or AI attribution unless the user explicitly requests them or the change actually requires them.
+
+## Passing the Message to Git
+
+Prefer `git commit -F -` with a quoted heredoc instead of multiple `-m` arguments or a temporary message file. Quoting the delimiter prevents shell expansion and preserves multiline formatting.
+
+```bash
+git commit -F - <<'EOF'
+scope: imperative summary
+
+Summarize what changed and why it was needed.
+EOF
+```
+
+When explicitly asked to amend, use the same method with `--amend`. Add `--only` for a message-only amendment to avoid including staged changes; omit it when intentionally including reviewed, staged changes.
 
 ## Creating or Reviewing a Commit
 
