@@ -26,6 +26,10 @@ All overlays were last checked together on 2026-10-02.
 
 ## Backports
 
+- VTK 9.5 and 9.6's PEGTL configuration fix from
+  [nixpkgs PR #572295](https://github.com/NixOS/nixpkgs/pull/572295) is backported
+  until the pinned input includes it. This is a partial update, not a new
+  full-batch audit.
 - Mozc UT dictionary updates and the pinned-input merger from
   [nixpkgs PR #570751](https://github.com/NixOS/nixpkgs/pull/570751) are backported
   onto the local split Mozc package. The legacy merger attribute is not overridden;

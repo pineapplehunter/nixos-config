@@ -14,6 +14,7 @@ in
     ./eza.nix
     ./ibus-engines.nix
     ./mozc-dictionaries.nix
+    ./vtk.nix
     ./rpi5.nix
   ];
 
@@ -36,6 +37,7 @@ in
       overlays.eza
       overlays.ibus-engines
       overlays.mozc-dictionaries
+      overlays.vtk
       overlays.custom-packages
     ];
 
