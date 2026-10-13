@@ -2,17 +2,18 @@
   flake.overlays.rpi5 = final: prev: {
     # Keep the Raspberry Pi fork: it carries Pi-specific pipelines, tuning data,
     # and sensor support not yet included in the upstream libcamera release.
-    # nixos-raspberrypi's older 0.7.0 fork no longer accepts flags inherited
-    # from nixpkgs' 0.7.2 expression, so use the matching Raspberry Pi release.
-    # https://github.com/raspberrypi/libcamera/releases/tag/v0.7.2+rpt20260817
+    # nixos-raspberrypi pins 0.7.0+rpt20260205, which does not accept flags
+    # inherited from nixpkgs' newer expression; track the latest Raspberry Pi
+    # release until its package expression is compatible.
+    # https://github.com/raspberrypi/libcamera/releases/tag/v0.7.2+rpt20261009
     # Drop this version override once nixos-raspberrypi supplies a compatible fork.
     libcamera_rpi = prev.libcamera_rpi.overrideAttrs (old: rec {
-      version = "0.7.2+rpt20260817";
+      version = "0.7.2+rpt20261009";
       src = final.fetchFromGitHub {
         owner = "raspberrypi";
         repo = "libcamera";
         rev = "v${version}";
-        hash = "sha256-r3ste6OwCrNvgD0oAQ+XaoWYPNVJihFW1moPDueNtnM=";
+        hash = "sha256-R5zRsio+Mrn2Fdr+9aGy1B0O53OEEQofamfim/rAQ10=";
       };
       meta = old.meta // {
         changelog = "https://github.com/raspberrypi/libcamera/releases/tag/v${version}";
