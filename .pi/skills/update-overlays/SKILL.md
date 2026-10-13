@@ -1,21 +1,63 @@
 ---
 name: update-overlays
-description: Audits and updates this repository's Nix overlays against its pinned inputs and upstream state. Use when asked to update, audit, refresh, or remove obsolete overlays, or when invoked as /skill:update-overlays.
+description: Instructions on how to update the overlays in this repository.
 ---
 
-# Update Overlays
+## Before reading
 
-Perform the overlay update; do not stop after describing or planning it.
+This skill is designed to be used by both the main agent and the subagents.
+If you are a subagent, focus on the section relevant to your role.
 
-1. Work from the repository root and read [`overlay/README.md`](../../../overlay/README.md) completely.
-2. Follow its **Instructions for agents** as the authoritative update procedure. Audit every overlay in the batch unless the user explicitly supplied a narrower scope.
-3. Inspect the repository's pinned inputs, overlay registration, package expressions, call sites, and linked upstream sources as required by that procedure. Preserve intentional local packages and custom behavior.
-4. Make all justified changes, including deleting obsolete imports, composition entries, patches, and files. Do not make speculative version bumps or remove an overlay merely because it lacks an upstream issue.
-5. If the audit results in an overlay-related repository change, set the common `Last checked` date in `overlay/README.md` to the date on which the audit was actually completed. If nothing changes, leave the date untouched. Update the common date only after completing the full batch; for a partial audit, state the scope instead of falsely dating the full batch.
-6. Run the validation required by `overlay/README.md`, the repository's `AGENTS.md`, and any more specific instructions. At minimum, run `git diff --check`, search for stale references, and run `nix flake check --no-build --all-systems`. Build the smallest relevant derivation when evaluation cannot verify an override or patch.
-7. Report overlays removed, changed, and retained; include the evidence or reason for each decision and any validation that could not be completed.
-8. After the work and validation finish, use `notify` with a concise Markdown report focused only on packages actually updated or affected by an overlay change or removal. Make this the final tool call for the task:
-   - List only changed packages and briefly describe what changed (include old and new versions when applicable). Do not list retained or unchanged packages, audit evidence, successful validation details, documentation-only edits, or unrelated working-tree issues; keep those in the final chat report.
-   - If no packages changed, say only "No packages updated." and omit `color`. Documentation-only edits and audit-date updates do not count as package changes.
-   - If packages changed and their update and validation completed without errors, use green (`#57F287`).
-   - If a package update or its validation failed, use red (`#ED4245`) and briefly identify the affected package, failure, and required user action. Do not include unrelated errors.
+## The update overview
+
+The update goes through this process:
+
+1. List all the overlays.
+2. See if there are updates for each overlay.
+3. Notify the user.
+
+## Main Agent
+
+Your role is to spawn subagents and merge the changes made by the subagents.
+First, spawn an overlay-listing subagent, and then spawn a subagent for each overlay that needs checking using the SIMA pattern.
+Give it the role in the prompt and make it refer to this skill file for information on what to do.
+After the tasks are finished, check their responses.
+
+If there are updates:
+- Merge the responses.
+- Run evaluation checks.
+- Set the "last updated" timestamp to the time of the update.
+- Notify the user.
+
+Don't edit any files if there are no updates.
+
+## Subagent
+
+You have to focus on the task given.
+
+### Listing Agent
+
+Your task will be to list all the overlays.
+Exclude pinned flake inputs and local-only packages (such as `nixr`) from the listing.
+This will later be used to spawn update agents.
+Give back a markdown list of names and relevant files.
+
+### Update Agent
+
+Your task will be to update the given package in a file.
+
+Check for:
+- Upstream updates
+- Changes in issue status
+- Changes in PR status
+- Broken implementation
+
+When there is an update to the package:
+- Modify the package
+- Add pointers to resources to check when the next update is run.
+
+Only run tests when necessary for the update process.
+The main agent should test the merged files later.
+
+When there is an update, give back the paths of the changed files and additional information about the update.
+When there is no update, just respond with "No updates".
