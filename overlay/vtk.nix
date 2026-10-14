@@ -3,9 +3,9 @@
     final: prev:
     let
       # Backport https://github.com/NixOS/nixpkgs/pull/572295.
-      # The pinned input renames PEGTL on 9.5 instead of 9.6, mismatching the
-      # VTK_MODULE_USE_EXTERNAL flag and causing "PEGTL external dependency" errors.
-      # Only 9.6 needs the rename to avoid a target collision with OpenUSD.
+      # The pinned input combines VTK 9.6 with OpenUSD 26.05 but does not rename
+      # VTK's vendored PEGTL target, so it collides with OpenUSD's `pegtl` target.
+      # Only 9.6 needs the rename; PR #572295 is the corrected upstream fix.
       # Remove once the pinned nixpkgs input includes that PR's fix.
       fixPegtl =
         package:

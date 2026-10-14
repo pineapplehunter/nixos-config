@@ -20,17 +20,25 @@
       };
     });
 
-    # The RPi package replaces nixpkgs' FFmpeg 8.1.2 source with its 8.0.1
-    # fork, but inherits the 8.1.2 patch list (which omits nixpkgs' 4.x
-    # compatibility patch). The fork still references a field removed in
-    # SVT-AV1 4.x; backport the rename to preserve constant-QP behavior
-    # (disabling adaptive quantization).
-    # https://github.com/FFmpeg/FFmpeg/commit/a5d4c398b411a00ac09d8fe3b66117222323844c
-    # Drop this when nixos-raspberrypi includes that fix in its FFmpeg fork.
-    ffmpeg_8-headless = prev.ffmpeg_8-headless.overrideAttrs (old: {
-      patches = (old.patches or [ ]) ++ [
-        ./patches/ffmpeg-svtav1-enable_adaptive_quantization.patch
-      ];
+    # nixos-raspberrypi still pins the 8.0.1 RPi fork despite nixpkgs using
+    # FFmpeg 8.1.2. Track the fork's matching branch, which includes upstream's
+    # SVT-AV1 4.x compatibility fix while preserving the RPi V4L2 changes.
+    # https://github.com/jc-kynesim/rpi-ffmpeg/tree/test/8.1.2/main
+    # https://github.com/jc-kynesim/rpi-ffmpeg/commit/f60aae17021abae85b1ba9759e8b2da33f723902
+    # Drop this source override once nixos-raspberrypi updates ffmpeg_8-rpi.
+    ffmpeg_8-headless = prev.ffmpeg_8-headless.overrideAttrs (old: rec {
+      version = "8.1.2";
+      src = final.fetchFromGitHub {
+        owner = "jc-kynesim";
+        repo = "rpi-ffmpeg";
+        rev = "f60aae17021abae85b1ba9759e8b2da33f723902";
+        hash = "sha256-mPcARTkZAAljvmsahC/HTe5eK+E1brbEGb2Q1X37egg=";
+      };
+      # The input appends this 8.0/8.0.1 fix unconditionally, but it is already
+      # part of the 8.1.2 source and no longer applies.
+      patches = builtins.filter (
+        patch: !final.lib.hasInfix "unbreak-hardcoded-tables" (builtins.baseNameOf (toString patch))
+      ) (old.patches or [ ]);
     });
   };
 }
