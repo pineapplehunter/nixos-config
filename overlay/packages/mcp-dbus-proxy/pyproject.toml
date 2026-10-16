@@ -1,0 +1,14 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mcp-dbus-proxy"
+version = "0.1.0"
+description = "Credential-free stdio transport for host-side MCP servers"
+requires-python = ">=3.11"
+dependencies = ["dbus-next>=0.2.3"]
+
+[project.scripts]
+mcp-dbus-proxy = "mcp_dbus_proxy.client:main"
+mcp-dbus-host = "mcp_dbus_proxy.host:main"

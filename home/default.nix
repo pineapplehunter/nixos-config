@@ -79,6 +79,7 @@ in
     ./julia.nix
     ./kpro.nix
     ./minimal.nix
+    ./mcp-dbus.nix
     ./nixos-common.nix
     ./pi-coding-agent/default.nix
     ./radicale-agent.nix
