@@ -153,11 +153,6 @@ in
 
         # explicitly set to disable warnings
         xremap.enable = false;
-
-        ollama = {
-          enable = true;
-          package = pkgs.ollama-rocm;
-        };
       };
 
       networking = {
