@@ -48,8 +48,9 @@ Each backend owns a separate bus name and uses interface
 
 Sessions belong to the D-Bus caller's unique name; IDs alone grant no access.
 Disconnecting kills that caller's backend groups. Limits are 64 sessions per
-service, 16 per caller, 8 queued output messages per session, and 2 MiB per message
-(including its stdio newline). Input and output are independent so server requests
+service, 16 per caller, 8 queued output messages per session, and 8 MiB per message
+(including its stdio newline). This accommodates application results represented
+as both MCP text and structured content. Input and output are independent so server requests
 and cancellation do not deadlock behind a tool call. Close/exit is not a rollback:
 a remote write can finish despite cancellation. Calls are never replayed after a
 transport failure. Reconnection creates a new MCP session.

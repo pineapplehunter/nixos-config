@@ -41,15 +41,28 @@ class Session:
         self.reader.cancel()
         with suppress(asyncio.CancelledError):
             await self.reader
-        # Terminate the entire backend group, including children of wrappers.
-        with suppress(ProcessLookupError):
-            os.killpg(self.process.pid, signal.SIGTERM)
+
+        async def discard_output():
+            while await self.process.stdout.read(65536):
+                pass
+
+        # Keep draining: asyncio's process.wait() can otherwise hang when a
+        # noisy backend fills the stdout buffer before it is terminated.
+        draining = asyncio.create_task(discard_output())
+        self.process.stdin.close()
         try:
-            await asyncio.wait_for(self.process.wait(), 3)
-        except TimeoutError:
+            with suppress(ProcessLookupError):
+                os.killpg(self.process.pid, signal.SIGTERM)
+            with suppress(TimeoutError):
+                await asyncio.wait_for(self.process.wait(), 3)
+        finally:
+            # Also reap descendants if the group leader already exited.
             with suppress(ProcessLookupError):
                 os.killpg(self.process.pid, signal.SIGKILL)
             await self.process.wait()
+            draining.cancel()
+            with suppress(asyncio.CancelledError):
+                await draining
 
 
 class Host:
@@ -57,6 +70,7 @@ class Host:
         self.command = command
         self.sessions = {}
         self.tasks = set()
+        self.cleanups = set()
         self.open_lock = asyncio.Lock()
         self.stopping = False
 
@@ -64,6 +78,13 @@ class Host:
         task = asyncio.create_task(coroutine)
         self.tasks.add(task)
         task.add_done_callback(self.tasks.discard)
+
+    def close_session(self, identifier):
+        session = self.sessions.pop(identifier)
+        task = asyncio.create_task(session.close())
+        self.cleanups.add(task)
+        task.add_done_callback(self.cleanups.discard)
+        return task
 
     def handle(self, message):
         if (
@@ -76,8 +97,7 @@ class Host:
             if name.startswith(":") and not new:
                 for identifier, session in list(self.sessions.items()):
                     if session.owner == name:
-                        self.sessions.pop(identifier)
-                        self.task(session.close())
+                        self.close_session(identifier)
             return
         if (
             message.message_type != MessageType.METHOD_CALL
@@ -138,8 +158,8 @@ class Host:
                     )
                 )
                 if not owner.body[0]:
-                    if self.sessions.pop(identifier, None) is not None:
-                        await session.close()
+                    if identifier in self.sessions:
+                        await asyncio.shield(self.close_session(identifier))
                     raise EOFError
                 return "s", [identifier]
         signatures = {"Send": "ss", "Receive": "s", "Close": "s"}
@@ -150,7 +170,7 @@ class Host:
             raise ValueError("Session belongs to another connection")
         if member == "Send":
             payload = body[1].encode("utf-8")
-            if not payload or len(payload) > MAX_MESSAGE_BYTES or b"\n" in payload:
+            if not payload or len(payload) + 1 > MAX_MESSAGE_BYTES or b"\n" in payload:
                 raise ValueError("Invalid stdio frame")
             async with session.send_lock:
                 session.process.stdin.write(payload + b"\n")
@@ -169,8 +189,7 @@ class Host:
                     session.messages.put_nowait(None)
                     raise EOFError
                 return "s", [payload]
-        self.sessions.pop(body[0])
-        await session.close()
+        await asyncio.shield(self.close_session(body[0]))
         return "", []
 
     async def run(self, name):
@@ -211,10 +230,13 @@ class Host:
                 stopped.cancel()
         finally:
             self.stopping = True
+            self.bus.remove_message_handler(self.handle)
             for task in list(self.tasks):
                 task.cancel()
             await asyncio.gather(*self.tasks, return_exceptions=True)
-            await asyncio.gather(*(s.close() for s in self.sessions.values()))
+            for identifier in list(self.sessions):
+                self.close_session(identifier)
+            await asyncio.gather(*self.cleanups)
             self.bus.disconnect()
 
 
