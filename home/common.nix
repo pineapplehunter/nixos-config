@@ -184,6 +184,17 @@ in
         };
       };
 
+      services.mcp-dbus.servers.notifications = lib.mkIf isLinux {
+        busName = "io.github.pineapplehunter.McpNotify1";
+        command = [
+          (lib.getExe' pkgs.local-notify "local-notify-mcp")
+          "--webhook-file"
+          config.sops.secrets.pueue-discord-webhook.path
+        ];
+        requires = [ "sops-nix.service" ];
+      };
+
+      # Kept for Pueue and other non-MCP callers.
       systemd.user.services.local-notify = lib.mkIf isLinux {
         Unit.Description = "Send local notifications to Discord";
         Service = {

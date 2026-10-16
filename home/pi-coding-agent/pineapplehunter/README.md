@@ -9,7 +9,6 @@ package.json
 extensions/
   nix-bash.ts
   nix-search.ts
-  notify.ts
   open-file/index.ts        # with OPEN_FILE.md
   pueue-tool/index.ts       # with DESIGN.md
 skills/                    # complete personal skill directories
@@ -36,9 +35,20 @@ no npm dependencies or second copies of Pi are bundled. Resolve helper paths
 relative to the loaded skill's `SKILL.md`, not an assumed home resource path.
 
 The parent `default.nix` still builds Python executables, sandbox services, and
-Pueue configuration from these sources. `/open-file`, notifications, and automatic
-Pueue turns require the corresponding sandbox/host runtime; installing resources
-alone does not provide those services.
+Pueue configuration from these sources. `/open-file` and automatic Pueue turns
+require the corresponding sandbox/host runtime; installing resources alone does
+not provide those services.
+
+Notifications and Radicale are normal host-side MCP servers, not Pi extensions.
+The shared [MCP D-Bus bridge](../../../overlay/packages/mcp-dbus-proxy/README.md)
+keeps credentials on the host. All enabled `services.mcp-dbus.servers` endpoints
+are granted exact sandbox bus methods and merged into both Pi profiles by the
+parent's `update-mcp.py`, preserving unrelated MCP entries. Activation treats
+these agent-writable paths as untrusted: symlink files/directories are rejected
+and updates use directory-relative atomic replacement. Every tool has direct
+exposure, without an agent-side approval gate. Application authorization belongs
+to the host backend. Restart Pi after Home Manager activation to replace old
+sandbox rules. The notification tool is now `mcp__notifications__notify`.
 
 The parent's `update-settings.py` replaces the managed package list while
 preserving unrelated Pi settings. Home Manager's activation script references

@@ -49,7 +49,15 @@ in
           (
             builtins.replaceStrings
               [ "MCP_BUS_NAMES = ()  # configured by Home Manager" ]
-              [ "MCP_BUS_NAMES = ${builtins.toJSON (map (server: server.busName) (lib.attrValues mcpServers))}" ]
+              [
+                (
+                  "MCP_BUS_NAMES = [\n"
+                  + lib.concatMapStrings (server: "    ${builtins.toJSON server.busName},\n") (
+                    lib.attrValues mcpServers
+                  )
+                  + "]"
+                )
+              ]
               (lib.readFile ./pineapplehunter/wrapper/wrapping.py)
           );
 
@@ -89,7 +97,6 @@ in
           pkgs.gnugrep
           pkgs.gnused
           pkgs.helix
-          pkgs.local-notify
           pkgs.nix
           pkgs.nix-search-cli
           pkgs.nodejs

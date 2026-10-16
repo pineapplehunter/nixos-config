@@ -284,11 +284,6 @@ def main() -> int:
             f"--fd={lifetime_child.fileno()}",
             "--filter",
             (
-                "--call=io.github.pineapplehunter.LocalNotify1="
-                "io.github.pineapplehunter.LocalNotify1.Notify@"
-                "/io/github/pineapplehunter/LocalNotify1"
-            ),
-            (
                 "--call=io.github.pineapplehunter.LocalClipboard1="
                 "io.github.pineapplehunter.LocalClipboard1.Copy@"
                 "/io/github/pineapplehunter/LocalClipboard1"
