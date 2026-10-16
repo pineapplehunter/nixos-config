@@ -12,6 +12,7 @@
       servers = lib.filterAttrs (_: server: server.enable) cfg.servers;
     in
     {
+      key = "nixos-config/home/mcp-dbus";
       options.services.mcp-dbus.servers = lib.mkOption {
         default = { };
         description = "Host MCP stdio servers exposed over the session bus. Commands and credentials are host-only.";

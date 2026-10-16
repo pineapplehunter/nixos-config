@@ -5,7 +5,7 @@ import json
 import os
 import sys
 import tempfile
-from dataclasses import replace
+from contextlib import suppress
 from pathlib import Path
 from uuid import uuid4
 
@@ -13,35 +13,49 @@ from dbus_next import Message, MessageType
 from dbus_next.aio import MessageBus
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from radicale_agent.config import Config
-from radicale_agent.daemon import CalendarInterface
-from radicale_agent.service import CalendarService
-from radicale_agent.transport import BUS_NAME, OBJECT_PATH, read
-from support import WritableBackend, config
+from mcp_dbus_proxy import INTERFACE, OBJECT_PATH
+from mcp_dbus_proxy.host import Host
+
+BUS_NAME = "io.github.pineapplehunter.McpRadicaleTest1"
 
 
 async def main():
     live = os.environ.get("RADICALE_TRANSPORT_LIVE") == "1"
     if live:
         assert os.environ.get("RADICALE_LIVE_WRITE_TEST") == "1"
-        service = CalendarService(Config.from_env())
-        assert service.config.writes_enabled
-    else:
-        service = CalendarService(
-            replace(config(), writes_enabled=True), WritableBackend()
-        )
-    bus = await MessageBus().connect()
-    bus.export(OBJECT_PATH, CalendarInterface(service))
-    await bus.request_name(BUS_NAME)
+    host = Host([sys.executable, str(Path(__file__).with_name("host_backend.py"))])
+    serving = asyncio.create_task(host.run(BUS_NAME))
+    async with asyncio.timeout(5):
+        while not hasattr(host, "bus") or not host.bus.unique_name:
+            await asyncio.sleep(0.01)
+        probe = await MessageBus().connect()
+        while True:
+            reply = await probe.call(
+                Message(
+                    destination="org.freedesktop.DBus",
+                    path="/org/freedesktop/DBus",
+                    interface="org.freedesktop.DBus",
+                    member="NameHasOwner",
+                    signature="s",
+                    body=[BUS_NAME],
+                )
+            )
+            if reply.body[0]:
+                break
+            await asyncio.sleep(0.01)
+        probe.disconnect()
     with tempfile.TemporaryDirectory(prefix="radicale-proxy-") as directory:
+        os.environ["XDG_RUNTIME_DIR"] = directory
         socket = Path(directory) / "bus"
         proxy = await asyncio.create_subprocess_exec(
             "xdg-dbus-proxy",
             os.environ["DBUS_SESSION_BUS_ADDRESS"],
             str(socket),
             "--filter",
-            f"--call={BUS_NAME}={BUS_NAME}.Read@{OBJECT_PATH}",
-            f"--call={BUS_NAME}={BUS_NAME}.Write@{OBJECT_PATH}",
+            *(
+                f"--call={BUS_NAME}={INTERFACE}.{method}@{OBJECT_PATH}"
+                for method in ["Open", "Send", "Receive", "Close"]
+            ),
         )
         try:
             async with asyncio.timeout(5):
@@ -53,7 +67,9 @@ async def main():
         finally:
             proxy.terminate()
             await proxy.wait()
-            bus.disconnect()
+            serving.cancel()
+            with suppress(asyncio.CancelledError):
+                await serving
 
 
 async def verify_tools(live):
@@ -68,11 +84,6 @@ async def verify_tools(live):
             )
         )
         assert denied.message_type == MessageType.ERROR
-        assert (await read("list_collections", {}))["data"]["items"][0]["id"] == "Agent"
-        assert (await read("complete_task", {}))["error"]["code"] == "READ_ONLY"
-        assert not (await read("get_event", {"collection_id": "private", "uid": "x"}))[
-            "ok"
-        ]
         # No credentials or even their file path reach the MCP subprocess.
         env = {
             k: v
@@ -80,7 +91,9 @@ async def verify_tools(live):
             if not k.startswith(("CALDAV_", "APP_TIMEZONE"))
         }
         params = StdioServerParameters(
-            command=sys.executable, args=["-m", "radicale_agent.server"], env=env
+            command=sys.executable,
+            args=["-m", "mcp_dbus_proxy.client", "--service", BUS_NAME],
+            env=env,
         )
         async with stdio_client(params) as (reader, writer):  # noqa: SIM117 - SDK lifetimes
             async with ClientSession(reader, writer) as session:

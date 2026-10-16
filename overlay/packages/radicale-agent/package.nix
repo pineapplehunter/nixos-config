@@ -4,6 +4,7 @@
   dbus,
   xdg-dbus-proxy,
   nss_wrapper,
+  mcp-dbus-proxy,
 }:
 
 python3Packages.buildPythonApplication {
@@ -32,13 +33,14 @@ python3Packages.buildPythonApplication {
   dependencies = with python3Packages; [
     caldav
     icalendar
-    dbus-next
     mcp
     pydantic
   ];
   nativeCheckInputs = with python3Packages; [
     pytestCheckHook
     pytest-asyncio
+    dbus-next
+    mcp-dbus-proxy
     dbus
     xdg-dbus-proxy
     nss_wrapper
@@ -51,7 +53,7 @@ python3Packages.buildPythonApplication {
   ];
 
   meta = {
-    description = "Agent-collection CalDAV D-Bus broker and MCP facade";
+    description = "Standalone MCP server restricted to the Agent CalDAV collection";
     license = lib.licenses.gpl3Only;
     platforms = lib.platforms.linux;
     mainProgram = "radicale-agent-mcp";

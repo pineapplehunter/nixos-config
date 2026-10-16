@@ -774,6 +774,17 @@ wheels = [
 ]
 
 [[package]]
+name = "mcp-dbus-proxy"
+version = "0.1.0"
+source = { editable = "../mcp-dbus-proxy" }
+dependencies = [
+    { name = "dbus-next" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "dbus-next", specifier = ">=0.2.3" }]
+
+[[package]]
 name = "niquests"
 version = "3.21.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1214,7 +1225,6 @@ version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "caldav" },
-    { name = "dbus-next" },
     { name = "icalendar" },
     { name = "mcp" },
     { name = "pydantic" },
@@ -1222,6 +1232,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "mcp-dbus-proxy" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
 ]
@@ -1229,7 +1240,6 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "caldav", specifier = "==3.3.1" },
-    { name = "dbus-next", specifier = "==0.2.3" },
     { name = "icalendar", specifier = "==7.2.2" },
     { name = "mcp", specifier = "==1.29.0" },
     { name = "pydantic", specifier = ">=2.11,<3" },
@@ -1237,6 +1247,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "mcp-dbus-proxy", editable = "../mcp-dbus-proxy" },
     { name = "pytest", specifier = "==9.1.1" },
     { name = "pytest-asyncio", specifier = ">=1,<2" },
 ]

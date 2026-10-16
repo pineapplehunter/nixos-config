@@ -30,7 +30,7 @@ class CalendarService:
             ):
                 raise PublicError(
                     "READ_ONLY",
-                    "Writes require host opt-in and the dedicated Write method.",
+                    "Writes require host opt-in and an authorized mutation operation.",
                 )
             if write and action not in WRITE_REQUESTS:
                 raise PublicError("INVALID_INPUT", "Unknown write operation.")

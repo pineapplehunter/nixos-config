@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "radicale-agent": {
-      "command": "radicale-agent-mcp",
-      "args": []
+      "command": "mcp-dbus-proxy",
+      "args": ["--service", "io.github.pineapplehunter.McpRadicale1"]
     }
   }
 }

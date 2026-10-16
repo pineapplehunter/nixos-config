@@ -7,19 +7,30 @@ from ctypes.util import find_library
 from pathlib import Path
 
 import pytest
-from dbus_next.errors import AuthError
-from radicale_agent import transport
+from radicale_agent import server
 
 
-async def test_bus_auth_failure_is_sanitized(monkeypatch):
-    class DeniedBus:
-        async def connect(self):
-            raise AuthError("private bus failure details")
+async def test_host_config_failure_is_sanitized(monkeypatch, tmp_path):
+    def denied():
+        raise RuntimeError("private credential details")
 
-    monkeypatch.setattr(transport, "MessageBus", DeniedBus)
-    result = await transport.read("list_collections", {})
-    assert result["error"]["code"] == "BROKER_UNAVAILABLE"
-    assert "private bus" not in str(result)
+    monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path))
+    monkeypatch.setattr(server, "get_service", denied)
+    result = await server.read("list_collections", {})
+    assert result["error"]["code"] == "INTERNAL_ERROR"
+    assert "private credential" not in str(result)
+
+
+async def test_sessions_share_operation_lock(monkeypatch, tmp_path):
+    import fcntl
+
+    monkeypatch.setenv("XDG_RUNTIME_DIR", str(tmp_path))
+    directory = tmp_path / "radicale-agent"
+    directory.mkdir()
+    with (directory / "operation.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        result = await server.read("list_collections", {})
+    assert result["error"]["code"] == "BUSY"
 
 
 def test_private_dbus_and_mcp_stdio_roundtrip(tmp_path):

@@ -1,9 +1,27 @@
-{ inputs, ... }:
+{ inputs, config, ... }:
+let
+  mcpModule = config.flake.homeModules.mcp-dbus;
+in
 {
   flake.homeModules.pi-coding-agent =
-    { pkgs, lib, ... }:
+    {
+      pkgs,
+      lib,
+      config,
+      ...
+    }:
     let
       isLinux = pkgs.stdenv.hostPlatform.isLinux;
+      mcpServers = lib.filterAttrs (_: server: server.enable) config.services.mcp-dbus.servers;
+      mcpRegistrations = lib.mapAttrs (_: server: {
+        command = lib.getExe pkgs.mcp-dbus-proxy;
+        args = [
+          "--service"
+          server.busName
+        ];
+        exposure = "direct";
+        timeout = 90;
+      }) mcpServers;
       skillPython = pkgs.python3.withPackages (pythonPackages: [ pythonPackages.pyyaml ]);
 
       localPiPackages = import ./packages.nix { inherit pkgs lib inputs; };
@@ -21,9 +39,19 @@
         lib.readFile ./update-settings.py
       );
 
-      rawWrapper = pkgs.writers.writePython3Bin "bubble-wrapper" {
-        libraries = [ pkgs.python3Packages.pygobject3 ];
-      } (lib.readFile ./pineapplehunter/wrapper/wrapping.py);
+      updateMcpSettings = pkgs.writers.writePython3Bin "update-pi-mcp" { } (lib.readFile ./update-mcp.py);
+
+      rawWrapper =
+        pkgs.writers.writePython3Bin "bubble-wrapper"
+          {
+            libraries = [ pkgs.python3Packages.pygobject3 ];
+          }
+          (
+            builtins.replaceStrings
+              [ "MCP_BUS_NAMES = ()  # configured by Home Manager" ]
+              [ "MCP_BUS_NAMES = ${builtins.toJSON (map (server: server.busName) (lib.attrValues mcpServers))}" ]
+              (lib.readFile ./pineapplehunter/wrapper/wrapping.py)
+          );
 
       clipboardClient = pkgs.writers.writePython3Bin "wl-copy" {
         libraries = [ pkgs.python3Packages.pygobject3 ];
@@ -70,7 +98,7 @@
           pkgs.pi-coding-agent
           pkgs.pueue
           pkgs.ripgrep
-          pkgs.radicale-agent
+          pkgs.mcp-dbus-proxy
           clipboardClient
           skillPython
           portalClients
@@ -150,55 +178,66 @@
         '';
       };
     in
-    lib.mkIf isLinux {
-      home.packages = [
-        piCodingAgentWrapped
-        subagent
-        skillPython
-        portalClients
-      ];
+    {
+      imports = [ mcpModule ];
+      config = lib.mkIf isLinux {
+        home.packages = [
+          piCodingAgentWrapped
+          subagent
+          skillPython
+          portalClients
+        ];
 
-      home.activation.piPackages = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        ${lib.getExe updatePiSettings} \
-          "$HOME/.pi/agent/settings.json" \
-          ${lib.escapeShellArgs piPackages}
-      '';
+        home.activation.piPackages = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          ${lib.getExe updatePiSettings} \
+            "$HOME/.pi/agent/settings.json" \
+            ${lib.escapeShellArgs piPackages}
+        '';
 
-      systemd.user.services.pi-clipboard = {
-        Unit = {
-          Description = "Copy text from Pi to the host clipboard";
-          After = [ "graphical-session.target" ];
+        home.activation.piMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          for profile in agent agent-work; do
+            ${lib.getExe updateMcpSettings} \
+              "$HOME/.pi/$profile/mcp.json" \
+              ${lib.escapeShellArg (builtins.toJSON mcpRegistrations)}
+          done
+        '';
+
+        systemd.user.services.pi-clipboard = {
+          Unit = {
+            Description = "Copy text from Pi to the host clipboard";
+            After = [ "graphical-session.target" ];
+          };
+          Service = {
+            Type = "dbus";
+            BusName = "io.github.pineapplehunter.LocalClipboard1";
+            ExecStart = "${lib.getExe clipboardDaemon} --wl-copy ${lib.getExe' pkgs.wl-clipboard "wl-copy"}";
+          };
         };
-        Service = {
-          Type = "dbus";
-          BusName = "io.github.pineapplehunter.LocalClipboard1";
-          ExecStart = "${lib.getExe clipboardDaemon} --wl-copy ${lib.getExe' pkgs.wl-clipboard "wl-copy"}";
+
+        xdg.dataFile."dbus-1/services/io.github.pineapplehunter.LocalClipboard1.service" = {
+          text = ''
+            [D-BUS Service]
+            Name=io.github.pineapplehunter.LocalClipboard1
+            Exec=${lib.getExe clipboardDaemon} --wl-copy ${lib.getExe' pkgs.wl-clipboard "wl-copy"}
+            SystemdService=pi-clipboard.service
+          '';
         };
-      };
 
-      xdg.dataFile."dbus-1/services/io.github.pineapplehunter.LocalClipboard1.service" = {
-        text = ''
-          [D-BUS Service]
-          Name=io.github.pineapplehunter.LocalClipboard1
-          Exec=${lib.getExe clipboardDaemon} --wl-copy ${lib.getExe' pkgs.wl-clipboard "wl-copy"}
-          SystemdService=pi-clipboard.service
-        '';
-      };
-
-      home.file = {
-        ".pi/agent/AGENTS.md".text = ''
-          Prefer shallow clones in /tmp over repeated remote searches of public repositories.
-          If a file or tool is missing, see skill `sandbox-info`.
-          Nix tooling is available; use `nix develop` or `nix shell` for project tools.
-        '';
-        ".local/share/applications/io.github.pineapplehunter.Pi.desktop".text = ''
-          [Desktop Entry]
-          Type=Application
-          Name=Pi Coding Agent
-          Exec=pi %u
-          NoDisplay=true
-          X-Flatpak=io.github.pineapplehunter.Pi
-        '';
+        home.file = {
+          ".pi/agent/AGENTS.md".text = ''
+            Prefer shallow clones in /tmp over repeated remote searches of public repositories.
+            If a file or tool is missing, see skill `sandbox-info`.
+            Nix tooling is available; use `nix develop` or `nix shell` for project tools.
+          '';
+          ".local/share/applications/io.github.pineapplehunter.Pi.desktop".text = ''
+            [Desktop Entry]
+            Type=Application
+            Name=Pi Coding Agent
+            Exec=pi %u
+            NoDisplay=true
+            X-Flatpak=io.github.pineapplehunter.Pi
+          '';
+        };
       };
     };
 }

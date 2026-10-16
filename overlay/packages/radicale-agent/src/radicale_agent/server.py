@@ -1,10 +1,18 @@
-"""Credential-free MCP stdio facade; authorization lives on the host."""
+"""Standalone host MCP server; credentials and authorization stay here."""
 
+import asyncio
+import fcntl
+import json
+import os
+from functools import cache
+from pathlib import Path
 from typing import Any, Literal
 
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
 
+from .config import Config
+from .errors import PublicError, failure
 from .models import (
     UID,
     Description,
@@ -17,7 +25,44 @@ from .models import (
     Timestamp,
     Title,
 )
-from .transport import read, write
+from .service import CalendarService
+
+
+@cache
+def get_service():
+    return CalendarService(Config.from_env())
+
+
+def invoke(action: str, arguments: dict, *, write: bool) -> dict:
+    # Serialize across all stdio sessions. The worker owns the lock until the
+    # operation really finishes, even if its MCP coroutine is cancelled.
+    try:
+        runtime = Path(os.environ.get("XDG_RUNTIME_DIR", str(Path.home() / ".cache")))
+        directory = runtime / "radicale-agent"
+        directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+        with (directory / "operation.lock").open("a") as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                return failure(
+                    "BUSY", "Another calendar operation is running; retry shortly."
+                )
+            return get_service().call(action, json.dumps(arguments), write=write)
+    except PublicError as error:
+        return failure(error.code, error.message)
+    except Exception:  # noqa: BLE001 - never expose configuration or credentials
+        return failure(
+            "INTERNAL_ERROR", "Check the host calendar service configuration."
+        )
+
+
+async def read(action: str, arguments: dict) -> dict:
+    return await asyncio.to_thread(invoke, action, arguments, write=False)
+
+
+async def write(action: str, arguments: dict) -> dict:
+    return await asyncio.to_thread(invoke, action, arguments, write=True)
+
 
 mcp = FastMCP(
     "Radicale Agent collection",

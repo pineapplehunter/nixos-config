@@ -23,6 +23,7 @@ from gi.repository import Gio, GLib  # noqa: E402
 APP_ID = "io.github.pineapplehunter.Pi"
 PORTAL = "org.freedesktop.portal.Desktop"
 PORTAL_PATH = "/org/freedesktop/portal/desktop"
+MCP_BUS_NAMES = ()  # configured by Home Manager
 
 
 def fail(message: str) -> NoReturn:
@@ -292,15 +293,11 @@ def main() -> int:
                 "io.github.pineapplehunter.LocalClipboard1.Copy@"
                 "/io/github/pineapplehunter/LocalClipboard1"
             ),
-            (
-                "--call=io.github.pineapplehunter.Radicale1="
-                "io.github.pineapplehunter.Radicale1.Read@"
-                "/io/github/pineapplehunter/Radicale1"
-            ),
-            (
-                "--call=io.github.pineapplehunter.Radicale1="
-                "io.github.pineapplehunter.Radicale1.Write@"
-                "/io/github/pineapplehunter/Radicale1"
+            *(
+                f"--call={name}=io.github.pineapplehunter.Mcp1.{method}"
+                "@/io/github/pineapplehunter/Mcp1"
+                for name in MCP_BUS_NAMES
+                for method in ("Open", "Send", "Receive", "Close")
             ),
             (
                 f"--call={PORTAL}=org.freedesktop.portal.FileChooser"

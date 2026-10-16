@@ -1,4 +1,9 @@
-# Radicale integration: sandbox-aware implementation plan
+# Radicale integration: original sandbox-aware implementation plan
+
+> Historical record: the application-specific broker/facade architecture below
+> has been replaced by a standalone host MCP server behind the shared
+> [MCP D-Bus bridge](../mcp-dbus-proxy/README.md). See [README.md](README.md) for
+> current deployment, policy, and testing instructions.
 
 Adapted from the supplied `RADICALE_AGENT_IMPLEMENTATION_GUIDE.md`, then updated
 for the user's explicit Agent-only, write-support and file-credentials requests.

@@ -1,4 +1,4 @@
-"""Host-only configuration. No credential file is read by the MCP facade."""
+"""Host-only configuration read by the standalone MCP backend."""
 
 import json
 import os
