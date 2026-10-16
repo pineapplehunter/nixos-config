@@ -29,6 +29,7 @@ let
       username = "shogo";
       modules = [
         mods.minimal
+        mods.radicale-agent-common
         mods.shogo
       ];
     }
@@ -80,6 +81,7 @@ in
     ./minimal.nix
     ./nixos-common.nix
     ./pi-coding-agent/default.nix
+    ./radicale-agent.nix
     ./packages-minimal.nix
     ./packages.nix
     ./pineapplehunter.nix

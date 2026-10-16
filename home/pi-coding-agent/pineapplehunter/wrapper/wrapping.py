@@ -293,6 +293,16 @@ def main() -> int:
                 "/io/github/pineapplehunter/LocalClipboard1"
             ),
             (
+                "--call=io.github.pineapplehunter.Radicale1="
+                "io.github.pineapplehunter.Radicale1.Read@"
+                "/io/github/pineapplehunter/Radicale1"
+            ),
+            (
+                "--call=io.github.pineapplehunter.Radicale1="
+                "io.github.pineapplehunter.Radicale1.Write@"
+                "/io/github/pineapplehunter/Radicale1"
+            ),
+            (
                 f"--call={PORTAL}=org.freedesktop.portal.FileChooser"
                 f".OpenFile@{PORTAL_PATH}"
             ),

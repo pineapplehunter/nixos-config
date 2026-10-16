@@ -70,6 +70,7 @@
           pkgs.pi-coding-agent
           pkgs.pueue
           pkgs.ripgrep
+          pkgs.radicale-agent
           clipboardClient
           skillPython
           portalClients

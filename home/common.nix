@@ -3,6 +3,29 @@ let
   flake-config = config;
 in
 {
+  # Shared separately so headless/minimal homes get the broker without desktops.
+  flake.homeModules.radicale-agent-common =
+    {
+      config,
+      pkgs,
+      lib,
+      ...
+    }:
+    {
+      imports = [ flake-config.flake.homeModules.radicale-agent ];
+      services.radicale-agent = {
+        enable = lib.mkDefault pkgs.stdenv.hostPlatform.isLinux;
+        url = lib.mkDefault "https://radicale.s.ihavenojob.work/";
+        collectionUrl = lib.mkDefault "https://radicale.s.ihavenojob.work/shogo/1de778d2-42a7-1a56-37ca-89d5f0215509/";
+        timeZone = lib.mkDefault "Asia/Tokyo";
+        enableWrites = lib.mkDefault true;
+      };
+      sops = {
+        defaultSopsFile = lib.mkDefault flake-config.sopsFile.home;
+        age.sshKeyPaths = lib.mkDefault [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
+      };
+    };
+
   flake.homeModules.common =
     {
       pkgs,
@@ -36,6 +59,7 @@ in
           mods.julia
           mods.minimal
           mods.pi-coding-agent
+          mods.radicale-agent-common
           mods.packages
           mods.shell-config
           mods.ssh

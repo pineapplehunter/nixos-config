@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "radicale-agent": {
+      "command": "radicale-agent-mcp",
+      "args": []
+    }
+  }
+}

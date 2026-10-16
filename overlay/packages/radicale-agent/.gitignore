@@ -1,0 +1,7 @@
+.venv/
+.env
+credentials.json
+__pycache__/
+.pytest_cache/
+*.egg-info/
+dist/
