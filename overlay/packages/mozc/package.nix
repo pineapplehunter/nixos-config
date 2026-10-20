@@ -4,6 +4,8 @@
   qt6,
   pkg-config,
   bazel_9,
+  glib,
+  ibus,
   xdg-utils,
   python3,
   libglvnd,
@@ -16,8 +18,10 @@
   jawiki-all-titles-in-ns0,
   writers,
 }:
-# Provide the newer, split Mozc server/tool package while nixpkgs still ships 2.x.
-# Associated PR: https://github.com/NixOS/nixpkgs/pull/531687.
+# Follow the contents of nixpkgs PR #531687, not upstream tags/HEAD:
+# https://github.com/NixOS/nixpkgs/pull/531687.
+# Synced at 326751a0092a1f018ce0f1c4d02f59d5fd807772, including untagged source
+# revisions, vendor hashes, and packaging changes.
 # Drop this when the pinned nixpkgs provides equivalent split packages, including
 # UT-dictionary support and a sandbox-compatible Bazel/Python build.
 # Backport the pinned-input dictionary merger from PR #570751 without reverting
@@ -29,13 +33,13 @@ let
   merge-dictionaries = writers.writePython3 "merge-mozc-ut-dictionaries" { } ./merge-dictionaries.py;
 
   pname = "mozc-server";
-  version = "3.34.6239";
+  version = "3.35.6354";
 
   src = fetchFromGitHub {
     owner = "google";
     repo = "mozc";
-    tag = version;
-    hash = "sha256-m7hxJafQVXIaV3l6s5Xix8liXf4NN18Jwv0CzTrdYqM=";
+    rev = "0136c35782536cb43d710575c311cd4185982738";
+    hash = "sha256-T7+DhHAH07ZY/AzQkth75A+Gy5oarMHKtG3l3XPYu6s=";
     fetchSubmodules = true;
   };
 
@@ -177,10 +181,18 @@ let
       src
       version
       nativeBuildInputs
-      buildInputs
-      bazelArgs
       ;
-    hash = "sha256-lphaGnHOPFHAZDyrIH0gzBom7FQwI/Tai0bMRI6UbB8=";
+    # Shared superset for the server and IBus frontend, as in PR #531687.
+    buildInputs = buildInputs ++ [
+      glib
+      ibus
+    ];
+    bazelArgs = bazelArgs ++ [
+      "renderer/qt:mozc_renderer"
+      "unix/ibus:ibus_mozc"
+      "unix/emacs:mozc_emacs_helper"
+    ];
+    hash = "sha256-7qZhXZWxHqAxf6iv7yTX5m1Yjv4B5t4k7dxVJxl/5Q4=";
   };
 in
 stdenv.mkDerivation {

@@ -15,8 +15,8 @@
   copyDesktopItems,
   mozc,
 }:
-# Build the IBus frontend separately against the local Mozc server (including UT).
-# Associated PR: https://github.com/NixOS/nixpkgs/pull/531687.
+# Follow nixpkgs PR #531687 (not upstream tags/HEAD) for the split IBus frontend:
+# https://github.com/NixOS/nixpkgs/pull/531687.
 # Drop this with the local Mozc package once the pinned nixpkgs supplies an
 # equivalent split IBus frontend and its GNOME setup desktop entry.
 let
@@ -26,7 +26,7 @@ let
     src
     bazel
     bazelCommonArgs
-    mkVendorDeps
+    vendorDeps
     setupBazelVendor
     ;
 
@@ -59,18 +59,6 @@ let
     "renderer/qt:mozc_renderer"
     "unix/ibus:ibus_mozc"
   ];
-
-  vendorDeps = mkVendorDeps {
-    inherit
-      pname
-      src
-      version
-      nativeBuildInputs
-      buildInputs
-      bazelArgs
-      ;
-    hash = "sha256-Qbm923murIovTk0BZoEENLWT/OV2rGCI6haEhf08W0M=";
-  };
 in
 stdenv.mkDerivation {
   inherit
@@ -84,6 +72,8 @@ stdenv.mkDerivation {
   strictDeps = true;
   __structuredAttrs = true;
 
+  patches = [ ./renderer-path.patch ];
+
   env.USE_BAZEL_VERSION = bazel.version;
 
   postPatch = ''
@@ -94,6 +84,9 @@ stdenv.mkDerivation {
     substituteInPlace config.bzl \
       --replace-fail "/usr/lib/mozc" "${mozc}/lib/mozc" \
       --replace-fail "/usr" "$out"
+
+    substituteInPlace base/system_util.cc \
+      --subst-var-by renderer_dir "$out/lib/mozc"
   '';
 
   buildPhase = ''
