@@ -3,6 +3,7 @@
 import argparse
 import subprocess
 import sys
+import tempfile
 
 import gi
 
@@ -58,17 +59,30 @@ def main() -> int:
 
             try:
                 content.decode("utf-8")
-                subprocess.run(
-                    [
-                        args.wl_copy,
-                        "--type",
-                        "text/plain;charset=utf-8",
-                    ],
-                    input=content,
-                    check=True,
-                    stderr=subprocess.PIPE,
-                    timeout=4,
-                )
+                # wl-copy's background selection owner inherits stderr. A pipe
+                # would make communicate() wait for that owner to exit, even
+                # after the original process has set the clipboard.
+                with tempfile.TemporaryFile() as stderr:
+                    result = subprocess.run(
+                        [
+                            args.wl_copy,
+                            "--type",
+                            "text/plain;charset=utf-8",
+                        ],
+                        input=content,
+                        stderr=stderr,
+                        timeout=4,
+                    )
+                    if result.returncode:
+                        stderr.seek(0)
+                        detail = stderr.read().decode(
+                            "utf-8", errors="replace"
+                        ).strip()
+                        invocation.return_dbus_error(
+                            BUS_NAME + ".Error.CopyFailed",
+                            detail or "wl-copy failed",
+                        )
+                        return
                 invocation.return_value(None)
             except UnicodeDecodeError:
                 invocation.return_dbus_error(
@@ -78,12 +92,6 @@ def main() -> int:
             except subprocess.TimeoutExpired:
                 invocation.return_dbus_error(
                     BUS_NAME + ".Error.CopyFailed", "wl-copy timed out"
-                )
-            except subprocess.CalledProcessError as error:
-                detail = error.stderr.decode("utf-8", errors="replace").strip()
-                invocation.return_dbus_error(
-                    BUS_NAME + ".Error.CopyFailed",
-                    detail or "wl-copy failed",
                 )
 
         node_info = Gio.DBusNodeInfo.new_for_xml(INTROSPECTION_XML)
