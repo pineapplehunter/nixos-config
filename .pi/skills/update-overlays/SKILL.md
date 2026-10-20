@@ -38,13 +38,15 @@ You have to focus on the task given.
 ### Listing Agent
 
 Your task will be to list all the overlays.
-Exclude pinned flake inputs and local-only packages (such as `nixr`) from the listing.
+Exclude pinned flake inputs and local-only packages from the listing.
 This will later be used to spawn update agents.
 Give back a markdown list of names and relevant files.
 
 ### Update Agent
 
 Your task will be to update the given package in a file.
+
+Read and follow the package-specific tracking policy in the overlay Nix file's comments. When a PR is authoritative, compare its current contents, not just its status or title, including source revisions, hashes, and implementation changes. Preserve documented local integration requirements. Keep all package-specific notes and links in the overlay Nix file, not this skill or the README.
 
 Check for:
 - Upstream updates
