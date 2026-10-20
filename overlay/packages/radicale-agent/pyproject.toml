@@ -8,9 +8,9 @@ version = "0.2.0"
 description = "Standalone host MCP server for the authorized Agent CalDAV collection"
 requires-python = ">=3.11"
 dependencies = [
-  "caldav==3.3.1",
-  "icalendar==7.2.2",
-  "mcp==1.29.0",
+  "caldav>=3.3.1,<4",
+  "icalendar>=7.2.2,<8",
+  "mcp>=1.29.0,<2",
   "pydantic>=2.11,<3",
 ]
 
