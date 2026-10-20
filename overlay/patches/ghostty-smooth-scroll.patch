@@ -1,0 +1,181 @@
+diff --git a/src/Surface.zig b/src/Surface.zig
+index 4d66622..ef4ecb1 100644
+--- a/src/Surface.zig
++++ b/src/Surface.zig
+@@ -2785,6 +2785,8 @@ pub fn keyCallback(
+             try self.setSelection(null);
+         }
+ 
++        self.mouse.pending_scroll_y = 0;
++        self.renderer_state.pending_scroll_y = 0;
+         if (self.config.scroll_to_bottom.keystroke) self.io.terminal.scrollViewport(.bottom);
+ 
+         try self.queueRender();
+@@ -3429,13 +3431,12 @@ pub fn scrollCallback(
+             break :y .{};
+         }
+ 
+-        // We scroll by the number of rows in the offset and save the remainder
+-        const amount = poff / cell_size;
++        // Scroll whole rows and retain the fractional pixel offset.
++        const amount = @trunc(poff / cell_size);
+         assert(@abs(amount) >= 1);
+         self.mouse.pending_scroll_y = poff - (amount * cell_size);
+ 
+-        // Round towards zero.
+-        const delta: isize = @intFromFloat(@trunc(amount));
++        const delta: isize = @intFromFloat(amount);
+         assert(@abs(delta) >= 1);
+ 
+         break :y .{ .delta = delta };
+@@ -3455,10 +3456,10 @@ pub fn scrollCallback(
+             break :x .{};
+         }
+ 
+-        const amount = poff / cell_size;
++        const amount = @trunc(poff / cell_size);
+         assert(@abs(amount) >= 1);
+         self.mouse.pending_scroll_x = poff - (amount * cell_size);
+-        const delta: isize = @intFromFloat(@trunc(amount));
++        const delta: isize = @intFromFloat(amount);
+         assert(@abs(delta) >= 1);
+         break :x .{ .delta = delta };
+     };
+@@ -3469,6 +3470,16 @@ pub fn scrollCallback(
+         self.renderer_state.mutex.lock();
+         defer self.renderer_state.mutex.unlock();
+ 
++        // Publish only precision scrolling, under the renderer state lock.
++        // Application-owned scrolling must remain aligned to the cell grid.
++        self.renderer_state.pending_scroll_y = if (scroll_mods.precision and
++            !self.isMouseReporting() and
++            self.io.terminal.screens.active_key == .primary and
++            self.mouse.click_state[@intFromEnum(input.MouseButton.left)] != .press)
++            @floatCast(self.mouse.pending_scroll_y)
++        else
++            0;
++
+         // If we have an active mouse reporting mode, clear the selection.
+         // The selection can occur if the user uses the shift mod key to
+         // override mouse grabbing from the window.
+@@ -3880,6 +3891,17 @@ pub fn mouseButtonCallback(
+         defer self.queueRender() catch {};
+     }
+ 
++    // Snap back to the cell grid before hit-testing or starting a selection.
++    if (action == .press) {
++        self.renderer_state.mutex.lock();
++        defer self.renderer_state.mutex.unlock();
++        self.mouse.pending_scroll_y = 0;
++        if (self.renderer_state.pending_scroll_y != 0) {
++            self.renderer_state.pending_scroll_y = 0;
++            try self.queueRender();
++        }
++    }
++
+     // Always record our latest mouse state
+     self.mouse.click_state[@intCast(@intFromEnum(button))] = action;
+ 
+diff --git a/src/renderer/State.zig b/src/renderer/State.zig
+index e882ddc..061286e 100644
+--- a/src/renderer/State.zig
++++ b/src/renderer/State.zig
+@@ -30,6 +30,9 @@ preedit: ?Preedit = null,
+ /// need about the mouse.
+ mouse: Mouse = .{},
+ 
++/// Fractional vertical scroll offset in pixels, protected by mutex.
++pending_scroll_y: f32 = 0,
++
+ pub const Mouse = struct {
+     /// The point on the viewport where the mouse currently is. We use
+     /// viewport points to avoid the complexity of mapping the mouse to
+diff --git a/src/renderer/generic.zig b/src/renderer/generic.zig
+index ff632f6..f71e384 100644
+--- a/src/renderer/generic.zig
++++ b/src/renderer/generic.zig
+@@ -769,6 +769,7 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
+                     .cursor_text = @splat(0),
+                     .selection_background_color = @splat(0),
+                     .selection_foreground_color = @splat(0),
++                    .pending_scroll = @splat(0),
+                 },
+                 .bg_image_buffer = undefined,
+ 
+@@ -1158,6 +1159,7 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
+                 mouse: renderer.State.Mouse,
+                 preedit: ?renderer.State.Preedit,
+                 scrollbar: terminal.Scrollbar,
++                pending_scroll_y: f32,
+                 overlay_features: []const Overlay.Feature,
+             };
+ 
+@@ -1215,6 +1217,22 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
+                 // cross-thread mailbox message within the IO path.
+                 const scrollbar = state.terminal.screens.active.pages.scrollbar();
+ 
++                // Do not shift application-owned screens, selections, or scroll
++                // beyond either end of the scrollback. Read only locked state.
++                const pending_scroll_y: f32 = scroll: {
++                    const y = state.pending_scroll_y;
++                    if (state.terminal.screens.active_key != .primary or
++                        state.terminal.flags.mouse_event != .none or
++                        state.terminal.screens.active.selection != null or
++                        (y > 0 and scrollbar.offset == 0) or
++                        (y < 0 and scrollbar.offset + scrollbar.len >= scrollbar.total))
++                    {
++                        state.pending_scroll_y = 0;
++                        break :scroll 0;
++                    }
++                    break :scroll y;
++                };
++
+                 // Get our preedit state
+                 const preedit: ?renderer.State.Preedit = preedit: {
+                     const p = state.preedit orelse break :preedit null;
+@@ -1275,6 +1293,7 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
+                     .mouse = state.mouse,
+                     .preedit = preedit,
+                     .scrollbar = scrollbar,
++                    .pending_scroll_y = pending_scroll_y,
+                     .overlay_features = overlay_features,
+                 };
+             };
+@@ -1414,6 +1433,13 @@ pub fn Renderer(comptime GraphicsAPI: type) type {
+                     log.warn("error updating overlay images err={}", .{err});
+                 };
+ 
++                // Fractional scrolling changes the image even when no cells
++                // changed. Request a draw without continuous shader animation.
++                if (self.custom_shader_uniforms.pending_scroll[1] != critical.pending_scroll_y) {
++                    self.custom_shader_uniforms.pending_scroll = .{ 0, critical.pending_scroll_y };
++                    self.cells_rebuilt = true;
++                }
++
+                 // Update custom shader uniforms that depend on terminal state.
+                 self.updateCustomShaderUniformsFromState();
+             }
+diff --git a/src/renderer/shaders/shadertoy_prefix.glsl b/src/renderer/shaders/shadertoy_prefix.glsl
+index 4b6d091..2bf1d7d 100644
+--- a/src/renderer/shaders/shadertoy_prefix.glsl
++++ b/src/renderer/shaders/shadertoy_prefix.glsl
+@@ -28,6 +28,7 @@ layout(binding = 1, std140) uniform Globals {
+     uniform vec3  iCursorText;
+     uniform vec3  iSelectionForegroundColor;
+     uniform vec3  iSelectionBackgroundColor;
++    uniform vec2  iPendingScroll;
+ };
+ 
+ #define CURSORSTYLE_BLOCK        0
+diff --git a/src/renderer/shadertoy.zig b/src/renderer/shadertoy.zig
+index 556c282..d546aca 100644
+--- a/src/renderer/shadertoy.zig
++++ b/src/renderer/shadertoy.zig
+@@ -37,6 +37,7 @@ pub const Uniforms = extern struct {
+     cursor_text: [4]f32 align(16),
+     selection_background_color: [4]f32 align(16),
+     selection_foreground_color: [4]f32 align(16),
++    pending_scroll: [2]f32 align(8),
+ };
+ 
+ /// The target to load shaders for.

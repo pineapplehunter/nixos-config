@@ -33,6 +33,8 @@
               '';
             };
         settings = {
+          custom-shader = "${pkgs.ghostty}/share/ghostty/shaders/smooth-scroll.glsl";
+          custom-shader-animation = false;
           font-feature = "-dlig";
           font-size = 10;
           gtk-titlebar = false;
