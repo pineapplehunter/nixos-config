@@ -15,6 +15,7 @@ in
     ./ibus-engines.nix
     ./mozc-dictionaries.nix
     ./vtk.nix
+    ./hplip.nix
     ./rpi5.nix
   ];
 
@@ -38,6 +39,7 @@ in
       overlays.ibus-engines
       overlays.mozc-dictionaries
       overlays.vtk
+      overlays.hplip
       overlays.custom-packages
     ];
 
