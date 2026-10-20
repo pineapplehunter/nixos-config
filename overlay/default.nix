@@ -17,6 +17,7 @@ in
     ./mozc-dictionaries.nix
     ./hplip.nix
     ./urllib3-future.nix
+    ./niquests.nix
     ./rpi5.nix
   ];
 
@@ -42,6 +43,7 @@ in
       overlays.mozc-dictionaries
       overlays.hplip
       overlays.urllib3-future
+      overlays.niquests
       overlays.custom-packages
     ];
 
