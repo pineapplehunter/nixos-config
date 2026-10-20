@@ -4,10 +4,12 @@
     let
       inherit (prev) lib;
 
-      # Backport the UT dictionary updates from nixpkgs PR #570751, commit
-      # 4ae816f6146d107b85afd9906e62aefce83edd18. The new merger in our split Mozc
-      # package needs the upstream .txt.bz2 files rather than legacy tar archives.
+      # Follow the contents of nixpkgs PR #570751, not dictionary repository
+      # tags/HEAD. Synced at 4ae816f6146d107b85afd9906e62aefce83edd18.
+      # The split Mozc merger needs upstream .txt.bz2 files, not legacy tar archives.
       # https://github.com/NixOS/nixpkgs/pull/570751
+      # Keep the merger tied to the local Mozc package's pinned source. Do not
+      # override the legacy merger attribute or change Fcitx configuration here.
       # Remove these overrides once the pinned nixpkgs includes equivalent updates.
       dictionaries = {
         mozcdic-ut-alt-cannadic = {
