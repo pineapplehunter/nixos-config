@@ -15,7 +15,6 @@ in
     ./ghostty.nix
     ./ibus-engines.nix
     ./mozc-dictionaries.nix
-    ./hplip.nix
     ./linux-manual.nix
     ./urllib3-future.nix
     ./niquests.nix
@@ -42,7 +41,6 @@ in
       overlays.ghostty
       overlays.ibus-engines
       overlays.mozc-dictionaries
-      overlays.hplip
       overlays.linux-manual
       overlays.urllib3-future
       overlays.niquests
