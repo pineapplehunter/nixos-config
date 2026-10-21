@@ -19,8 +19,7 @@
     };
     nixos-hardware.url = "github:pineapplehunter/nixos-hardware";
     sops-nix = {
-      # Temporary until https://github.com/Mic92/sops-nix/pull/984 is merged.
-      url = "git+https://github.com/Mic92/sops-nix?ref=refs/pull/984/head";
+      url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nixgl = {
