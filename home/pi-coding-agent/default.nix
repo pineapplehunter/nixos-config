@@ -188,6 +188,7 @@ in
     {
       imports = [ mcpModule ];
       config = lib.mkIf isLinux {
+        programs.pi-coding-agent.package = piCodingAgentWrapped;
         home.packages = [
           piCodingAgentWrapped
           subagent

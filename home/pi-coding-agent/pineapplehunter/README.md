@@ -61,6 +61,22 @@ skill loading while explicitly retaining the pinned Pueue completion extension;
 package resolution, other settings, prompts, and themes are unchanged. See
 [the launcher documentation](tools/subagents/SUBAGENTS.md).
 
+## Run without a flake
+
+Use `pi @noflake` (or `pi-work @noflake`) to use the current directory as
+the sandbox root instead of searching ancestors for `flake.nix`. All other
+sandbox mounts and restrictions remain unchanged. Choose the directory carefully:
+its contents are writable inside the sandbox.
+
+Wrapper flags go before Pi arguments, for example:
+
+```sh
+pi @noflake --print "Summarize the files in this directory"
+```
+
+`@noflake` can be combined with `@debug-shell`, `@allow`, and `@allow-rw`.
+`@@` ends wrapper-flag parsing.
+
 ## Browse background work
 
 Use `/pueue-logs` to select a task or `/pueue-logs <id>` to open one directly.

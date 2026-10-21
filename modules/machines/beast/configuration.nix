@@ -196,6 +196,7 @@ in
 
       users.users.shogo = {
         isNormalUser = true;
+        linger = true;
         extraGroups = [
           "garage"
           "nix"
@@ -209,6 +210,7 @@ in
           imports = [
             home-mods.nixos-common
             home-mods.shogo
+            home-mods.soict-watch
           ];
         };
       };

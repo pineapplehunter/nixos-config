@@ -88,6 +88,7 @@ in
     ./pineapplehunter.nix
     ./shell-config/default.nix
     ./shogo.nix
+    ./soict-watch/default.nix
     ./ssh.nix
     ./zellij.nix
   ];

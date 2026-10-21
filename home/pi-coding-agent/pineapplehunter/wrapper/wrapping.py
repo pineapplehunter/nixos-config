@@ -143,8 +143,9 @@ def read_bwrap_info(
 
 def parse_wrapper_args(
     arguments: list[str], bwrap: list[str]
-) -> tuple[bool, list[str]]:
+) -> tuple[bool, bool, list[str]]:
     debug = False
+    noflake = False
     index = 0
     while index < len(arguments) and arguments[index].startswith("@"):
         argument = arguments[index]
@@ -153,6 +154,9 @@ def parse_wrapper_args(
             break
         if argument == "@debug-shell":
             debug = True
+            index += 1
+        elif argument == "@noflake":
+            noflake = True
             index += 1
         elif argument in {"@allow", "@allow-rw"}:
             if index + 1 >= len(arguments):
@@ -164,7 +168,7 @@ def parse_wrapper_args(
             index += 2
         else:
             fail(f"error while processing wrapping argument {argument}")
-    return debug, arguments[index:]
+    return debug, noflake, arguments[index:]
 
 
 def main() -> int:
@@ -184,7 +188,9 @@ def main() -> int:
 
     home = Path.home()
     runtime = Path(runtime_text)
-    root = project_root(marker)
+    extra_binds: list[str] = []
+    debug, noflake, arguments = parse_wrapper_args(sys.argv[1:], extra_binds)
+    root = Path.cwd() if noflake else project_root(marker)
     has_wayland_clipboard = bool(os.environ.get("WAYLAND_DISPLAY"))
     (home / ".pi").mkdir(parents=True, exist_ok=True)
     (home / ".cache/nix").mkdir(parents=True, exist_ok=True)
@@ -503,7 +509,7 @@ def main() -> int:
         os.chmod(sandbox_tmp, 0o700)
         add_bind(bwrap, "--bind", sandbox_tmp, sandbox_tmp)
         add_bind(bwrap, "--bind", sandbox_tmp, "/tmp")
-        debug, arguments = parse_wrapper_args(sys.argv[1:], bwrap)
+        bwrap.extend(extra_binds)
         info_read, info_write = os.pipe()
         block_read, block_write = os.pipe()
         bwrap.extend(
