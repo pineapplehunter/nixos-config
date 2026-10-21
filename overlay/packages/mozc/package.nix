@@ -9,10 +9,8 @@
   xdg-utils,
   python3,
   libglvnd,
-  libxcrypt-legacy,
   stdenv,
   writableTmpDirAsHomeHook,
-  lndir,
 
   dictionaries ? [ ],
   jawiki-all-titles-in-ns0,
@@ -20,8 +18,9 @@
 }:
 # Follow the contents of nixpkgs PR #531687, not upstream tags/HEAD:
 # https://github.com/NixOS/nixpkgs/pull/531687.
-# Synced at 326751a0092a1f018ce0f1c4d02f59d5fd807772, including untagged source
-# revisions, vendor hashes, and packaging changes.
+# Synced at 4fb2ac3db02e8380c5e5752c8751efab8a5362c5 (merged), including
+# untagged source revisions, vendor hashes, and sandbox=false build fixes.
+# Next check whether the root nixpkgs input includes the merged split packages.
 # Drop this when the pinned nixpkgs provides equivalent split packages, including
 # UT-dictionary support and a sandbox-compatible Bazel/Python build.
 # Backport the pinned-input dictionary merger from PR #570751 without reverting
@@ -45,7 +44,6 @@ let
 
   nativeBuildInputs = [
     bazel
-    lndir
     pkg-config
     python3
     qt6.wrapQtAppsHook
@@ -54,7 +52,6 @@ let
 
   buildInputs = [
     libglvnd
-    libxcrypt-legacy
     qt6.qtbase
   ];
 
@@ -129,6 +126,8 @@ let
         __structuredAttrs = true;
 
         env.USE_BAZEL_VERSION = bazel.version;
+        # Work around Bazel's username lookup with sandbox=false and auto-allocate-uids=true.
+        env.USER = "nixbld";
 
         buildPhase = ''
           runHook preBuild
@@ -208,6 +207,8 @@ stdenv.mkDerivation {
   __structuredAttrs = true;
 
   env.USE_BAZEL_VERSION = bazel.version;
+  # Work around Bazel's username lookup with sandbox=false and auto-allocate-uids=true.
+  env.USER = "nixbld";
 
   postPatch = ''
     cd src
@@ -229,7 +230,10 @@ stdenv.mkDerivation {
   buildPhase = ''
     runHook preBuild
 
-    bazel build --lockfile_mode=error --vendor_dir=vendor_dir ${lib.escapeShellArgs bazelArgs}
+    # --action_env=HOME forwards the hook's HOME into Bazel actions with sandbox=false and auto-allocate-uids=true.
+    bazel build \
+      --action_env=HOME \
+      --lockfile_mode=error --vendor_dir=vendor_dir ${lib.escapeShellArgs bazelArgs}
 
     runHook postBuild
   '';

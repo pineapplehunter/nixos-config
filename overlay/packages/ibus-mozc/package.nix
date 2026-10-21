@@ -6,17 +6,18 @@
   unzip,
   python3,
   libglvnd,
-  libxcrypt-legacy,
   glib,
   stdenv,
   writableTmpDirAsHomeHook,
-  lndir,
   makeDesktopItem,
   copyDesktopItems,
   mozc,
 }:
 # Follow nixpkgs PR #531687 (not upstream tags/HEAD) for the split IBus frontend:
 # https://github.com/NixOS/nixpkgs/pull/531687.
+# Synced at 4fb2ac3db02e8380c5e5752c8751efab8a5362c5 (merged), including
+# the sandbox=false/auto-allocate-uids username workaround.
+# Next check whether the root nixpkgs input includes the merged split packages.
 # Drop this with the local Mozc package once the pinned nixpkgs supplies an
 # equivalent split IBus frontend and its GNOME setup desktop entry.
 let
@@ -33,7 +34,6 @@ let
   nativeBuildInputs = [
     bazel
     copyDesktopItems
-    lndir
     pkg-config
     python3
     qt6.wrapQtAppsHook
@@ -45,7 +45,6 @@ let
     glib
     ibus
     libglvnd
-    libxcrypt-legacy
     qt6.qtbase
   ];
 
@@ -75,6 +74,8 @@ stdenv.mkDerivation {
   patches = [ ./renderer-path.patch ];
 
   env.USE_BAZEL_VERSION = bazel.version;
+  # Work around Bazel's username lookup with sandbox=false and auto-allocate-uids=true.
+  env.USER = "nixbld";
 
   postPatch = ''
     cd src
