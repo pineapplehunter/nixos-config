@@ -16,6 +16,7 @@ in
     ./ibus-engines.nix
     ./mozc-dictionaries.nix
     ./hplip.nix
+    ./linux-manual.nix
     ./urllib3-future.nix
     ./niquests.nix
     ./rpi5.nix
@@ -42,6 +43,7 @@ in
       overlays.ibus-engines
       overlays.mozc-dictionaries
       overlays.hplip
+      overlays.linux-manual
       overlays.urllib3-future
       overlays.niquests
       overlays.custom-packages
