@@ -23,7 +23,8 @@ Pi must already be authenticated as `shogo` on Beast (run `pi` and `/login` if
 needed), with a default provider/model configured. The timer uses the
 Bubblewrap/Pueue wrapper with `@noflake`, making the year's state directory the
 sandbox root without requiring a `flake.nix`. Its built-in `read`, `bash`, `edit`,
-and `write` tools are enabled; unrelated extensions, MCP, skills, project
+and `write` tools are enabled, along with the explicitly loaded
+`validate-report.ts` extension; unrelated extensions, MCP, skills, project
 resources, and context files are disabled. The normal wrapper mounts still
 apply, including writable Pi configuration/authentication and Nix cache
 access; this is not a dedicated-user sandbox. The webhook stays outside the
@@ -40,8 +41,41 @@ journalctl --user -u soict-watch.service -n 100
 
 The first complete crawl establishes a baseline without starting Pi or sending a
 message. Subsequent Markdown changes (including newly linked or removed pages)
-start a fresh noninteractive Pi session. Pi writes a Japanese report to
-`response.md`; the monitor JSON-encodes that file into a Slack `text` payload.
+start a fresh noninteractive Pi session. Pi writes a Japanese structured report
+to `response.json`, using the JSON Schema included in its prompt. The message
+shows 「ホームページに変更がありました。」 followed by one collapsed Slack
+`container` per category, with separate text sections for related changes and
+page URLs. Empty categories are omitted; report content is rendered as plain
+text rather than interpreting Slack markup or mentions.
+
+The explicitly loaded `validate-report.ts` extension checks the file at
+`agent_before_settle` (the last actionable boundary, not session shutdown).
+Missing files, malformed JSON, schema violations, and oversized sections cause
+a follow-up user prompt containing validation errors, allowing up to three
+repair attempts in the same session. Aborted or failed runs are not continued.
+The monitor validates again before delivery using the same Python validator and
+schema. If repairs fail, no message is sent and the baseline stays unchanged.
+The original 10-minute Pi timeout covers the review and all repairs.
+
+The shared validator also checks the generated Slack payload against the
+[documented block limits](https://docs.slack.dev/reference/block-kit/blocks/):
+50 top-level blocks per message,
+[10 children and a 150-character title per container](https://docs.slack.dev/reference/block-kit/blocks/container-block/),
+and [3,000 characters per section](https://docs.slack.dev/reference/block-kit/blocks/section-block/).
+The report schema intentionally stays below these limits: six categories, five
+sections per category, 100-character titles, and 2,800-character sections.
+Fallback `text` must not exceed the
+[40,000-character truncation threshold](https://docs.slack.dev/reference/methods/chat.postMessage/);
+Slack's 4,000-character advice is a recommendation, not a hard limit. The fixed
+Japanese fallback is much shorter. These checks count Unicode code points, not
+UTF-8 bytes; Slack's docs do not define counting for complex emoji. No aggregate
+block-text or JSON-byte limit is assumed, since these references do not document
+one. Boundary checks can be run with the monitor's Python environment:
+
+```sh
+python3 -m unittest discover -s home/soict-watch
+```
+
 Only an acknowledged Slack POST advances the baseline. A failed crawl, review,
 or delivery leaves it unchanged so the next scheduled run can retry. A POST that
 Slack accepts just before a connection failure can produce a duplicate on retry.
@@ -75,7 +109,7 @@ Home Manager `xdg.stateHome`). It contains:
 - `baseline.json`: last successfully handled Markdown snapshot.
 - `current.json`: latest complete crawl.
 - `changes.diff`: differences since the baseline.
-- `response.md`: report written by Pi, in Japanese.
+- `response.json`: categorized report written by Pi, in Japanese (replaces `response.md`).
 - `pi.log`: Pi stdout and stderr for the latest review.
 - `payload.json`: JSON sent to Slack.
 

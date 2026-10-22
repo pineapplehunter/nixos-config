@@ -7,10 +7,17 @@
       ...
     }:
     let
+      python = pkgs.python3.withPackages (ps: [ ps.jsonschema ]);
+      reportExtension = pkgs.writeText "soict-validate-report.ts" (
+        builtins.replaceStrings
+          [ "@REPORT_PYTHON@" "@REPORT_VALIDATOR@" ]
+          [ "${python}/bin/python3" "${./.}/report.py" ]
+          (builtins.readFile ./validate-report.ts)
+      );
       monitor = pkgs.writeShellApplication {
         name = "soict-watch";
         runtimeInputs = [
-          pkgs.python3
+          python
           pkgs.gitcrawl
           pkgs.git
           config.programs.pi-coding-agent.package
@@ -18,7 +25,8 @@
         text = ''
           export SOICT_STATE_DIR=${lib.escapeShellArg "${config.xdg.stateHome}/soict-watch"}
           export SOICT_WEBHOOK_FILE=${lib.escapeShellArg config.sops.secrets.gitcrawl-slack-webhook.path}
-          exec python3 ${./monitor.py}
+          export SOICT_REPORT_EXTENSION=${reportExtension}
+          exec python3 ${./.}/monitor.py
         '';
       };
     in
