@@ -19,8 +19,9 @@ Do this before rebuilding Beast: the secret declaration expects that key to
 exist. Do not put the plaintext URL in Nix or commit an unencrypted value.
 The existing Discord webhook is not used or changed.
 
-Pi must already be authenticated as `shogo` on Beast (run `pi` and `/login` if
-needed), with a default provider/model configured. The timer uses the
+Pi must already be authenticated with OpenAI Codex as `shogo` on Beast (run `pi`
+and `/login` if needed). Reviews and repair attempts explicitly use
+`openai-codex/gpt-6-luna`, regardless of Pi's configured default. The timer uses the
 Bubblewrap/Pueue wrapper with `@noflake`, making the year's state directory the
 sandbox root without requiring a `flake.nix`. Its built-in `read`, `bash`, `edit`,
 and `write` tools are enabled, along with the explicitly loaded
@@ -115,6 +116,16 @@ Home Manager `xdg.stateHome`). It contains:
 
 systemd prevents overlapping activations of this service. `Persistent=true`
 performs one catch-up run after downtime. Crawl failures appear in the journal;
-Pi failures also have details in `pi.log`. Failures do not send a substitute
-Slack message. To deliberately reset the baseline, stop the service and remove
+Pi failures also have details in `pi.log`. Failed runs trigger
+`soict-watch-failure.service`, which sends a red Discord notification through
+`local-notify`, the same host notification backend used by Pueue and Pi. This
+also covers service-level timeouts and startup failures that put the monitor in
+a failed state. Normal no-change runs and the end-date condition do not alert.
+Notifications contain only fixed diagnostic instructions, not exception text,
+website content, or webhook URLs. Notification delivery is attempted once, with
+no automatic retry or recursive failure handler; delivery errors appear in
+`journalctl --user -u soict-watch-failure.service`. The existing
+`pueue-discord-webhook` secret and host D-Bus notification service are reused;
+no new webhook is needed. Failures do not send a substitute Slack message.
+To deliberately reset the baseline, stop the service and remove
 only `baseline.json`; the next successful crawl becomes the new silent baseline.

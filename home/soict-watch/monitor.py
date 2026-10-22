@@ -182,7 +182,8 @@ baseline.json、current.json、changes.diff、archive/ は変更しないでく�
 """
     with (state / "pi.log").open("w", encoding="utf-8") as log:
         subprocess.run([
-            "pi", "@noflake", "--print", "--no-session", "--no-extensions",
+            "pi", "@noflake", "--model", "openai-codex/gpt-6-luna",
+            "--print", "--no-session", "--no-extensions",
             "--extension", os.environ["SOICT_REPORT_EXTENSION"], "--no-mcp",
             "--no-skills", "--no-prompt-templates", "--no-context-files",
             "--no-approve", "--tools", "read,bash,edit,write", prompt,
