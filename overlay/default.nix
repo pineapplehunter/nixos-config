@@ -12,7 +12,6 @@ in
     ./gnome-settings-daemon.nix
     ./niks3.nix
     ./eza.nix
-    ./ghostty.nix
     ./ibus-engines.nix
     ./mozc-dictionaries.nix
     ./linux-manual.nix
@@ -38,7 +37,6 @@ in
       overlays.gnome-settings-daemon
       overlays.niks3
       overlays.eza
-      overlays.ghostty
       overlays.ibus-engines
       overlays.mozc-dictionaries
       overlays.linux-manual
