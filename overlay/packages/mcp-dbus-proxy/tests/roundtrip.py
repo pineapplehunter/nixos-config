@@ -116,8 +116,8 @@ async def main():
                     0
                 ].text == "Resource content"
                 large = await sessions[0].call_tool("large")
-                assert not large.isError, large
-                assert len(large.structuredContent["value"]) == 2 * 1024 * 1024 - 1024
+                assert not large.is_error, large
+                assert len(large.structured_content["value"]) == 2 * 1024 * 1024 - 1024
                 slow = asyncio.create_task(sessions[0].call_tool("slow"))
                 await asyncio.sleep(0.1)
                 slow.cancel()

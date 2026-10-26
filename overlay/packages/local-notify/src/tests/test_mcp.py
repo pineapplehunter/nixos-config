@@ -23,8 +23,11 @@ class NotificationTests(unittest.TestCase):
                 await session.initialize()
                 tools = (await session.list_tools()).tools
                 assert [t.name for t in tools] == ["notify"]
-                assert not tools[0].annotations.idempotentHint
-                assert set(tools[0].inputSchema["properties"]) == {
+                assert tools[0].annotations.read_only_hint is False
+                assert tools[0].annotations.destructive_hint is False
+                assert tools[0].annotations.idempotent_hint is False
+                assert tools[0].annotations.open_world_hint is True
+                assert set(tools[0].input_schema["properties"]) == {
                     "title",
                     "content",
                     "color",
@@ -34,17 +37,27 @@ class NotificationTests(unittest.TestCase):
                     {"title": "Done", "content": "**Success**", "color": "#57F287"},
                 )
                 assert (
-                    not result.isError
+                    not result.is_error
                     and result.content[0].text == "Notification sent."
                 )
-                for arguments in [
-                    {"title": "", "content": "body"},
-                    {"title": "Done", "content": "body", "color": "bad"},
-                    {"title": "Done", "content": "x" * 4097},
-                    {"title": "fail", "content": "body"},
+                for arguments, expected_error in [
+                    ({"title": "", "content": "body"}, "title is required"),
+                    (
+                        {"title": "Done", "content": "body", "color": "bad"},
+                        "pattern",
+                    ),
+                    (
+                        {"title": "Done", "content": "x" * 4097},
+                        "content exceeds 4096 characters",
+                    ),
+                    (
+                        {"title": "fail", "content": "body"},
+                        "Notification delivery failed; check the host notification service. Delivery may be uncertain; do not blindly retry.",
+                    ),
                 ]:
                     result = await session.call_tool("notify", arguments)
-                    assert result.isError
+                    assert result.is_error
+                    assert expected_error in result.content[0].text
                     assert "SECRET_WEBHOOK" not in str(result)
                     assert "private exception" not in str(result)
 

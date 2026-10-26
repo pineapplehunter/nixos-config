@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from uuid import uuid4
 
-import httpx
+import httpx2 as httpx
 import pytest
 from icalendar import Alarm, Calendar, Event
 from radicale_agent.config import Config

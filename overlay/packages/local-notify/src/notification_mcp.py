@@ -6,8 +6,8 @@ import pathlib
 import sys
 from typing import Annotated
 
-from mcp.server.fastmcp import FastMCP
-from mcp.server.fastmcp.exceptions import ToolError
+from mcp.server.mcpserver import MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
 from mcp.types import ToolAnnotations
 from notification import ValidationError, send_discord
 from pydantic import Field
@@ -16,17 +16,17 @@ DEFAULT_ICON = "https://raw.githubusercontent.com/pineapplehunter/nixos-config/m
 
 
 def create_server(webhook_url: str, username: str = "pi", icon: str = DEFAULT_ICON):
-    server = FastMCP(
+    server = MCPServer(
         "Host notifications",
         instructions="Send notifications as Discord embed Markdown. Use #57F287 for successful results, #ED4245 for failures, and omit color for neutral messages. Delivery is not idempotent: do not automatically retry after an uncertain result.",
     )
 
     @server.tool(
         annotations=ToolAnnotations(
-            readOnlyHint=False,
-            destructiveHint=False,
-            idempotentHint=False,
-            openWorldHint=True,
+            read_only_hint=False,
+            destructive_hint=False,
+            idempotent_hint=False,
+            open_world_hint=True,
         )
     )
     async def notify(

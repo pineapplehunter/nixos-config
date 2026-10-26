@@ -1,8 +1,8 @@
 import asyncio
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 
-mcp = FastMCP("Bridge fixture", instructions="Instructions survive the bridge.")
+mcp = MCPServer("Bridge fixture", instructions="Instructions survive the bridge.")
 
 
 @mcp.tool()

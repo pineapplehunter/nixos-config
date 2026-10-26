@@ -116,12 +116,13 @@ async def verify_tools(live):
                 for tool in tools:
                     if tool.name.startswith("delete_"):
                         assert (
-                            tool.annotations.destructiveHint
-                            and tool.annotations.idempotentHint
+                            tool.annotations.read_only_hint is False
+                            and tool.annotations.destructive_hint
+                            and tool.annotations.idempotent_hint
                         )
                     if tool.name != "list_collections":
                         assert (
-                            tool.inputSchema["properties"]["collection_id"]["const"]
+                            tool.input_schema["properties"]["collection_id"]["const"]
                             == "Agent"
                         )
 
@@ -132,11 +133,11 @@ async def verify_tools(live):
                         if name != "list_collections"
                         else {},
                     )
-                    assert not result.isError, result
-                    assert result.structuredContent["ok"], result.structuredContent.get(
+                    assert not result.is_error, result
+                    assert result.structured_content["ok"], result.structured_content.get(
                         "error"
                     )
-                    return result.structuredContent["data"]["items"]
+                    return result.structured_content["data"]["items"]
 
                 assert (await call("list_collections"))[0]["id"] == "Agent"
                 event_id, task_id = str(uuid4()), str(uuid4())
@@ -232,7 +233,7 @@ async def verify_tools(live):
                         "expected_etag": event["etag"],
                     },
                 )
-                assert stale.structuredContent["error"]["code"] == "CONFLICT"
+                assert stale.structured_content["error"]["code"] == "CONFLICT"
                 for kind, value in [("event", changed), ("task", done)]:
                     deleted = (
                         await call(
@@ -252,11 +253,11 @@ async def verify_tools(live):
                     missing = await session.call_tool(
                         "get_" + kind, {"collection_id": "Agent", "uid": value["uid"]}
                     )
-                    assert missing.structuredContent["error"]["code"] == "NOT_FOUND"
+                    assert missing.structured_content["error"]["code"] == "NOT_FOUND"
                 invalid = await session.call_tool(
                     "get_event", {"collection_id": "Personal", "uid": "x"}
                 )
-                assert invalid.isError
+                assert invalid.is_error
     finally:
         probe.disconnect()
 
