@@ -1,0 +1,177 @@
+diff --git a/configure.ac b/configure.ac
+index 4c4fac2..c83c03f 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -174,6 +174,7 @@ dnl initialize all the info variables
+         curl_zstd_msg="no       (--with-zstd)"
+          curl_gss_msg="no       (--with-gssapi)"
+        curl_gsasl_msg="no       (--with-gsasl)"
++        curl_upki_msg="no       (--with-upki)"
+          curl_res_msg="blocking (--enable-ares / --enable-threaded-resolver)"
+         curl_ipv6_msg="no       (--enable-ipv6)"
+ curl_unix_sockets_msg="no       (--enable-unix-sockets)"
+@@ -2430,6 +2431,111 @@ if test "x$OPT_LIBGSASL" != "xno"; then
+ fi
+ AM_CONDITIONAL([USE_GSASL], [test "$curl_gsasl_msg" = "enabled"])
+
++dnl **********************************************************************
++dnl Check for upki
++dnl **********************************************************************
++
++dnl Default to disabled for upki
++OPT_UPKI=no
++AC_ARG_WITH(upki,
++AS_HELP_STRING([--with-upki=PATH],[Where to look for upki, PATH points to the upki installation;
++  when possible, set the PKG_CONFIG_PATH environment variable instead of using this option])
++AS_HELP_STRING([--without-upki], [disable upki]),
++  OPT_UPKI=$withval)
++
++if test "x$OPT_UPKI" != "xno"; then
++  dnl backup the pre-upki variables
++  CLEANLDFLAGS="$LDFLAGS"
++  CLEANLDFLAGSPC="$LDFLAGSPC"
++  CLEANCPPFLAGS="$CPPFLAGS"
++  CLEANLIBS="$LIBS"
++
++  case "$OPT_UPKI" in
++    yes)
++      dnl --with-upki (without path) used
++      want_upki_pkg_config_path=""
++      ;;
++    *)
++      dnl --with-upki=PATH used; both libraries are at the same location
++      want_upki_pkg_config_path="$OPT_UPKI/lib/pkgconfig"
++      ;;
++  esac
++
++  CURL_CHECK_PKGCONFIG(upki, $want_upki_pkg_config_path)
++
++  if test "$PKGCONFIG" != "no"; then
++    LIB_UPKI=`CURL_EXPORT_PCDIR([$want_upki_pkg_config_path])
++      $PKGCONFIG --libs-only-l upki`
++    LD_UPKI=`CURL_EXPORT_PCDIR([$want_upki_pkg_config_path])
++      $PKGCONFIG --libs-only-L upki`
++    CPP_UPKI=`CURL_EXPORT_PCDIR([$want_upki_pkg_config_path])
++      $PKGCONFIG --cflags-only-I upki`
++    version=`CURL_EXPORT_PCDIR([$want_upki_pkg_config_path])
++      $PKGCONFIG --modversion upki`
++    DIR_UPKI=`echo $LD_UPKI | $SED -e 's/^-L//'`
++  fi
++
++  CURL_CHECK_PKGCONFIG(upki_openssl, $want_upki_pkg_config_path)
++
++  if test "$PKGCONFIG" != "no"; then
++    LIB_UPKI="$LIB_UPKI `CURL_EXPORT_PCDIR([$want_upki_pkg_config_path])
++      $PKGCONFIG --libs-only-l upki_openssl`"
++    LD_UPKI="$LD_UPKI `CURL_EXPORT_PCDIR([$want_upki_pkg_config_path])
++      $PKGCONFIG --libs-only-L upki_openssl`"
++    CPP_UPKI="$CPP_UPKI `CURL_EXPORT_PCDIR([$want_upki_pkg_config_path])
++      $PKGCONFIG --cflags-only-I upki_openssl`"
++  fi
++
++  if test -z "$LIB_UPKI"; then
++    dnl pkg-config not available or did not find the libraries; fall back
++    dnl to direct linking when a prefix path was given
++    if test "x$OPT_UPKI" != "xyes"; then
++      LIB_UPKI="-lupki -lupki_openssl"
++      LD_UPKI=-L${OPT_UPKI}/lib$libsuff
++      CPP_UPKI=-I${OPT_UPKI}/include
++      DIR_UPKI=${OPT_UPKI}/lib$libsuff
++    fi
++  fi
++
++  LDFLAGS="$LDFLAGS $LD_UPKI"
++  LDFLAGSPC="$LDFLAGSPC $LD_UPKI"
++  CPPFLAGS="$CPPFLAGS $CPP_UPKI"
++  LIBS="$LIB_UPKI $LIBS"
++
++  AC_CHECK_LIB(upki_openssl, upki_openssl_verify_callback)
++
++  AC_CHECK_HEADERS(upki.h,
++    curl_upki_msg="enabled (upki)"
++    HAVE_UPKI=1
++    AC_DEFINE(HAVE_UPKI, 1, [if upki is in use])
++  )
++
++  if test "$HAVE_UPKI" != "1"; then
++    AC_MSG_ERROR([upki libs and/or directories were not found where specified!])
++  fi
++
++  if test "$HAVE_UPKI" = "1"; then
++    if test -n "$DIR_UPKI"; then
++      dnl when the upki shared libs were found in a path that the runtime
++      dnl linker does not search through, we need to add it to CURL_LIBRARY_PATH
++      dnl to prevent further configure tests to fail due to this
++
++      if test "$cross_compiling" != "yes"; then
++        CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$DIR_UPKI"
++        export CURL_LIBRARY_PATH
++        AC_MSG_NOTICE([Added $DIR_UPKI to CURL_LIBRARY_PATH])
++      fi
++    fi
++    LIBCURL_PC_REQUIRES_PRIVATE="$LIBCURL_PC_REQUIRES_PRIVATE upki upki_openssl"
++  else
++    dnl no upki, revert back to clean variables
++    LDFLAGS=$CLEANLDFLAGS
++    LDFLAGSPC=$CLEANLDFLAGSPC
++    CPPFLAGS=$CLEANCPPFLAGS
++    LIBS=$CLEANLIBS
++  fi
++fi
++
+ AC_ARG_WITH(libmetalink,,
+   AC_MSG_ERROR([--with-libmetalink and --without-libmetalink no longer work!]))
+
+@@ -5281,6 +5387,10 @@ if test "$curl_gsasl_msg" = "enabled"; then
+   SUPPORT_FEATURES="$SUPPORT_FEATURES gsasl"
+ fi
+
++if test "$HAVE_UPKI" = "1"; then
++  SUPPORT_FEATURES="$SUPPORT_FEATURES upki"
++fi
++
+ if test "$enable_altsvc" = "yes"; then
+   SUPPORT_FEATURES="$SUPPORT_FEATURES alt-svc"
+ fi
+@@ -5596,6 +5706,7 @@ AC_MSG_NOTICE([Configured to build curl/libcurl:
+   zstd:             ${curl_zstd_msg}
+   GSS-API:          ${curl_gss_msg}
+   GSASL:            ${curl_gsasl_msg}
++  upki:             ${curl_upki_msg}
+   resolver:         ${curl_res_msg}
+   IPv6:             ${curl_ipv6_msg}
+   Unix sockets:     ${curl_unix_sockets_msg}
+diff --git a/lib/vtls/openssl.c b/lib/vtls/openssl.c
+index dedd8f3..9b17688 100644
+--- a/lib/vtls/openssl.c
++++ b/lib/vtls/openssl.c
+@@ -56,6 +56,10 @@
+ #include "curlx/base64.h"
+ #endif
+
++#ifdef HAVE_UPKI
++#include "upki-openssl.h"
++#endif
++
+ #include <openssl/rand.h>
+ #include <openssl/x509v3.h>
+ #ifndef OPENSSL_NO_DSA
+@@ -3930,11 +3934,17 @@ CURLcode Curl_ossl_ctx_init(struct ossl_ctx *octx,
+   }
+ #endif
+
++#if defined(HAVE_UPKI)
++  SSL_verify_cb verify_callback = upki_openssl_verify_callback;
++#else
++  SSL_verify_cb verify_callback = NULL;
++#endif
++
+   /* OpenSSL always tries to verify the peer. By setting the failure mode
+    * to NONE, we allow the connect to complete, regardless of the outcome.
+    * We then explicitly check the result and may try alternatives like
+    * Apple's SecTrust for verification. */
+-  SSL_CTX_set_verify(octx->ssl_ctx, SSL_VERIFY_NONE, NULL);
++  SSL_CTX_set_verify(octx->ssl_ctx, SSL_VERIFY_NONE, verify_callback);
+
+   /* Enable logging of secrets to the file specified in env SSLKEYLOGFILE. */
+ #if !defined(HAVE_KEYLOG_UPSTREAM) && defined(HAVE_KEYLOG_CALLBACK)

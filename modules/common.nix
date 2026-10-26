@@ -181,6 +181,8 @@ in
       i18n.supportedLocales = [ "all" ];
 
       services = {
+        upki.enable = true;
+
         # Enable the OpenSSH daemon.
         openssh = {
           enable = true;

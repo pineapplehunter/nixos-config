@@ -21,7 +21,7 @@
           binutils
           btop
           btrfs-assistant
-          curlFull
+          curl-upki
           delta
           e2fsprogs
           fd

@@ -9,6 +9,7 @@ let
 in
 {
   imports = [
+    ./curl-upki.nix
     ./gnome-settings-daemon.nix
     ./niks3.nix
     ./eza.nix
@@ -32,6 +33,7 @@ in
 
   flake.overlays = {
     default = lib.composeManyExtensions [
+      overlays.curl-upki
       overlays.gnome-settings-daemon
       overlays.niks3
       overlays.eza
