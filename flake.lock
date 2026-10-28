@@ -506,7 +506,7 @@
         "nixpkgs": "nixpkgs_2",
         "rust-overlay": "rust-overlay",
         "sops-nix": "sops-nix",
-        "tpm-fido2": "tpm-fido2",
+        "tpm-passkey": "tpm-passkey",
         "xremap-flake": "xremap-flake"
       }
     },
@@ -564,7 +564,7 @@
         "type": "github"
       }
     },
-    "tpm-fido2": {
+    "tpm-passkey": {
       "inputs": {
         "flake-parts": "flake-parts_2",
         "nixpkgs": [
@@ -576,16 +576,16 @@
         "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
-        "lastModified": 1793169145,
-        "narHash": "sha256-rYqd+fuhBYFZglyMKHXwWFqIBfP64w9KSsnv/Iuu9+8=",
+        "lastModified": 1793172654,
+        "narHash": "sha256-pj83KGkVe6JCU6lsohobMXe3bEHJBIcft3XSxSRhaLk=",
         "owner": "pineapplehunter",
-        "repo": "linux-tpm-fido2",
-        "rev": "47d0b0a182f625c73ce1d33afded7a2a113b0e01",
+        "repo": "tpm-passkey",
+        "rev": "453a7e1472762034557cee148d586d44fad2a995",
         "type": "github"
       },
       "original": {
         "owner": "pineapplehunter",
-        "repo": "linux-tpm-fido2",
+        "repo": "tpm-passkey",
         "type": "github"
       }
     },
@@ -613,7 +613,7 @@
     "treefmt-nix_2": {
       "inputs": {
         "nixpkgs": [
-          "tpm-fido2",
+          "tpm-passkey",
           "nixpkgs"
         ]
       },

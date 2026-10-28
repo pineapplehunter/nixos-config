@@ -20,7 +20,7 @@ in
           inputs.home-manager.nixosModules.home-manager
           inputs.xremap-flake.nixosModules.default
           inputs.disko.nixosModules.disko
-          inputs.tpm-fido2.nixosModules.default
+          inputs.tpm-passkey.nixosModules.default
           mods.captive
           mods.fonts
           mods.gstreamer

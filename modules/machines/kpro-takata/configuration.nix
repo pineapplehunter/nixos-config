@@ -134,7 +134,7 @@ in
         tuned.enable = true;
 
         openssh.settings.PasswordAuthentication = false;
-        linux-tpm-fido2.enable = true;
+        tpm-passkey.enable = true;
         fprintd.enable = true;
         fwupd.enable = true;
       };

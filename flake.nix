@@ -30,8 +30,8 @@
       url = "github:pineapplehunter/niks3?ref=progress";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    tpm-fido2 = {
-      url = "github:pineapplehunter/linux-tpm-fido2";
+    tpm-passkey = {
+      url = "github:pineapplehunter/tpm-passkey";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.rust-overlay.follows = "rust-overlay";
     };
