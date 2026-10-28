@@ -11,7 +11,6 @@ in
   imports = [
     ./curl-upki.nix
     ./gnome-settings-daemon.nix
-    ./ibus.nix
     ./niks3.nix
     ./nixgl.nix
     ./eza.nix
@@ -34,7 +33,6 @@ in
     default = lib.composeManyExtensions [
       overlays.curl-upki
       overlays.gnome-settings-daemon
-      overlays.ibus
       overlays.niks3
       overlays.nixgl
       overlays.eza
