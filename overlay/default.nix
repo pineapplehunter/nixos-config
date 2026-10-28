@@ -13,11 +13,8 @@ in
     ./gnome-settings-daemon.nix
     ./ibus.nix
     ./niks3.nix
+    ./nixgl.nix
     ./eza.nix
-    ./linux-manual.nix
-    ./super-productivity.nix
-    ./urllib3-future.nix
-    ./niquests.nix
     ./rpi5.nix
   ];
 
@@ -39,11 +36,8 @@ in
       overlays.gnome-settings-daemon
       overlays.ibus
       overlays.niks3
+      overlays.nixgl
       overlays.eza
-      overlays.linux-manual
-      overlays.super-productivity
-      overlays.urllib3-future
-      overlays.niquests
       overlays.custom-packages
     ];
 
