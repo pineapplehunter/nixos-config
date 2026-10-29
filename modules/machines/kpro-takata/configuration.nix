@@ -191,6 +191,7 @@ in
             "dialout"
             "nix"
             "tss" # for tpm2
+            "tpm-passkey"
           ];
           openssh.authorizedKeys.keys = config.my.sshAuthorizedKeys;
         };
