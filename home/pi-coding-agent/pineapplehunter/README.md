@@ -42,7 +42,7 @@ not provide those services.
 Notifications and Radicale are normal host-side MCP servers, not Pi extensions.
 The shared [MCP D-Bus bridge](../../../overlay/packages/mcp-dbus-proxy/README.md)
 keeps credentials on the host. All enabled `services.mcp-dbus.servers` endpoints
-are granted exact sandbox bus methods and merged into both Pi profiles by the
+are granted exact sandbox bus methods and merged into all three Pi profiles by the
 parent's `update-mcp.py`, preserving unrelated MCP entries. Activation treats
 these agent-writable paths as untrusted: symlink files/directories are rejected
 and updates use directory-relative atomic replacement. Every tool has direct
@@ -61,9 +61,45 @@ skill loading while explicitly retaining the pinned Pueue completion extension;
 package resolution, other settings, prompts, and themes are unchanged. See
 [the launcher documentation](tools/subagents/SUBAGENTS.md).
 
+## Codex Auto
+
+Run `pi-auto` to enable the `codex-auto` provider and `/codex-auto-usage`.
+Ordinary `pi` and `pi-work` do not load those features. `pi-auto` uses its own
+`~/.pi/agent-auto` directory and separate `auth.json`, sharing configuration
+and resources with the personal profile like `pi-work`. Its normal provider
+registry does not inherit personal or work logins. Select a mirrored model with
+`/model` or start, for example:
+
+```sh
+pi-auto --model codex-auto/gpt-6.1-sol
+```
+
+Log in to `openai-codex` separately using `pi` (personal) and `pi-work` (work).
+Codex Auto explicitly accesses those original credential files at
+`~/.pi/agent/auth.json` and `~/.pi/agent-work/auth.json` using Pi's locked OAuth
+refresh; it does not duplicate credentials. These files remain accessible to Pi
+and its extensions inside the sandbox, so this separates default logins, not
+security privileges. It uses personal while more than 15% of its
+5-hour allowance remains, then work; it uses a usage sample for up to five minutes
+and returns to personal after a reset. Quota reports and the reserve are best effort:
+long requests, the sampling interval, delayed accounting, and concurrent sessions
+can cross the limit.
+If personal usage cannot be checked, work is used instead. If work is unavailable,
+the request fails rather than spending the personal reserve.
+
+The status line displays both accounts and their reset countdowns, highlighting
+the account used for the latest request. It refreshes both accounts every five
+minutes while visible and repaints the countdown every minute. Routing reuses a
+fresh sample and fetches a new one when it expires or a reset passes.
+`/codex-auto-usage` reports details and absolute reset times;
+`/codex-auto-usage refresh` refreshes them and `/codex-auto-usage reserve 20`
+sets the reserve to 20%. The setting is shared in `~/.pi/agent/codex-auto.json`.
+Codex Auto uses Pi's standard Codex transport; switching accounts can cause a
+prompt-cache miss. The ordinary `/usage` remains unchanged for other providers.
+
 ## Run without a flake
 
-Use `pi @noflake` (or `pi-work @noflake`) to use the current directory as
+Use `pi @noflake` (or `pi-work @noflake` / `pi-auto @noflake`) to use the current directory as
 the sandbox root instead of searching ancestors for `flake.nix`. All other
 sandbox mounts and restrictions remain unchanged. Choose the directory carefully:
 its contents are writable inside the sandbox.

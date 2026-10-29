@@ -198,8 +198,8 @@ def main() -> int:
     profile = os.environ.get("PI_WRAPPER_PROFILE", "personal")
     if profile == "personal":
         agent_dir = home / ".pi/agent"
-    elif profile == "work":
-        agent_dir = home / ".pi/agent-work"
+    elif profile in {"work", "auto"}:
+        agent_dir = home / f".pi/agent-{profile}"
         agent_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
         for entry in (
             "AGENTS.md",

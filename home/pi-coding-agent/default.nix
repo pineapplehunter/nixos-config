@@ -182,6 +182,11 @@ in
             --set PROJECT_ROOT_FILE flake.nix \
             --set PUEUE_CONFIG_PATH "${pueueConfig}" \
             --set PI_WRAPPER_PROFILE work
+          makeWrapper "${lib.getExe' wrapper "bubble-wrapper"}" "$out/bin/pi-auto" \
+            --set EXECUTABLE "${lib.getExe piWithPueue}" \
+            --set PROJECT_ROOT_FILE flake.nix \
+            --set PUEUE_CONFIG_PATH "${pueueConfig}" \
+            --set PI_WRAPPER_PROFILE auto
         '';
       };
     in
@@ -203,7 +208,7 @@ in
         '';
 
         home.activation.piMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-          for profile in agent agent-work; do
+          for profile in agent agent-work agent-auto; do
             ${lib.getExe updateMcpSettings} \
               "$HOME/.pi/$profile/mcp.json" \
               ${lib.escapeShellArg (builtins.toJSON mcpRegistrations)}
