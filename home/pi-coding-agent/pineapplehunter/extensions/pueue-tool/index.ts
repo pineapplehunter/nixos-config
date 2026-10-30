@@ -53,11 +53,21 @@ function completionMessage(tasks: Task[]) {
   const summaries: string[] = [];
   const blocks = tasks.map((task) => {
     const done = typeof task.status === "object" ? task.status.Done : undefined;
-    const label = task.label ? ` ${JSON.stringify(task.label)}` : "";
+    const subagent = task.group === "subagent" && task.label?.match(/^subagent:([^:]+):(.+)$/);
+    const label = task.label ? ` ${JSON.stringify(subagent ? subagent[2] : task.label)}` : "";
     const group = task.group !== "default" ? ` (${task.group})` : "";
-    const summary = `Task ${task.id}${label}${group}: ${JSON.stringify(done?.result)}.  \n${inlineCode(task.original_command ?? task.command)}`;
-    summaries.push(summary);
-    return `${summary}  \nInspect output with ${inlineCode(`pueue log ${task.id}`)}.`;
+    const elapsed = done?.start ? Date.parse(done.end) - Date.parse(done.start) : NaN;
+    const duration = Number.isFinite(elapsed) && elapsed >= 0 ? ` (elapsed: ${(elapsed / 1000).toFixed(1)}s)` : "";
+    const summary = `Task ${task.id}${label}${group}: ${JSON.stringify(done?.result)}${duration}.`;
+    if (subagent) {
+      summaries.push(summary);
+      const name = `'${subagent[2].replace(/'/g, "'\\''")}'`;
+      const resume = `pi-subagent ${name} WORKSPACE FOLLOW_UP_FILE --resume ${subagent[1]}`;
+      return `${summary}  \nRead ${inlineCode(`/tmp/pi-subagent-state/${subagent[1]}/response.md`)}; on failure inspect ${inlineCode(`pueue log ${task.id}`)}.  \nResume with ${inlineCode(resume)} (repeat original context and resource options). Remove the workspace when no longer needed; retain session state if you may resume.`;
+    }
+    const withCommand = `${summary}  \n${inlineCode(task.original_command ?? task.command)}`;
+    summaries.push(withCommand);
+    return `${withCommand}  \nInspect output with ${inlineCode(`pueue log ${task.id}`)}.`;
   });
   return {
     customType: MESSAGE_TYPE,

@@ -365,8 +365,7 @@ def main():
         if group.returncode and "already exists" not in group.stderr:
             raise ValueError(group.stderr.strip())
         command = [
-            sys.executable,
-            str(Path(__file__).resolve()),
+            "pi-subagent",
             options.name,
             options.directory,
             str(state / "prompt.md"),

@@ -48,8 +48,10 @@ or host-wide notification broker is required.
 - Completion messages use Pi's default labelled, coloured custom-message popup,
   not a custom plain-text renderer. They show `Task N "label" (group): "result".`,
   the queued command as Markdown code, and a short log-inspection/continuation
-  instruction. Missing labels and the default group are omitted. The same concise
-  content reaches the user and model; task logs are not automatically injected.
+  instruction. Subagent completions instead show the report path, a resume
+  command template, and a workspace cleanup reminder. Missing labels and the
+  default group are omitted. The same concise content reaches the user and model;
+  task logs are not automatically injected.
   Failed and cancelled tasks also notify. Backtick-containing commands use safe
   code delimiters, and explicit Markdown breaks keep the three-line layout.
 - Watchers and timers start at session startup and are cleaned up on shutdown
