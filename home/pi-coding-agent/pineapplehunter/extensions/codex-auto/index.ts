@@ -29,7 +29,6 @@ export default async function (pi: ExtensionAPI): Promise<void> {
   let timer: ReturnType<typeof setInterval> | undefined;
   let countdownTimer: ReturnType<typeof setInterval> | undefined;
   let controller: AbortController | undefined;
-  let registry: ExtensionContext["modelRegistry"] | undefined;
   let lastWarning = "";
 
   const updateStatus = () => {
@@ -47,10 +46,9 @@ export default async function (pi: ExtensionAPI): Promise<void> {
   const original = personal.getProvider(UPSTREAM);
   if (!original) throw new Error("codex-auto: Pi's Codex provider is unavailable");
 
-  // Read only the upstream provider: enumerating the entire registry here would
-  // call this provider's getModels again, recursively blocking the model picker.
-  const getModels = () => (registry?.getProvider(UPSTREAM)?.getModels()
-    ?? personal.getModels(UPSTREAM)).map((model) => ({ ...model, provider: PROVIDER }));
+  // Own the catalog: agent-auto's upstream provider has no default credentials
+  // and cannot perform its own authenticated refresh. Never enumerate its registry.
+  let models = personal.getModels(UPSTREAM).map((model) => ({ ...model, provider: PROVIDER }));
 
   const run = (model: Model<Api>, context: TranscriptContext, options?: SimpleStreamOptions) =>
     lazyStream(model, async () => {
@@ -118,7 +116,20 @@ export default async function (pi: ExtensionAPI): Promise<void> {
       resolve: async ({ signal }) => await accounts.configured(signal)
         ? { auth: { apiKey: "codex-auto" }, source: "Codex accounts" } : undefined,
     } },
-    getModels,
+    getModels: () => models,
+    async refreshModels(context) {
+      const result = await personal.refresh({
+        providers: [UPSTREAM],
+        allowNetwork: context.allowNetwork,
+        force: context.force,
+        signal: context.signal,
+      });
+      if (result.aborted || context.signal.aborted) return;
+      const error = result.errors.get(UPSTREAM);
+      if (error) throw error;
+      const refreshed = personal.getModels(UPSTREAM).map((model) => ({ ...model, provider: PROVIDER }));
+      await context.publish({ update: () => { models = refreshed; } });
+    },
     stream: (model, context, options) => run(model, context, options),
     streamSimple: run,
   };
@@ -126,7 +137,6 @@ export default async function (pi: ExtensionAPI): Promise<void> {
 
   const startStatus = (ctx: ExtensionContext) => {
     session = ctx;
-    registry = ctx.modelRegistry;
     if (timer) clearInterval(timer);
     if (countdownTimer) clearInterval(countdownTimer);
     controller?.abort();
@@ -155,7 +165,6 @@ export default async function (pi: ExtensionAPI): Promise<void> {
     countdownTimer = undefined;
     ctx.ui.setStatus(STATUS, undefined);
     session = undefined;
-    registry = undefined;
   });
 
   pi.registerCommand("codex-auto-usage", {

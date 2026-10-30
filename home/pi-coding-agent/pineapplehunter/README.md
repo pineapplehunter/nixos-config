@@ -97,6 +97,11 @@ sets the reserve to 20%. The setting is shared in `~/.pi/agent/codex-auto.json`.
 Codex Auto uses Pi's standard Codex transport; switching accounts can cause a
 prompt-cache miss. The ordinary `/usage` remains unchanged for other providers.
 
+The plugin owns model-catalog refreshes: `/model` refreshes Codex through the
+personal account runtime and publishes the result under `codex-auto`. It does
+not depend on `agent-auto` having a default `openai-codex` login. Pi's normal
+catalog cache/freshness policy applies; the five-minute usage cache is separate.
+
 ## Run without a flake
 
 Use `pi @noflake` (or `pi-work @noflake` / `pi-auto @noflake`) to use the current directory as
