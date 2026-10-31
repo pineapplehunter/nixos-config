@@ -215,7 +215,6 @@ def main() -> int:
             "keybindings.json",
             "models.json",
             "trust.json",
-            "pi-usage.json",
         ):
             source, target = home / ".pi/agent" / entry, agent_dir / entry
             if (
@@ -224,6 +223,15 @@ def main() -> int:
                 and not target.is_symlink()
             ):
                 target.symlink_to(source)
+
+        # pi-usage rejects symlinks. Seed profile-local settings and migrate
+        # links created by older wrappers without changing their contents.
+        source = home / ".pi/agent/pi-usage.json"
+        target = agent_dir / "pi-usage.json"
+        if target.is_symlink():
+            atomic_write(target, target.read_bytes())
+        elif source.is_file() and not target.exists():
+            atomic_write(target, source.read_bytes())
     else:
         fail(f"Unknown Pi wrapper profile: {profile}")
 
