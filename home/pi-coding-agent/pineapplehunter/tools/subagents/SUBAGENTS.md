@@ -1,8 +1,8 @@
 # Pi subagent launcher
 
 ```text
-pi-subagent <name> <directory> <prompt_file> [--model <model>]
-            [--thinking <level>] [--resume <session_id>] [--context <text>]
+pi-subagent <name> <directory> <prompt_file> [--profile <preset>]
+            [--resume <session_id>] [--context <text>]
             [--no-inherit-resources]
 ```
 
@@ -71,6 +71,7 @@ Session state lives at `/tmp/pi-subagent-state/<session_id>`:
 ```text
 control.lock
 execution.lock
+selection.json   # Resolved model/thinking retained for resume
 sessions/        # Native Pi JSONL conversation files
 prompt.md        # Snapshot of the task file only
 pueue.yml        # Shared hook configuration copied for the child's private daemon
@@ -150,5 +151,45 @@ Pueue calls the launcher with `--run`, an internal worker argument documented in
 a separate help section. It executes the child instead of submitting another
 task. Pueue retains the original project's working directory, so no project-path
 argument is needed.
-Model/thinking choices come from CLI overrides, then parent `subagents.json`,
-then parent Pi environment. No separate model/approval registry is maintained.
+
+## Model presets and UI
+
+Run `/subagents` in Pi to add/edit named presets (for example `light` and
+`deep`) and choose the default. The menu selects fully qualified provider/model
+IDs and thinking levels separately. Each completed change is saved immediately;
+cancelling a model/thinking dialog leaves that preset unchanged.
+
+At parent Pi startup, the extension validates the file and warns if it is
+missing, empty, malformed, or has invalid presets/defaults. Validation does not
+create or overwrite settings. Non-UI sessions and child agents skip the warning.
+
+All wrapper profiles share `~/.pi/agent/subagents.json`:
+
+```json
+{
+  "defaultProfile": "light",
+  "profiles": {
+    "light": { "model": "codex-auto/gpt-6-luna", "thinkingLevel": "high" },
+    "deep": { "model": "codex-auto/gpt-6.1-sol", "thinkingLevel": "medium" }
+  }
+}
+```
+
+Use `--profile deep` to select a preset, or omit it to use the default.
+Model and thinking are configured only through presets, not executable flags.
+Parent `PI_MODEL`, `PI_PROVIDER`, and `PI_REASONING_LEVEL` are never used for
+selection. Missing configuration and unknown presets fail rather than silently
+selecting another model. Launch JSON includes the resolved selection.
+The old single-model config remains readable and appears as `legacy` in the UI;
+it migrates on the first saved UI change.
+
+The resolved model/thinking is stored in `selection.json`. Queued workers read
+that snapshot. Resume reuses it unless `--profile` is supplied. Older sessions
+without that file use the current default. Changes to presets affect new launches, not queued workers
+or existing resumed selections.
+
+The UI lists models registered in the current parent. `codex-auto` requires
+`pi-auto` and the provider extension; it is unavailable with
+`--no-inherit-resources`. Choosing a preset does not install a provider or supply
+credentials. Use provider-qualified `openai-codex/...` presets to select upstream
+Codex explicitly.

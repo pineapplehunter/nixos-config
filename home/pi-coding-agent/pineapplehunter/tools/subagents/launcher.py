@@ -80,26 +80,41 @@ def ensure_idle(directory, session_id):
                 raise ValueError(f"Session task is not finished: {status}")
 
 
-def defaults(options, agent_source):
-    config_path = agent_source / "subagents.json"
-    config = (
-        json.loads(config_path.read_text()) if config_path.exists() else {}
-    )
-    if not isinstance(config, dict):
-        raise ValueError(f"{config_path}: expected an object")
-    model = config.get("model")
-    thinking = config.get("thinkingLevel")
-    if model is not None and not isinstance(model, str):
-        raise ValueError(f"{config_path}: expected a model string or null")
-    if thinking is not None and thinking not in THINKING_LEVELS:
-        raise ValueError(f"{config_path}: invalid thinkingLevel")
-    parent_model = None
-    if os.environ.get("PI_MODEL") and os.environ.get("PI_PROVIDER"):
-        parent_model = f"{os.environ['PI_PROVIDER']}/{os.environ['PI_MODEL']}"
-    options.model = options.model or model or parent_model
-    options.thinking = (
-        options.thinking or thinking or os.environ.get("PI_REASONING_LEVEL")
-    )
+def defaults(options, state):
+    config_path = Path.home() / ".pi/agent/subagents.json"
+    saved = state / "selection.json"
+    if options.resume and not options.profile and saved.is_file():
+        preset = json.loads(saved.read_text())
+    else:
+        config = (
+            json.loads(config_path.read_text()) if config_path.exists() else {}
+        )
+        if not isinstance(config, dict):
+            raise ValueError(f"{config_path}: expected an object")
+        if "profiles" in config:
+            profiles = config["profiles"]
+            name = options.profile or config.get("defaultProfile")
+            if not isinstance(profiles, dict) or name not in profiles:
+                raise ValueError(f"Unknown subagent profile: {name}")
+            preset = profiles[name]
+        elif options.profile:
+            raise ValueError("Configure named presets with /subagents first")
+        else:
+            preset = config  # Legacy single-model configuration.
+    if not isinstance(preset, dict):
+        raise ValueError("Subagent preset must be an object")
+    options.model = preset.get("model")
+    options.thinking = preset.get("thinkingLevel", "off")
+    if (
+        not isinstance(options.model, str)
+        or not re.fullmatch(r"[^/\s]+/\S+", options.model)
+    ):
+        raise ValueError(
+            "Configure model presets with /subagents; "
+            "parent model environment is not inherited"
+        )
+    if options.thinking not in THINKING_LEVELS:
+        raise ValueError("Invalid subagent thinkingLevel")
 
 
 def sandbox_command(options, state, agent_source):
@@ -277,8 +292,9 @@ def parser():
     cli.add_argument("directory", help="Caller-prepared workspace")
     cli.add_argument("prompt_file", help="Task prompt file")
     cli.add_argument("--resume", help="Native Pi session ID to resume")
-    cli.add_argument("--model")
-    cli.add_argument("--thinking", choices=THINKING_LEVELS)
+    cli.add_argument(
+        "--profile", help="Named preset configured with /subagents"
+    )
     cli.add_argument(
         "-c",
         "--context",
@@ -339,11 +355,12 @@ def main():
         os.environ.get("PI_CODING_AGENT_DIR", str(Path.home() / ".pi/agent"))
     ).absolute()
     if options.run:
+        defaults(options, state)
         return run_child(options, state, agent_source)
     prompt = Path(options.prompt_file).read_text()
     if not prompt.strip():
         raise ValueError("Prompt file must not be empty")
-    defaults(options, agent_source)
+    defaults(options, state)
     if options.resume and not any(
         (state / "sessions").glob(f"*_{options.session_id}.jsonl")
     ):
@@ -353,6 +370,10 @@ def main():
         ensure_idle(state, options.session_id)
         for entry in ("sessions", "tmp"):
             (state / entry).mkdir(exist_ok=True, mode=0o700)
+        (state / "selection.json").write_text(json.dumps({
+            "model": options.model,
+            "thinkingLevel": options.thinking,
+        }) + "\n")
         (state / "prompt.md").write_text(prompt)
         (state / "pueue.yml").write_text(Path(PUEUE_CONFIG_PATH).read_text())
         (state / "response.md").write_text("")
@@ -373,10 +394,6 @@ def main():
             options.session_id,
             "--run",
         ]
-        if options.model:
-            command.extend(["--model", options.model])
-        if options.thinking:
-            command.extend(["--thinking", options.thinking])
         if options.context:
             command.append(f"--context={options.context}")
         if options.no_inherit_resources:
@@ -407,6 +424,8 @@ def main():
                     "name": options.name,
                     "session_id": options.session_id,
                     "task_id": int(result.stdout.strip()),
+                    "model": options.model,
+                    "thinking_level": options.thinking,
                     "state_directory": str(state),
                     "response_path": str(state / "response.md"),
                     "stdout_path": str(state / "stdout.log"),

@@ -31,10 +31,14 @@ description: "Launch, resume, and inspect Pi subagents. Use for focused reviews 
   text, not a file). No shared mutable state/synchronized execution or shell `&`.
   Unrelated contexts may use separate briefs. Dependencies need waves: copy
   accepted earlier results into later workspaces.
-- Model/thinking: `--model provider/model`, `--thinking LEVEL` >
-  `<parent-agent-dir>/subagents.json` (`model`, `thinkingLevel`) > parent's
-  `PI_PROVIDER/PI_MODEL` and `PI_REASONING_LEVEL` > Pi defaults/saved session.
-  Missing/null config values inherit; env model combines provider and model.
+- Configure named model/thinking presets with `/subagents` in the parent UI.
+  All Pi wrapper profiles share `~/.pi/agent/subagents.json`.
+  Launch with `--profile light` or `--profile deep`, or omit it for the default.
+  Model/thinking can only be set in presets; there are no per-field CLI flags.
+  Parent model/thinking environment is never used. Launch JSON shows resolved
+  values. Resume preserves the previous selection unless `--profile` is supplied.
+  `codex-auto` presets require `pi-auto` and normal extension loading; do not
+  combine them with `--no-inherit-resources`.
 
 ## Examples
 
