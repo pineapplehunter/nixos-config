@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { CodexAccounts, formatAccount, parseUsage, personalReason, readReserve, resetCountdown, saveReserve } from "../pineapplehunter/extensions/codex-auto/accounts.ts";
+import { withProviderIdentity } from "../pineapplehunter/extensions/codex-auto/stream.ts";
 
 const window = (seconds, used) => ({ limit_window_seconds: seconds, used_percent: used, reset_at: Math.floor(Date.now() / 1000) + 600 });
 const usage = (used, weekly = 20) => ({ rate_limit: { primary_window: window(18000, used), secondary_window: window(604800, weekly) } });
@@ -101,6 +102,40 @@ test("reset countdown matches pi-usage rounding and omits missing reset times", 
   assert.equal(resetCountdown(undefined, now), undefined);
   const report = parseUsage({ rate_limit: { primary_window: { limit_window_seconds: 18000, used_percent: 28 } } });
   assert.equal(formatAccount("personal", { report }, model), "[personal 5h:72%]");
+});
+
+test("stream responses retain auto identity for session restoration and replay", async () => {
+  const partial = { role: "assistant", provider: "openai-codex", model: model.id, content: [], responseId: "response-1" };
+  const done = { ...partial, content: [{ type: "text", text: "done" }] };
+  async function* source() {
+    yield { type: "start", partial };
+    partial.content.push({ type: "text", text: "live" });
+    yield { type: "text_delta", contentIndex: 0, delta: "live", partial };
+    yield { type: "done", reason: "stop", message: done };
+  }
+  const events = [];
+  for await (const event of withProviderIdentity(source(), "codex-auto")) {
+    const message = event.type === "done" ? event.message : event.partial;
+    assert.equal(message.provider, "codex-auto");
+    events.push(event);
+  }
+  assert.equal(events[0].partial, events[1].partial);
+  assert.equal(events[0].partial.content[0].text, "live");
+  assert.equal(events[2].message.responseId, "response-1");
+  assert.equal(events[2].message.model, model.id);
+  // Pi restores the identity on the latest assistant response.
+  const saved = JSON.parse(JSON.stringify(events[2].message));
+  assert.equal(`${saved.provider}/${saved.model}`, `codex-auto/${model.id}`);
+
+  for (const reason of ["error", "aborted"]) {
+    const error = { ...partial, provider: "openai-codex", errorMessage: "quota exceeded" };
+    async function* failed() { yield { type: "error", reason, error }; }
+    for await (const event of withProviderIdentity(failed(), "codex-auto")) {
+      assert.equal(event.error.provider, "codex-auto");
+      assert.equal(event.error.errorMessage, "quota exceeded");
+      assert.equal(event.reason, reason);
+    }
+  }
 });
 
 test("invalid and expired data are not shown as available", () => {

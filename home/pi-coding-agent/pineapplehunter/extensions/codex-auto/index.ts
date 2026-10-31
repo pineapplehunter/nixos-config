@@ -13,6 +13,7 @@ import {
   ACCOUNTS, CodexAccounts, DEFAULT_RESERVE, formatAccount, officialOrigin, PROVIDER,
   readReserve, saveReserve, UPSTREAM, USAGE_TTL_MS, type Account,
 } from "./accounts.js";
+import { withProviderIdentity } from "./stream.js";
 
 const STATUS = "codex-auto";
 const COUNTDOWN_REFRESH_MS = 60_000;
@@ -64,13 +65,14 @@ export default async function (pi: ExtensionAPI): Promise<void> {
         const upstream = accounts.runtimes[account].getProvider(UPSTREAM);
         if (!upstream) throw new Error("codex-auto: Codex transport unavailable");
         // Normalize prior auto messages to Codex for Pi's tool-call and reasoning
-        // replay rules. The resulting assistant messages retain upstream identity.
+        // replay rules. Published responses retain the selected auto identity
+        // so session restoration does not try the unauthenticated upstream.
         const transcript = {
           ...context,
           messages: context.messages.map((message) => message.role === "assistant" && message.provider === PROVIDER
             ? { ...message, provider: UPSTREAM } : message),
         };
-        return upstream.streamSimple({ ...model, provider: UPSTREAM }, transcript, {
+        return withProviderIdentity(upstream.streamSimple({ ...model, provider: UPSTREAM }, transcript, {
           ...options,
           apiKey: auth.auth.apiKey,
           headers: { ...options?.headers, ...auth.auth.headers },
@@ -81,7 +83,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
           onResponse: options?.onResponse ? (response) => options.onResponse!(response, model) : undefined,
           onProviderStreamEvent: options?.onProviderStreamEvent
             ? (event) => options.onProviderStreamEvent!(event, model) : undefined,
-        });
+        }), PROVIDER);
       };
       // Only retry a personal quota error before any output was published. Never
       // replay a partial response or a tool call, which could duplicate work.
