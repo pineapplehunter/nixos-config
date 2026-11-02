@@ -80,8 +80,8 @@ def ensure_idle(directory, session_id):
                 raise ValueError(f"Session task is not finished: {status}")
 
 
-def defaults(options, state):
-    config_path = Path.home() / ".pi/agent/subagents.json"
+def defaults(options, state, agent_source):
+    config_path = agent_source / "subagents.json"
     saved = state / "selection.json"
     if options.resume and not options.profile and saved.is_file():
         preset = json.loads(saved.read_text())
@@ -351,16 +351,19 @@ def main():
         or STATE_ROOT.is_relative_to(workspace)
     ):
         raise ValueError("Workspace and session state must be separate")
-    agent_source = Path(
-        os.environ.get("PI_CODING_AGENT_DIR", str(Path.home() / ".pi/agent"))
-    ).absolute()
+    agent_dir = os.environ.get("PI_CODING_AGENT_DIR")
+    if not agent_dir:
+        raise ValueError(
+            "PI_CODING_AGENT_DIR is required for subagent configuration"
+        )
+    agent_source = Path(agent_dir).absolute()
     if options.run:
-        defaults(options, state)
+        defaults(options, state, agent_source)
         return run_child(options, state, agent_source)
     prompt = Path(options.prompt_file).read_text()
     if not prompt.strip():
         raise ValueError("Prompt file must not be empty")
-    defaults(options, state)
+    defaults(options, state, agent_source)
     if options.resume and not any(
         (state / "sessions").glob(f"*_{options.session_id}.jsonl")
     ):

@@ -172,7 +172,13 @@ At parent Pi startup, the extension validates the file and warns if it is
 missing, empty, malformed, or has invalid presets/defaults. Validation does not
 create or overwrite settings. Non-UI sessions and child agents skip the warning.
 
-All wrapper profiles share `~/.pi/agent/subagents.json`:
+Each wrapper profile uses its own `$PI_CODING_AGENT_DIR/subagents.json`
+(for example, `~/.pi/agent/subagents.json` for `pi` and
+`~/.pi/agent-auto/subagents.json` for `pi-auto`). `PI_CODING_AGENT_DIR` is
+required; there is no fallback to another directory or wrapper's presets.
+Configure presets separately with `/subagents` in each wrapper.
+
+Example for `pi-auto`:
 
 ```json
 {

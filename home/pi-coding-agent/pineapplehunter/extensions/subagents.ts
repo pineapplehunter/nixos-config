@@ -1,5 +1,4 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
-import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { DynamicBorder, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
@@ -8,7 +7,9 @@ import { fuzzyFilter, Input, SelectList, truncateToWidth } from "@earendil-works
 const levels = ["off", "minimal", "low", "medium", "high", "xhigh", "max"];
 type Preset = { model: string; thinkingLevel: string };
 type Config = { defaultProfile: string; profiles: Record<string, Preset> };
-const settingsPath = join(homedir(), ".pi/agent/subagents.json");
+const agentDir = process.env.PI_CODING_AGENT_DIR;
+if (!agentDir) throw new Error("PI_CODING_AGENT_DIR is required for subagent configuration");
+const settingsPath = join(agentDir, "subagents.json");
 
 async function load(): Promise<Config> {
   let value;

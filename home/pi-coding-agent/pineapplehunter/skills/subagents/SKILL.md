@@ -32,7 +32,8 @@ description: "Launch, resume, and inspect Pi subagents. Use for focused reviews 
   Unrelated contexts may use separate briefs. Dependencies need waves: copy
   accepted earlier results into later workspaces.
 - Configure named model/thinking presets with `/subagents` in the parent UI.
-  All Pi wrapper profiles share `~/.pi/agent/subagents.json`.
+  Presets are scoped to `$PI_CODING_AGENT_DIR/subagents.json` for each wrapper.
+  `PI_CODING_AGENT_DIR` is required; there is no shared configuration fallback.
   Launch with `--profile light` or `--profile deep`, or omit it for the default.
   Model/thinking can only be set in presets; there are no per-field CLI flags.
   Parent model/thinking environment is never used. Launch JSON shows resolved
