@@ -39,6 +39,9 @@ repeats this cycle. Intermediate replies do not finish the worker.
 
 ## Manage and diagnose
 
+Prefer parallel execution when possible. Use different groups when you need to
+combine parallel execution and sequential execution.
+
 - `pueue parallel 4`: multiple small independent tasks, default group. Restore
   `pueue parallel 1` before enqueueing larger tasks; lowering does not stop
   already-running jobs.
