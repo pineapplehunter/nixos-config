@@ -1,8 +1,10 @@
 """Bubblewrap launcher for Pi, including its filtered portal identity."""
 
+import grp
 import hashlib
 import json
 import os
+import pwd
 import secrets
 import shutil
 import signal
@@ -365,6 +367,18 @@ def main() -> int:
                 fail("Timed out waiting for the D-Bus proxy")
             time.sleep(0.01)
 
+        # Resolve the host identity before entering the sandbox, which has no
+        # host account database. Only expose root and the launching user/group.
+        uid, gid = os.getuid(), os.getgid()
+        user = pwd.getpwuid(uid)
+        group = grp.getgrgid(gid)
+        passwd = "root:x:0:0:root:/root:/bin/sh\n" if uid != 0 else ""
+        passwd += f"{user.pw_name}:x:{uid}:{gid}::{home}:/bin/sh\n"
+        groups = "root:x:0:\n" if gid != 0 else ""
+        groups += f"{group.gr_name}:x:{gid}:{user.pw_name}\n"
+        atomic_write(instance_dir / "passwd", passwd.encode(), 0o444)
+        atomic_write(instance_dir / "group", groups.encode(), 0o444)
+
         bwrap = [
             "bwrap",
             "--unshare-all",
@@ -383,6 +397,12 @@ def main() -> int:
             str(home),
             "--tmpfs",
             "/etc",
+            "--ro-bind",
+            str(instance_dir / "passwd"),
+            "/etc/passwd",
+            "--ro-bind",
+            str(instance_dir / "group"),
+            "/etc/group",
             "--tmpfs",
             "/run",
             "--dir",
