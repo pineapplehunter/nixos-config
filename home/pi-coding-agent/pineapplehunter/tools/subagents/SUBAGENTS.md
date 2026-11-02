@@ -162,6 +162,11 @@ arrow keys and Enter to select, or Escape to cancel. The scrolling list shows
 at most ten models and shrinks for short terminals.
 Each completed change is saved immediately;
 cancelling a model/thinking dialog leaves that preset unchanged.
+Use **Delete preset** to remove a preset after confirmation. Deleting the default
+requires choosing a replacement unless it is the last preset. Cancelling that
+choice keeps the preset. Deleting the last preset clears the default; configure
+a new preset before launching another agent. Existing agents retain their saved
+model/thinking selection.
 
 At parent Pi startup, the extension validates the file and warns if it is
 missing, empty, malformed, or has invalid presets/defaults. Validation does not

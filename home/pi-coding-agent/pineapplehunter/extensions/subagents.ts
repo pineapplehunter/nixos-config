@@ -134,12 +134,28 @@ export default function (pi: ExtensionAPI) {
             const preset = config.profiles[name];
             return `${name}${name === config.defaultProfile ? " (default)" : ""}: ${preset.model} · ${preset.thinkingLevel}`;
           });
-          const action = await ctx.ui.select("Subagent presets — shared across Pi profiles", [...entries, "Add preset", "Set default", "Done"]);
+          const action = await ctx.ui.select("Subagent presets — shared across Pi profiles", [
+            ...entries, "Add preset", ...(names.length ? ["Set default", "Delete preset"] : []), "Done",
+          ]);
           if (!action || action === "Done") return;
           if (action === "Set default") {
             const name = await ctx.ui.select("Default subagent preset", names);
             if (!name) continue;
             config.defaultProfile = name;
+          } else if (action === "Delete preset") {
+            const name = await ctx.ui.select("Delete subagent preset", names);
+            if (!name || !await ctx.ui.confirm("Delete preset?", `Delete "${name}"? This affects future launches, not existing agents.`)) continue;
+            const remaining = names.filter((entry) => entry !== name);
+            let defaultProfile = config.defaultProfile;
+            if (name === defaultProfile) {
+              const replacement = remaining.length
+                ? await ctx.ui.select("Choose replacement default", remaining)
+                : "";
+              if (replacement === undefined) continue;
+              defaultProfile = replacement;
+            }
+            delete config.profiles[name];
+            config.defaultProfile = defaultProfile;
           } else {
             const name = action === "Add preset"
               ? (await ctx.ui.input("Preset name (e.g. light or deep)"))?.trim()
