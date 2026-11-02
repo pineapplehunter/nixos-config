@@ -34,7 +34,7 @@ jobs:
     timeout-minutes: 720 # 12 hours
 
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: enable unprivileged userns clone
         if: runner.os == 'Linux'
         run: |
@@ -42,7 +42,9 @@ jobs:
           sudo sysctl -w kernel.unprivileged_userns_clone=1
       - uses: wimpysworld/nothing-but-nix@687c797a730352432950c707ab493fcc951818d7 # v10
         if: runner.os == 'Linux'
-      - uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31.10.6
+        with:
+          witness-carnage: true
+      - uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b # v31.11.3
         with:
           extra_nix_config: |
             fallback = true
@@ -50,16 +52,9 @@ jobs:
             max-jobs = 1
             system = ${{ matrix.system }}
 
-      - name: Build niks3
-        id: niks3
-        run: |
-          path=$(nix build .#niks3 --print-out-paths --no-link)
-          echo "store-path=$path" >> "$GITHUB_OUTPUT"
-      
-      - uses: Mic92/niks3-action@12d3e320b2a99b7938f9634bd337cd9fec104609 # v1.1.0
+      - uses: Mic92/niks3-action@6d24bc1d87acdfac8e5dc3266f7b28ae99051adf # v1.5.0
         with:
           server-url: https://niks3.s.ihavenojob.work
-          niks3-bin: ${{ steps.niks3.outputs.store-path }}/bin/niks3
 
       - name: Run checks
         run: nix flake check
