@@ -2,7 +2,8 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { randomUUID } from "node:crypto";
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { DynamicBorder, type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { fuzzyFilter, Input, SelectList, truncateToWidth } from "@earendil-works/pi-tui";
 
 const levels = ["off", "minimal", "low", "medium", "high", "xhigh", "max"];
 type Preset = { model: string; thinkingLevel: string };
@@ -40,6 +41,72 @@ async function save(config: Config): Promise<void> {
   const temporary = `${settingsPath}.${randomUUID()}.tmp`;
   await writeFile(temporary, JSON.stringify(config, null, 2) + "\n", { mode: 0o600 });
   await rename(temporary, settingsPath);
+}
+
+async function selectModel(ctx: ExtensionContext, name: string, current?: string): Promise<string | undefined> {
+  // RPC clients cannot render a custom terminal component.
+  if (ctx.mode !== "tui") {
+    const query = await ctx.ui.input(`Filter models for ${name}`, "Provider, model ID or name");
+    if (query === undefined) return undefined;
+    const matches = fuzzyFilter(ctx.modelRegistry.getAvailable(), query, (model) => `${model.provider}/${model.id} ${model.name}`);
+    return ctx.ui.select(`Model for ${name}`, matches.map((model) => `${model.provider}/${model.id}`));
+  }
+  const models = ctx.modelRegistry.getAvailable().map((model) => ({
+    value: `${model.provider}/${model.id}`,
+    label: `${model.id} [${model.provider}]`,
+    search: `${model.provider}/${model.id} ${model.name}`,
+  })).sort((a, b) => a.value.localeCompare(b.value));
+  return ctx.ui.custom<string | undefined>((tui, theme, kb, done) => {
+    const input = new Input();
+    const border = new DynamicBorder((text) => theme.fg("accent", text));
+    let filtered = models;
+    let visible = 0;
+    let list: SelectList;
+    const buildList = () => {
+      visible = Math.max(1, Math.min(10, tui.terminal.rows - 7));
+      list = new SelectList(filtered, visible, {
+        selectedPrefix: (text) => theme.fg("accent", text),
+        selectedText: (text) => theme.fg("accent", text),
+        description: (text) => theme.fg("muted", text),
+        scrollInfo: (text) => theme.fg("dim", text),
+        noMatch: (text) => theme.fg("warning", text),
+      });
+      list.onSelect = (item) => done(item.value);
+      list.onCancel = () => done(undefined);
+    };
+    buildList();
+    list.setSelectedIndex(Math.max(0, models.findIndex((model) => model.value === current)));
+    return {
+      get focused() { return input.focused; },
+      set focused(value: boolean) { input.focused = value; },
+      render(width: number) {
+        if (visible !== Math.max(1, Math.min(10, tui.terminal.rows - 7))) {
+          const selected = list.getSelectedItem()?.value;
+          buildList();
+          list.setSelectedIndex(Math.max(0, filtered.findIndex((model) => model.value === selected)));
+        }
+        return [
+          ...border.render(width),
+          theme.fg("accent", `Model for ${name} — type to filter`),
+          ...input.render(width),
+          ...(filtered.length ? list.render(width) : [theme.fg("warning", "  No matching models")]),
+          theme.fg("dim", "↑↓ navigate · enter select · esc cancel"),
+          ...border.render(width),
+        ].map((line) => truncateToWidth(line, width));
+      },
+      invalidate() { input.invalidate(); list.invalidate(); border.invalidate(); },
+      handleInput(data: string) {
+        if ((["tui.select.up", "tui.select.down", "tui.select.confirm", "tui.select.cancel"] as const).some((key) => kb.matches(data, key))) {
+          list.handleInput(data);
+        } else {
+          input.handleInput(data);
+          filtered = fuzzyFilter(models, input.getValue(), (model) => model.search);
+          buildList();
+        }
+        tui.requestRender();
+      },
+    };
+  });
 }
 
 export default function (pi: ExtensionAPI) {
@@ -82,9 +149,7 @@ export default function (pi: ExtensionAPI) {
               ctx.ui.notify("Use letters, numbers, underscores or hyphens", "error");
               continue;
             }
-            // Explicit provider IDs distinguish upstream Codex from Codex Auto.
-            const models = [...new Set(ctx.modelRegistry.getAll().map((model) => `${model.provider}/${model.id}`))].sort();
-            const model = await ctx.ui.select(`Model for ${name}`, models);
+            const model = await selectModel(ctx, name, config.profiles[name]?.model);
             if (!model) continue;
             const thinkingLevel = await ctx.ui.select(`Thinking level for ${name}`, levels);
             if (!thinkingLevel) continue;

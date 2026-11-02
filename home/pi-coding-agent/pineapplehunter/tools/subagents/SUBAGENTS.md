@@ -156,7 +156,11 @@ argument is needed.
 
 Run `/subagents` in Pi to add/edit named presets (for example `light` and
 `deep`) and choose the default. The menu selects fully qualified provider/model
-IDs and thinking levels separately. Each completed change is saved immediately;
+IDs and thinking levels separately. The terminal model picker follows Pi's
+built-in picker: type to fuzzy-filter provider, model ID, or model name; use
+arrow keys and Enter to select, or Escape to cancel. The scrolling list shows
+at most ten models and shrinks for short terminals.
+Each completed change is saved immediately;
 cancelling a model/thinking dialog leaves that preset unchanged.
 
 At parent Pi startup, the extension validates the file and warns if it is
@@ -188,7 +192,9 @@ that snapshot. Resume reuses it unless `--profile` is supplied. Older sessions
 without that file use the current default. Changes to presets affect new launches, not queued workers
 or existing resumed selections.
 
-The UI lists models registered in the current parent. `codex-auto` requires
+The UI lists only models Pi reports available through configured credentials
+in the current parent; quota and service availability are not checked.
+`codex-auto` requires
 `pi-auto` and the provider extension; it is unavailable with
 `--no-inherit-resources`. Choosing a preset does not install a provider or supply
 credentials. Use provider-qualified `openai-codex/...` presets to select upstream
