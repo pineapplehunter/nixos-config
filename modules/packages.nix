@@ -59,7 +59,7 @@
 
           # editor
           dconf-editor
-          vscode
+          vscodium
 
           # lang
           python3
