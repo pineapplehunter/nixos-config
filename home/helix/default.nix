@@ -78,10 +78,10 @@
             # ProVerif
             name = "proverif";
             source = pkgs.fetchFromGitHub {
-              owner = "maribu";
+              owner = "PineappleHunter";
               repo = "tree-sitter-proverif";
-              rev = "7741807092c4009c1fe4c3648da60ca72b1b80f1";
-              hash = "sha256-fMtGQsEbZHNIamrz3hoGvCJn5Dtu0oHhuLmMxOjFhGU=";
+              rev = "54ade6a4d105599cf4049a6db8960a9698279eea";
+              hash = "sha256-CrQdSghsg1RCRhaFZzpCAFWryAatKvlYF2few/XaKlM=";
             };
             block-comment-tokens = [
               {
@@ -98,11 +98,11 @@
             # Tamarin
             name = "spthy";
             source = pkgs.fetchFromGitHub {
-              owner = "tamarin-prover";
+              owner = "PineappleHunter";
               repo = "tamarin-prover";
               rootDir = "tree-sitter/tree-sitter-spthy";
-              rev = "b9136cb6c263ffc8f43ff54f9c31d7df62f9e85c";
-              hash = "sha256-4GQ9MUS3epj6NOsLos5k4+Omsixho1W9aLg0W2TcOgc=";
+              rev = "e19fdd6255580a9d7e784850c68a37da0bfcf5ae";
+              hash = "sha256-ruSVDhPaZIYip7sEbvBl/IRfmtTkDUEB0m7Wp9ggXBI=";
             };
             comment-tokens = [ "//" ];
             file-types = [ "spthy" ];
