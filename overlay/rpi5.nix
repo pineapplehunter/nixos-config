@@ -5,15 +5,15 @@
     # nixos-raspberrypi pins 0.7.0+rpt20260205, which does not accept flags
     # inherited from nixpkgs' newer expression; track the latest Raspberry Pi
     # release until its package expression is compatible.
-    # https://github.com/raspberrypi/libcamera/releases/tag/v0.7.2+rpt20261009
+    # https://github.com/raspberrypi/libcamera/releases/tag/v0.8.0+rpt20261104
     # Drop this version override once nixos-raspberrypi supplies a compatible fork.
     libcamera_rpi = prev.libcamera_rpi.overrideAttrs (old: rec {
-      version = "0.7.2+rpt20261009";
+      version = "0.8.0+rpt20261104";
       src = final.fetchFromGitHub {
         owner = "raspberrypi";
         repo = "libcamera";
         rev = "v${version}";
-        hash = "sha256-R5zRsio+Mrn2Fdr+9aGy1B0O53OEEQofamfim/rAQ10=";
+        hash = "sha256-mw712B2f6nAOdoulJESYIf7+vbLGIafsMX4XXfOP4LI=";
       };
       meta = old.meta // {
         changelog = "https://github.com/raspberrypi/libcamera/releases/tag/v${version}";
