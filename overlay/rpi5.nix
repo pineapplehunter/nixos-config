@@ -20,6 +20,20 @@
       };
     });
 
+    # PipeWire 1.6.9 uses upstream's renamed CameraLocation enum values, but
+    # the Raspberry Pi libcamera fork still exposes LocationFront/Back/External.
+    # Keep camera support and adapt only the Pi build to the fork's API:
+    # https://github.com/raspberrypi/libcamera/blob/v0.8.0+rpt20261104/src/libcamera/property_ids_core.yaml
+    # Drop this once the fork adopts the CameraLocation names.
+    pipewire = prev.pipewire.overrideAttrs (old: {
+      postPatch = (old.postPatch or "") + ''
+        substituteInPlace spa/plugins/libcamera/libcamera-device.cpp \
+          --replace-fail 'properties::CameraLocationFront' 'properties::LocationFront' \
+          --replace-fail 'properties::CameraLocationBack' 'properties::LocationBack' \
+          --replace-fail 'properties::CameraLocationExternal' 'properties::LocationExternal'
+      '';
+    });
+
     # nixos-raspberrypi still pins the 8.0.1 RPi fork. Its latest 8.1.x branch
     # is 8.1.2 (nixpkgs has moved to 8.1.3); track it for the upstream SVT-AV1
     # 4.x compatibility fix while preserving the RPi V4L2 changes.
