@@ -16,6 +16,7 @@ in
     ./nixgl.nix
     ./eza.nix
     ./rpi5.nix
+    ./snapper-gui.nix
   ];
 
   perSystem =
@@ -38,6 +39,7 @@ in
       overlays.niks3
       overlays.nixgl
       overlays.eza
+      overlays.snapper-gui
       overlays.custom-packages
     ];
 
