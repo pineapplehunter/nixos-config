@@ -9,6 +9,7 @@ let
 in
 {
   imports = [
+    ./btrfs-assistant.nix
     ./canon-cups-ufr2.nix
     ./curl-upki.nix
     ./errands.nix
@@ -35,6 +36,7 @@ in
 
   flake.overlays = {
     default = lib.composeManyExtensions [
+      overlays.btrfs-assistant
       overlays.canon-cups-ufr2
       overlays.curl-upki
       overlays.errands
