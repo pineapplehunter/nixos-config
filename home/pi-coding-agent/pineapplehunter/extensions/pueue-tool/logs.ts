@@ -292,7 +292,9 @@ export class LogViewer {
       const status = task ? th.fg(statusColor(task), statusLabel(task)) : th.fg("error", "Task removed");
       const mode = task?.group === "subagent" && !this.raw ? "Activity" : "Raw output";
       if (!compact) output.push(row(`${status}${task?.group !== "default" && task ? th.fg("muted", `   ${task.group}`) : ""}${th.fg("dim", `   ${mode}`)}`), rule());
-      output.push(row(th.fg("dim", "$ ") + (task?.original_command ?? task?.command ?? "")));
+      const commandRows = new Text(th.fg("dim", "$ ") + (task?.original_command ?? task?.command ?? ""), 0, 0).render(inner);
+      output.push(...commandRows.map((line) => row(line)));
+      height = Math.max(1, height - commandRows.length + 1);
       const rows = this.text.render(inner);
       const bottom = Math.max(0, rows.length - height);
       this.offset = this.follow ? bottom : Math.min(this.offset, bottom);
@@ -305,7 +307,7 @@ export class LogViewer {
     if (this.error) body = [th.fg("error", this.error), ...body].slice(0, height);
     while (body.length < height) body.push("");
     output.push(...body.map((line) => row(line)));
-    if (!compact) output.push(rule(), row(information));
+    if (!compact) output.push(rule(), ...new Text(information, 0, 0).render(inner).map((line) => row(line)));
     output.push(row(th.fg("dim", help)), th.fg("borderMuted", `╰${"─".repeat(Math.max(0, width - 2))}╯`));
     return output;
   }

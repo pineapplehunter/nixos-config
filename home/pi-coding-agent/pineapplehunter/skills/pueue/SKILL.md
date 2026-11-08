@@ -19,6 +19,10 @@ script/inputs prepared:
 pueue add --print-task-id -- 'python3 "scripts/check files.py" && printf "check complete\n"'
 ```
 
+Avoid redirecting or piping command output to a file just to capture logs
+(including `tee`); Pueue captures stdout/stderr. Prefer inspecting that output
+with `pueue log`. Keep file output only when it is a required task artifact.
+
 Retain the returned ID. After its completion, substitute it for `TASK_ID`:
 
 ```bash
