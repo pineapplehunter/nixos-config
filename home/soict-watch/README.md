@@ -41,8 +41,9 @@ journalctl --user -u soict-watch.service -n 100
 ```
 
 The first complete crawl establishes a baseline without starting Pi or posting
-to Slack, and explains this in Discord. Runs with no Markdown differences also
-notify Discord with a fixed reason without starting Pi. Subsequent Markdown changes (including newly linked or removed pages)
+to Slack, and explains this in Discord. Runs with no Markdown differences end
+without sending any notification or starting Pi. Subsequent Markdown changes
+(including newly linked or removed pages)
 start a fresh noninteractive Pi session. Pi writes a Japanese structured report
 to `response.json`, using the JSON Schema included in its prompt. The message
 shows 「ホームページに変更がありました。」 followed by one collapsed Slack
@@ -139,8 +140,9 @@ Pi failures also have details in `pi.log`. Failed runs trigger
 `soict-watch-failure.service`, which sends a red Discord notification through
 `local-notify`, the same host notification backend used by Pueue and Pi. This
 also covers service-level timeouts and startup failures that put the monitor in
-a failed state. Normal no-change runs send the skip reason described above,
-not a failure alert; the end-date condition sends nothing. Both skip-reason
+a failed state. Runs with no Markdown differences and the end-date condition
+send nothing. Reviewed differences that do not warrant a group report send an
+admin skip reason, not a failure alert. Both skip-reason
 and failure notifications use the official SOICT site icon as their avatar.
 Failure notifications contain only fixed diagnostic instructions, not exception text,
 website content, or webhook URLs. Notification delivery is attempted once, with

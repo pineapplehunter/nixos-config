@@ -163,8 +163,7 @@ def main():
         return
     diff = changes(json.loads(baseline.read_text(encoding="utf-8")), snapshot)
     if not diff:
-        notify_discord("前回の比較基準からMarkdownの差分がないため、Slackには投稿しません。")
-        print("No Markdown changes; notified Discord without starting Pi")
+        print("No Markdown changes; no notification or Pi review")
         return
     (state / "changes.diff").write_text(diff, encoding="utf-8")
     report = state / "response.json"

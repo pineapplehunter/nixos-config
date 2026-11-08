@@ -38,7 +38,7 @@ class ReportLimitsTest(unittest.TestCase):
             send.assert_not_called()
             self.assertFalse((state / "payload.json").exists())
 
-    def test_unchanged_site_notifies_discord_without_review(self):
+    def test_unchanged_site_skips_notification_and_review(self):
         with tempfile.TemporaryDirectory() as directory:
             state = Path(directory) / str(datetime.date.today().year)
             state.mkdir()
@@ -48,8 +48,7 @@ class ReportLimitsTest(unittest.TestCase):
                 "monitor.crawl", return_value=snapshot,
             ), patch("monitor.notify_discord") as notify, patch("monitor.subprocess.run") as review:
                 main()
-            notify.assert_called_once()
-            self.assertIn("差分がない", notify.call_args.args[0])
+            notify.assert_not_called()
             review.assert_not_called()
 
     def test_schema_requires_exactly_one_destination(self):
