@@ -9,6 +9,7 @@ let
 in
 {
   imports = [
+    ./canon-cups-ufr2.nix
     ./curl-upki.nix
     ./gnome-settings-daemon.nix
     ./niks3.nix
@@ -31,6 +32,7 @@ in
 
   flake.overlays = {
     default = lib.composeManyExtensions [
+      overlays.canon-cups-ufr2
       overlays.curl-upki
       overlays.gnome-settings-daemon
       overlays.niks3
