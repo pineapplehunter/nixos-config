@@ -11,12 +11,14 @@ in
   imports = [
     ./canon-cups-ufr2.nix
     ./curl-upki.nix
+    ./errands.nix
     ./gnome-settings-daemon.nix
     ./niks3.nix
     ./nixgl.nix
     ./eza.nix
     ./rpi5.nix
     ./snapper-gui.nix
+    ./tuned.nix
   ];
 
   perSystem =
@@ -35,11 +37,13 @@ in
     default = lib.composeManyExtensions [
       overlays.canon-cups-ufr2
       overlays.curl-upki
+      overlays.errands
       overlays.gnome-settings-daemon
       overlays.niks3
       overlays.nixgl
       overlays.eza
       overlays.snapper-gui
+      overlays.tuned
       overlays.custom-packages
     ];
 
