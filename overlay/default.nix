@@ -13,12 +13,14 @@ in
     ./canon-cups-ufr2.nix
     ./curl-upki.nix
     ./errands.nix
+    ./gitify.nix
     ./gnome-settings-daemon.nix
     ./niks3.nix
     ./nixgl.nix
     ./eza.nix
     ./rpi5.nix
     ./snapper-gui.nix
+    ./super-productivity.nix
     ./tuned.nix
   ];
 
@@ -40,11 +42,13 @@ in
       overlays.canon-cups-ufr2
       overlays.curl-upki
       overlays.errands
+      overlays.gitify
       overlays.gnome-settings-daemon
       overlays.niks3
       overlays.nixgl
       overlays.eza
       overlays.snapper-gui
+      overlays.super-productivity
       overlays.tuned
       overlays.custom-packages
     ];
