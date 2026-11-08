@@ -7,7 +7,8 @@
       ...
     }:
     let
-      python = pkgs.python3.withPackages (ps: [ ps.jsonschema ]);
+      python = pkgs.python3.withPackages (ps: [ ps.pydantic ]);
+      discordIcon = "https://soict.org/wp-content/uploads/2026/05/cropped-2aOboQYrmw3L2D7MwM5SV5a0Byh9RCZwkrZANqIC-192x192.jpg";
       reportExtension = pkgs.writeText "soict-validate-report.ts" (
         builtins.replaceStrings
           [ "@REPORT_PYTHON@" "@REPORT_VALIDATOR@" ]
@@ -20,12 +21,14 @@
           python
           pkgs.gitcrawl
           pkgs.git
+          pkgs.local-notify
           config.programs.pi-coding-agent.package
         ];
         text = ''
           export SOICT_STATE_DIR=${lib.escapeShellArg "${config.xdg.stateHome}/soict-watch"}
           export SOICT_WEBHOOK_FILE=${lib.escapeShellArg config.sops.secrets.gitcrawl-slack-webhook.path}
           export SOICT_REPORT_EXTENSION=${reportExtension}
+          export SOICT_DISCORD_ICON=${lib.escapeShellArg discordIcon}
           exec python3 ${./.}/monitor.py
         '';
       };
@@ -61,7 +64,7 @@
             "--username"
             "soict-watch"
             "--icon"
-            "https://raw.githubusercontent.com/pineapplehunter/nixos-config/main/home/notification-icons/pi.png"
+            discordIcon
             "--title"
             "SOICT monitor failed"
             "--content"

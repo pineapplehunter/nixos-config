@@ -40,8 +40,9 @@ systemctl --user list-timers soict-watch.timer
 journalctl --user -u soict-watch.service -n 100
 ```
 
-The first complete crawl establishes a baseline without starting Pi or sending a
-message. Subsequent Markdown changes (including newly linked or removed pages)
+The first complete crawl establishes a baseline without starting Pi or posting
+to Slack, and explains this in Discord. Runs with no Markdown differences also
+notify Discord with a fixed reason without starting Pi. Subsequent Markdown changes (including newly linked or removed pages)
 start a fresh noninteractive Pi session. Pi writes a Japanese structured report
 to `response.json`, using the JSON Schema included in its prompt. The message
 shows 「ホームページに変更がありました。」 followed by one collapsed Slack
@@ -54,8 +55,17 @@ and additions, removals, or target URL changes of related links (including new
 navigation links such as Accommodation). Minor wording fixes, singular/plural
 heading changes, image replacements or image URL changes, styling, and mere
 link duplication or repositioning are ignored. If there are no reportable
-changes, Pi writes `{"categories": []}`; the monitor advances the baseline
-without sending a Slack message. Mixed changes report only the relevant items.
+changes, Pi writes
+`{"recipient": "admin", "reason": "投稿不要の具体的な理由と関連URL"}`;
+the monitor sends that reason to the user's Discord through `local-notify`,
+then advances the baseline without sending a Slack message. Otherwise Pi writes
+`{"recipient": "group", "categories": [...]}` for Slack delivery. The schema
+uses audience names (`group` and `admin`); only delivery code maps them to Slack
+and Discord, respectively. Pydantic models
+use `recipient` as a discriminated union, returning typed reports and generating
+the JSON Schema used in the prompt from the same definitions in `report.py`.
+They reject unknown recipients, extra fields, empty Slack categories, and blank
+or oversized Discord reasons (at most 1,800 characters). Mixed changes report only the relevant items to Slack.
 
 The explicitly loaded `validate-report.ts` extension checks the file at
 `agent_before_settle` (the last actionable boundary, not session shutdown).
@@ -85,8 +95,8 @@ one. Boundary checks can be run with the monitor's Python environment:
 python3 -m unittest discover -s home/soict-watch
 ```
 
-An acknowledged Slack POST, or a validated review with no reportable changes,
-advances the baseline. A failed crawl, review, or delivery leaves it unchanged
+An acknowledged Slack POST, or successful `local-notify` delivery of the reason
+for skipping Slack, advances the baseline. A failed crawl, review, or delivery leaves it unchanged
 so the next scheduled run can retry. A POST that
 Slack accepts just before a connection failure can produce a duplicate on retry.
 
@@ -119,7 +129,7 @@ Home Manager `xdg.stateHome`). It contains:
 - `baseline.json`: last successfully handled Markdown snapshot.
 - `current.json`: latest complete crawl.
 - `changes.diff`: differences since the baseline.
-- `response.json`: categorized report written by Pi, in Japanese (replaces `response.md`).
+- `response.json`: Slack report or Discord skip reason written by Pi, in Japanese.
 - `pi.log`: Pi stdout and stderr for the latest review.
 - `payload.json`: JSON sent to Slack.
 
@@ -129,12 +139,15 @@ Pi failures also have details in `pi.log`. Failed runs trigger
 `soict-watch-failure.service`, which sends a red Discord notification through
 `local-notify`, the same host notification backend used by Pueue and Pi. This
 also covers service-level timeouts and startup failures that put the monitor in
-a failed state. Normal no-change runs and the end-date condition do not alert.
-Notifications contain only fixed diagnostic instructions, not exception text,
+a failed state. Normal no-change runs send the skip reason described above,
+not a failure alert; the end-date condition sends nothing. Both skip-reason
+and failure notifications use the official SOICT site icon as their avatar.
+Failure notifications contain only fixed diagnostic instructions, not exception text,
 website content, or webhook URLs. Notification delivery is attempted once, with
 no automatic retry or recursive failure handler; delivery errors appear in
 `journalctl --user -u soict-watch-failure.service`. The existing
 `pueue-discord-webhook` secret and host D-Bus notification service are reused;
 no new webhook is needed. Failures do not send a substitute Slack message.
 To deliberately reset the baseline, stop the service and remove
-only `baseline.json`; the next successful crawl becomes the new silent baseline.
+only `baseline.json`; the next successful crawl creates a new baseline and
+notifies Discord why no Slack report was sent.

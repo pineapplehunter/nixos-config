@@ -136,6 +136,15 @@ def changes(before, after):
     )
 
 
+def notify_discord(reason):
+    subprocess.run([
+        "local-notify", "--username", "soict-watch",
+        "--icon", os.environ["SOICT_DISCORD_ICON"],
+        "--title", "SOICT: Slack投稿なし",
+        "--content", reason,
+    ], check=True, timeout=30)
+
+
 def main():
     os.umask(0o077)
     year = datetime.date.today().year
@@ -148,12 +157,14 @@ def main():
     pending = state / "current.json"
     pending.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2), encoding="utf-8")
     if not baseline.exists():
+        notify_discord(f"初回の巡回で{len(snapshot)}ページの比較基準を作成しました。変更前のデータがないためSlackには投稿しません。")
         pending.replace(baseline)
-        print(f"Established initial baseline for {len(snapshot)} pages; no notification")
+        print(f"Established initial baseline for {len(snapshot)} pages; notified Discord")
         return
     diff = changes(json.loads(baseline.read_text(encoding="utf-8")), snapshot)
     if not diff:
-        print("No Markdown changes; not starting Pi")
+        notify_discord("前回の比較基準からMarkdownの差分がないため、Slackには投稿しません。")
+        print("No Markdown changes; notified Discord without starting Pi")
         return
     (state / "changes.diff").write_text(diff, encoding="utf-8")
     report = state / "response.json"
@@ -168,10 +179,13 @@ archive/ の Git 履歴も参照してください。read、bash、edit、write 
 以下の JSON Schema に従ってください。Markdown のコードフェンスで囲まないでください。
 {json.dumps(SCHEMA, ensure_ascii=False, indent=2)}
 
+共有向け報告が必要なら {{"recipient": "group", "categories": [...]}}、不要なら {{"recipient": "admin", "reason": "共有向け報告が不要と判断した具体的な理由"}} を保存してください。
+recipient で送信対象を必ず指定してください。reason は管理者個人への通知本文です。日本語で1800文字以内とし、確認した変更と対象外と判断した理由、関連ページのURLを簡潔に示してください。
+以下は group を選ぶ場合の指示です。
 categories は変更のある話題だけとし、「締切・重要日程」「投稿・採択」「参加登録・会場」
 「プログラム」「その他」などに分類してください。title は日本語の短い分類名です。
 sections の各文字列は日本語の簡潔な箇条書きとし、関連する変更されたページのURLを含めてください。
-文字列は Slack の plain_text として表示されます。Markdown の装飾は使わないでください。
+文字列はプレーンテキストとして表示されます。Markdown の装飾は使わないでください。
 報告全体はなるべく3500文字以内、各 section は2800文字以内にしてください。
 締切、開催日、投稿・採択、参加登録、会場、プログラムなどへの影響を優先し、
 確認できる場合は変更前と変更後を示してください。公式名称やURLは原文のままで構いません。
@@ -184,7 +198,7 @@ sections の各文字列は日本語の簡潔な箇条書きとし、関連す�
 例：「Program Committees」から「Program Committee」への変更だけなら通知不要です。
 画像自体の変更は無視しますが、それに伴い本文の日程・内容や案内先リンクが変わった場合はその実質的変更を報告してください。
 通知対象だけを categories に含め、無視した変更への言及や「実質的な変更なし」という報告は不要です。
-通知対象が一件もなければ、必ず {{"categories": []}} を保存してください。
+通知対象が一件もなければ、recipient を admin として reason に投稿不要の理由を保存してください。
 推測と確認済みの事実を区別し、過去の大会に関する変更は今回の大会の変更と混同しないでください。
 baseline.json、current.json、changes.diff、archive/ は変更しないでください。
 最終回答だけで済ませず、必ず write ツール等で response.json を作成してください。
@@ -199,9 +213,10 @@ baseline.json、current.json、changes.diff、archive/ は変更しないでく�
         ], cwd=state, stdin=subprocess.DEVNULL, stdout=log,
             stderr=subprocess.STDOUT, check=True, timeout=600)
     reviewed = load_report(report)
-    if not reviewed["categories"]:
+    if reviewed.recipient == "admin":
+        notify_discord(reviewed.reason)
         pending.replace(baseline)
-        print("No reportable changes; baseline updated without notification")
+        print("No reportable changes; notified Discord and updated baseline")
         return
     payload = json.dumps(slack_payload(reviewed), ensure_ascii=False).encode("utf-8")
     (state / "payload.json").write_bytes(payload)

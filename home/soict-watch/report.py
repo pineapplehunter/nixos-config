@@ -1,25 +1,43 @@
 """Shared report schema validation and Slack payload construction."""
 
-import json
 from pathlib import Path
 import sys
+from typing import Annotated, Literal
 
-from jsonschema import Draft202012Validator
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, TypeAdapter
 
 
-SCHEMA = json.loads(Path(__file__).with_name("report-schema.json").read_text(encoding="utf-8"))
-VALIDATOR = Draft202012Validator(SCHEMA)
+class ReportModel(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+
+class Category(ReportModel):
+    title: Annotated[str, StringConstraints(min_length=1, max_length=100, pattern=r"\S")]
+    sections: Annotated[
+        list[Annotated[str, StringConstraints(min_length=1, max_length=2800, pattern=r"\S")]],
+        Field(min_length=1, max_length=5),
+    ]
+
+
+class GroupReport(ReportModel):
+    recipient: Literal["group"]
+    categories: Annotated[list[Category], Field(min_length=1, max_length=6)]
+
+
+class AdminReport(ReportModel):
+    recipient: Literal["admin"]
+    reason: Annotated[str, StringConstraints(min_length=1, max_length=1800, pattern=r"\S")]
+
+
+REPORT = TypeAdapter(Annotated[GroupReport | AdminReport, Field(discriminator="recipient")])
+SCHEMA = REPORT.json_schema()
 SUMMARY = "ホームページに変更がありました。"
 
 
 def load_report(path):
-    report = json.loads(Path(path).read_text(encoding="utf-8"))
-    errors = list(VALIDATOR.iter_errors(report))
-    if errors:
-        raise ValueError("\n".join(
-            f"{error.json_path}: {error.message}" for error in errors[:10]
-        ))
-    validate_slack_payload(slack_payload(report))
+    report = REPORT.validate_json(Path(path).read_text(encoding="utf-8"))
+    if report.recipient == "group":
+        validate_slack_payload(slack_payload(report))
     return report
 
 
@@ -52,7 +70,7 @@ def validate_slack_payload(payload):
         check_block(block, f"blocks[{index}]")
 
 
-def slack_payload(report):
+def slack_payload(report: GroupReport):
     return {
         "text": SUMMARY,
         "blocks": [
@@ -60,15 +78,15 @@ def slack_payload(report):
             *[
                 {
                     "type": "container",
-                    "title": {"type": "plain_text", "text": category["title"]},
+                    "title": {"type": "plain_text", "text": category.title},
                     "is_collapsible": True,
                     "default_collapsed": True,
                     "child_blocks": [
                         {"type": "section", "text": {"type": "plain_text", "text": section}}
-                        for section in category["sections"]
+                        for section in category.sections
                     ],
                 }
-                for category in report["categories"]
+                for category in report.categories
             ],
         ],
         "unfurl_links": False,
