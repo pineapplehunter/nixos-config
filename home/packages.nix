@@ -30,7 +30,6 @@
           difftastic
           dig
           dust
-          elan
           fuc
           fzf
           git-extras
