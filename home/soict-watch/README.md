@@ -49,6 +49,14 @@ shows 「ホームページに変更がありました。」 followed by one col
 page URLs. Empty categories are omitted; report content is rendered as plain
 text rather than interpreting Slack markup or mentions.
 
+Reports include schedule changes, substantive conference information changes,
+and additions, removals, or target URL changes of related links (including new
+navigation links such as Accommodation). Minor wording fixes, singular/plural
+heading changes, image replacements or image URL changes, styling, and mere
+link duplication or repositioning are ignored. If there are no reportable
+changes, Pi writes `{"categories": []}`; the monitor advances the baseline
+without sending a Slack message. Mixed changes report only the relevant items.
+
 The explicitly loaded `validate-report.ts` extension checks the file at
 `agent_before_settle` (the last actionable boundary, not session shutdown).
 Missing files, malformed JSON, schema violations, and oversized sections cause
@@ -77,8 +85,9 @@ one. Boundary checks can be run with the monitor's Python environment:
 python3 -m unittest discover -s home/soict-watch
 ```
 
-Only an acknowledged Slack POST advances the baseline. A failed crawl, review,
-or delivery leaves it unchanged so the next scheduled run can retry. A POST that
+An acknowledged Slack POST, or a validated review with no reportable changes,
+advances the baseline. A failed crawl, review, or delivery leaves it unchanged
+so the next scheduled run can retry. A POST that
 Slack accepts just before a connection failure can produce a duplicate on retry.
 
 ## Crawl scope

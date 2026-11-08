@@ -1,6 +1,7 @@
 """Run with: python3 -m unittest discover -s home/soict-watch"""
 
 from copy import deepcopy
+import datetime
 import json
 from pathlib import Path
 import tempfile
@@ -8,9 +9,32 @@ import unittest
 from unittest.mock import patch
 
 from report import load_report, slack_payload, validate_slack_payload
+from monitor import main
 
 
 class ReportLimitsTest(unittest.TestCase):
+    def test_no_reportable_changes_updates_baseline_without_notification(self):
+        with tempfile.TemporaryDirectory() as directory:
+            state = Path(directory) / str(datetime.date.today().year)
+            state.mkdir()
+            baseline = state / "baseline.json"
+            baseline.write_text(json.dumps({"https://soict.org/": "Program Committees\n"}))
+            snapshot = {"https://soict.org/": "Program Committee\n"}
+
+            def review(*args, **kwargs):
+                (state / "response.json").write_text('{"categories": []}', encoding="utf-8")
+
+            with patch.dict("os.environ", {
+                "SOICT_STATE_DIR": directory, "SOICT_REPORT_EXTENSION": "unused",
+            }), patch("monitor.crawl", return_value=snapshot), patch(
+                "monitor.subprocess.run", side_effect=review,
+            ), patch("monitor.urlopen") as send:
+                main()
+            self.assertEqual(load_report(state / "response.json"), {"categories": []})
+            self.assertEqual(json.loads(baseline.read_text()), snapshot)
+            send.assert_not_called()
+            self.assertFalse((state / "payload.json").exists())
+
     def test_slack_boundaries(self):
         payload = slack_payload({"categories": [{"title": "登録", "sections": ["変更"]}]})
         cases = [

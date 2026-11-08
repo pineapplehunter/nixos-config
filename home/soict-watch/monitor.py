@@ -175,7 +175,16 @@ sections の各文字列は日本語の簡潔な箇条書きとし、関連す�
 報告全体はなるべく3500文字以内、各 section は2800文字以内にしてください。
 締切、開催日、投稿・採択、参加登録、会場、プログラムなどへの影響を優先し、
 確認できる場合は変更前と変更後を示してください。公式名称やURLは原文のままで構いません。
-ナビゲーションの重複や装飾のみの変更はまとめ、実質的な変更がない場合もその旨を日本語で記載してください。
+通知対象は、日程（締切・開催日等）、実質的な内容（投稿・採択、参加登録、会場・宿泊、
+プログラム、委員名簿等）、大会に関連するリンクの追加・削除・リンク先URL変更です。
+ナビゲーション内の変更でも、Accommodationへのリンク追加など、新たな案内への導線は必ず報告してください。
+リンクは表示文言が同じでもリンク先URLの変更を確認し、確認できる場合は変更前後のURLを示してください。
+軽微な文言修正（誤字、表記ゆれ、意味の変わらない言い換え、見出しの単数形・複数形変更）、
+画像の差し替え・画像URL変更、装飾・レイアウト変更、既存リンクの単なる重複や配置変更は報告しないでください。
+例：「Program Committees」から「Program Committee」への変更だけなら通知不要です。
+画像自体の変更は無視しますが、それに伴い本文の日程・内容や案内先リンクが変わった場合はその実質的変更を報告してください。
+通知対象だけを categories に含め、無視した変更への言及や「実質的な変更なし」という報告は不要です。
+通知対象が一件もなければ、必ず {{"categories": []}} を保存してください。
 推測と確認済みの事実を区別し、過去の大会に関する変更は今回の大会の変更と混同しないでください。
 baseline.json、current.json、changes.diff、archive/ は変更しないでください。
 最終回答だけで済ませず、必ず write ツール等で response.json を作成してください。
@@ -189,7 +198,12 @@ baseline.json、current.json、changes.diff、archive/ は変更しないでく�
             "--no-approve", "--tools", "read,bash,edit,write", prompt,
         ], cwd=state, stdin=subprocess.DEVNULL, stdout=log,
             stderr=subprocess.STDOUT, check=True, timeout=600)
-    payload = json.dumps(slack_payload(load_report(report)), ensure_ascii=False).encode("utf-8")
+    reviewed = load_report(report)
+    if not reviewed["categories"]:
+        pending.replace(baseline)
+        print("No reportable changes; baseline updated without notification")
+        return
+    payload = json.dumps(slack_payload(reviewed), ensure_ascii=False).encode("utf-8")
     (state / "payload.json").write_bytes(payload)
     # Only the delivery code reads the webhook; it is not included in the prompt.
     webhook = Path(os.environ["SOICT_WEBHOOK_FILE"]).read_text(encoding="utf-8").strip()
