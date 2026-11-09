@@ -15,6 +15,9 @@ in
     ./errands.nix
     ./gitify.nix
     ./gnome-settings-daemon.nix
+    ./hl-log-viewer.nix
+    ./omnix.nix
+    ./tpm-passkey.nix
     ./niks3.nix
     ./nixgl.nix
     ./eza.nix
@@ -44,6 +47,9 @@ in
       overlays.errands
       overlays.gitify
       overlays.gnome-settings-daemon
+      overlays.hl-log-viewer
+      overlays.omnix
+      overlays.tpm-passkey
       overlays.niks3
       overlays.nixgl
       overlays.eza
