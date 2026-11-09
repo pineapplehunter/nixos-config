@@ -49,7 +49,11 @@ combine parallel execution and sequential execution.
 - `pueue parallel 4`: multiple small independent tasks, default group. Restore
   `pueue parallel 1` before enqueueing larger tasks; lowering does not stop
   already-running jobs.
-- `pueue status`/`--json`: diagnosis, not waiting. Nonfinishing tasks produce no
-  completion and have no inactivity timeout; diagnose and repair/cancel them.
+- `pueue status`/`--json`: diagnosis, not waiting. Running tasks with no new output
+  for 30 minutes trigger an automatic stall-inspection reminder. Inspect logs and
+  process state; silence alone does not justify cancellation.
+  `/pueue-inactivity 10m` changes the interval; `/pueue-inactivity off` disables
+  reminders (Pi commands, not shell).
+  Paused/queued tasks do not trigger reminders; diagnose them explicitly.
 - `pueue clean` removes **all finished tasks and logs**: first process every
   needed finished result and retain evidence. Use `pueue --help` for other commands.

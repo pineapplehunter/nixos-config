@@ -120,6 +120,16 @@ pi @noflake --print "Summarize the files in this directory"
 
 ## Browse background work
 
+Running tasks trigger an agent reminder after **30 minutes without new output**.
+Use `/pueue-inactivity 10m` to change the threshold (`s`, `m`, or `h`),
+`/pueue-inactivity off` to disable it, or `/pueue-inactivity` to show the setting.
+The setting survives reload/resume in this session; new sessions default to 30m.
+Checks run every ten seconds and repeat at most once per threshold per task.
+New output resets the timer; enabling/reconfiguring or reloading starts a fresh
+observation window. Only running tasks are monitored, not queued or paused ones.
+Reminders ask the agent to inspect logs/process state, not automatically cancel
+quiet tasks. `/pueue-notifications off` pauses reminders as well as completions.
+
 Use `/pueue-logs` to select a task or `/pueue-logs <id>` to open one directly.
 Finished tasks remain browsable until cleaned. A compact, themed task table
 shows statuses and human labels, with the selected command in a separate preview.

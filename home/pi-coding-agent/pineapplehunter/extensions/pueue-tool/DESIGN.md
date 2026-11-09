@@ -178,9 +178,21 @@ This resumes a living interactive/RPC Pi process, not one whose sandbox has
 been destroyed. Session switching and a host supervisor are outside this change.
 Ordinary `--print`/JSON remain single-shot and do not support idle wakeups.
 
-There is no longer an inactivity timeout. Tasks that remain paused, stashed,
-queued, or hung keep children alive until finished or cancelled. Completion
-notifications alone cannot detect a task that never finishes.
+Running tasks receive a stall-inspection reminder after 30 minutes without
+observed output changes. `/pueue-inactivity <duration s/m/h|off>` configures this;
+no argument shows the current value. The setting is persisted in session entries
+and restored on reload/resume; new sessions default to 30m. The shared ten-second
+reconciliation timer checks `task_logs/<id>.log` size, mtime, and inode without
+reading logs. First observation, new output, a new running attempt, and monitor
+reset start a fresh window. Missing logs count as silence; other stat errors use
+the existing notification-error handling. Reminders repeat no faster than the
+threshold for each task and use the same idle-trigger/busy-steering delivery as
+completions. Abort/error and `/pueue-notifications off` pause both kinds of turns.
+
+Reminders do not mark results processed, cancel tasks, or permit child exit.
+Paused, stashed, and queued tasks are not monitored and keep children alive until
+finished or cancelled. Silence is not proof of a stall: the agent must inspect
+logs and process state before deciding what to do.
 
 ## References
 

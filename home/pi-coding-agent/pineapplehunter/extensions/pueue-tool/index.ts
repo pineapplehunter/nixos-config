@@ -3,11 +3,14 @@ import { mkdirSync, readdirSync, unlinkSync, watch, type FSWatcher } from "node:
 import { join } from "node:path";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { registerLogViewer, type Task } from "./logs.js";
+import { InactivityMonitor, parseInactivityTimeout } from "./inactivity.js";
 
 const MESSAGE_TYPE = "pueue-completion";
 const PROCESSED_TYPE = "pueue-completions-processed";
 const RECONCILE_MS = 10_000;
 const STATUS_KEY = "usage-pueue";
+const INACTIVITY_SETTING = "pueue-inactivity-timeout";
+const DEFAULT_INACTIVITY_MS = 30 * 60_000;
 
 function taskKey(task: Task): string | undefined {
   if (typeof task.status !== "object" || !task.status.Done) return undefined;
@@ -85,6 +88,8 @@ export default function (pi: ExtensionAPI) {
 
   const child = process.env.PI_SUBAGENT_ROLE === "child";
   const inbox = join(directory, "completions");
+  const inactivity = new InactivityMonitor(directory);
+  let inactivityMs = DEFAULT_INACTIVITY_MS;
   let context: ExtensionContext | undefined;
   let watcher: FSWatcher | undefined;
   let timer: ReturnType<typeof setInterval> | undefined;
@@ -117,6 +122,21 @@ export default function (pi: ExtensionAPI) {
     context?.ui.setStatus(STATUS_KEY, undefined);
     context?.ui.setStatus("pueue-notify", undefined);
     context = undefined;
+    inactivity.reset();
+  }
+
+  function inactivityMessage(tasks: Task[]) {
+    const overdue = inactivity.check(tasks, inactivityMs);
+    if (!overdue.length) return undefined;
+    const summary = overdue.map(({ task, idleMs }) =>
+      `Task ${task.id}${task.label ? ` ${JSON.stringify(task.label)}` : ""} (${task.group}): no new output observed for ${(idleMs / 60_000).toFixed(1)} minutes.  \n${inlineCode(task.original_command ?? task.command)}  \nInspect ${inlineCode(`pueue log --lines 30 ${task.id}`)}.`,
+    ).join("\n\n");
+    return {
+      customType: "pueue-inactivity",
+      content: `${summary}\n\nThese running tasks exceeded the ${(inactivityMs / 60_000).toFixed(1)} minute inactivity threshold. Inspect their logs and process state to determine whether they have stalled. Silence alone is not failure; do not cancel or restart solely because of this reminder. Continue the original task.`,
+      display: true,
+      details: { taskIds: overdue.map(({ task }) => task.id), summary },
+    };
   }
 
   async function collect(): Promise<{ tasks: Task[]; fresh: Task[] }> {
@@ -161,13 +181,15 @@ export default function (pi: ExtensionAPI) {
         const ctx = context;
         if (!ctx || current !== generation) return;
         try {
-          const { fresh } = await collect();
+          const { tasks, fresh } = await collect();
           if (current !== generation || paused) return;
           ctx.ui.setStatus("pueue-notify", undefined);
           if (fresh.length) {
             enqueue(fresh);
             pi.sendMessage(completionMessage(fresh), { triggerTurn: true, deliverAs: "steer" });
           }
+          const reminder = inactivityMessage(tasks);
+          if (reminder) pi.sendMessage(reminder, { triggerTurn: true, deliverAs: "steer" });
         } catch (error) {
           if (current === generation) warn(ctx, error);
         }
@@ -188,7 +210,11 @@ export default function (pi: ExtensionAPI) {
     paused = false;
     failure = undefined;
     readyToExit = false;
+    inactivityMs = DEFAULT_INACTIVITY_MS;
     for (const entry of ctx.sessionManager.getBranch()) {
+      if (entry.type === "custom" && entry.customType === INACTIVITY_SETTING) {
+        inactivityMs = (entry.data as { timeoutMs: number }).timeoutMs;
+      }
       if (entry.type === "custom" && entry.customType === PROCESSED_TYPE) {
         for (const key of (entry.data as { keys: string[] }).keys) processed.add(key);
       }
@@ -244,6 +270,10 @@ export default function (pi: ExtensionAPI) {
           enqueue(fresh);
           return { entries: [{ type: "custom_message" as const, ...completionMessage(fresh) }], continue: true };
         }
+        const reminder = inactivityMessage(tasks);
+        if (reminder) {
+          return { entries: [{ type: "custom_message" as const, ...reminder }], continue: true };
+        }
         readyToExit = tasks.every((task) => {
           const key = taskKey(task);
           return key !== undefined && processed.has(key);
@@ -267,6 +297,27 @@ export default function (pi: ExtensionAPI) {
       paused = args.trim() === "off";
       ctx.ui.notify(`Pueue completion notifications ${paused ? "paused" : "enabled"}.`, "info");
       if (!paused) schedule();
+    },
+  });
+
+  pi.registerCommand("pueue-inactivity", {
+    description: "Set the no-output reminder timeout (default 30m): <duration s/m/h> | off; no argument shows the setting",
+    handler: async (args, ctx) => {
+      const value = args.trim().toLowerCase();
+      if (value) {
+        const timeout = parseInactivityTimeout(value);
+        if (timeout === undefined) {
+          ctx.ui.notify("Usage: /pueue-inactivity <30s|30m|2h|off>", "warning");
+          return;
+        }
+        inactivityMs = timeout;
+        inactivity.reset();
+        pi.appendEntry(INACTIVITY_SETTING, { timeoutMs: timeout });
+        schedule();
+      }
+      ctx.ui.notify(inactivityMs
+        ? `Pueue inactivity reminders: ${inactivityMs / 60_000} minutes without output (checked every 10s).`
+        : "Pueue inactivity reminders disabled.", "info");
     },
   });
 
