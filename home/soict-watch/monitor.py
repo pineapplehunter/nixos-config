@@ -10,10 +10,13 @@ from pathlib import Path
 import re
 import subprocess
 import time
-from urllib.error import HTTPError
 from urllib.parse import unquote, urljoin, urlsplit, urlunsplit
-from urllib.request import HTTPRedirectHandler, Request, build_opener, urlopen
+from urllib.request import urlopen
 from urllib.robotparser import RobotFileParser
+
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from report import SCHEMA, load_report, slack_payload
 
@@ -21,6 +24,37 @@ from report import SCHEMA, load_report, slack_payload
 ROOT = "https://soict.org/"
 USER_AGENT = "gitcrawl/1.1.0 (+https://github.com/riccivr/gitcrawl)"
 MAX_PAGES = 200
+FETCH_TIMEOUT = (10, 30)
+
+
+def session():
+    retry = Retry(
+        total=3,
+        connect=3,
+        read=3,
+        status=3,
+        backoff_factor=1,
+        status_forcelist=(429, 500, 502, 503, 504),
+        allowed_methods=frozenset({"GET", "HEAD"}),
+    )
+    http = requests.Session()
+    http.headers["User-Agent"] = USER_AGENT
+    http.mount("https://", HTTPAdapter(max_retries=retry))
+    return http
+
+
+def fetch(http, url, year):
+    """Fetch a URL while restricting redirects to the current SOICT site."""
+    for _ in range(10):
+        response = http.get(url, timeout=FETCH_TIMEOUT, allow_redirects=False)
+        if not response.is_redirect:
+            response.raise_for_status()
+            return response.content, response.headers, response.url
+        target = response.headers.get("Location")
+        if not target or page_url(url, target, year) is None:
+            raise RuntimeError(f"Page redirected outside the current SOICT site: {url}")
+        url = urljoin(url, target)
+    raise RuntimeError(f"Too many redirects while fetching {url}")
 
 
 class Page(HTMLParser):
@@ -68,27 +102,16 @@ def page_url(base, href, year):
     return urlunsplit(("https", "soict.org", url.path or "/", "", ""))
 
 
-class SiteRedirects(HTTPRedirectHandler):
-    def __init__(self, year):
-        self.year = year
-
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        if page_url(req.full_url, newurl, self.year) is None:
-            raise RuntimeError("Page redirected outside the current SOICT site")
-        return super().redirect_request(req, fp, code, msg, headers, newurl)
-
-
 def crawl(repo, year):
     # Fetch every page each run: conditional GET can hide links on unchanged
     # parent pages, preventing the discovery of changes in their children.
-    opener = build_opener(SiteRedirects(year))
+    http = session()
     robots = RobotFileParser()
     try:
-        with opener.open(Request(urljoin(ROOT, "robots.txt"),
-                                 headers={"User-Agent": USER_AGENT}), timeout=30) as response:
-            robots.parse(response.read().decode("utf-8").splitlines())
-    except HTTPError as error:
-        if error.code != 404:
+        body, _, _ = fetch(http, urljoin(ROOT, "robots.txt"), year)
+        robots.parse(body.decode("utf-8").splitlines())
+    except requests.HTTPError as error:
+        if error.response is None or error.response.status_code != 404:
             raise
         robots.parse([])
     delay = max(1, robots.crawl_delay(USER_AGENT) or robots.crawl_delay("*") or 0)
@@ -103,12 +126,12 @@ def crawl(repo, year):
             raise RuntimeError(f"robots.txt disallows {url}; keeping the previous baseline")
         time.sleep(delay)
         print(f"Fetching {url}", flush=True)
-        with opener.open(Request(url, headers={"User-Agent": USER_AGENT}), timeout=30) as response:
-            if response.headers.get_content_type() not in {"text/html", "application/xhtml+xml"}:
-                raise RuntimeError(f"Expected an HTML page: {url}")
-            body = response.read()
-            html = body.decode(response.headers.get_content_charset() or "utf-8", errors="replace")
-            final_url = response.url
+        body, headers, final_url = fetch(http, url, year)
+        content_type = headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
+        if content_type not in {"text/html", "application/xhtml+xml"}:
+            raise RuntimeError(f"Expected an HTML page: {url}")
+        charset = requests.utils.get_encoding_from_headers(headers) or "utf-8"
+        html = body.decode(charset, errors="replace")
         page = Page(html)
         if url == ROOT and not re.search(rf"\bSOICT\s*{year}\b", page.title, re.IGNORECASE):
             raise RuntimeError(f"Homepage is not advertising SOICT {year}; not changing the baseline")

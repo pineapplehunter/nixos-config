@@ -7,7 +7,7 @@
       ...
     }:
     let
-      python = pkgs.python3.withPackages (ps: [ ps.pydantic ]);
+      python = pkgs.python3.withPackages (ps: [ ps.pydantic ps.requests ]);
       discordIcon = "https://soict.org/wp-content/uploads/2026/05/cropped-2aOboQYrmw3L2D7MwM5SV5a0Byh9RCZwkrZANqIC-192x192.jpg";
       reportExtension = pkgs.writeText "soict-validate-report.ts" (
         builtins.replaceStrings
