@@ -1,5 +1,6 @@
 """Bubblewrap launcher for Pi, including its filtered portal identity."""
 
+import asyncio
 import grp
 import hashlib
 import json
@@ -17,10 +18,8 @@ from pathlib import Path
 from typing import NoReturn
 from urllib.parse import unquote
 
-import gi
-
-gi.require_version("Gio", "2.0")
-from gi.repository import Gio, GLib  # noqa: E402
+from dbus_next import DBusError, Message, MessageType
+from dbus_next.aio import MessageBus
 
 APP_ID = "io.github.pineapplehunter.Pi"
 PORTAL = "org.freedesktop.portal.Desktop"
@@ -50,22 +49,35 @@ def add_bind(
 
 def portal_mount() -> Path | None:
     """Activate the document portal and return its host FUSE mount."""
+
+    async def mount():
+        connection = MessageBus()
+        try:
+            await connection.connect()
+            reply = await connection.call(
+                Message(
+                    destination="org.freedesktop.portal.Documents",
+                    path="/org/freedesktop/portal/documents",
+                    interface="org.freedesktop.portal.Documents",
+                    member="GetMountPoint",
+                )
+            )
+            if reply.message_type == MessageType.ERROR:
+                raise DBusError._from_message(reply)
+            raw = bytes(reply.body[0]).rstrip(b"\0")
+            return Path(os.fsdecode(raw)) / "by-app" / APP_ID
+        finally:
+            connected = connection.connected
+            connection.disconnect()
+            if connected:
+                await connection.wait_for_disconnect()
+
+    async def run():
+        return await asyncio.wait_for(mount(), 5)
+
     try:
-        connection = Gio.bus_get_sync(Gio.BusType.SESSION, None)
-        reply = connection.call_sync(
-            "org.freedesktop.portal.Documents",
-            "/org/freedesktop/portal/documents",
-            "org.freedesktop.portal.Documents",
-            "GetMountPoint",
-            None,
-            GLib.VariantType.new("(ay)"),
-            Gio.DBusCallFlags.NONE,
-            5_000,
-            None,
-        )
-        raw = bytes(reply.unpack()[0]).rstrip(b"\0")
-        return Path(os.fsdecode(raw)) / "by-app" / APP_ID
-    except (GLib.Error, OSError) as error:
+        return asyncio.run(run())
+    except (DBusError, OSError, TimeoutError) as error:
         print(
             f"warning: Documents portal unavailable: {error}", file=sys.stderr
         )

@@ -1,11 +1,12 @@
 import argparse
+import asyncio
 import pathlib
+import signal
 import sys
 
-import gi
-
-gi.require_version("Gio", "2.0")
-from gi.repository import Gio, GLib
+from dbus_next import DBusError, NameFlag, RequestNameReply
+from dbus_next.aio import MessageBus
+from dbus_next.service import ServiceInterface, method
 
 from notification import (
     BUS_NAME,
@@ -16,19 +17,90 @@ from notification import (
 )
 
 IDLE_TIMEOUT_SECONDS = 30
-INTROSPECTION_XML = f"""
-<node>
-  <interface name="{INTERFACE}">
-    <method name="Notify">
-      <arg name="username" type="s" direction="in"/>
-      <arg name="icon" type="s" direction="in"/>
-      <arg name="title" type="s" direction="in"/>
-      <arg name="content" type="s" direction="in"/>
-      <arg name="color" type="s" direction="in"/>
-    </method>
-  </interface>
-</node>
-"""
+
+
+async def serve(webhook_url: str) -> None:
+    bus = MessageBus()
+    loop = asyncio.get_running_loop()
+    stopped = asyncio.Event()
+    idle_handle = None
+    active = 0
+    # Preserve the original serial delivery behavior without blocking D-Bus.
+    delivery_lock = asyncio.Lock()
+
+    def reset_idle_timeout():
+        nonlocal idle_handle
+        if idle_handle is not None:
+            idle_handle.cancel()
+        idle_handle = loop.call_later(IDLE_TIMEOUT_SECONDS, stopped.set)
+
+    class NotificationService(ServiceInterface):
+        def __init__(self):
+            super().__init__(INTERFACE)
+
+        @method()
+        async def Notify(self, username: 's', icon: 's', title: 's',
+                         content: 's', color: 's'):
+            nonlocal active
+            active += 1
+            if idle_handle is not None:
+                idle_handle.cancel()
+            try:
+                async with delivery_lock:
+                    await asyncio.to_thread(
+                        send_discord,
+                        webhook_url, username, icon, title, content, color,
+                    )
+            except ValidationError as error:
+                raise DBusError(
+                    BUS_NAME + ".Error.InvalidArgument", str(error)
+                ) from error
+            except Exception as error:
+                raise DBusError(
+                    BUS_NAME + ".Error.DeliveryFailed", str(error)
+                ) from error
+            finally:
+                active -= 1
+                if not active:
+                    reset_idle_timeout()
+
+    tasks = []
+    signals = []
+    try:
+        await bus.connect()
+        bus.export(OBJECT_PATH, NotificationService())
+        reply = await bus.request_name(BUS_NAME, NameFlag.DO_NOT_QUEUE)
+        if reply != RequestNameReply.PRIMARY_OWNER:
+            raise RuntimeError(f"could not acquire D-Bus name {BUS_NAME}: {reply.name}")
+        for sig in (signal.SIGTERM, signal.SIGINT):
+            loop.add_signal_handler(sig, stopped.set)
+            signals.append(sig)
+        reset_idle_timeout()
+        stop_task = asyncio.create_task(stopped.wait())
+        disconnect_task = asyncio.create_task(bus.wait_for_disconnect())
+        tasks = [stop_task, disconnect_task]
+        done, _ = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+        if disconnect_task in done:
+            await disconnect_task
+    finally:
+        for sig in signals:
+            loop.remove_signal_handler(sig)
+        if idle_handle is not None:
+            idle_handle.cancel()
+        bus.unexport(OBJECT_PATH)
+        connected = bus.connected
+        bus.disconnect()
+        try:
+            if connected:
+                await bus.wait_for_disconnect()
+        finally:
+            for task in tasks:
+                task.cancel()
+            if tasks:
+                await asyncio.gather(*tasks, return_exceptions=True)
+            # dbus-next 0.2.3 shuts down, but does not close, these handles.
+            bus._stream.close()
+            bus._sock.close()
 
 
 def main() -> int:
@@ -40,80 +112,9 @@ def main() -> int:
         webhook_url = pathlib.Path(args.webhook_file).read_text().strip()
         if not webhook_url:
             raise RuntimeError("webhook file is empty")
-
-        connection = Gio.bus_get_sync(Gio.BusType.SESSION, None)
-        loop = GLib.MainLoop()
-        idle_source = 0
-
-        def idle_timeout() -> bool:
-            loop.quit()
-            return GLib.SOURCE_REMOVE
-
-        def reset_idle_timeout() -> None:
-            nonlocal idle_source
-            if idle_source:
-                GLib.source_remove(idle_source)
-            idle_source = GLib.timeout_add_seconds(
-                IDLE_TIMEOUT_SECONDS, idle_timeout
-            )
-
-        def method_call(
-            _connection,
-            _sender,
-            _object_path,
-            _interface_name,
-            method_name,
-            parameters,
-            invocation,
-        ) -> None:
-            if method_name != "Notify":
-                invocation.return_dbus_error(
-                    BUS_NAME + ".Error.UnknownMethod", "unknown method"
-                )
-                return
-            username, icon, title, content, color = parameters.unpack()
-            try:
-                send_discord(
-                    webhook_url, username, icon, title, content, color
-                )
-                invocation.return_value(None)
-            except ValidationError as error:
-                invocation.return_dbus_error(
-                    BUS_NAME + ".Error.InvalidArgument", str(error)
-                )
-            except Exception as error:
-                invocation.return_dbus_error(
-                    BUS_NAME + ".Error.DeliveryFailed", str(error)
-                )
-            finally:
-                reset_idle_timeout()
-
-        node_info = Gio.DBusNodeInfo.new_for_xml(INTROSPECTION_XML)
-        connection.register_object(
-            OBJECT_PATH,
-            node_info.interfaces[0],
-            method_call,
-            None,
-            None,
-        )
-        result = connection.call_sync(
-            "org.freedesktop.DBus",
-            "/org/freedesktop/DBus",
-            "org.freedesktop.DBus",
-            "RequestName",
-            GLib.Variant("(su)", (BUS_NAME, 4)),
-            GLib.VariantType.new("(u)"),
-            Gio.DBusCallFlags.NONE,
-            -1,
-            None,
-        )
-        if result.unpack()[0] != 1:
-            raise RuntimeError("notification bus name is already owned")
-
-        reset_idle_timeout()
-        loop.run()
+        asyncio.run(serve(webhook_url))
         return 0
-    except (GLib.Error, OSError, RuntimeError) as error:
+    except (DBusError, OSError, RuntimeError, EOFError) as error:
         print(f"local-notifyd: {error}", file=sys.stderr)
         return 1
 

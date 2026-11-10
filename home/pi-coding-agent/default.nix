@@ -44,7 +44,7 @@ in
       rawWrapper =
         pkgs.writers.writePython3Bin "bubble-wrapper"
           {
-            libraries = [ pkgs.python3Packages.pygobject3 ];
+            libraries = [ pkgs.python3Packages.dbus-next ];
           }
           (
             builtins.replaceStrings
@@ -62,18 +62,15 @@ in
           );
 
       clipboardClient = pkgs.writers.writePython3Bin "wl-copy" {
-        libraries = [ pkgs.python3Packages.pygobject3 ];
+        libraries = [ pkgs.python3Packages.dbus-next ];
       } (lib.readFile ./pineapplehunter/wrapper/clipboard_client.py);
 
       clipboardDaemon = pkgs.writers.writePython3Bin "pi-clipboardd" {
-        libraries = with pkgs.python3Packages; [
-          dbus-python
-          pygobject3
-        ];
+        libraries = [ pkgs.python3Packages.dbus-next ];
       } (lib.readFile ./pineapplehunter/wrapper/clipboard_daemon.py);
 
       portalClient = pkgs.writers.writePython3Bin "pi-portal-client" {
-        libraries = [ pkgs.python3Packages.pygobject3 ];
+        libraries = [ pkgs.python3Packages.dbus-next ];
       } (lib.readFile ./pineapplehunter/wrapper/portal_client.py);
 
       portalClients = pkgs.runCommand "pi-portal-clients" { } ''

@@ -1,6 +1,7 @@
 """Small xdg-desktop-portal clients used inside the Pi sandbox."""
 
 import argparse
+import asyncio
 import os
 import secrets
 import signal
@@ -8,11 +9,8 @@ import sys
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
-import gi
-
-gi.require_version("Gio", "2.0")
-gi.require_version("GLibUnix", "2.0")
-from gi.repository import Gio, GLib, GLibUnix  # noqa: E402
+from dbus_next import DBusError, Message, MessageType, Variant
+from dbus_next.aio import MessageBus
 
 BUS = "org.freedesktop.portal.Desktop"
 DESKTOP_PATH = "/org/freedesktop/portal/desktop"
@@ -27,109 +25,123 @@ class Cancelled(PortalError):
     pass
 
 
-def request(
+async def request_async(
     interface: str,
     method: str,
-    parameters: GLib.Variant,
+    parameters: tuple,
     token: str,
     timeout: int,
 ) -> dict[str, object]:
-    connection = Gio.bus_get_sync(Gio.BusType.SESSION, None)
-    sender = connection.get_unique_name().lstrip(":").replace(".", "_")
-    expected = f"{DESKTOP_PATH}/request/{sender}/{token}"
-    loop = GLib.MainLoop()
-    response: list[tuple[int, dict[str, object]]] = []
+    connection = MessageBus()
+    loop = asyncio.get_running_loop()
+    responses = asyncio.Queue()
+    installed_signals = []
+    handle = None
 
-    def on_response(
-        _connection, _sender, _path, _iface, _signal, params, _data=None
-    ):
-        code, results = params.unpack()
-        response.append((code, results))
-        loop.quit()
+    async def call(message, seconds):
+        reply = await asyncio.wait_for(connection.call(message), seconds)
+        if reply.message_type == MessageType.ERROR:
+            raise DBusError._from_message(reply)
+        return reply
 
-    subscription = connection.signal_subscribe(
-        BUS,
-        REQUEST_IFACE,
-        "Response",
-        expected,
-        None,
-        Gio.DBusSignalFlags.NONE,
-        on_response,
-        None,
-    )
-    handle = expected
-    try:
-        reply = connection.call_sync(
-            BUS,
-            DESKTOP_PATH,
-            interface,
-            method,
-            parameters,
-            GLib.VariantType.new("(o)"),
-            Gio.DBusCallFlags.NONE,
-            10_000,
-            None,
-        )
-        handle = reply.unpack()[0]
-        if handle != expected:
-            connection.signal_unsubscribe(subscription)
-            subscription = connection.signal_subscribe(
-                BUS,
-                REQUEST_IFACE,
-                "Response",
-                handle,
-                None,
-                Gio.DBusSignalFlags.NONE,
-                on_response,
-                None,
-            )
+    def on_response(message):
+        if (
+            message.message_type == MessageType.SIGNAL
+            and message.interface == REQUEST_IFACE
+            and message.member == "Response"
+            and message.signature == "ua{sv}"
+        ):
+            responses.put_nowait(message)
 
-        timed_out = [False]
-        timeout_id = GLib.timeout_add_seconds(
-            timeout,
-            lambda: (timed_out.__setitem__(0, True), loop.quit(), False)[2],
-        )
-        signal_ids = [
-            GLibUnix.signal_add(
-                GLib.PRIORITY_DEFAULT, sig, lambda: (loop.quit(), False)[1]
-            )
-            for sig in (signal.SIGINT, signal.SIGTERM)
-        ]
-        loop.run()
-        if timeout_id:
-            GLib.source_remove(timeout_id)
-        for source_id in signal_ids:
-            if source_id:
-                GLib.source_remove(source_id)
-
-        if not response:
+    async def close():
+        if handle is not None:
             try:
-                connection.call_sync(
-                    BUS,
-                    handle,
-                    REQUEST_IFACE,
-                    "Close",
-                    None,
-                    None,
-                    Gio.DBusCallFlags.NONE,
-                    2_000,
-                    None,
+                await call(
+                    Message(
+                        destination=BUS,
+                        path=handle,
+                        interface=REQUEST_IFACE,
+                        member="Close",
+                    ),
+                    2,
                 )
-            except GLib.Error:
+            except (DBusError, OSError, TimeoutError):
                 pass
-            if timed_out[0]:
-                raise TimeoutError("portal request timed out")
-            raise Cancelled("portal request cancelled")
-        code, results = response[0]
+
+    task = asyncio.current_task()
+    try:
+        await connection.connect()
+        sender = connection.unique_name.lstrip(":").replace(".", "_")
+        handle = f"{DESKTOP_PATH}/request/{sender}/{token}"
+        connection.add_message_handler(on_response)
+        # Subscribe before calling, buffering changed handles too: portals
+        # may emit Response before returning the actual handle.
+        await call(
+            Message(
+                destination="org.freedesktop.DBus",
+                path="/org/freedesktop/DBus",
+                interface="org.freedesktop.DBus",
+                member="AddMatch",
+                signature="s",
+                body=[
+                    f"type='signal',sender='{BUS}',"
+                    f"interface='{REQUEST_IFACE}',member='Response',"
+                    f"path_namespace='{DESKTOP_PATH}/request'"
+                ],
+            ),
+            10,
+        )
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            loop.add_signal_handler(sig, task.cancel)
+            installed_signals.append(sig)
+        reply = await call(
+            Message(
+                destination=BUS,
+                path=DESKTOP_PATH,
+                interface=interface,
+                member=method,
+                signature="ssa{sv}",
+                body=list(parameters),
+            ),
+            10,
+        )
+        handle = reply.body[0]
+
+        async def response():
+            while True:
+                message = await responses.get()
+                if message.path == handle and message.sender == reply.sender:
+                    return message.body
+
+        try:
+            code, results = await asyncio.wait_for(response(), timeout)
+        except TimeoutError:
+            await close()
+            raise TimeoutError("portal request timed out") from None
         if code == 1:
             raise Cancelled("portal request cancelled by the user")
         if code != 0:
             raise PortalError(
                 f"portal request failed with response code {code}"
             )
-        return results
+        return {key: value.value for key, value in results.items()}
+    except asyncio.CancelledError:
+        await close()
+        raise Cancelled("portal request cancelled") from None
     finally:
-        connection.signal_unsubscribe(subscription)
+        for sig in installed_signals:
+            loop.remove_signal_handler(sig)
+        connection.remove_message_handler(on_response)
+        connected = connection.connected
+        connection.disconnect()
+        if connected:
+            await connection.wait_for_disconnect()
+
+
+def request(interface, method, parameters, token, timeout):
+    return asyncio.run(
+        request_async(interface, method, parameters, token, timeout)
+    )
 
 
 def choose_file(
@@ -139,17 +151,14 @@ def choose_file(
     results = request(
         "org.freedesktop.portal.FileChooser",
         "OpenFile",
-        GLib.Variant(
-            "(ssa{sv})",
-            (
-                "",
-                title,
-                {
-                    "handle_token": GLib.Variant("s", token),
-                    "multiple": GLib.Variant("b", False),
-                    "directory": GLib.Variant("b", directory),
-                },
-            ),
+        (
+            "",
+            title,
+            {
+                "handle_token": Variant("s", token),
+                "multiple": Variant("b", False),
+                "directory": Variant("b", directory),
+            },
         ),
         token,
         timeout,
@@ -205,9 +214,7 @@ def main() -> int:
             if args.directory
             else "Choose a file for Pi"
         )
-        print(
-            choose_file(title, args.timeout, args.directory, args.writable)
-        )
+        print(choose_file(title, args.timeout, args.directory, args.writable))
         return 0
     except Cancelled as error:
         print(error, file=sys.stderr)
@@ -215,7 +222,7 @@ def main() -> int:
     except TimeoutError as error:
         print(error, file=sys.stderr)
         return 124
-    except (PortalError, GLib.Error, OSError) as error:
+    except (PortalError, DBusError, OSError) as error:
         print(error, file=sys.stderr)
         return 1
 

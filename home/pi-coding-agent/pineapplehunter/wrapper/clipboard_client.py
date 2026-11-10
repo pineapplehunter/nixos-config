@@ -1,16 +1,38 @@
 """One-way wl-copy compatibility client for Pi's clipboard broker."""
 
+import asyncio
 import sys
 
-import gi
-
-gi.require_version("Gio", "2.0")
-from gi.repository import Gio, GLib  # noqa: E402
+from dbus_next import DBusError, Message, MessageType
+from dbus_next.aio import MessageBus
 
 BUS_NAME = "io.github.pineapplehunter.LocalClipboard1"
 INTERFACE = BUS_NAME
 OBJECT_PATH = "/io/github/pineapplehunter/LocalClipboard1"
 MAX_CLIPBOARD_BYTES = 8 * 1024 * 1024
+
+
+async def copy(data):
+    connection = MessageBus()
+    try:
+        await connection.connect()
+        reply = await connection.call(
+            Message(
+                destination=BUS_NAME,
+                path=OBJECT_PATH,
+                interface=INTERFACE,
+                member="Copy",
+                signature="ay",
+                body=[data],
+            )
+        )
+        if reply.message_type == MessageType.ERROR:
+            raise DBusError._from_message(reply)
+    finally:
+        connected = connection.connected
+        connection.disconnect()
+        if connected:
+            await connection.wait_for_disconnect()
 
 
 def main() -> int:
@@ -28,20 +50,19 @@ def main() -> int:
 
     try:
         data.decode("utf-8")
-        connection = Gio.bus_get_sync(Gio.BusType.SESSION, None)
-        connection.call_sync(
-            BUS_NAME,
-            OBJECT_PATH,
-            INTERFACE,
-            "Copy",
-            GLib.Variant("(ay)", (list(data),)),
-            None,
-            Gio.DBusCallFlags.NONE,
-            5_000,
-            None,
-        )
+
+        async def run():
+            await asyncio.wait_for(copy(data), 5)
+
+        asyncio.run(run())
         return 0
-    except (GLib.Error, RuntimeError, UnicodeDecodeError) as error:
+    except (
+        DBusError,
+        OSError,
+        RuntimeError,
+        UnicodeDecodeError,
+        TimeoutError,
+    ) as error:
         print(f"wl-copy: {error}", file=sys.stderr)
         return 1
 
