@@ -66,7 +66,10 @@ in
       } (lib.readFile ./pineapplehunter/wrapper/clipboard_client.py);
 
       clipboardDaemon = pkgs.writers.writePython3Bin "pi-clipboardd" {
-        libraries = [ pkgs.python3Packages.pygobject3 ];
+        libraries = with pkgs.python3Packages; [
+          dbus-python
+          pygobject3
+        ];
       } (lib.readFile ./pineapplehunter/wrapper/clipboard_daemon.py);
 
       portalClient = pkgs.writers.writePython3Bin "pi-portal-client" {

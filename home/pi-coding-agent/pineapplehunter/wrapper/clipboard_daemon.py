@@ -5,24 +5,67 @@ import subprocess
 import sys
 import tempfile
 
-import gi
-
-gi.require_version("Gio", "2.0")
-from gi.repository import Gio, GLib  # noqa: E402
+import dbus
+import dbus.mainloop.glib
+import dbus.service
+from gi.repository import GLib
 
 BUS_NAME = "io.github.pineapplehunter.LocalClipboard1"
-INTERFACE = BUS_NAME
 OBJECT_PATH = "/io/github/pineapplehunter/LocalClipboard1"
 MAX_CLIPBOARD_BYTES = 8 * 1024 * 1024
-INTROSPECTION_XML = f"""
-<node>
-  <interface name="{INTERFACE}">
-    <method name="Copy">
-      <arg name="content" type="ay" direction="in"/>
-    </method>
-  </interface>
-</node>
-"""
+
+
+class Clipboard(dbus.service.Object):
+    def __init__(self, bus_name, wl_copy):
+        super().__init__(bus_name, OBJECT_PATH)
+        self.wl_copy = wl_copy
+
+    @dbus.service.method(
+        BUS_NAME, in_signature="ay", out_signature="", byte_arrays=True
+    )
+    def Copy(self, content):
+        content = bytes(content)
+        if len(content) > MAX_CLIPBOARD_BYTES:
+            raise dbus.DBusException(
+                "clipboard content exceeds 8 MiB",
+                name=BUS_NAME + ".Error.TooLarge",
+            )
+
+        try:
+            content.decode("utf-8")
+            # wl-copy's background selection owner inherits stderr. A pipe
+            # would make communicate() wait for that owner to exit, even
+            # after the original process has set the clipboard.
+            with tempfile.TemporaryFile() as stderr:
+                result = subprocess.run(
+                    [self.wl_copy, "--type", "text/plain;charset=utf-8"],
+                    input=content,
+                    stderr=stderr,
+                    timeout=4,
+                )
+                if result.returncode:
+                    stderr.seek(0)
+                    detail = stderr.read().decode(
+                        "utf-8", errors="replace"
+                    ).strip()
+                    raise dbus.DBusException(
+                        detail or "wl-copy failed",
+                        name=BUS_NAME + ".Error.CopyFailed",
+                    )
+        except UnicodeDecodeError:
+            raise dbus.DBusException(
+                "clipboard content is not valid UTF-8 text",
+                name=BUS_NAME + ".Error.InvalidText",
+            ) from None
+        except (subprocess.TimeoutExpired, OSError) as error:
+            detail = (
+                "wl-copy timed out"
+                if isinstance(error, subprocess.TimeoutExpired)
+                else str(error)
+            )
+            raise dbus.DBusException(
+                detail, name=BUS_NAME + ".Error.CopyFailed"
+            ) from None
 
 
 def main() -> int:
@@ -31,94 +74,18 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        connection = Gio.bus_get_sync(Gio.BusType.SESSION, None)
-        loop = GLib.MainLoop()
-
-        def method_call(
-            _connection,
-            _sender,
-            _object_path,
-            _interface_name,
-            method_name,
-            parameters,
-            invocation,
-        ) -> None:
-            if method_name != "Copy":
-                invocation.return_dbus_error(
-                    BUS_NAME + ".Error.UnknownMethod", "unknown method"
-                )
-                return
-
-            content = bytes(parameters.unpack()[0])
-            if len(content) > MAX_CLIPBOARD_BYTES:
-                invocation.return_dbus_error(
-                    BUS_NAME + ".Error.TooLarge",
-                    "clipboard content exceeds 8 MiB",
-                )
-                return
-
-            try:
-                content.decode("utf-8")
-                # wl-copy's background selection owner inherits stderr. A pipe
-                # would make communicate() wait for that owner to exit, even
-                # after the original process has set the clipboard.
-                with tempfile.TemporaryFile() as stderr:
-                    result = subprocess.run(
-                        [
-                            args.wl_copy,
-                            "--type",
-                            "text/plain;charset=utf-8",
-                        ],
-                        input=content,
-                        stderr=stderr,
-                        timeout=4,
-                    )
-                    if result.returncode:
-                        stderr.seek(0)
-                        detail = stderr.read().decode(
-                            "utf-8", errors="replace"
-                        ).strip()
-                        invocation.return_dbus_error(
-                            BUS_NAME + ".Error.CopyFailed",
-                            detail or "wl-copy failed",
-                        )
-                        return
-                invocation.return_value(None)
-            except UnicodeDecodeError:
-                invocation.return_dbus_error(
-                    BUS_NAME + ".Error.InvalidText",
-                    "clipboard content is not valid UTF-8 text",
-                )
-            except subprocess.TimeoutExpired:
-                invocation.return_dbus_error(
-                    BUS_NAME + ".Error.CopyFailed", "wl-copy timed out"
-                )
-
-        node_info = Gio.DBusNodeInfo.new_for_xml(INTROSPECTION_XML)
-        connection.register_object(
-            OBJECT_PATH,
-            node_info.interfaces[0],
-            method_call,
-            None,
-            None,
+        dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+        connection = dbus.SessionBus()
+        bus_name = dbus.service.BusName(
+            BUS_NAME, bus=connection, do_not_queue=True
         )
-        result = connection.call_sync(
-            "org.freedesktop.DBus",
-            "/org/freedesktop/DBus",
-            "org.freedesktop.DBus",
-            "RequestName",
-            GLib.Variant("(su)", (BUS_NAME, 4)),
-            GLib.VariantType.new("(u)"),
-            Gio.DBusCallFlags.NONE,
-            -1,
-            None,
-        )
-        if result.unpack()[0] != 1:
-            raise RuntimeError("clipboard bus name is already owned")
-
-        loop.run()
+        clipboard = Clipboard(bus_name, args.wl_copy)
+        try:
+            GLib.MainLoop().run()
+        finally:
+            clipboard.remove_from_connection()
         return 0
-    except (GLib.Error, OSError, RuntimeError) as error:
+    except (dbus.DBusException, GLib.Error, OSError, RuntimeError) as error:
         print(f"pi-clipboardd: {error}", file=sys.stderr)
         return 1
 
