@@ -175,10 +175,8 @@ nix build --no-link .#legacyPackages.x86_64-linux.radicale-agent
 nix flake check --no-build --all-systems
 ```
 
-For standalone development, `uv sync --locked` installs the sibling bridge as a
-dev dependency. Transport tests also need `dbus-run-session`, `xdg-dbus-proxy`, and
-(on minimal systems without passwd entries) `RADICALE_TEST_NSS_WRAPPER` pointing
-to `libnss_wrapper.so`. Nix supplies these automatically.
+Use Nix for development and verification. The package check supplies the sibling
+bridge, `dbus-run-session`, `xdg-dbus-proxy`, and `libnss_wrapper` automatically.
 
 Live tests are opt-in and **create/modify fixtures in Agent**. Approve them first.
 Set `RADICALE_LIVE_TEST=1` for discovery; add `RADICALE_LIVE_WRITE_TEST=1` and host

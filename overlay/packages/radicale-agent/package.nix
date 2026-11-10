@@ -29,7 +29,6 @@ python3Packages.buildPythonApplication {
 
   build-system = [ python3Packages.hatchling ];
   # Runtime versions are provided reproducibly by the repository's flake.lock.
-  # uv.lock separately locks the standalone Python development environment.
   dependencies = with python3Packages; [
     caldav
     icalendar

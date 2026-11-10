@@ -114,5 +114,5 @@ checks can leave fixtures for cleanup; deletion/MCP checks remove their own.
   is outside this trust boundary.
 
 Keep SDK v1 pinned; current stack is Python >=3.11, caldav 3.3.1, icalendar 7.2.2,
-MCP 1.29.0 and dbus-next 0.2.3. Standalone dependencies use uv.lock, Nix uses the
+MCP 1.29.0 and dbus-next 0.2.3. Dependencies are managed with Nix using the
 repository flake.lock. Do not claim additional features working without tests.

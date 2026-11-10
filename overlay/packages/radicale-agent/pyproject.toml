@@ -21,9 +21,6 @@ radicale-agent-discover = "radicale_agent.discover:main"
 [dependency-groups]
 dev = ["pytest==9.1.1", "pytest-asyncio>=1,<2", "mcp-dbus-proxy"]
 
-[tool.uv.sources]
-mcp-dbus-proxy = { path = "../mcp-dbus-proxy", editable = true }
-
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 markers = ["live: opt-in tests against the approved Agent collection (write tests create and modify only unique test fixtures)"]
