@@ -115,8 +115,18 @@ Wrapper flags go before Pi arguments, for example:
 pi @noflake --print "Summarize the files in this directory"
 ```
 
-`@noflake` can be combined with `@debug-shell`, `@allow`, and `@allow-rw`.
+`@noflake` can be combined with `@debug-shell`, `@dev`, `@allow`, and `@allow-rw`.
 `@@` ends wrapper-flag parsing.
+
+## Access host devices
+
+Use `pi @dev` (also supported by `pi-work` and `pi-auto`) to expose the host's
+entire `/dev` with device access and mount `/sys` read-only for device discovery.
+For example, `pi @dev @noflake` can work with an Arduino connected over USB.
+Host device permissions still apply; this flag does not grant group membership
+or bypass device permissions. Only enable it for sessions you trust with your
+hardware, including firmware uploads. Without `@dev`, the minimal sandbox `/dev`
+is unchanged.
 
 ## Browse background work
 

@@ -172,6 +172,11 @@ def parse_wrapper_args(
         elif argument == "@noflake":
             noflake = True
             index += 1
+        elif argument == "@dev":
+            bwrap.extend(
+                ("--dev-bind", "/dev", "/dev", "--ro-bind", "/sys", "/sys")
+            )
+            index += 1
         elif argument in {"@allow", "@allow-rw"}:
             if index + 1 >= len(arguments):
                 fail(f"{argument} requires a path")
