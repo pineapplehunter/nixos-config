@@ -1,69 +1,43 @@
 keys:
-  # TODO: replace age1 keys with SSH keys when sops-nix supports
-  #       ssh recipients natively (see related PRs)
   # action-shogo (user)
-  - &action_shogo age1829ry46h0ctesxrehhuehw4sxwa5rcpwamjldne3jjzj9gjthq9qflh2vh
   - &action_shogo_ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM/QhUXk6LPpFd97zUow1bHkkF1CvRAjCG1iIfg5BBhd
   # beast-shogo (user)
-  - &beast_shogo age1w9jtdntgve25s78hp4ncsc08ghxqzttulc0gj9saz3vu7x3arc8s30qrcg
   - &beast_shogo_ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE4374jhuKtCRAl0oUFRyWhBw1CoPjRved9KwhFCP0MW
   # kpro-takata-takata (user)
-  - &kpro_takata_takata age1eqm88quekdz6njax9l9n3lgpqfujl7zgr943wazwlgnafvjkvg4qyr6y3v
   - &kpro_takata_takata_ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII9nG2lTRf+GAA92Df7yTbxPmL3EMNMgVr5tIv3YgJI7 takata@kpro-takata
   # rpi5-shogo (user)
-  - &rpi5_shogo age1u7sg4fyurm9c5mslj4ahsqfa3rw4dryrf76r37ew525j2rpcj35qf5s42q
   - &rpi5_shogo_ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMBVh6R+LRVG2OEJxSeFE+ce5dsO6UL7QhKiXYqoDzn9 shogo@rpi5
   # action-system (host key)
-  - &action_system age1atv2fjy4n4ch9vfh0aaa7v9muvhdmy263uxpytjnskwll46d7gasnnxr36
   - &action_system_ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL9EgqwqmPrBTUtPTBklXlZRSpTXiAycUdzRQ4NTxKd9
   # beast-system (host key)
-  - &beast_system age1uj4330k402lwxjl27nhy7fwdmas4g2paueeqcpd95u2jrj9kzuyqp70y7g
   - &beast_system_ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGON5XWNu4X8mWHIH0YkcYha4PH0ykL2PdlF7R8Gl0T/
   # kpro-takata-system (host key)
-  - &kpro_takata_system age17f7sr2uku695lhqnr8jnmph7us7snp5q9jtwkphqzu6wu3w855kqjlfpks
   - &kpro_takata_system_ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIANSMl7jstvPFct/CSJ3UD/zLTqKFLHJOQUt7TeHsKI root@kpro-takata
   # rpi5-system (host key)
-  - &rpi5_system age1402wvk9prhpjcky4xpnn8gjs0vx599asglv3jttdrggsg35e34fqglx24r
   - &rpi5_system_ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB3PgEsfeu6ALk2SM6Ws1jL3bkEX6SBCzEcc6FUBQIVc root@rpi5
   # kpro-njlab-takata (user)
-  - &kpro_njlab_takata age12scllmyypm560z5s4nk9wjex02w8fuhmp5tcd0h2mpfnr8y4x5ss45nuyj
   - &kpro_njlab_takata_ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPndWL3gLnSKM8IECZ5aAp9GcwCQUtXM/5iSXfdgkh49 takata@kpro-njlab
   # daniel-njlab-pc (user)
-  - &daniel_njlab_pc_shogo age1ghjlrya0em72ztklmxndetrgdvmfmged7857kqs8vkd2an4d0e7q0qkk8k
   - &daniel_njlab_pc_shogo_ssh ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHznJQ8IDhutvWvChU6zk9LpKN0GOVtUbAREYUu2agpU
 
 creation_rules:
   - path_regex: secrets/home.yaml
     key_groups:
       - age:
-          - *action_shogo
           - *action_shogo_ssh
-          - *beast_shogo
           - *beast_shogo_ssh
-          - *daniel_njlab_pc_shogo
           - *daniel_njlab_pc_shogo_ssh
-          - *kpro_njlab_takata
           - *kpro_njlab_takata_ssh
-          - *kpro_takata_takata
           - *kpro_takata_takata_ssh
-          - *rpi5_shogo
           - *rpi5_shogo_ssh
   - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
     key_groups:
       - age:
-          - *action_shogo
           - *action_shogo_ssh
-          - *action_system
           - *action_system_ssh
-          - *beast_shogo
           - *beast_shogo_ssh
-          - *beast_system
           - *beast_system_ssh
-          - *kpro_takata_system
           - *kpro_takata_system_ssh
-          - *kpro_takata_takata
           - *kpro_takata_takata_ssh
-          - *rpi5_shogo
           - *rpi5_shogo_ssh
-          - *rpi5_system
           - *rpi5_system_ssh

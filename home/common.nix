@@ -22,7 +22,7 @@ in
       };
       sops = {
         defaultSopsFile = lib.mkDefault flake-config.sopsFile.home;
-        age.sshKeyPaths = lib.mkDefault [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
+        age.sshKeyFile = lib.mkDefault "${config.home.homeDirectory}/.ssh/id_ed25519";
       };
     };
 
@@ -222,7 +222,7 @@ in
       };
 
       sops = {
-        age.sshKeyPaths = [ "${config.home.homeDirectory}/.ssh/id_ed25519" ];
+        age.sshKeyFile = "${config.home.homeDirectory}/.ssh/id_ed25519";
         defaultSopsFile = flake-config.sopsFile.home;
         secrets = {
           niks3-token.key = "niks-token";

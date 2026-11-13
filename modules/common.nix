@@ -123,7 +123,7 @@ in
       boot.extraModprobeConfig = "install algif_aead /bin/false";
 
       sops = {
-        age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+        age.sshKeyFile = "/etc/ssh/ssh_host_ed25519_key";
         secrets.access-tokens = {
           sopsFile = flake-config.sopsFile.common;
           key = "github-access-token";
