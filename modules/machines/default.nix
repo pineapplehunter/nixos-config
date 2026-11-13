@@ -2,7 +2,6 @@
   imports = [
     ./action/configuration.nix
     ./action/hardware-configuration.nix
-    ./action/pam.nix
 
     ./beast/configuration.nix
     ./beast/garage.nix
@@ -11,7 +10,6 @@
 
     ./kpro-takata/configuration.nix
     ./kpro-takata/hardware-configuration.nix
-    ./kpro-takata/pam.nix
 
     ./rpi5/default.nix
     ./rpi5/garage.nix

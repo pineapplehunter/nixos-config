@@ -17,7 +17,6 @@ in
         inputs.nixos-hardware.nixosModules.lenovo-thinkpad-x1-13th-gen
         os-mods.common
         os-mods.kpro-takata-hardware
-        os-mods.kpro-takata-pam
         os-mods.ssh-authorized-keys
       ];
 
@@ -25,6 +24,7 @@ in
         captive.tailescale.enable = true;
         ima.enable = true;
         kde-connect.firewall.enable = true;
+        pam.enable = true;
         secureboot.enable = true;
         tpm2.enable = true;
       };

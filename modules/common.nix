@@ -31,6 +31,7 @@ in
           mods.man-pages
           mods.nixos-artwork
           mods.packages
+          mods.pam
           mods.power-targets
           mods.prometheus-smartctl
           mods.secureboot

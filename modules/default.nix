@@ -12,6 +12,7 @@
     ./machines/default.nix
     ./nixos-artwork.nix
     ./packages.nix
+    ./pam.nix
     ./personal.nix
     ./power-targets.nix
     ./prometheus-smartctl.nix

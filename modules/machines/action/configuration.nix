@@ -19,7 +19,6 @@ in
         os-mods.common
         os-mods.personal
         os-mods.action-hardware
-        os-mods.action-pam
         os-mods.ssh-authorized-keys
       ];
 
@@ -27,6 +26,10 @@ in
         captive.tailescale.enable = true;
         ima.enable = true;
         kde-connect.firewall.enable = true;
+        pam = {
+          enable = true;
+          howdy.enable = true;
+        };
         tpm2.enable = true;
       };
 
@@ -133,7 +136,6 @@ in
 
         ollama.enable = true;
 
-        howdy.enable = true;
         howdy.settings.video.dark_threshold = 90;
         linux-enable-ir-emitter.enable = true;
         tailscale = {
