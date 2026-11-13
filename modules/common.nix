@@ -186,6 +186,8 @@ in
         openssh = {
           enable = true;
           startWhenNeeded = true;
+          # PasswordAuthentication alone does not disable PAM authentication.
+          settings.KbdInteractiveAuthentication = false;
         };
 
         # Enable CUPS to print documents.
