@@ -103,12 +103,18 @@
             session  include default-auth
           '';
           only-weak = ''
-            auth [success=1 default=ignore]      ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${check-timeout}
-            auth [default=2]                     ${linux-pam}/lib/security/pam_exec.so quiet ${lib.getExe' pkgs.coreutils "sleep"} 300
-            auth [success=ignore default=1]      ${fprintd}/lib/security/pam_fprintd.so
-            auth [success=1 default=ignore]      ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${check-timeout}
-            auth requisite                       ${linux-pam}/lib/security/pam_deny.so
-            auth requisite                       ${linux-pam}/lib/security/pam_permit.so
+            # GDM runs this alongside password authentication. Report an
+            # unavailable method, not an authentication failure, so GNOME
+            # does not reset password entry when this conversation stops.
+            # Check the window before and after fingerprint authentication.
+            # Each success skips exactly one unavailable-result rule.
+            auth [success=1 default=ignore] ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${check-timeout}
+            auth requisite ${linux-pam}/lib/security/pam_debug.so auth=authinfo_unavail
+            auth [success=1 default=ignore] ${fprintd}/lib/security/pam_fprintd.so
+            auth requisite ${linux-pam}/lib/security/pam_debug.so auth=authinfo_unavail
+            auth [success=1 default=ignore] ${linux-pam}/lib/security/pam_exec.so quiet seteuid ${check-timeout}
+            auth requisite ${linux-pam}/lib/security/pam_debug.so auth=authinfo_unavail
+            auth requisite ${linux-pam}/lib/security/pam_permit.so
           '';
           gdm-password = ''
             auth      substack      only-unix-auth
