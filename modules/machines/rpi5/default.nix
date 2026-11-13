@@ -121,6 +121,18 @@ in
         config.boot.kernelPackages.kernel.version
       ];
 
+      # The bundled tools header lacks the 128-bit types required by newer
+      # system ARM64 headers when compiling resolve_btfids. Drop once synced.
+      boot.kernelPatches = [
+        {
+          name = "tools-linux-types-int128";
+          patch = pkgs.fetchpatch {
+            url = "https://github.com/torvalds/linux/commit/10a47fb67340bca274276faf855d7d460afd9a7a.patch";
+            hash = "sha256-w6ZnvodW2kS3bqtZVvVN5qDt1Zc7fJvnywki3MBsER0=";
+          };
+        }
+      ];
+
       boot.loader.raspberry-pi.bootloader = "kernel";
 
       # This is identical to what nixos installer does in
