@@ -20,7 +20,7 @@
       };
     });
 
-    # PipeWire 1.6.9 uses upstream's renamed CameraLocation enum values, but
+    # PipeWire 1.6.11 uses upstream's renamed CameraLocation enum values, but
     # the Raspberry Pi libcamera fork still exposes LocationFront/Back/External.
     # Keep camera support and adapt only the Pi build to the fork's API:
     # https://github.com/raspberrypi/libcamera/blob/v0.8.0+rpt20261104/src/libcamera/property_ids_core.yaml
