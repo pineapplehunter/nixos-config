@@ -43,12 +43,12 @@ repeats this cycle. Intermediate replies do not finish the worker.
 
 ## Manage and diagnose
 
-Prefer parallel execution when possible. Use different groups when you need to
-combine parallel execution and sequential execution.
+After reading this skill, set the default group's parallelism to the number of
+available CPU cores with `pueue parallel "$(nproc)"`. Only switch back to serial
+execution (`pueue parallel 1`) when required; lowering parallelism does not stop
+already-running jobs. Use different groups when you need to combine parallel
+and sequential execution.
 
-- `pueue parallel 4`: multiple small independent tasks, default group. Restore
-  `pueue parallel 1` before enqueueing larger tasks; lowering does not stop
-  already-running jobs.
 - `pueue status`/`--json`: diagnosis, not waiting. Running tasks with no new output
   for 30 minutes trigger an automatic stall-inspection reminder. Inspect logs and
   process state; silence alone does not justify cancellation.
