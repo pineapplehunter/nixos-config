@@ -96,6 +96,7 @@ in
           pkgs.git
           pkgs.gnugrep
           pkgs.gnused
+          pkgs.gnutar
           pkgs.helix
           pkgs.nix
           pkgs.nix-search-cli
