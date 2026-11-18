@@ -8,11 +8,12 @@ pi-subagent <name> <directory> <prompt_file> [--profile <preset>]
 
 Home Manager packages `launcher.py` with `pkgs.writers.writePython3Bin` (including
 build-time flake8 linting), substitutes the shared Pueue configuration, RPC
-runner, and pinned Pueue completion extension paths, and puts it directly in
+runner paths, and puts it directly in
 `sandboxTools`. Commands run by binary
 name using the inherited parent PATH. There is no CLI-specific wrapper.
 
-See [the subagents skill](../../skills/subagents/SKILL.md) for the workflow.
+Run `pi-update` before launching subagents. The workflow skill is installed at
+`~/.pi/customizations/package/skills/subagents/SKILL.md`.
 
 ## Optional extension/skill isolation
 
@@ -25,8 +26,8 @@ pi-subagent review /tmp/review-workspace /tmp/review-task.md \
 ```
 
 The launcher passes `--no-extensions --no-skills` to child Pi and explicitly loads
-`--extension <pinned-pueue-completion-extension>`. Home Manager pins that file
-inside the same Nix-store package directory, including its sibling imports.
+`--extension ~/.pi/customizations/package/extensions/pueue-tool/index.ts`.
+The updater copies that extension and its sibling imports into the snapshot.
 This preserves private-task notifications and runner shutdown; disabling the
 completion extension would make the runner fail its bootstrap check.
 

@@ -22,9 +22,8 @@ SUBAGENT_RUNNER = (
     "@SUBAGENT_RUNNER@"
     "/bin/pi-subagent-runner"
 )
-PUEUE_EXTENSION = (
-    "@PI_PACKAGE@"
-    "/extensions/pueue-tool/index.ts"
+PUEUE_EXTENSION = str(
+    Path.home() / ".pi/customizations/package/extensions/pueue-tool/index.ts"
 )
 CHILD_INSTRUCTIONS = """You are a subagent of the parent Pi agent.
 Your working directory is a caller-prepared, possibly incomplete workspace
@@ -303,7 +302,7 @@ def parser():
     cli.add_argument(
         "--no-inherit-resources",
         action="store_true",
-        help="Skip automatic extension/skill loading; retain pinned Pueue",
+        help="Skip automatic extension/skill loading; retain installed Pueue",
     )
     internal = cli.add_argument_group("internal arguments")
     internal.add_argument(
@@ -316,6 +315,8 @@ def parser():
 
 def main():
     options = parser().parse_args()
+    if not Path(PUEUE_EXTENSION).is_file():
+        raise ValueError("Run pi-update before launching subagents")
     os.umask(0o077)
     options.directory = str(Path(options.directory).resolve(strict=True))
     if not Path(options.directory).is_dir():

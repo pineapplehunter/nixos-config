@@ -1,4 +1,4 @@
-{ inputs, config, ... }:
+{ config, ... }:
 let
   mcpModule = config.flake.homeModules.mcp-dbus;
 in
@@ -24,20 +24,20 @@ in
       }) mcpServers;
       skillPython = pkgs.python3.withPackages (pythonPackages: [ pythonPackages.pyyaml ]);
 
-      localPiPackages = import ./packages.nix { inherit pkgs lib inputs; };
-      piPackages = [
-        "npm:@narumitw/pi-usage"
-        "npm:pi-web-access"
-        "npm:pi-codex-image-gen"
-        "npm:pi-compact-tools"
-        "https://github.com/monotykamary/pi-double-esc@main"
-        "https://github.com/pineapplehunter/pi-remote-server@main"
-      ]
-      ++ map toString localPiPackages;
-
-      updatePiSettings = pkgs.writers.writePython3Bin "update-pi-settings" { } (
-        lib.readFile ./update-settings.py
+      updatePiResources = pkgs.writers.writePython3Bin "pi-update-resources" { } (
+        lib.readFile ./pi-update.py
       );
+      piUpdate = pkgs.writeShellApplication {
+        name = "pi-update";
+        runtimeInputs = [
+          pkgs.git
+          pkgs.nodejs
+        ];
+        text = ''
+          export PI_UPDATE_PI=${lib.getExe pkgs.pi-coding-agent}
+          exec ${lib.getExe updatePiResources} "$@"
+        '';
+      };
 
       updateMcpSettings = pkgs.writers.writePython3Bin "update-pi-mcp" { } (lib.readFile ./update-mcp.py);
 
@@ -85,6 +85,7 @@ in
           subagent
           subagentRunner
           pueueComplete
+          piUpdate
           pkgs.bubblewrap
           pkgs.bash
           pkgs.coreutils
@@ -127,12 +128,10 @@ in
           [
             "@PUEUE_CONFIG@"
             "@SUBAGENT_RUNNER@"
-            "@PI_PACKAGE@"
           ]
           [
             (toString pueueConfig)
             (toString subagentRunner)
-            "${./pineapplehunter}"
           ]
           (lib.readFile ./pineapplehunter/tools/subagents/launcher.py)
       );
@@ -197,16 +196,11 @@ in
         programs.pi-coding-agent.package = piCodingAgentWrapped;
         home.packages = [
           piCodingAgentWrapped
+          piUpdate
           subagent
           skillPython
           portalClients
         ];
-
-        home.activation.piPackages = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-          ${lib.getExe updatePiSettings} \
-            "$HOME/.pi/agent/settings.json" \
-            ${lib.escapeShellArgs piPackages}
-        '';
 
         home.activation.piMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
           for profile in agent agent-work agent-auto; do
@@ -238,11 +232,6 @@ in
         };
 
         home.file = {
-          ".pi/agent/AGENTS.md".text = ''
-            Prefer shallow clones in /tmp over repeated remote searches of public repositories.
-            If a file or tool is missing, see skill `sandbox-info`.
-            Nix tooling is available; use `nix develop` or `nix shell` for project tools.
-          '';
           ".local/share/applications/io.github.pineapplehunter.Pi.desktop".text = ''
             [Desktop Entry]
             Type=Application
