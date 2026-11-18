@@ -124,9 +124,9 @@ sandbox receives no SSH key files or SSH-agent socket. Nothing from `~/.ssh`
 is mounted by default. Git uses an opaque `pi-host-signer` key selector that the
 client ignores; key selection stays entirely on the host.
 
-The configured SSH public signing key (`programs.git.signing.key`, currently
-`~/.ssh/id_ed25519.pub`) is used only by the host signer and must have its private
-half loaded in the host SSH agent.
+The configured SSH public signing key (`programs.git.signing.key`, set to
+`${config.home.homeDirectory}/.ssh/id_ed25519.pub`) is passed as an absolute path
+to the host signer and must have its private half loaded in the host SSH agent.
 The user service needs the host's `SSH_AUTH_SOCK` in its systemd environment.
 If your desktop does not import it automatically, run on the host:
 

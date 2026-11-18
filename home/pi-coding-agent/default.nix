@@ -70,9 +70,7 @@ in
       } (lib.readFile ./pineapplehunter/wrapper/clipboard_daemon.py);
 
       gitUser = config.programs.git.settings.user;
-      gitPublicKey =
-        lib.replaceStrings [ "~/" ] [ "${config.home.homeDirectory}/" ]
-          config.programs.git.signing.key;
+      gitPublicKey = config.programs.git.signing.key;
       gitSignClient = pkgs.writers.writePython3Bin "pi-git-sign" {
         libraries = [ pkgs.python3Packages.dbus-next ];
       } (lib.readFile ./pineapplehunter/wrapper/git_sign_client.py);

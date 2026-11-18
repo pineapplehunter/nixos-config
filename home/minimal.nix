@@ -80,7 +80,7 @@ in
             package = pkgs.gitFull;
             signing = {
               signByDefault = true;
-              key = "~/.ssh/id_ed25519.pub";
+              key = "${config.home.homeDirectory}/.ssh/id_ed25519.pub";
               format = "ssh";
             };
             settings = {
