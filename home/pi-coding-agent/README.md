@@ -68,6 +68,51 @@ Combine with `@debug-shell`, `@allow PATH` (read-only), or `@allow-rw PATH`.
 only enable it for trusted hardware/firmware work. Without it, the minimal
 sandbox `/dev` remains unchanged.
 
+## Git identity, signing, and attribution
+
+All three wrappers use a filtered Git configuration generated from the host's
+Home Manager `programs.git.settings.user` identity. They sign commits
+through the automatically activated `pi-git-signing.service` on the host.
+Only `GitSign1.SignCommit` is exposed through the filtered D-Bus proxy; the
+sandbox receives the public SSH key, never the private key or SSH-agent socket.
+
+The configured SSH public signing key (`programs.git.signing.key`, currently
+`~/.ssh/id_ed25519.pub`) must have its private half loaded in the host SSH agent.
+The user service needs the host's `SSH_AUTH_SOCK` in its systemd environment.
+If your desktop does not import it automatically, run on the host:
+
+```sh
+systemctl --user import-environment SSH_AUTH_SOCK
+systemctl --user restart pi-git-signing.service
+```
+
+There are no Pi Git hooks or hook-path overrides. The agent must include
+`Assisted-By: pi (<model>)` as the final nonempty message line itself. The repository's
+`.pi/skills/commit-conventions/SKILL.md` describes this before-commit workflow.
+Missing or malformed final attribution is rejected by the host signer with
+the required format and instructions to correct the message and retry.
+Repository hooks and custom `core.hooksPath` are untouched. The attribution is
+the selected Pi model ID, not an independently verified upstream model behind
+a router. Agents can read `PI_MODEL` to write the attribution, but neither the
+signing client nor the host signer requires that environment variable.
+
+The broker checks the final commit payload, requiring the host committer identity
+and a final line matching `Assisted-By: pi \([^\s()]+\)` before automatically
+signing in the SSH `git` namespace. Original authors are preserved for
+cherry-picks/rebases. Missing or malformed attribution, unavailable keys, and
+signing failures fail closed. Only payload bytes are sent over D-Bus; the signer
+does not receive or verify a separate model name.
+The broker does not execute repository hooks or accept commands, key paths, or
+filenames from clients. Signature verification stays local with `ssh-keygen`.
+
+This policy applies to broker-signed commits: writable Git repositories still
+allow deliberately unsigned commits. Automatic signing grants the agent commit
+signing authority under your identity, not proof of human review. Signed tags
+and arbitrary SSH signing requests are not supported by this broker.
+
+Rebuild Home Manager/NixOS and restart Pi to activate these changes; an already
+running sandbox keeps its old configuration and D-Bus permissions.
+
 ## Checks
 
 ```sh
@@ -76,4 +121,15 @@ nix flake check --no-build --all-systems
 ```
 
 Wrapper D-Bus tests need `dbus-next` and an explicitly private `dbus-run-session`;
-see `tests/test_wrapper_dbus.py`. Resource tests moved to pi-customizations.
+see `tests/test_wrapper_dbus.py` and `tests/test_git_signing.py`. Signing tests
+also need Git and OpenSSH; they create a temporary private SSH agent and never
+use host keys or the desktop bus. They cover a signed commit and rejection of
+an invalid message. For example, in a
+Python environment with `dbus-next` installed:
+
+```sh
+PI_WRAPPER_TEST_PRIVATE_BUS=1 dbus-run-session -- \
+  python3 -m unittest discover -s home/pi-coding-agent/tests -p 'test_git_signing.py'
+```
+
+Resource tests moved to pi-customizations.

@@ -201,6 +201,9 @@ def main() -> int:
         fail("The environment variable EXECUTABLE is not set")
     if not marker:
         fail("The environment variable PROJECT_ROOT_FILE is not set")
+    for variable in ("PI_GIT_CONFIG", "PI_GIT_PUBLIC_KEY"):
+        if not os.environ.get(variable):
+            fail(f"{variable} is not set")
     runtime_text = os.environ.get("XDG_RUNTIME_DIR")
     if not runtime_text:
         fail("XDG_RUNTIME_DIR is not set")
@@ -320,6 +323,11 @@ def main() -> int:
                 "--call=io.github.pineapplehunter.LocalClipboard1="
                 "io.github.pineapplehunter.LocalClipboard1.Copy@"
                 "/io/github/pineapplehunter/LocalClipboard1"
+            ),
+            (
+                "--call=io.github.pineapplehunter.GitSign1="
+                "io.github.pineapplehunter.GitSign1.SignCommit@"
+                "/io/github/pineapplehunter/GitSign1"
             ),
             *(
                 f"--call={name}=io.github.pineapplehunter.Mcp1.{method}"
@@ -445,6 +453,10 @@ def main() -> int:
             str(root),
             "--clearenv",
         ]
+        # Only the public key is visible. The host agent socket and private
+        # key are deliberately absent; signing goes through filtered D-Bus.
+        public_key = os.environ["PI_GIT_PUBLIC_KEY"]
+        add_bind(bwrap, "--ro-bind-try", public_key, public_key)
         if has_wayland_clipboard:
             # Pi uses WAYLAND_DISPLAY only to select its wl-copy backend. The
             # compatibility client talks to the host broker, not to Wayland.
@@ -496,17 +508,14 @@ def main() -> int:
                 "PUEUE_CONFIG_PATH",
                 os.environ.get("PUEUE_CONFIG_PATH", ""),
                 "--setenv",
-                "GIT_AUTHOR_NAME",
-                "pi-coding-agent",
+                "GIT_CONFIG_GLOBAL",
+                os.environ["PI_GIT_CONFIG"],
                 "--setenv",
-                "GIT_AUTHOR_EMAIL",
-                "peshogo+agent@gmail.com",
+                "GIT_CONFIG_NOSYSTEM",
+                "1",
                 "--setenv",
-                "GIT_COMMITTER_NAME",
-                "pi-coding-agent",
-                "--setenv",
-                "GIT_COMMITTER_EMAIL",
-                "peshogo+agent@gmail.com",
+                "PI_GIT_PUBLIC_KEY",
+                public_key,
                 "--setenv",
                 "EDITOR",
                 "hx",

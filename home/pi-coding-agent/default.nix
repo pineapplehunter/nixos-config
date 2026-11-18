@@ -69,6 +69,28 @@ in
         libraries = [ pkgs.python3Packages.dbus-next ];
       } (lib.readFile ./pineapplehunter/wrapper/clipboard_daemon.py);
 
+      gitUser = config.programs.git.settings.user;
+      gitPublicKey = lib.replaceStrings [ "~/" ] [ "${config.home.homeDirectory}/" ] (
+        config.programs.git.signing.key
+      );
+      gitSignClient = pkgs.writers.writePython3Bin "pi-git-sign" {
+        libraries = [ pkgs.python3Packages.dbus-next ];
+      } (lib.readFile ./pineapplehunter/wrapper/git_sign_client.py);
+      gitSignDaemon = pkgs.writers.writePython3Bin "pi-git-signingd" {
+        libraries = [ pkgs.python3Packages.dbus-next ];
+      } (lib.readFile ./pineapplehunter/wrapper/git_sign_daemon.py);
+      gitConfig = (pkgs.formats.gitIni { }).generate "pi-gitconfig" {
+        user = {
+          inherit (gitUser) name email;
+          signingKey = gitPublicKey;
+        };
+        commit.gpgSign = true;
+        gpg = {
+          format = "ssh";
+          ssh.program = lib.getExe gitSignClient;
+        };
+      };
+
       portalClient = pkgs.writers.writePython3Bin "pi-portal-client" {
         libraries = [ pkgs.python3Packages.dbus-next ];
       } (lib.readFile ./pineapplehunter/wrapper/portal_client.py);
@@ -109,6 +131,7 @@ in
           pkgs.ripgrep
           pkgs.mcp-dbus-proxy
           clipboardClient
+          gitSignClient
           skillPython
           portalClients
         ];
@@ -148,7 +171,9 @@ in
                 pkgs.xdg-dbus-proxy
               ]
             } \
-            --set PI_SANDBOX_PATH ${lib.escapeShellArg "${sandboxTools}/bin"}
+            --set PI_SANDBOX_PATH ${lib.escapeShellArg "${sandboxTools}/bin"} \
+            --set PI_GIT_CONFIG ${gitConfig} \
+            --set PI_GIT_PUBLIC_KEY ${lib.escapeShellArg gitPublicKey}
         '';
       };
 
@@ -193,6 +218,12 @@ in
     {
       imports = [ mcpModule ];
       config = lib.mkIf isLinux {
+        assertions = [
+          {
+            assertion = config.programs.git.signing.format == "ssh" && lib.hasSuffix ".pub" gitPublicKey;
+            message = "Pi's host signer requires an SSH public signing key (*.pub).";
+          }
+        ];
         programs.pi-coding-agent.package = piCodingAgentWrapped;
         home.packages = [
           piCodingAgentWrapped
@@ -208,6 +239,32 @@ in
               "$HOME/.pi/$profile/mcp.json" \
               ${lib.escapeShellArg (builtins.toJSON mcpRegistrations)}
           done
+        '';
+
+        systemd.user.services.pi-git-signing = {
+          Unit.Description = "Sign attributed Pi commits with the host SSH key";
+          Service = {
+            Type = "dbus";
+            BusName = "io.github.pineapplehunter.GitSign1";
+            ExecStart = lib.escapeShellArgs [
+              (lib.getExe gitSignDaemon)
+              "--ssh-keygen"
+              (lib.getExe' pkgs.openssh "ssh-keygen")
+              "--key"
+              gitPublicKey
+              "--name"
+              gitUser.name
+              "--email"
+              gitUser.email
+            ];
+          };
+        };
+
+        xdg.dataFile."dbus-1/services/io.github.pineapplehunter.GitSign1.service".text = ''
+          [D-BUS Service]
+          Name=io.github.pineapplehunter.GitSign1
+          Exec=${lib.getExe gitSignDaemon} --ssh-keygen ${lib.getExe' pkgs.openssh "ssh-keygen"} --key ${lib.escapeShellArg gitPublicKey} --name ${lib.escapeShellArg gitUser.name} --email ${lib.escapeShellArg gitUser.email}
+          SystemdService=pi-git-signing.service
         '';
 
         systemd.user.services.pi-clipboard = {

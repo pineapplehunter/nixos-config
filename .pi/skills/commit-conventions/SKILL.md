@@ -55,7 +55,29 @@ Include a body by default for nontrivial changes. A subject alone is fine only w
 - Summarize what changed and explain why it was made, including the problem or motivation. Do not merely restate the subject or enumerate the diff.
 - Include relevant consequences, tradeoffs, or removal conditions when they help future readers understand the change.
 - Use complete sentences and short paragraphs, wrapping prose near 72 characters.
-- Do not add issue references, sign-offs, co-author trailers, or AI attribution unless the user explicitly requests them or the change actually requires them.
+- Do not add issue references, sign-offs, or co-author trailers unless explicitly requested or required. Pi's required signing attribution is described below.
+
+## Pi Signing Attribution — Before Every Commit
+
+When committing through Pi's host signer, read the current model from the shell:
+
+```sh
+printf '%s\n' "$PI_MODEL"
+```
+
+End the commit message with `Assisted-By: pi (<current PI_MODEL>)` as its last
+nonempty line, separating the trailer block from the body by a blank line.
+Substitute the actual model ID; do not guess it or leave a placeholder or literal `$PI_MODEL`
+in a quoted heredoc. Preserve unrelated trailers and replace stale/duplicate
+Pi attribution when amending.
+
+There is no hook to add attribution automatically. The host signer checks only
+that the final line matches `Assisted-By: pi \([^\s()]+\)`, not whether the model
+name is correct. It rejects missing/malformed attribution with retry
+instructions. Correct the message and retry the failed commit; do not disable signing, change identity,
+or amend an existing commit just to recover from a failed signing attempt. If
+`PI_MODEL` is unavailable, run from Pi's shell tool or report the blocker.
+Outside this Pi signing workflow, do not add AI attribution unless requested.
 
 ## Passing the Message to Git
 
