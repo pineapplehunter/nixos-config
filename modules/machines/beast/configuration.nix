@@ -184,12 +184,14 @@ in
       # Define a user account. Don't forget to set a password with ‘passwd’.
       specialisation = {
         gui.configuration = {
-          services.displayManager.gdm = {
-            enable = true;
-            autoSuspend = false;
+          services = {
+            displayManager.gdm = {
+              enable = true;
+              autoSuspend = false;
+            };
+            desktopManager.gnome.enable = true;
+            flatpak.enable = true;
           };
-          services.desktopManager.gnome.enable = true;
-          services.flatpak.enable = true;
           xdg.portal.enable = true;
         };
       };

@@ -1,4 +1,3 @@
-{ ... }:
 {
   flake.homeModules.mcp-dbus =
     {

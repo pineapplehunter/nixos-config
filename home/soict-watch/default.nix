@@ -7,7 +7,10 @@
       ...
     }:
     let
-      python = pkgs.python3.withPackages (ps: [ ps.pydantic ps.requests ]);
+      python = pkgs.python3.withPackages (ps: [
+        ps.pydantic
+        ps.requests
+      ]);
       discordIcon = "https://soict.org/wp-content/uploads/2026/05/cropped-2aOboQYrmw3L2D7MwM5SV5a0Byh9RCZwkrZANqIC-192x192.jpg";
       reportExtension = pkgs.writeText "soict-validate-report.ts" (
         builtins.replaceStrings
@@ -39,54 +42,58 @@
 
       home.packages = [ pkgs.gitcrawl ];
 
-      systemd.user.services.soict-watch = {
-        Unit = {
-          Description = "Review current-year SOICT website changes with Pi and notify Slack in Japanese";
-          Requires = [ "sops-nix.service" ];
-          After = [ "sops-nix.service" ];
-          OnFailure = [ "soict-watch-failure.service" ];
-        };
-        Service = {
-          Type = "oneshot";
-          ExecCondition = "${pkgs.python3}/bin/python3 -c 'import datetime, sys; sys.exit(datetime.date.today() > datetime.date(2026, 12, 10))'";
-          ExecStart = lib.getExe monitor;
-          TimeoutStartSec = "30min";
-          UMask = "0077";
-        };
-      };
+      systemd.user = {
+        services = {
+          soict-watch = {
+            Unit = {
+              Description = "Review current-year SOICT website changes with Pi and notify Slack in Japanese";
+              Requires = [ "sops-nix.service" ];
+              After = [ "sops-nix.service" ];
+              OnFailure = [ "soict-watch-failure.service" ];
+            };
+            Service = {
+              Type = "oneshot";
+              ExecCondition = "${pkgs.python3}/bin/python3 -c 'import datetime, sys; sys.exit(datetime.date.today() > datetime.date(2026, 12, 10))'";
+              ExecStart = lib.getExe monitor;
+              TimeoutStartSec = "30min";
+              UMask = "0077";
+            };
+          };
 
-      systemd.user.services.soict-watch-failure = {
-        Unit.Description = "Notify Discord when the SOICT monitor fails";
-        Service = {
-          Type = "oneshot";
-          ExecStart = lib.escapeShellArgs [
-            (lib.getExe' pkgs.local-notify "local-notify")
-            "--username"
-            "soict-watch"
-            "--icon"
-            discordIcon
-            "--title"
-            "SOICT monitor failed"
-            "--content"
-            "SOICTサイト監視に失敗しました。詳細: `journalctl --user -u soict-watch.service -n 100`。Piログ: `${config.xdg.stateHome}/soict-watch/<year>/pi.log`。次回の定期実行で再試行します。"
-            "--color"
-            "#ED4245"
-          ];
-          TimeoutStartSec = "30s";
+          soict-watch-failure = {
+            Unit.Description = "Notify Discord when the SOICT monitor fails";
+            Service = {
+              Type = "oneshot";
+              ExecStart = lib.escapeShellArgs [
+                (lib.getExe' pkgs.local-notify "local-notify")
+                "--username"
+                "soict-watch"
+                "--icon"
+                discordIcon
+                "--title"
+                "SOICT monitor failed"
+                "--content"
+                "SOICTサイト監視に失敗しました。詳細: `journalctl --user -u soict-watch.service -n 100`。Piログ: `${config.xdg.stateHome}/soict-watch/<year>/pi.log`。次回の定期実行で再試行します。"
+                "--color"
+                "#ED4245"
+              ];
+              TimeoutStartSec = "30s";
+            };
+          };
         };
-      };
 
-      systemd.user.timers.soict-watch = {
-        Unit.Description = "Check the SOICT website at 09:00, 12:00, and 16:00";
-        Timer = {
-          OnCalendar = [
-            "2026-01..11-* 09,12,16:00:00"
-            "2026-12-01..10 09,12,16:00:00"
-          ];
-          Persistent = true;
-          AccuracySec = "1s";
+        timers.soict-watch = {
+          Unit.Description = "Check the SOICT website at 09:00, 12:00, and 16:00";
+          Timer = {
+            OnCalendar = [
+              "2026-01..11-* 09,12,16:00:00"
+              "2026-12-01..10 09,12,16:00:00"
+            ];
+            Persistent = true;
+            AccuracySec = "1s";
+          };
+          Install.WantedBy = [ "timers.target" ];
         };
-        Install.WantedBy = [ "timers.target" ];
       };
     };
 }

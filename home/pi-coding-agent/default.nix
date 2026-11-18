@@ -70,9 +70,9 @@ in
       } (lib.readFile ./pineapplehunter/wrapper/clipboard_daemon.py);
 
       gitUser = config.programs.git.settings.user;
-      gitPublicKey = lib.replaceStrings [ "~/" ] [ "${config.home.homeDirectory}/" ] (
-        config.programs.git.signing.key
-      );
+      gitPublicKey =
+        lib.replaceStrings [ "~/" ] [ "${config.home.homeDirectory}/" ]
+          config.programs.git.signing.key;
       gitSignClient = pkgs.writers.writePython3Bin "pi-git-sign" {
         libraries = [ pkgs.python3Packages.dbus-next ];
       } (lib.readFile ./pineapplehunter/wrapper/git_sign_client.py);
@@ -144,10 +144,9 @@ in
           ./pineapplehunter/tools/subagents/runner.py;
 
       subagent = pkgs.writers.writePython3Bin "pi-subagent" { } (
-        builtins.replaceStrings
-          [ "@SUBAGENT_RUNNER@" ]
-          [ (toString subagentRunner) ]
-          (lib.readFile ./pineapplehunter/tools/subagents/launcher.py)
+        builtins.replaceStrings [ "@SUBAGENT_RUNNER@" ] [ (toString subagentRunner) ] (
+          lib.readFile ./pineapplehunter/tools/subagents/launcher.py
+        )
       );
 
       wrapper = pkgs.symlinkJoin {
@@ -198,21 +197,34 @@ in
           }
         ];
         programs.pi-coding-agent.package = piCodingAgentWrapped;
-        home.packages = [
-          piCodingAgentWrapped
-          piUpdate
-          subagent
-          skillPython
-          portalClients
-        ];
+        home = {
+          packages = [
+            piCodingAgentWrapped
+            piUpdate
+            subagent
+            skillPython
+            portalClients
+          ];
 
-        home.activation.piMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-          for profile in agent agent-work agent-auto; do
-            ${lib.getExe updateMcpSettings} \
-              "$HOME/.pi/$profile/mcp.json" \
-              ${lib.escapeShellArg (builtins.toJSON mcpRegistrations)}
-          done
-        '';
+          activation.piMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            for profile in agent agent-work agent-auto; do
+              ${lib.getExe updateMcpSettings} \
+                "$HOME/.pi/$profile/mcp.json" \
+                ${lib.escapeShellArg (builtins.toJSON mcpRegistrations)}
+            done
+          '';
+
+          file = {
+            ".local/share/applications/io.github.pineapplehunter.Pi.desktop".text = ''
+              [Desktop Entry]
+              Type=Application
+              Name=Pi Coding Agent
+              Exec=pi %u
+              NoDisplay=true
+              X-Flatpak=io.github.pineapplehunter.Pi
+            '';
+          };
+        };
 
         systemd.user.services.pi-git-signing = {
           Unit.Description = "Sign attributed Pi commits with the host SSH key";
@@ -258,17 +270,6 @@ in
             Name=io.github.pineapplehunter.LocalClipboard1
             Exec=${lib.getExe clipboardDaemon} --wl-copy ${lib.getExe' pkgs.wl-clipboard "wl-copy"}
             SystemdService=pi-clipboard.service
-          '';
-        };
-
-        home.file = {
-          ".local/share/applications/io.github.pineapplehunter.Pi.desktop".text = ''
-            [Desktop Entry]
-            Type=Application
-            Name=Pi Coding Agent
-            Exec=pi %u
-            NoDisplay=true
-            X-Flatpak=io.github.pineapplehunter.Pi
           '';
         };
       };

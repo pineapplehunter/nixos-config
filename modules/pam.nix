@@ -45,7 +45,7 @@
         entries:
         lib.listToAttrs (
           lib.imap0 (i: entry: {
-            name = entry.name;
+            inherit (entry) name;
             value = (builtins.removeAttrs entry [ "name" ]) // {
               order = 100 + i;
             };
@@ -156,41 +156,43 @@
         # Keep the daemons available without silently enabling biometrics in sshd,
         # systemd-user, su-l, or screen lockers outside this policy's allowlist.
         services.fprintd.enablePam = false;
-        security.pam.howdy.enable = false;
-        security.pam.enableLegacySettings = false;
+        security.pam = {
+          howdy.enable = false;
+          enableLegacySettings = false;
 
-        security.pam.services = lib.mkMerge [
-          {
-            local-password = authService passwordRules;
-            local-auth = authService localRules;
-            local-biometrics = authService biometricRules;
-            login.rules.auth = serviceAuth loginChecks "local-auth";
-            gdm-password.rules.auth = serviceAuth loginChecks "local-password";
-            gdm-fingerprint.rules.auth = serviceAuth gdmChecks "local-biometrics";
-          }
-          (lib.genAttrs biometricServices (_: {
-            rules.auth = serviceAuth [ ] "local-auth";
-          }))
-          (lib.genAttrs passwordServices (_: {
-            rules.auth = serviceAuth [ ] "local-password";
-          }))
-          # Do not short-circuit password updates before the keyring has consumed
-          # the new token. Keep the remaining upstream password rules and settings.
-          (lib.genAttrs localServices (_: {
-            rules.password.unix.control = lib.mkForce "requisite";
-          }))
-          {
-            passwd.rules.password.gnome_keyring.enable = lib.mkForce true;
-          }
-          (lib.genAttrs [ "gdm-password" "gdm-fingerprint" ] (_: {
-            rules.session.clear-biometric-window = {
-              order = 20000;
-              control = "optional";
-              modulePath = exec;
-              args = command "clear-on-close";
-            };
-          }))
-        ];
+          services = lib.mkMerge [
+            {
+              local-password = authService passwordRules;
+              local-auth = authService localRules;
+              local-biometrics = authService biometricRules;
+              login.rules.auth = serviceAuth loginChecks "local-auth";
+              gdm-password.rules.auth = serviceAuth loginChecks "local-password";
+              gdm-fingerprint.rules.auth = serviceAuth gdmChecks "local-biometrics";
+            }
+            (lib.genAttrs biometricServices (_: {
+              rules.auth = serviceAuth [ ] "local-auth";
+            }))
+            (lib.genAttrs passwordServices (_: {
+              rules.auth = serviceAuth [ ] "local-password";
+            }))
+            # Do not short-circuit password updates before the keyring has consumed
+            # the new token. Keep the remaining upstream password rules and settings.
+            (lib.genAttrs localServices (_: {
+              rules.password.unix.control = lib.mkForce "requisite";
+            }))
+            {
+              passwd.rules.password.gnome_keyring.enable = lib.mkForce true;
+            }
+            (lib.genAttrs [ "gdm-password" "gdm-fingerprint" ] (_: {
+              rules.session.clear-biometric-window = {
+                order = 20000;
+                control = "optional";
+                modulePath = exec;
+                args = command "clear-on-close";
+              };
+            }))
+          ];
+        };
       };
     };
 }
