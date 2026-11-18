@@ -10,6 +10,7 @@ import re
 import shlex
 import subprocess
 import sys
+import tomllib
 import uuid
 
 THINKING_LEVELS = ("off", "minimal", "low", "medium", "high", "xhigh", "max")
@@ -187,6 +188,14 @@ def sandbox_command(options, state, agent_source):
             "/nix/var/nix/daemon-socket",
         ]
     )
+    # Match the parent's UPKI setup; the host remains the only cache writer.
+    upki_config = Path("/etc/upki/config.toml")
+    upki_cache = Path("/var/cache/upki")
+    if upki_config.is_file():
+        with upki_config.open("rb") as stream:
+            upki_cache = Path(tomllib.load(stream)["cache-dir"])
+    if upki_cache.is_dir():
+        args.extend(["--ro-bind", str(upki_cache), str(upki_cache)])
     environment = {
         "HOME": str(home),
         "PWD": options.project_path,

@@ -94,7 +94,8 @@ class Signing(unittest.IsolatedAsyncioTestCase):
         for key, value in {
             "user.name": "Host User",
             "user.email": "host@example.invalid",
-            "user.signingKey": str(self.key) + ".pub",
+            # Opaque selector, not a key file; key access stays on the host.
+            "user.signingKey": "pi-host-signer",
             "gpg.format": "ssh",
             "gpg.ssh.program": str(signer),
             "commit.gpgSign": "true",

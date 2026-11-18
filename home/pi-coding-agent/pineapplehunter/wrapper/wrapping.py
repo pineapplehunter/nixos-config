@@ -14,8 +14,9 @@ import subprocess
 import sys
 import tempfile
 import time
+import tomllib
 from pathlib import Path
-from typing import NoReturn
+from typing import BinaryIO, NoReturn
 from urllib.parse import unquote
 
 from dbus_next import DBusError, Message, MessageType
@@ -45,6 +46,18 @@ def add_bind(
     args: list[str], option: str, source: Path | str, destination: Path | str
 ) -> None:
     args.extend((option, str(source), str(destination)))
+
+
+def add_copy(
+    args: list[str],
+    files: list[BinaryIO],
+    source: Path | str,
+    destination: Path | str,
+) -> None:
+    """Copy a file into the private filesystem, without a host bind mount."""
+    stream = Path(source).open("rb")
+    files.append(stream)
+    args.extend(("--file", str(stream.fileno()), str(destination)))
 
 
 def portal_mount() -> Path | None:
@@ -201,9 +214,8 @@ def main() -> int:
         fail("The environment variable EXECUTABLE is not set")
     if not marker:
         fail("The environment variable PROJECT_ROOT_FILE is not set")
-    for variable in ("PI_GIT_CONFIG", "PI_GIT_PUBLIC_KEY"):
-        if not os.environ.get(variable):
-            fail(f"{variable} is not set")
+    if not os.environ.get("PI_GIT_CONFIG"):
+        fail("PI_GIT_CONFIG is not set")
     runtime_text = os.environ.get("XDG_RUNTIME_DIR")
     if not runtime_text:
         fail("XDG_RUNTIME_DIR is not set")
@@ -354,8 +366,11 @@ def main() -> int:
     )
     lifetime_child.close()
     child: subprocess.Popen | None = None
+    sandbox_files: list[BinaryIO] = []
 
     def cleanup() -> None:
+        for stream in sandbox_files:
+            stream.close()
         if child is not None and child.poll() is None:
             child.terminate()
             try:
@@ -401,8 +416,19 @@ def main() -> int:
         passwd += f"{user.pw_name}:x:{uid}:{gid}::{home}:/bin/sh\n"
         groups = "root:x:0:\n" if gid != 0 else ""
         groups += f"{group.gr_name}:x:{gid}:{user.pw_name}\n"
-        atomic_write(instance_dir / "passwd", passwd.encode(), 0o444)
-        atomic_write(instance_dir / "group", groups.encode(), 0o444)
+        generated = {
+            "passwd": passwd,
+            "group": groups,
+            # Host systemd/mDNS NSS modules have no services in the sandbox.
+            "nsswitch.conf": (
+                "passwd: files\ngroup: files\nshadow: files\n"
+                "hosts: files dns\nnetworks: files\n"
+                "services: files\nprotocols: files\nrpc: files\n"
+            ),
+            "host.conf": "multi on\n",
+        }
+        for name, content in generated.items():
+            atomic_write(instance_dir / name, content.encode(), 0o444)
 
         bwrap = [
             "bwrap",
@@ -422,12 +448,6 @@ def main() -> int:
             str(home),
             "--tmpfs",
             "/etc",
-            "--ro-bind",
-            str(instance_dir / "passwd"),
-            "/etc/passwd",
-            "--ro-bind",
-            str(instance_dir / "group"),
-            "/etc/group",
             "--tmpfs",
             "/run",
             "--dir",
@@ -453,10 +473,8 @@ def main() -> int:
             str(root),
             "--clearenv",
         ]
-        # Only the public key is visible. The host agent socket and private
-        # key are deliberately absent; signing goes through filtered D-Bus.
-        public_key = os.environ["PI_GIT_PUBLIC_KEY"]
-        add_bind(bwrap, "--ro-bind-try", public_key, public_key)
+        # No SSH keys or agent socket are mounted; the host selects its own
+        # signing key through filtered D-Bus.
         if has_wayland_clipboard:
             # Pi uses WAYLAND_DISPLAY only to select its wl-copy backend. The
             # compatibility client talks to the host broker, not to Wayland.
@@ -511,27 +529,37 @@ def main() -> int:
                 "GIT_CONFIG_NOSYSTEM",
                 "1",
                 "--setenv",
-                "PI_GIT_PUBLIC_KEY",
-                public_key,
-                "--setenv",
                 "EDITOR",
                 "hx",
             )
         )
-        for entry in (
-            "/bin/sh",
-            "/etc/gai.conf",
-            "/etc/host.conf",
-            "/etc/hosts",
-            "/etc/localtime",
-            "/etc/nix",
-            "/etc/nsswitch.conf",
-            "/etc/pki",
-            "/etc/resolv.conf",
-            "/etc/ssl",
-            "/etc/static",
-            "/usr/bin/env",
-        ):
+        for name in generated:
+            add_copy(bwrap, sandbox_files, instance_dir / name, f"/etc/{name}")
+        # Preserve host network/timezone policy as per-launch snapshots.
+        for entry in ("/etc/hosts", "/etc/resolv.conf", "/etc/localtime"):
+            if Path(entry).is_file():
+                add_copy(bwrap, sandbox_files, entry, entry)
+        # Dereference /etc/static symlinks without exposing the whole tree.
+        for source in Path("/etc/nix").rglob("*"):
+            if source.is_file():
+                add_copy(bwrap, sandbox_files, source, source)
+        bundle = "/etc/ssl/certs/ca-certificates.crt"
+        if Path(bundle).is_file():
+            add_copy(bwrap, sandbox_files, bundle, bundle)
+            for alias in (
+                "/etc/ssl/certs/ca-bundle.crt",
+                "/etc/pki/tls/certs/ca-bundle.crt",
+            ):
+                bwrap.extend(("--symlink", bundle, alias))
+
+        upki_config = Path("/etc/upki/config.toml")
+        upki_cache = Path("/var/cache/upki")
+        if upki_config.is_file():
+            with upki_config.open("rb") as stream:
+                upki_cache = Path(tomllib.load(stream)["cache-dir"])
+            add_copy(bwrap, sandbox_files, upki_config, upki_config)
+
+        for entry in ("/bin/sh", "/usr/bin/env"):
             bwrap.extend(("--ro-bind-try", entry, entry))
 
         sandbox_path = os.environ.get("PI_SANDBOX_PATH")
@@ -560,6 +588,9 @@ def main() -> int:
         os.chmod(sandbox_tmp, 0o700)
         add_bind(bwrap, "--bind", sandbox_tmp, sandbox_tmp)
         add_bind(bwrap, "--bind", sandbox_tmp, "/tmp")
+        # Mount after /tmp so a custom cache path there is not hidden.
+        if upki_cache.is_dir():
+            add_bind(bwrap, "--ro-bind", upki_cache, upki_cache)
         bwrap.extend(extra_binds)
         info_read, info_write = os.pipe()
         block_read, block_write = os.pipe()
@@ -569,8 +600,14 @@ def main() -> int:
         command = os.environ.get("SHELL", "/bin/sh") if debug else executable
         child = subprocess.Popen(
             [*bwrap, command, *arguments],
-            pass_fds=(info_write, block_read),
+            pass_fds=(
+                info_write,
+                block_read,
+                *(stream.fileno() for stream in sandbox_files),
+            ),
         )
+        for stream in sandbox_files:
+            stream.close()
         os.close(info_write)
         os.close(block_read)
         info = read_bwrap_info(info_read, child)

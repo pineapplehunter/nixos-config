@@ -82,7 +82,8 @@ in
       gitConfig = (pkgs.formats.gitIni { }).generate "pi-gitconfig" {
         user = {
           inherit (gitUser) name email;
-          signingKey = gitPublicKey;
+          # Git requires a key selector; only the host broker chooses the key.
+          signingKey = "pi-host-signer";
         };
         commit.gpgSign = true;
         gpg = {
@@ -110,6 +111,7 @@ in
           pkgs.bubblewrap
           pkgs.bash
           pkgs.coreutils
+          pkgs.curl-upki
           pkgs.diffutils
           pkgs.fd
           pkgs.file
@@ -161,8 +163,7 @@ in
               ]
             } \
             --set PI_SANDBOX_PATH ${lib.escapeShellArg "${sandboxTools}/bin"} \
-            --set PI_GIT_CONFIG ${gitConfig} \
-            --set PI_GIT_PUBLIC_KEY ${lib.escapeShellArg gitPublicKey}
+            --set PI_GIT_CONFIG ${gitConfig}
         '';
       };
 

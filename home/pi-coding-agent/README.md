@@ -85,16 +85,48 @@ Combine with `@debug-shell`, `@allow PATH` (read-only), or `@allow-rw PATH`.
 only enable it for trusted hardware/firmware work. Without it, the minimal
 sandbox `/dev` remains unchanged.
 
+## Sandbox `/etc` and TLS
+
+The wrapper populates a private `/etc` with Bubblewrap `--file` copies, not host
+`/etc` bind mounts:
+
+- Generates minimal `passwd`, `group`, `nsswitch.conf` (`hosts: files dns`), and
+  `host.conf`. Host systemd/mDNS NSS services are not available in the sandbox.
+- Copies host `hosts`, `resolv.conf`, and `localtime`, plus files under `/etc/nix`.
+  Copies dereference NixOS's `/etc/static` symlinks; that whole tree is not exposed.
+- Copies only `/etc/ssl/certs/ca-certificates.crt`, preserving host-added CAs,
+  and creates the usual NixOS/Fedora bundle aliases. The other contents of
+  `/etc/ssl` and `/etc/pki` are not exposed. `gai.conf` is omitted (glibc defaults).
+
+These are launch-time snapshots: restart Pi after host DNS, trust, timezone, or
+Nix configuration changes. Sandbox edits to these copies do not change the host.
+
+The sandbox PATH includes `curl-upki`. The wrapper copies `/etc/upki/config.toml`
+when present and mounts its configured `cache-dir` read-only (default
+`/var/cache/upki`). Only the host `upki-fetch.service` updates the revocation
+cache; sandboxed curl reads it. Subagents inherit the copied `/etc` and get the
+same read-only cache mount. This does not enable UPKI in Node, Git, or every
+other TLS client. UPKI soft-fails when no revocation data exists, so a successful
+HTTPS request alone is not proof that revocation checking is active. Missing
+UPKI configuration or cache is silently skipped. Populate the cache on the host with:
+
+```sh
+sudo systemctl start upki-fetch.service
+```
+
 ## Git identity, signing, and attribution
 
 All three wrappers use a filtered Git configuration generated from the host's
 Home Manager `programs.git.settings.user` identity. They sign commits
 through the automatically activated `pi-git-signing.service` on the host.
 Only `GitSign1.SignCommit` is exposed through the filtered D-Bus proxy; the
-sandbox receives the public SSH key, never the private key or SSH-agent socket.
+sandbox receives no SSH key files or SSH-agent socket. Nothing from `~/.ssh`
+is mounted by default. Git uses an opaque `pi-host-signer` key selector that the
+client ignores; key selection stays entirely on the host.
 
 The configured SSH public signing key (`programs.git.signing.key`, currently
-`~/.ssh/id_ed25519.pub`) must have its private half loaded in the host SSH agent.
+`~/.ssh/id_ed25519.pub`) is used only by the host signer and must have its private
+half loaded in the host SSH agent.
 The user service needs the host's `SSH_AUTH_SOCK` in its systemd environment.
 If your desktop does not import it automatically, run on the host:
 

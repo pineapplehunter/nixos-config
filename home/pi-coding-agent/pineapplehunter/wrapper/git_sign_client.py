@@ -49,9 +49,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-Y", choices=["sign"], required=True)
     parser.add_argument("-n", choices=["git"], required=True)
-    parser.add_argument(
-        "-f", required=True
-    )  # Public key; host selects its own.
+    # Git requires a key selector, but it is ignored; the host selects its own.
+    parser.add_argument("-f", required=True)
     parser.add_argument("-U", action="store_true")
     parser.add_argument("payload", type=Path)
     args = parser.parse_args()
