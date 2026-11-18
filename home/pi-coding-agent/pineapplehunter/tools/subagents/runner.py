@@ -54,11 +54,16 @@ def main():
                     break
                 if record.get("id") == "bootstrap":
                     commands = record.get("data", {}).get("commands", [])
-                    if not any(
-                        command.get("name") == "pueue-notifications"
-                        for command in commands
-                    ):
-                        failure = "Pueue completion extension is not loaded"
+                    required = {
+                        "pueue-notifications", "subagent-pueue-status",
+                    }
+                    available = {command.get("name") for command in commands}
+                    missing = required - available
+                    if missing:
+                        failure = (
+                            "Required Pueue commands are not loaded: "
+                            + ", ".join(sorted(missing))
+                        )
                         break
                     send({
                         "id": "initial", "type": "prompt", "message": prompt,

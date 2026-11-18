@@ -1,7 +1,7 @@
 # Pi host integration
 
 Home Manager installs Pi, `pi-update`, Bubblewrap wrappers (`pi`, `pi-work`,
-`pi-auto`), the private Pueue integration, subagent launcher/runner, clipboard,
+`pi-auto`), Pueue/Node sandbox tools, subagent launcher/runner, clipboard,
 portal clients, and host MCP registrations. Host/runtime sources remain under
 `pineapplehunter/wrapper/` and `pineapplehunter/tools/subagents/`.
 
@@ -34,8 +34,9 @@ override the default `pineapplehunter/pi-customizations` `main` source.
 
 The package snapshot lives at `~/.pi/customizations/package/`, already visible
 through existing `~/.pi` sandbox/subagent mounts. The launcher explicitly loads
-that snapshot's Pueue extension with `--no-inherit-resources`; run the updater
-before launching subagents. Host code changes still need a rebuild; resources
+that snapshot's public `extensions/pueue-tool/index.ts` and private
+`extensions/subagent-pueue/index.ts` adapter for every child, including with
+`--no-inherit-resources`; run the updater before launching subagents. Host code changes still need a rebuild; resources
 need only an update and Pi reload/restart. Pi itself remains Nix-managed:
 `pi-update` invokes the unwrapped executable's `update --extensions`, not
 `pi update` (which would request a self-update).
@@ -51,6 +52,22 @@ Home Manager activation itself performs no customization/package network update.
 See the resource repository README for portability, package ownership, licenses,
 and vendored upstream maintenance. The host MCP merge still uses `update-mcp.py`
 and remains independent of customization updates.
+
+## Private Pueue lifecycle
+
+The wrapper directly executes Pi; it does not start Pueue or install a static
+Pueue configuration/callback. The public snapshot extension automatically owns
+a fresh private daemon, config, callback, and temporary directory per interactive
+or RPC Pi process. Print/JSON mode starts no daemon. It never attaches to an
+inherited config or host queue, and sets `PUEUE_CONFIG_PATH` and
+`PI_PUEUE_NOTIFY_DIR` for subsequent commands. Reload/new/resume/fork within the
+same process preserve that daemon; quitting kills tasks/daemon and removes its
+temporary directory. The unrelated host Pueue user service is unchanged.
+
+Children clear both inherited environment variables before Pi starts. Their
+private adapter owns subagent completion/formatting and settlement shutdown;
+the runner requires both `/pueue-notifications` and `/subagent-pueue-status`
+before submitting the prompt and validates `pueue-subagent-exit` success/error.
 
 ## Wrapper flags
 

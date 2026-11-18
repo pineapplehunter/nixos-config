@@ -106,7 +106,6 @@ in
         paths = [
           subagent
           subagentRunner
-          pueueComplete
           piUpdate
           pkgs.bubblewrap
           pkgs.bash
@@ -142,20 +141,10 @@ in
         pkgs.writers.writePython3Bin "pi-subagent-runner" { }
           ./pineapplehunter/tools/subagents/runner.py;
 
-      pueueComplete =
-        pkgs.writers.writePython3Bin "pi-pueue-complete" { }
-          ./pineapplehunter/wrapper/pueue-complete.py;
-
       subagent = pkgs.writers.writePython3Bin "pi-subagent" { } (
         builtins.replaceStrings
-          [
-            "@PUEUE_CONFIG@"
-            "@SUBAGENT_RUNNER@"
-          ]
-          [
-            (toString pueueConfig)
-            (toString subagentRunner)
-          ]
+          [ "@SUBAGENT_RUNNER@" ]
+          [ (toString subagentRunner) ]
           (lib.readFile ./pineapplehunter/tools/subagents/launcher.py)
       );
 
@@ -177,20 +166,6 @@ in
         '';
       };
 
-      pueueConfig = pkgs.writeText "pi-pueue.yml" (
-        builtins.replaceStrings [ "@PUEUE_COMPLETE@" ] [ (lib.getExe pueueComplete) ] (
-          lib.readFile ./pineapplehunter/wrapper/pueue.yml
-        )
-      );
-
-      piWithPueue = pkgs.writeShellApplication {
-        name = "pi-with-pueue";
-        runtimeInputs = [ pkgs.pueue ];
-        text = builtins.replaceStrings [ "@PI_EXECUTABLE@" ] [ (lib.getExe pkgs.pi-coding-agent) ] (
-          lib.readFile ./pineapplehunter/wrapper/pi-with-pueue.sh
-        );
-      };
-
       piCodingAgentWrapped = pkgs.symlinkJoin {
         name = "pi-coding-agent-wrapped";
         paths = [ pkgs.pi-coding-agent ];
@@ -199,18 +174,15 @@ in
           rm -rf "$out/bin"
           mkdir "$out/bin"
           makeWrapper "${lib.getExe' wrapper "bubble-wrapper"}" "$out/bin/pi" \
-            --set EXECUTABLE "${lib.getExe piWithPueue}" \
-            --set PROJECT_ROOT_FILE flake.nix \
-            --set PUEUE_CONFIG_PATH "${pueueConfig}"
+            --set EXECUTABLE "${lib.getExe pkgs.pi-coding-agent}" \
+            --set PROJECT_ROOT_FILE flake.nix
           makeWrapper "${lib.getExe' wrapper "bubble-wrapper"}" "$out/bin/pi-work" \
-            --set EXECUTABLE "${lib.getExe piWithPueue}" \
+            --set EXECUTABLE "${lib.getExe pkgs.pi-coding-agent}" \
             --set PROJECT_ROOT_FILE flake.nix \
-            --set PUEUE_CONFIG_PATH "${pueueConfig}" \
             --set PI_WRAPPER_PROFILE work
           makeWrapper "${lib.getExe' wrapper "bubble-wrapper"}" "$out/bin/pi-auto" \
-            --set EXECUTABLE "${lib.getExe piWithPueue}" \
+            --set EXECUTABLE "${lib.getExe pkgs.pi-coding-agent}" \
             --set PROJECT_ROOT_FILE flake.nix \
-            --set PUEUE_CONFIG_PATH "${pueueConfig}" \
             --set PI_WRAPPER_PROFILE auto
         '';
       };

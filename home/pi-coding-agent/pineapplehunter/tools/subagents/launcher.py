@@ -14,16 +14,14 @@ import uuid
 
 THINKING_LEVELS = ("off", "minimal", "low", "medium", "high", "xhigh", "max")
 STATE_ROOT = Path("/tmp/pi-subagent-state")
-# Substituted when packaging, so parent and child use the same hook config.
-PUEUE_CONFIG_PATH = (
-    "@PUEUE_CONFIG@"
-)
 SUBAGENT_RUNNER = (
     "@SUBAGENT_RUNNER@"
     "/bin/pi-subagent-runner"
 )
-PUEUE_EXTENSION = str(
-    Path.home() / ".pi/customizations/package/extensions/pueue-tool/index.ts"
+PINNED_EXTENSIONS = tuple(
+    (Path.home() / ".pi/customizations/package/extensions" / name / "index.ts")
+    .resolve()
+    for name in ("pueue-tool", "subagent-pueue")
 )
 CHILD_INSTRUCTIONS = """You are a subagent of the parent Pi agent.
 Your working directory is a caller-prepared, possibly incomplete workspace
@@ -136,8 +134,10 @@ def sandbox_command(options, state, agent_source):
         "/run",
         "--dir",
         "/run/pi-subagent",
-        "--dir",
-        "/run/pi-pueue",
+        "--unsetenv",
+        "PUEUE_CONFIG_PATH",
+        "--unsetenv",
+        "PI_PUEUE_NOTIFY_DIR",
         "--dir",
         str(home),
     ]
@@ -179,9 +179,6 @@ def sandbox_command(options, state, agent_source):
             "--ro-bind",
             str(state / "prompt.md"),
             "/run/pi-subagent/prompt.md",
-            "--ro-bind",
-            str(state / "pueue.yml"),
-            "/run/pi-subagent/pueue.yml",
             "--bind",
             str(state / "response.md"),
             "/run/pi-subagent/response.md",
@@ -197,8 +194,6 @@ def sandbox_command(options, state, agent_source):
         "PI_SUBAGENT_ROLE": "child",
         "PI_CODING_AGENT_DIR": str(agent_source),
         "PI_CODING_AGENT_SESSION_DIR": "/run/pi-subagent/sessions",
-        "PUEUE_CONFIG_PATH": "/run/pi-subagent/pueue.yml",
-        "PI_PUEUE_NOTIFY_DIR": "/run/pi-pueue",
         "PI_SKIP_VERSION_CHECK": "1",
         "NIX_REMOTE": "daemon",
     }
@@ -209,8 +204,8 @@ def sandbox_command(options, state, agent_source):
         instructions += (
             "\nAutomatic extension and skill loading "
             "is disabled for this run.\n"
-            "Only the pinned Pueue completion extension "
-            "is explicitly loaded.\n"
+            "Only the pinned Pueue core and subagent adapter "
+            "are explicitly loaded.\n"
         )
     if options.context:
         instructions += "\n## Additional context\n\n" + options.context + "\n"
@@ -219,10 +214,6 @@ def sandbox_command(options, state, agent_source):
             "--chdir",
             options.project_path,
             "--",
-            "bash",
-            "-c",
-            'pueued -d && exec "$@"',
-            "subagent-launch",
             SUBAGENT_RUNNER,
             "/run/pi-subagent/prompt.md",
             "--",
@@ -238,9 +229,10 @@ def sandbox_command(options, state, agent_source):
         ]
     )
     if options.no_inherit_resources:
-        args.extend([
-            "--no-extensions", "--no-skills", "--extension", PUEUE_EXTENSION,
-        ])
+        args.extend(["--no-extensions", "--no-skills"])
+    # Pi deduplicates discovered and explicit extensions by canonical path.
+    for extension in PINNED_EXTENSIONS:
+        args.extend(["--extension", str(extension)])
     if options.model:
         args.extend(["--model", options.model])
     if options.thinking:
@@ -315,7 +307,7 @@ def parser():
 
 def main():
     options = parser().parse_args()
-    if not Path(PUEUE_EXTENSION).is_file():
+    if not all(path.is_file() for path in PINNED_EXTENSIONS):
         raise ValueError("Run pi-update before launching subagents")
     os.umask(0o077)
     options.directory = str(Path(options.directory).resolve(strict=True))
@@ -379,7 +371,6 @@ def main():
             "thinkingLevel": options.thinking,
         }) + "\n")
         (state / "prompt.md").write_text(prompt)
-        (state / "pueue.yml").write_text(Path(PUEUE_CONFIG_PATH).read_text())
         (state / "response.md").write_text("")
         (state / "stdout.log").write_text("")
         group = subprocess.run(

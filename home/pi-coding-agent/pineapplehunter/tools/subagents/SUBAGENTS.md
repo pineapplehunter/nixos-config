@@ -7,8 +7,7 @@ pi-subagent <name> <directory> <prompt_file> [--profile <preset>]
 ```
 
 Home Manager packages `launcher.py` with `pkgs.writers.writePython3Bin` (including
-build-time flake8 linting), substitutes the shared Pueue configuration, RPC
-runner paths, and puts it directly in
+build-time flake8 linting), substitutes only the RPC runner path, and puts it directly in
 `sandboxTools`. Commands run by binary
 name using the inherited parent PATH. There is no CLI-specific wrapper.
 
@@ -25,11 +24,13 @@ pi-subagent review /tmp/review-workspace /tmp/review-task.md \
   --no-inherit-resources
 ```
 
-The launcher passes `--no-extensions --no-skills` to child Pi and explicitly loads
-`--extension ~/.pi/customizations/package/extensions/pueue-tool/index.ts`.
-The updater copies that extension and its sibling imports into the snapshot.
-This preserves private-task notifications and runner shutdown; disabling the
-completion extension would make the runner fail its bootstrap check.
+Every child explicitly loads the pinned snapshot's public
+`extensions/pueue-tool/index.ts` and private `extensions/subagent-pueue/index.ts`
+adapter. Normal discovery deduplicates canonical extension paths. With this
+flag the launcher also passes `--no-extensions --no-skills`, but retains both
+explicit extensions. Run the updater to supply both paths; a missing file fails
+launch. The runner requires both `pueue-notifications` and
+`subagent-pueue-status` commands before sending the initial prompt.
 
 Built-in tool selection, authentication, model/thinking settings, project
 instructions, prompts, and themes are unchanged. Pi's built-in inline helpers
@@ -75,7 +76,6 @@ execution.lock
 selection.json   # Resolved model/thinking retained for resume
 sessions/        # Native Pi JSONL conversation files
 prompt.md        # Snapshot of the task file only
-pueue.yml        # Shared hook configuration copied for the child's private daemon
 response.md
 stdout.log       # Latest-run compatibility copy of task stdout
 tmp/
@@ -107,8 +107,14 @@ changes discovery, not the mounts. Upper-layer changes vanish on exit and never
 modify the parent.
 Nix-store symlink targets remain immutable unless copied into the writable
 resource overlay. Parent session directories are hidden with tmpfs, and only
-child session storage is bound persistently. Each child starts its own Pueue
-daemon. Desktop service sockets and the parent Pueue socket are not mounted.
+child session storage is bound persistently. The launcher explicitly unsets
+inherited `PUEUE_CONFIG_PATH` and `PI_PUEUE_NOTIFY_DIR` with Bubblewrap's
+`--unsetenv`; it neither copies a config nor starts pueued. The public extension
+creates a fresh private daemon/config/callback/tempdir for each interactive/RPC
+Pi process and exports those variables for subsequent commands. Print/JSON mode
+starts no daemon. Reload/new/resume/fork in the same process preserve the daemon;
+quit kills tasks/daemon and removes its tempdir. Desktop service sockets and the
+parent Pueue socket are not mounted; no inherited config/host queue is attached.
 
 ## Prompt and results
 
@@ -122,14 +128,18 @@ forwarded to the queued worker and preserved in the printed resume command;
 manual resume can supply different context without a separate metadata registry.
 
 The runner uses persistent `pi --mode rpc`, not single-shot `--print`. The
-combined `pueue-tool/index.ts` extension observes every private task completion and
-starts a turn while idle, or queues a follow-up while busy. Agents end responses
-naturally when waiting; there are no watch/yield tools.
+public `pueue-tool/index.ts` extension owns the process-private Pueue runtime.
+The public extension starts a turn while idle or queues a follow-up while busy.
+The private `subagent-pueue/index.ts` adapter supplies subagent formatting and
+child shutdown. Agents end responses naturally when waiting; there are no
+watch/yield tools.
 
-Before settlement the extension reconciles authoritative Pueue status, so a
-late callback cannot cause premature exit. It tracks notifications included in
-model context, marks them processed after a completed run, and requests RPC
-shutdown only after all task results have been processed and Pi is settled.
+Before settlement the core reconciles authoritative Pueue status, so a late
+callback cannot cause premature exit. It tracks notifications included in model
+context and marks them processed after a completed run. The adapter requests RPC
+shutdown only after the core reports all results processed and Pi is settled.
+It emits `pueue-subagent-exit` with `{success,error}` before shutting down the
+child; the runner requires explicit successful settlement.
 Provider errors, aborts, daemon-check failures, and extension failures cause a
 nonzero runner exit rather than successful completion. The runner validates
 that the extension is loaded and continuously drains JSONL stdout. The launcher
