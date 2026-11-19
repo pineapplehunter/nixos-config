@@ -25,4 +25,4 @@ overlays may be enabled only by the relevant machine configuration.
 
 ## Last checked
 
-All overlays were last checked together on 2026-11-17.
+All overlays were last checked together on 2026-11-19.

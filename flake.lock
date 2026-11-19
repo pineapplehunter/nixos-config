@@ -559,11 +559,11 @@
         "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
-        "lastModified": 1793686210,
-        "narHash": "sha256-DtaRDmMhz0i0/S0OChOhqU8p032FtJHFRXfCF41PVGQ=",
+        "lastModified": 1795004507,
+        "narHash": "sha256-XmHz3b06GHDhPLYVMl1Errwcqsu9eUHK6G417wYlSk0=",
         "owner": "pineapplehunter",
         "repo": "tpm-passkey",
-        "rev": "a043b352356a51fbc4597d5b749e6824cc2ff580",
+        "rev": "c92d15b7ada81fed6de9cdec7d0b5b80c19d59b0",
         "type": "github"
       },
       "original": {
