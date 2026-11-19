@@ -114,6 +114,27 @@ UPKI configuration or cache is silently skipped. Populate the cache on the host 
 sudo systemctl start upki-fetch.service
 ```
 
+## Authenticated GitHub fetching
+
+Sign in with `gh auth login --hostname github.com` on the host, then opt in:
+
+```nix
+programs.pi-coding-agent.githubFetch.enable = true;
+```
+
+After switching Home Manager, restart Pi. The service uses the host's normal
+`gh` authentication; the sandbox receives no credentials. The sandbox's `gh` shim supports the
+GitHub reads used by `pi-web-access`'s `fetch_content`: repo metadata, trees,
+README and file content, issue/PR details, and PR review comments. The
+filtered D-Bus proxy exposes one method. The host service checks the complete
+argument list and invokes a fixed `gh` executable without a shell. It does not
+offer general `gh api`, search, auth, or write commands.
+
+Public shallow clones still use sandbox-local Git. Private repos are fetched
+via the read API, not cloned with the host login. Any repo the host login can
+read through these operations is readable by the agent. Do not mount the
+host's GitHub CLI config directory into the sandbox.
+
 ## Git identity, signing, and attribution
 
 All three wrappers use a filtered Git configuration generated from the host's

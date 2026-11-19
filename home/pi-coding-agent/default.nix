@@ -90,6 +90,26 @@ in
         };
       };
 
+      githubFetchEnabled = config.programs.pi-coding-agent.githubFetch.enable;
+      githubFetchBus = "io.github.pineapplehunter.GitHubFetch1";
+      ghShim =
+        pkgs.writers.writePython3Bin "gh"
+          {
+            libraries = [ pkgs.python3Packages.dbus-next ];
+          }
+          (
+            builtins.replaceStrings [ "@GIT@" ] [ (lib.getExe pkgs.git) ] (
+              lib.readFile ./pineapplehunter/wrapper/github_fetch_client.py
+            )
+          );
+      githubFetchDaemon = pkgs.writers.writePython3Bin "pi-github-fetchd" {
+        libraries = [ pkgs.python3Packages.dbus-next ];
+      } (lib.readFile ./pineapplehunter/wrapper/github_fetch_daemon.py);
+      githubFetchCommand = lib.escapeShellArgs [
+        (lib.getExe githubFetchDaemon)
+        (lib.getExe pkgs.gh)
+      ];
+
       portalClient = pkgs.writers.writePython3Bin "pi-portal-client" {
         libraries = [ pkgs.python3Packages.dbus-next ];
       } (lib.readFile ./pineapplehunter/wrapper/portal_client.py);
@@ -133,7 +153,8 @@ in
           gitSignClient
           skillPython
           portalClients
-        ];
+        ]
+        ++ lib.optional githubFetchEnabled ghShim;
         pathsToLink = [ "/bin" ];
       };
 
@@ -160,6 +181,7 @@ in
               ]
             } \
             --set PI_SANDBOX_PATH ${lib.escapeShellArg "${sandboxTools}/bin"} \
+            --set PI_GITHUB_FETCH_ENABLED ${if githubFetchEnabled then "1" else "0"} \
             --set PI_GIT_CONFIG ${gitConfig}
         '';
       };
@@ -187,6 +209,8 @@ in
     in
     {
       imports = [ mcpModule ];
+      options.programs.pi-coding-agent.githubFetch.enable =
+        lib.mkEnableOption "sandboxed GitHub fetching via the host's gh login";
       config = lib.mkIf isLinux {
         assertions = [
           {
@@ -249,6 +273,26 @@ in
           Exec=${lib.getExe gitSignDaemon} --ssh-keygen ${lib.getExe' pkgs.openssh "ssh-keygen"} --key ${lib.escapeShellArg gitPublicKey} --name ${lib.escapeShellArg gitUser.name} --email ${lib.escapeShellArg gitUser.email}
           SystemdService=pi-git-signing.service
         '';
+
+        systemd.user.services.pi-github-fetch = lib.mkIf githubFetchEnabled {
+          Unit.Description = "Broker allowlisted GitHub reads for sandboxed Pi";
+          Service = {
+            Type = "dbus";
+            BusName = githubFetchBus;
+            ExecStart = githubFetchCommand;
+            NoNewPrivileges = true;
+            PrivateTmp = true;
+          };
+        };
+
+        xdg.dataFile."dbus-1/services/${githubFetchBus}.service" = lib.mkIf githubFetchEnabled {
+          text = ''
+            [D-BUS Service]
+            Name=${githubFetchBus}
+            Exec=${githubFetchCommand}
+            SystemdService=pi-github-fetch.service
+          '';
+        };
 
         systemd.user.services.pi-clipboard = {
           Unit = {

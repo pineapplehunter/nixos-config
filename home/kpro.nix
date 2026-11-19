@@ -3,6 +3,7 @@
     { config, ... }:
     {
       programs = {
+        pi-coding-agent.githubFetch.enable = true;
         ssh = {
           enable = true;
           settings = {

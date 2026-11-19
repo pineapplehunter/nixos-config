@@ -342,6 +342,15 @@ def main() -> int:
                 "/io/github/pineapplehunter/GitSign1"
             ),
             *(
+                (
+                    "--call=io.github.pineapplehunter.GitHubFetch1="
+                    "io.github.pineapplehunter.GitHubFetch1.Run@"
+                    "/io/github/pineapplehunter/GitHubFetch1",
+                )
+                if os.environ.get("PI_GITHUB_FETCH_ENABLED") == "1"
+                else ()
+            ),
+            *(
                 f"--call={name}=io.github.pineapplehunter.Mcp1.{method}"
                 "@/io/github/pineapplehunter/Mcp1"
                 for name in MCP_BUS_NAMES
