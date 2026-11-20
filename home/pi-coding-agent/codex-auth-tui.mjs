@@ -305,7 +305,7 @@ async function dashboard() {
   }
 }
 
-if (process.env.PI_WRAPPER_PROFILE || existsSync("/.flatpak-info")) {
+if (existsSync("/.flatpak-info") || existsSync("/run/pi-subagent")) {
   console.error("Run pi-codex-auth in a host terminal, not inside Pi.");
   process.exitCode = 1;
 } else {

@@ -1,5 +1,5 @@
 # Runtime paths are set by codex-auth.nix.
-if [[ -n "${PI_WRAPPER_PROFILE:-}" || -e /.flatpak-info ]]; then
+if [[ -e /.flatpak-info || -e /run/pi-subagent ]]; then
   echo 'Run pi-codex-auth in a host terminal, not inside Pi.' >&2
   exit 1
 fi
