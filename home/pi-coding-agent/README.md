@@ -48,9 +48,11 @@ updates only `~/.pi/agent`. A failed external update exits nonzero but may leave
 some packages already updated; retry after fixing the error.
 Home Manager activation itself performs no customization/package network update.
 
-See the resource repository README for portability, package ownership, licenses,
-and vendored upstream maintenance. The host MCP merge still uses `update-mcp.py`
-and remains independent of customization updates.
+See [Upstream sources and update notes](UPSTREAM.md) for the patched packages,
+their exact release pins, and what to check before upgrading. The resource
+repository README covers portability, package ownership, and vendored skills.
+The host MCP merge still uses `update-mcp.py` and remains independent of
+customization updates.
 
 ## Private Pueue lifecycle
 
@@ -220,9 +222,9 @@ host's GitHub CLI config directory into the sandbox.
 
 ## Git identity, signing, and attribution
 
-All three wrappers use a filtered Git configuration generated from the host's
-Home Manager `programs.git.settings.user` identity. They sign commits
-through the automatically activated `pi-git-signing.service` on the host.
+The Pi wrapper uses a filtered Git configuration generated from the host's
+Home Manager `programs.git.settings.user` identity. It signs commits through
+the automatically activated `pi-git-signing.service` on the host.
 Only `GitSign1.SignCommit` is exposed through the filtered D-Bus proxy; the
 sandbox receives no SSH key files or SSH-agent socket. Nothing from `~/.ssh`
 is mounted by default. Git uses an opaque `pi-host-signer` key selector that the
