@@ -153,6 +153,7 @@ in
         packages = lib.optionals isLinux [ pkgs.local-notify ];
 
         shellAliases = {
+          code = "codium";
           wget = "wget --hsts-file=${config.xdg.dataHome}";
         };
 
