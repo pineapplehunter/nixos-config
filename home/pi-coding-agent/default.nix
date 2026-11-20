@@ -110,6 +110,25 @@ in
         (lib.getExe pkgs.gh)
       ];
 
+      codexHostEnabled = config.programs.pi-coding-agent.codexHost.enable;
+      codexHostState = "${config.home.homeDirectory}/.local/state/pi-codex-host";
+      piRuntime = "${pkgs.pi-coding-agent}/lib/node_modules/pi-monorepo/dist";
+      codexImages = import ./codex-images.nix { inherit pkgs; };
+      codexImageHost = pkgs.replaceVars ./pineapplehunter/wrapper/codex_image_host.mjs {
+        PI_RUNTIME = piRuntime;
+        IMAGE_PACKAGE = codexImages;
+      };
+      codexHost = pkgs.replaceVars ./pineapplehunter/wrapper/codex_host.mjs {
+        PI_RUNTIME = "${piRuntime}/index.js";
+        IMAGE_HOST = codexImageHost;
+        SEARCH_HOST = ./pineapplehunter/wrapper/codex_search.mjs;
+      };
+      codexAuth = import ./codex-auth.nix {
+        inherit pkgs codexHost;
+        state = codexHostState;
+        legacy = "${config.home.homeDirectory}/.pi/agent/codex-auto.json";
+      };
+
       portalClient = pkgs.writers.writePython3Bin "pi-portal-client" {
         libraries = [ pkgs.python3Packages.dbus-next ];
       } (lib.readFile ./pineapplehunter/wrapper/portal_client.py);
@@ -182,6 +201,7 @@ in
             } \
             --set PI_SANDBOX_PATH ${lib.escapeShellArg "${sandboxTools}/bin"} \
             --set PI_GITHUB_FETCH_ENABLED ${if githubFetchEnabled then "1" else "0"} \
+            --set PI_CODEX_HOST_ENABLED ${if codexHostEnabled then "1" else "0"} \
             --set PI_GIT_CONFIG ${gitConfig}
         '';
       };
@@ -211,6 +231,8 @@ in
       imports = [ mcpModule ];
       options.programs.pi-coding-agent.githubFetch.enable =
         lib.mkEnableOption "sandboxed GitHub fetching via the host's gh login";
+      options.programs.pi-coding-agent.codexHost.enable =
+        lib.mkEnableOption "sandboxed Pi using host-only Codex credentials";
       config = lib.mkIf isLinux {
         assertions = [
           {
@@ -218,7 +240,11 @@ in
             message = "Pi's host signer requires an SSH public signing key (*.pub).";
           }
         ];
-        programs.pi-coding-agent.package = piCodingAgentWrapped;
+        programs.pi-coding-agent = {
+          package = piCodingAgentWrapped;
+          codexHost.enable = lib.mkDefault true;
+          githubFetch.enable = lib.mkDefault true;
+        };
         home = {
           packages = [
             piCodingAgentWrapped
@@ -226,7 +252,8 @@ in
             subagent
             skillPython
             portalClients
-          ];
+          ]
+          ++ lib.optional codexHostEnabled codexAuth;
 
           activation.piMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
             for profile in agent agent-work agent-auto; do
@@ -237,6 +264,10 @@ in
           '';
 
           file = {
+            ".pi/agent/extensions/codex-host-images.ts".text = ''
+              export { default } from "${codexImages}/index.ts";
+            '';
+            ".pi/agent/skills/imagegen".source = "${codexImages}/skills/imagegen";
             ".local/share/applications/io.github.pineapplehunter.Pi.desktop".text = ''
               [Desktop Entry]
               Type=Application
@@ -292,6 +323,32 @@ in
             Exec=${githubFetchCommand}
             SystemdService=pi-github-fetch.service
           '';
+        };
+
+        systemd.user.sockets.pi-codex-host = lib.mkIf codexHostEnabled {
+          Unit.Description = "Socket for the host Codex broker for Pi";
+          Socket = {
+            ListenStream = "%t/pi-codex-host/broker.sock";
+            DirectoryMode = "0700";
+            SocketMode = "0600";
+            RemoveOnStop = true;
+          };
+          Install.WantedBy = [ "sockets.target" ];
+        };
+
+        systemd.user.services.pi-codex-host = lib.mkIf codexHostEnabled {
+          Unit.Description = "Broker Codex requests for sandboxed Pi";
+          Service = {
+            ExecStart = lib.escapeShellArgs [
+              (lib.getExe pkgs.nodejs)
+              (toString codexHost)
+              "serve"
+              codexHostState
+            ];
+            UMask = "0077";
+            NoNewPrivileges = true;
+            PrivateTmp = true;
+          };
         };
 
         systemd.user.services.pi-clipboard = {

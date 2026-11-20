@@ -17,10 +17,13 @@ Run `pi-update` before launching subagents. The workflow skill is installed at
 ## Optional extension/skill isolation
 
 By default, children load the parent's configured/discovered extensions and
-skills. Add `--no-inherit-resources` to avoid those automatic loads:
+skills. **Do not use `--no-inherit-resources` by default.** Use it only when an
+inherited tool, extension, or skill would interfere with the objective—for
+example, to test Pi's tools in isolation or review a skill without loading it
+first:
 
 ```bash
-pi-subagent review /tmp/review-workspace /tmp/review-task.md \
+pi-subagent review-skill /tmp/review-workspace /tmp/review-task.md \
   --no-inherit-resources
 ```
 
@@ -28,8 +31,9 @@ Every child explicitly loads the pinned snapshot's public
 `extensions/pueue-tool/index.ts` and private `extensions/subagent-pueue/index.ts`
 adapter. Normal discovery deduplicates canonical extension paths. With this
 flag the launcher also passes `--no-extensions --no-skills`, but retains both
-explicit extensions. Run the updater to supply both paths; a missing file fails
-launch. The runner requires both `pueue-notifications` and
+explicit extensions. A `codex-host/...` preset also explicitly loads the pinned
+`extensions/codex-host/index.ts` in either mode. Run the updater to install
+these paths; missing required files fail launch. The runner requires both `pueue-notifications` and
 `subagent-pueue-status` commands before sending the initial prompt.
 
 Built-in tool selection, authentication, model/thinking settings, project
@@ -37,14 +41,40 @@ instructions, prompts, and themes are unchanged. Pi's built-in inline helpers
 (such as its `llama` command) can still load; the flags suppress discovered and
 configured resources, not those built-ins. Configured packages are still
 resolved by Pi; this is resource-loading suppression, not package removal or a
-filesystem/credential security boundary. Other custom tools/providers supplied
-by extensions are unavailable in this mode; use normal inheritance if needed.
+filesystem/credential security boundary. Except for the explicit extensions
+above, custom tools/providers supplied by extensions are unavailable in this
+mode; use normal inheritance if needed.
 
 The flag is forwarded to the queued worker and printed resume command. Repeat
 it on manual resume to keep this mode; there is no separate mode metadata.
 Switching modes does not erase existing native conversation history. For a
 clean-reference evaluation, start a fresh session and supply reference files in
 the workspace or task document.
+
+## Host Codex preset handoff
+
+Start broker-enabled plain `pi` and use `/subagents` to explicitly choose a
+`codex-host/<model>` preset. No CLI account or socket path is needed. The
+launcher accepts only the normal wrapper's `PI_CODEX_HOST_SOCKET` pointing to
+`/run/pi-codex-host/broker.sock`. It checks the socket at submission and again
+in the queued worker. An internal boolean marks the authorization in the
+queued command; no credential, route or socket override is stored in session
+metadata. Only the socket inode is mounted read-only, not its directory;
+non-`codex-host` presets do not receive it. Host broker account files are not
+mounted. Existing Pi settings and independent Pi logins still follow the
+ordinary resource-overlay rules below.
+
+A fresh brokered child does not inherit the parent's `/codex-route` selection
+or saved default. It uses the broker's default route (Auto with both accounts,
+otherwise the available single-account route). The sandbox masks
+`codex-route-default` without modifying the parent file. A brokered resume can
+restore the **child's own** route from its native history. Mounting only the
+socket inode means a running worker may lose access if the host replaces the
+socket; resume from a fresh parent sandbox if needed.
+
+No presets are rewritten. Use `/subagents` to replace retired `codex-host-*`
+provider IDs. To resume with a new selection, supply `--profile <preset>`;
+otherwise a retired saved selection fails with a diagnostic.
 
 ## SIMA: Single Instruction, Multiple Agents
 
@@ -205,8 +235,8 @@ Example for `pi-auto`:
 
 Use `--profile deep` to select a preset, or omit it to use the default.
 Model and thinking are configured only through presets, not executable flags.
-Parent `PI_MODEL`, `PI_PROVIDER`, and `PI_REASONING_LEVEL` are never used for
-selection. Missing configuration and unknown presets fail rather than silently
+Parent `PI_MODEL`, `PI_PROVIDER`, `PI_REASONING_LEVEL`, `PI_SESSION_ID`, and
+`PI_SESSION_FILE` are not passed into the child. Missing configuration and unknown presets fail rather than silently
 selecting another model. Launch JSON includes the resolved selection.
 The old single-model config remains readable and appears as `legacy` in the UI;
 it migrates on the first saved UI change.
@@ -218,8 +248,7 @@ or existing resumed selections.
 
 The UI lists only models Pi reports available through configured credentials
 in the current parent; quota and service availability are not checked.
-`codex-auto` requires
-`pi-auto` and the provider extension; it is unavailable with
-`--no-inherit-resources`. Choosing a preset does not install a provider or supply
-credentials. Use provider-qualified `openai-codex/...` presets to select upstream
+Legacy `codex-auto` requires `pi-auto` and the provider extension; it is
+unavailable with `--no-inherit-resources`. Choosing a preset does not install a
+provider or supply credentials. Use provider-qualified `openai-codex/...` presets to select upstream
 Codex explicitly.

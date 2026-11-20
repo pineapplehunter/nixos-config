@@ -482,6 +482,21 @@ def main() -> int:
             str(root),
             "--clearenv",
         ]
+        codex_host = os.environ.get("PI_CODEX_HOST_ENABLED") == "1"
+        if profile == "personal" and codex_host:
+            broker_dir = runtime / "pi-codex-host"
+            if broker_dir.is_dir():
+                bwrap.extend(
+                    ("--ro-bind", str(broker_dir), "/run/pi-codex-host")
+                )
+            # A missing socket must not reactivate sandbox image OAuth.
+            bwrap.extend(
+                (
+                    "--setenv",
+                    "PI_CODEX_HOST_SOCKET",
+                    "/run/pi-codex-host/broker.sock",
+                )
+            )
         # No SSH keys or agent socket are mounted; the host selects its own
         # signing key through filtered D-Bus.
         if has_wayland_clipboard:

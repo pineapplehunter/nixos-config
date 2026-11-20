@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import shlex
+import stat
 import subprocess
 import sys
 import tomllib
@@ -19,11 +20,15 @@ SUBAGENT_RUNNER = (
     "@SUBAGENT_RUNNER@"
     "/bin/pi-subagent-runner"
 )
+EXTENSIONS = Path.home() / ".pi/customizations/package/extensions"
 PINNED_EXTENSIONS = tuple(
-    (Path.home() / ".pi/customizations/package/extensions" / name / "index.ts")
-    .resolve()
+    (EXTENSIONS / name / "index.ts").resolve()
     for name in ("pueue-tool", "subagent-pueue")
 )
+CODEX_HOST = "codex-host"
+CODEX_SOCKET_ENV = "PI_CODEX_HOST_SOCKET"
+CODEX_SOCKET = Path("/run/pi-codex-host/broker.sock")
+CODEX_EXTENSION = (EXTENSIONS / CODEX_HOST / "index.ts").resolve()
 CHILD_INSTRUCTIONS = """You are a subagent of the parent Pi agent.
 Your working directory is a caller-prepared, possibly incomplete workspace
 mounted at the original project path. The original project is not accessible.
@@ -115,6 +120,47 @@ def defaults(options, state, agent_source):
         raise ValueError("Invalid subagent thinkingLevel")
 
 
+def validate_codex_handoff(options, agent_source):
+    provider = options.model.split("/", 1)[0]
+    if provider.startswith("codex-host-"):
+        raise ValueError(
+            "Retired Codex host provider; select a codex-host model with "
+            "/subagents (and pass --profile on resume)"
+        )
+    options.codex_host = provider == CODEX_HOST
+    if options.run and options.codex_handoff != options.codex_host:
+        raise ValueError("Queued Codex handoff does not match the preset")
+    if not options.codex_host:
+        return
+    # The stock parent wrapper exports this exact capability. Never resolve a
+    # socket from XDG_RUNTIME_DIR, the profile, a preset, or a user CLI path.
+    if (
+        os.environ.get(CODEX_SOCKET_ENV) != str(CODEX_SOCKET)
+        or CODEX_SOCKET.resolve() != CODEX_SOCKET
+        or not CODEX_SOCKET.is_socket()
+    ):
+        raise ValueError(
+            "codex-host requires the broker socket from the parent Pi wrapper"
+        )
+    if not CODEX_EXTENSION.is_file():
+        raise ValueError("Run pi-update: the codex-host extension is missing")
+    project = Path(options.project_path)
+    if agent_source.resolve(strict=True) != agent_source or any(
+        project.is_relative_to(path) or path.is_relative_to(project)
+        for path in (agent_source, Path.home() / ".pi")
+    ):
+        raise ValueError("Pi resources and the project mount must be separate")
+    # The child will cover this file, never follow a link to another mount.
+    default = agent_source / "codex-route-default"
+    try:
+        mode = default.lstat().st_mode
+    except FileNotFoundError:
+        pass
+    else:
+        if not stat.S_ISREG(mode):
+            raise ValueError("codex-route-default must be a regular file")
+
+
 def sandbox_command(options, state, agent_source):
     home = Path.home()
     pi_home = home / ".pi"
@@ -135,13 +181,19 @@ def sandbox_command(options, state, agent_source):
         "/run",
         "--dir",
         "/run/pi-subagent",
-        "--unsetenv",
-        "PUEUE_CONFIG_PATH",
-        "--unsetenv",
-        "PI_PUEUE_NOTIFY_DIR",
         "--dir",
         str(home),
     ]
+    unset = {
+        "PUEUE_CONFIG_PATH", "PI_PUEUE_NOTIFY_DIR", "PI_SESSION_ID",
+        "PI_SESSION_FILE", "PI_PROVIDER", "PI_MODEL", "PI_REASONING_LEVEL",
+        CODEX_SOCKET_ENV,
+    }
+    unset.update(key for key in os.environ if key.startswith("PI_CODEX_"))
+    if options.codex_host:
+        unset.add("CODEX_HOME")
+    for key in sorted(unset):
+        args.extend(["--unsetenv", key])
     for entry in ("/etc", "/bin", "/usr"):
         args.extend(["--ro-bind", entry, entry])
     if pi_home.is_dir():
@@ -206,6 +258,14 @@ def sandbox_command(options, state, agent_source):
         "PI_SKIP_VERSION_CHECK": "1",
         "NIX_REMOTE": "daemon",
     }
+    if options.codex_host:
+        environment[CODEX_SOCKET_ENV] = str(CODEX_SOCKET)
+        args.extend(["--ro-bind", str(CODEX_SOCKET), str(CODEX_SOCKET)])
+        # stdin is /dev/null in run_child: cover the global route with an
+        # empty regular file without reading or modifying the parent default.
+        args.extend([
+            "--ro-bind-data", "0", str(agent_source / "codex-route-default"),
+        ])
     for key, value in environment.items():
         args.extend(["--setenv", key, value])
     instructions = CHILD_INSTRUCTIONS
@@ -213,8 +273,15 @@ def sandbox_command(options, state, agent_source):
         instructions += (
             "\nAutomatic extension and skill loading "
             "is disabled for this run.\n"
-            "Only the pinned Pueue core and subagent adapter "
-            "are explicitly loaded.\n"
+            "Only the pinned Pueue core and subagent adapter"
+            + (" and host Codex provider" if options.codex_host else "")
+            + " are explicitly loaded.\n"
+        )
+    if options.codex_host:
+        instructions += (
+            "\nHost Codex uses the parent's broker socket, not its login or "
+            "route. New sessions use the broker's default routing; resumed "
+            "sessions can retain their own route choice.\n"
         )
     if options.context:
         instructions += "\n## Additional context\n\n" + options.context + "\n"
@@ -242,8 +309,10 @@ def sandbox_command(options, state, agent_source):
     # Pi deduplicates discovered and explicit extensions by canonical path.
     for extension in PINNED_EXTENSIONS:
         args.extend(["--extension", str(extension)])
-    if options.model:
-        args.extend(["--model", options.model])
+    if options.codex_host:
+        args.extend(["--extension", str(CODEX_EXTENSION)])
+        args.extend(["--provider", CODEX_HOST])
+    args.extend(["--model", options.model])
     if options.thinking:
         args.extend(["--thinking", options.thinking])
     return args
@@ -303,7 +372,7 @@ def parser():
     cli.add_argument(
         "--no-inherit-resources",
         action="store_true",
-        help="Skip automatic extension/skill loading; retain installed Pueue",
+        help="Skip extension/skill discovery; keep Pueue and preset Codex",
     )
     internal = cli.add_argument_group("internal arguments")
     internal.add_argument(
@@ -311,11 +380,16 @@ def parser():
         action="store_true",
         help="Internal Pueue worker mode; do not invoke directly",
     )
+    internal.add_argument(
+        "--codex-handoff", action="store_true", help=argparse.SUPPRESS,
+    )
     return cli
 
 
 def main():
     options = parser().parse_args()
+    if options.codex_handoff and not options.run:
+        raise ValueError("--codex-handoff is only for queued workers")
     if not all(path.is_file() for path in PINNED_EXTENSIONS):
         raise ValueError("Run pi-update before launching subagents")
     os.umask(0o077)
@@ -359,13 +433,13 @@ def main():
             "PI_CODING_AGENT_DIR is required for subagent configuration"
         )
     agent_source = Path(agent_dir).absolute()
+    defaults(options, state, agent_source)
+    validate_codex_handoff(options, agent_source)
     if options.run:
-        defaults(options, state, agent_source)
         return run_child(options, state, agent_source)
     prompt = Path(options.prompt_file).read_text()
     if not prompt.strip():
         raise ValueError("Prompt file must not be empty")
-    defaults(options, state, agent_source)
     if options.resume and not any(
         (state / "sessions").glob(f"*_{options.session_id}.jsonl")
     ):
@@ -398,6 +472,8 @@ def main():
             options.session_id,
             "--run",
         ]
+        if options.codex_host:
+            command.append("--codex-handoff")
         if options.context:
             command.append(f"--context={options.context}")
         if options.no_inherit_resources:

@@ -114,17 +114,114 @@ UPKI configuration or cache is silently skipped. Populate the cache on the host 
 sudo systemctl start upki-fetch.service
 ```
 
-## Authenticated GitHub fetching
+## Host Codex chat
 
-Sign in with `gh auth login --hostname github.com` on the host, then opt in:
+The Linux Pi wrapper enables the socket-activated broker and installs the
+host-only `pi-codex-auth` command by default. Set
+`programs.pi-coding-agent.codexHost.enable = false;` to opt out.
+After applying Home Manager, run in a **host terminal**:
 
-```nix
-programs.pi-coding-agent.githubFetch.enable = true;
+```sh
+systemctl --user start pi-codex-host.socket
+pi-codex-auth login work
+pi-codex-auth status
+pi-update --local /path/to/pi-customizations
 ```
 
+Start a fresh plain `pi` (not `pi-work`) and choose a model under **Codex (host)**
+in `/model`. Run `pi-codex-auth` on the host to manage the account logins and
+Auto reserve. Log in to Personal separately with `pi-codex-auth login personal`.
+Use **Import old reserve** in the dashboard to copy the previous reserve once;
+otherwise it defaults to 15%.
+
+Choose Personal, Work, or Auto in `/codex-route`. Enter changes just the
+current session and is restored on resume. Ctrl+S also saves the highlighted
+route as the default for sessions without an explicit choice. To set a
+default model, use Ctrl+S separately in `/model`. If a session or model
+default referenced one of the old `codex-host-*` providers, reselect the
+model under `codex-host`.
+
+Auto is offered when both logins are configured. It uses Personal only
+while its five-hour allowance is above the reserve, otherwise it tries
+Work. If Work is unavailable it won't dip into the reserve. A Personal
+quota error can switch to Work only before the response starts. The
+providers refresh the host's public Codex catalog at startup and through
+Pi's model refresh, so newly published
+models are not limited to the catalog bundled with Pi. Offline startup uses
+the broker's current catalog; a failed refresh retains it and reports a warning.
+After rebuilding broker code, restart `pi-codex-host.service` on the host,
+update customizations, and restart Pi. Stop or restart the socket only from
+the host.
+
+Account credentials live under `~/.local/state/pi-codex-host/`, outside
+the normal sandbox mounts. Do not expose that directory via a project mount,
+portal, or wrapper allow flag. Only the broker's runtime socket directory
+is mounted, read-only; the broker cannot execute tools or read the workspace.
+Broker-enabled plain `pi` can run `codex-host/<model>` subagent presets,
+including with `--no-inherit-resources`. Select one explicitly in `/subagents`;
+the launcher does not rewrite presets or pass the parent's route to a new
+child. See the [subagent guide](pineapplehunter/tools/subagents/SUBAGENTS.md).
+
+Brokered `web_search` and `source_check` require the pinned `pi-web-access`
+0.48.0 patch. See `extensions/codex-host/web/README.md` in pi-customizations
+for activation and rollback. Hosted search follows `/codex-route` and does
+not fall back to paid OpenAI. Independent search providers, page fetching,
+and the GitHub shim are unchanged.
+
+Keep the old Codex login and profiles until the host-backed capabilities are
+verified. The [cutover guide](PROFILE-CUTOVER.md) explains how to preview and
+stage a profile merge without changing any profile.
+
+`/usage` and the footer show the active host Codex account. In Auto, send a
+prompt first so the broker can report which account it used. `/usage` can
+check and redeem earned reset credits after a Pi confirmation; the host
+binds the selection to the displayed account and credit and does not retry
+redemption. This replaces the managed `pi-usage` package. If it was installed
+manually, remove it to avoid duplicate `/usage` commands.
+
+`/fast` checks whether the current model and account support priority
+requests before enabling them. It starts off and turns off when you
+change model, route, or session. Auto checks support again on whichever
+account it selects, including Work on fallback; it won't silently send a
+standard request instead. Priority can use more quota.
+
+## Codex image generation
+
+The Linux wrapper ships a pinned, patched `pi-codex-image-gen`. Update
+customizations to remove the old managed npm copy; remove it manually only
+if you installed it yourself. Tool names, reference selection, and artifact
+paths are unchanged.
+
+Plain `pi` uses the broker when `codexHost` is enabled. In a host terminal,
+open `pi-codex-auth` and choose **Work images** or **Personal images** to manage
+sign-ins. **Set image route** selects which sign-in to use, or turns routing off.
+You can also use:
+
+```sh
+pi-codex-auth image-login work
+pi-codex-auth images work       # work (default), personal, or off
+pi-codex-auth status
+```
+
+Image logins are separate from chat and stored under
+`~/.local/state/pi-codex-host/images/`. The selected image account is
+independent of the chat model or route. If it is unconfigured or Off, Pi
+does not fall back to another account or a local login. Legacy wrappers
+without a broker socket still use their existing local image setup during
+the migration. Image files are read and saved in the sandbox; the host
+receives only the request and reference bytes.
+
+## Authenticated GitHub fetching
+
+The Linux Pi wrapper enables the GitHub broker by default. Set
+`programs.pi-coding-agent.githubFetch.enable = false;` to opt out. For
+authenticated reads, sign in with `gh auth login --hostname github.com` on
+the host.
+
 After switching Home Manager, restart Pi. The service uses the host's normal
-`gh` authentication; the sandbox receives no credentials. The sandbox's `gh` shim supports the
-GitHub reads used by `pi-web-access`'s `fetch_content`: repo metadata, trees,
+`gh` authentication; the sandbox receives no credentials. The sandbox's
+`gh` shim supports the GitHub reads used by `pi-web-access`'s `fetch_content`:
+repo metadata, trees,
 README and file content, issue/PR details, and PR review comments. The
 filtered D-Bus proxy exposes one method. The host service checks the complete
 argument list and invokes a fixed `gh` executable without a shell. It does not

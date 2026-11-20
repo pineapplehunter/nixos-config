@@ -1,0 +1,36 @@
+--- a/extensions/index.ts
++++ b/extensions/index.ts
+@@ -18 +18 @@
+-import { reportInstallTelemetry } from "../src/install-telemetry.js";
++import { hostImageRequest } from "../src/host-image.js";
+@@ -570,2 +570,2 @@
+-	reportInstallTelemetry();
+-	pi.registerProvider(imageAuthProvider);
++	const socket = process.env.PI_CODEX_HOST_SOCKET;
++	if (!socket) pi.registerProvider(imageAuthProvider);
+@@ -668,2 +668,2 @@
+-			const auth = await resolveImageAuth(ctx.modelRegistry);
+-			release = await admitGeneration(auth.accountId, signal);
++			const auth = socket ? undefined : await resolveImageAuth(ctx.modelRegistry);
++			release = await admitGeneration(auth?.accountId ?? "host-broker", signal);
+@@ -689 +689 @@
+-			const provider = auth.provider;
++			const provider = auth?.provider ?? "codex-host-images";
+@@ -701 +701 @@
+-			const parsed = await requestImage(params, auth, model, outputFormat, sessionId, inputImages, transport, signal, (stage) => {
++			const progress = (stage: string) => {
+@@ -706 +706,4 @@
+-			});
++			};
++			const parsed = socket
++				? await hostImageRequest(socket, { prompt: params.prompt, background: params.background, model, outputFormat, sessionId, inputImages, transport }, signal)
++				: await requestImage(params, auth!, model, outputFormat, sessionId, inputImages, transport, signal, progress);
+@@ -841 +844 @@
+-	const description = "Generate or edit an image through the OpenAI Codex subscription backend, with native background control. Responses is the default; images is an opt-in PNG-only transport. The backend selects the image model. Accepts up to five local or recent conversation images (20 MiB each, 50 MiB total). Requires /login codex-images or existing legacy Pi OAuth credentials; works with openai OAuth chat and does not require the Codex app or an API key. Network deadline: 5 minutes; output image limit: 32 MiB; backend text is limited to 4,000 characters.";
++	const description = `Generate or edit an image through the OpenAI Codex subscription backend, with native background control. Responses is the default; images is an opt-in PNG-only transport. The backend selects the image model. Accepts up to five local or recent conversation images (20 MiB each, 50 MiB total). ${socket ? "Uses the host-selected image account; configure it with pi-codex-auth on the host." : "Requires /login codex-images or existing legacy Pi OAuth credentials."} Network deadline: 5 minutes; output image limit: 32 MiB; backend text is limited to 4,000 characters.`;
+--- a/skills/imagegen/SKILL.md
++++ b/skills/imagegen/SKILL.md
+@@ -36,2 +36 @@
+-- Image login is separate from chat: use `/login codex-images` and complete the ChatGPT OAuth flow in Pi. The Codex app is not required. Existing legacy Pi `openai-codex` OAuth can be a fallback; new `openai` plan-sharing chat OAuth cannot generate images. Never ask the user to paste login URLs or tokens into chat.
+-- Legacy OAuth is used only when owned image credentials are absent. Configured but unusable `codex-images` credentials block fallback; repair that login instead of switching accounts.
++- Image login is separate from chat. In brokered Pi, use `pi-codex-auth image-login work` (or `personal`) in a host terminal; the host menu selects the image account. Legacy Pi sessions without the broker can still use `/login codex-images`. Never ask the user to paste login URLs or tokens into chat.
