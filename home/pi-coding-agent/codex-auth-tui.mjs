@@ -269,7 +269,7 @@ async function dashboard() {
 
   const actions = [
     ...["chat", "images"].flatMap((scope) => accounts.map((account) => item(`${scope}:${account}`, `${names[account]} ${scope}`))),
-    item("route", "Set image route"), item("reserve", "Edit Auto reserve"), item("import", "Import old reserve"),
+    item("route", "Set image route"), item("reserve", "Edit Auto reserve"),
   ];
   let index = 0;
 
@@ -295,13 +295,7 @@ async function dashboard() {
       index = actions.findIndex(({ value }) => value === action);
       if (action === "route") await editRoute();
       else if (action === "reserve") await editReserve();
-      else if (action === "import") {
-        if (await confirm("Replace the Auto reserve with the old setting?", "Import reserve")) {
-          const { code } = await run(["import-reserve"]);
-          feedback = code === 0 ? "Imported the old Auto reserve." : "Could not import a valid reserve from the old setting.";
-          await refresh();
-        }
-      } else await manageAccount(...action.split(":"));
+      else await manageAccount(...action.split(":"));
     }
     return 143;
   } finally {

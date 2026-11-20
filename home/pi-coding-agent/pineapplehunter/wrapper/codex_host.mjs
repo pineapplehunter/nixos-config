@@ -394,7 +394,7 @@ export function broker(runtimes, { readReserve = async () => 15, readUsage = usa
       // Preserve replay for the selected route; let Pi convert messages
       // from a different provider when the user switches routes.
       const messages = data.messages.map((message) =>
-        message.role === "assistant" && (message.provider === "codex-host" || message.provider === `codex-host-${data.route}`)
+        message.role === "assistant" && message.provider === "codex-host"
           ? { ...message, provider: UPSTREAM } : message);
       const streamFor = (account, fast) => {
         const options = {

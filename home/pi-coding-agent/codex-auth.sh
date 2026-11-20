@@ -51,16 +51,6 @@ set_reserve() {
   write_setting reserve "$value"
 }
 
-import_reserve() {
-  local value code
-  value=$(jq -er '.reservePercent | numbers' "$legacy" 2>/dev/null) || {
-    code=$?
-    echo 'Could not read a number from the old Auto reserve file.' >&2
-    return "$code"
-  }
-  set_reserve "$value"
-}
-
 status() {
   local account value=15 image=work
   for account in personal work; do
@@ -88,8 +78,7 @@ case "$1:$#" in
   login:2|logout:2|status:2) account_auth "$1" "$2" ;;
   status:1) status ;;
   reserve:2) set_reserve "$2" ;;
-  import-reserve:1) import_reserve ;;
   images:2) set_image "$2" ;;
   image-login:2|image-logout:2|image-status:2) image_auth "${1#image-}" "$2" ;;
-  *) echo 'Usage: pi-codex-auth [login|logout|status ACCOUNT | reserve PERCENT | import-reserve | images work|personal|off | image-login|image-logout|image-status ACCOUNT]' >&2; exit 2 ;;
+  *) echo 'Usage: pi-codex-auth [login|logout|status ACCOUNT | reserve PERCENT | images work|personal|off | image-login|image-logout|image-status ACCOUNT]' >&2; exit 2 ;;
 esac

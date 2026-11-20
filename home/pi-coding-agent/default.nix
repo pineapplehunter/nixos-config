@@ -126,7 +126,6 @@ in
       codexAuth = import ./codex-auth.nix {
         inherit pkgs codexHost;
         state = codexHostState;
-        legacy = "${config.home.homeDirectory}/.pi/agent/codex-auto.json";
       };
 
       portalClient = pkgs.writers.writePython3Bin "pi-portal-client" {
@@ -216,14 +215,6 @@ in
           makeWrapper "${lib.getExe' wrapper "bubble-wrapper"}" "$out/bin/pi" \
             --set EXECUTABLE "${lib.getExe pkgs.pi-coding-agent}" \
             --set PROJECT_ROOT_FILE flake.nix
-          makeWrapper "${lib.getExe' wrapper "bubble-wrapper"}" "$out/bin/pi-work" \
-            --set EXECUTABLE "${lib.getExe pkgs.pi-coding-agent}" \
-            --set PROJECT_ROOT_FILE flake.nix \
-            --set PI_WRAPPER_PROFILE work
-          makeWrapper "${lib.getExe' wrapper "bubble-wrapper"}" "$out/bin/pi-auto" \
-            --set EXECUTABLE "${lib.getExe pkgs.pi-coding-agent}" \
-            --set PROJECT_ROOT_FILE flake.nix \
-            --set PI_WRAPPER_PROFILE auto
         '';
       };
     in
@@ -256,18 +247,18 @@ in
           ++ lib.optional codexHostEnabled codexAuth;
 
           activation.piMcpServers = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-            for profile in agent agent-work agent-auto; do
-              ${lib.getExe updateMcpSettings} \
-                "$HOME/.pi/$profile/mcp.json" \
-                ${lib.escapeShellArg (builtins.toJSON mcpRegistrations)}
-            done
+            ${lib.getExe updateMcpSettings} \
+              "$HOME/.pi/agent/mcp.json" \
+              ${lib.escapeShellArg (builtins.toJSON mcpRegistrations)}
           '';
 
           file = {
-            ".pi/agent/extensions/codex-host-images.ts".text = ''
-              export { default } from "${codexImages}/index.ts";
-            '';
-            ".pi/agent/skills/imagegen".source = "${codexImages}/skills/imagegen";
+            ".pi/agent/extensions/codex-host-images.ts" = lib.mkIf codexHostEnabled {
+              text = ''export { default } from "${codexImages}/index.ts";'';
+            };
+            ".pi/agent/skills/imagegen" = lib.mkIf codexHostEnabled {
+              source = "${codexImages}/skills/imagegen";
+            };
             ".local/share/applications/io.github.pineapplehunter.Pi.desktop".text = ''
               [Desktop Entry]
               Type=Application

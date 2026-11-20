@@ -1,7 +1,7 @@
 # Pi host integration
 
-Home Manager installs Pi, `pi-update`, Bubblewrap wrappers (`pi`, `pi-work`,
-`pi-auto`), Pueue/Node sandbox tools, subagent launcher/runner, clipboard,
+Home Manager installs the Bubblewrap-wrapped `pi`, `pi-update`,
+Pueue/Node sandbox tools, subagent launcher/runner, clipboard,
 portal clients, and host MCP registrations. Host/runtime sources remain under
 `pineapplehunter/wrapper/` and `pineapplehunter/tools/subagents/`.
 
@@ -43,10 +43,9 @@ need only an update and Pi reload/restart. Pi itself remains Nix-managed:
 
 The updater preserves unrelated preferences/packages, authentication, sessions,
 and MCP settings. It tracks owned package entries, retires the two old
-Nix-store resource packages, and replaces only its own resource snapshot. Existing
-linked profile settings follow the personal profile; independent settings are
-merged and updated separately. A failed external update exits nonzero but may
-leave some external packages already updated; retry after fixing the error.
+Nix-store resource packages, and replaces only its own resource snapshot. It
+updates only `~/.pi/agent`. A failed external update exits nonzero but may leave
+some packages already updated; retry after fixing the error.
 Home Manager activation itself performs no customization/package network update.
 
 See the resource repository README for portability, package ownership, licenses,
@@ -71,7 +70,7 @@ before submitting the prompt and validates `pueue-subagent-exit` success/error.
 
 ## Wrapper flags
 
-Use `pi @noflake` (also `pi-work`/`pi-auto`) to sandbox the current directory
+Use `pi @noflake` to sandbox the current directory
 instead of finding an ancestor `flake.nix`. That directory is writable inside
 the sandbox. Wrapper flags precede Pi arguments, for example:
 
@@ -128,18 +127,15 @@ pi-codex-auth status
 pi-update --local /path/to/pi-customizations
 ```
 
-Start a fresh plain `pi` (not `pi-work`) and choose a model under **Codex (host)**
+Start a fresh `pi` and choose a model under **Codex (host)**
 in `/model`. Run `pi-codex-auth` on the host to manage the account logins and
 Auto reserve. Log in to Personal separately with `pi-codex-auth login personal`.
-Use **Import old reserve** in the dashboard to copy the previous reserve once;
-otherwise it defaults to 15%.
+The reserve defaults to 15%.
 
 Choose Personal, Work, or Auto in `/codex-route`. Enter changes just the
 current session and is restored on resume. Ctrl+S also saves the highlighted
 route as the default for sessions without an explicit choice. To set a
-default model, use Ctrl+S separately in `/model`. If a session or model
-default referenced one of the old `codex-host-*` providers, reselect the
-model under `codex-host`.
+default model, use Ctrl+S separately in `/model`.
 
 Auto is offered when both logins are configured. It uses Personal only
 while its five-hour allowance is above the reserve, otherwise it tries
@@ -168,16 +164,11 @@ for activation and rollback. Hosted search follows `/codex-route` and does
 not fall back to paid OpenAI. Independent search providers, page fetching,
 and the GitHub shim are unchanged.
 
-Keep the old Codex login and profiles until the host-backed capabilities are
-verified. The [cutover guide](PROFILE-CUTOVER.md) explains how to preview and
-stage a profile merge without changing any profile.
-
 `/usage` and the footer show the active host Codex account. In Auto, send a
 prompt first so the broker can report which account it used. `/usage` can
 check and redeem earned reset credits after a Pi confirmation; the host
 binds the selection to the displayed account and credit and does not retry
-redemption. This replaces the managed `pi-usage` package. If it was installed
-manually, remove it to avoid duplicate `/usage` commands.
+redemption.
 
 `/fast` checks whether the current model and account support priority
 requests before enabling them. It starts off and turns off when you
@@ -187,12 +178,8 @@ standard request instead. Priority can use more quota.
 
 ## Codex image generation
 
-The Linux wrapper ships a pinned, patched `pi-codex-image-gen`. Update
-customizations to remove the old managed npm copy; remove it manually only
-if you installed it yourself. Tool names, reference selection, and artifact
-paths are unchanged.
-
-Plain `pi` uses the broker when `codexHost` is enabled. In a host terminal,
+With `codexHost` enabled, the Linux wrapper ships the broker-only
+`pi-codex-image-gen` tools. In a host terminal,
 open `pi-codex-auth` and choose **Work images** or **Personal images** to manage
 sign-ins. **Set image route** selects which sign-in to use, or turns routing off.
 You can also use:
@@ -206,9 +193,8 @@ pi-codex-auth status
 Image logins are separate from chat and stored under
 `~/.local/state/pi-codex-host/images/`. The selected image account is
 independent of the chat model or route. If it is unconfigured or Off, Pi
-does not fall back to another account or a local login. Legacy wrappers
-without a broker socket still use their existing local image setup during
-the migration. Image files are read and saved in the sandbox; the host
+does not fall back to another account or a local login. Image files are read
+and saved in the sandbox; the host
 receives only the request and reference bytes.
 
 ## Authenticated GitHub fetching

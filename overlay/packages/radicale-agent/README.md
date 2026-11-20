@@ -78,7 +78,7 @@ loopback; TLS verification stays enabled and redirects are rejected.
 ## MCP client configuration
 
 Pi Home Manager activation merges all enabled host MCP services into both
-`~/.pi/agent/mcp.json` and `~/.pi/agent-work/mcp.json`, preserving unrelated entries.
+`~/.pi/agent/mcp.json`, preserving unrelated entries.
 Tools have `direct` exposure and a 90-second request timeout. No Pi adapter or
 application-specific extension is needed. Use `pi mcp list` or `/mcp` to inspect.
 A project MCP configuration can override a user entry. Keep built-in MCP enabled.

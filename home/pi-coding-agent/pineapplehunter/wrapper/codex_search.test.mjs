@@ -126,7 +126,7 @@ test("rejects arbitrary transport, extra fields, model, and body before contacti
   const { send, upstreamCalls } = await unixFixture(t);
   for (const fields of [{ baseUrl: "https://example.org" }, { headers: {} }, { account: "work" }, { tools: [] },
     { domainFilter: ["https://example.org"] }, { numResults: 21 }, { query: "x".repeat(SEARCH_BODY_LIMIT) },
-    { model: "non-catalog-model" }, { route: "codex-host-work" }]) {
+    { model: "non-catalog-model" }, { route: "unrecognized" }]) {
     assert.equal((await send(fields))[0], 400);
   }
   assert.deepEqual(upstreamCalls, []);

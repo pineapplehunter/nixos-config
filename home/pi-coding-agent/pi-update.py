@@ -98,21 +98,6 @@ def reconcile(
     return {**settings, "packages": retained}, owned
 
 
-def profile_settings(home: Path) -> list[Path]:
-    personal = home / ".pi/agent/settings.json"
-    paths = [personal]
-    for profile in ("agent-work", "agent-auto"):
-        candidate = home / ".pi" / profile / "settings.json"
-        if candidate.exists() or candidate.is_symlink():
-            if candidate.is_symlink() and candidate.resolve() == personal:
-                continue  # Shared settings already follow personal.
-            paths.append(candidate)
-    for path in paths:
-        if path.is_symlink():
-            raise ValueError(f"unexpected settings symlink: {path}")
-    return paths
-
-
 def install(checkout: Path, home: Path, root: Path, pi: str) -> None:
     manifest = read_json(checkout / "package.json")
     if manifest.get("name") != "pi-customizations":
@@ -133,13 +118,12 @@ def install(checkout: Path, home: Path, root: Path, pi: str) -> None:
     state_path = root / "managed-packages.json"
     state = read_json(state_path, {})
     desired = [*declared["packages"], str(snapshot)]
-    updates = []
-    for path in profile_settings(home):
-        settings = read_json(path, {})
-        profile = path.parent.name
-        updated, owned = reconcile(settings, desired, state.get(profile, []))
-        updates.append((path, updated))
-        state[profile] = owned
+    settings_path = home / ".pi/agent/settings.json"
+    if settings_path.is_symlink():
+        raise ValueError(f"unexpected settings symlink: {settings_path}")
+    settings, state["agent"] = reconcile(
+        read_json(settings_path, {}), desired, state.get("agent", []),
+    )
 
     for path in (snapshot, previous_snapshot):
         if path.is_symlink():
@@ -159,19 +143,17 @@ def install(checkout: Path, home: Path, root: Path, pi: str) -> None:
             snapshot.rename(previous_snapshot)
         staged.rename(snapshot)
 
-    for path, settings in updates:
-        write_json(path, settings)
+    write_json(settings_path, settings)
     write_json(state_path, state)
-    write_file(home / ".pi/agent/AGENTS.md", instructions)
+    write_file(settings_path.with_name("AGENTS.md"), instructions)
     print(f"Installed copied resources at {snapshot}", flush=True)
-    # Never use the sandbox wrapper or update Pi itself. Do not load project
-    # settings, and ignore whichever profile the caller happens to be using.
-    for path, _settings in updates:
-        environment = {**os.environ, "PI_CODING_AGENT_DIR": str(path.parent)}
-        subprocess.run(
-            [pi, "update", "--extensions", "--no-approve"],
-            cwd=root, env=environment, check=True,
-        )
+    # Use the unwrapped Pi with canonical settings, not project settings.
+    environment = {**os.environ}
+    environment["PI_CODING_AGENT_DIR"] = str(settings_path.parent)
+    subprocess.run(
+        [pi, "update", "--extensions", "--no-approve"],
+        cwd=root, env=environment, check=True,
+    )
     print("Pi packages updated. Reload or restart Pi to load new resources.")
 
 

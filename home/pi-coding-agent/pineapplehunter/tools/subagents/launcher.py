@@ -122,11 +122,6 @@ def defaults(options, state, agent_source):
 
 def validate_codex_handoff(options, agent_source):
     provider = options.model.split("/", 1)[0]
-    if provider.startswith("codex-host-"):
-        raise ValueError(
-            "Retired Codex host provider; select a codex-host model with "
-            "/subagents (and pass --profile on resume)"
-        )
     options.codex_host = provider == CODEX_HOST
     if options.run and options.codex_handoff != options.codex_host:
         raise ValueError("Queued Codex handoff does not match the preset")

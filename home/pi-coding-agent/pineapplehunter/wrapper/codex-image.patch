@@ -1,36 +1,270 @@
 --- a/extensions/index.ts
 +++ b/extensions/index.ts
-@@ -18 +18 @@
+@@ -4,3 +4 @@
+- * Registers inline and artifact image tools that use package-owned
+- * ChatGPT image OAuth or legacy Pi auth to call the Codex Responses backend with the
+- * native `image_generation` tool. The backend selects the image model.
++ * Registers inline and artifact image tools backed by the host Codex broker.
+@@ -18,3 +16,2 @@
 -import { reportInstallTelemetry } from "../src/install-telemetry.js";
+-import { extractImageAccountId, imageAuthProvider, IMAGE_AUTH_PROVIDER } from "../src/image-oauth.js";
+-import { abortable, CodexRequestError, httpFailure, MAX_IMAGE_BYTES, parseCodexImages, parseCodexSse, withRequestDeadline, type ParsedCodexResponse } from "../src/codex-response.js";
 +import { hostImageRequest } from "../src/host-image.js";
-@@ -570,2 +570,2 @@
++import { MAX_IMAGE_BYTES } from "../src/codex-response.js";
+@@ -24 +21 @@
+-import { buildImagesRequest, type ImageTransport } from "../src/images-request.js";
++import type { ImageTransport } from "../src/images-request.js";
+@@ -26,2 +23 @@
+-const PACKAGE_NAME = "pi-codex-image-gen";
+-const LEGACY_PROVIDER = "openai-codex";
++const CHAT_PROVIDER = "codex-host";
+@@ -29,2 +24,0 @@
+-const CODEX_RESPONSES_URL = "https://chatgpt.com/backend-api/codex/responses";
+-const CODEX_IMAGES_URL = "https://chatgpt.com/backend-api/codex/images";
+@@ -32,4 +25,0 @@
+-const OPENAI_BETA_HEADER = "responses=experimental";
+-const MAX_RETRIES = 3;
+-const BASE_DELAY_MS = 1000;
+-const MAX_RETRY_DELAY_MS = 30_000;
+@@ -49,48 +38,0 @@
+-// --- #1: Retry helpers with exponential backoff + jitter ---
+-
+-export function parseRetryAfter(value: string | null, nowMs = Date.now()): number | undefined {
+-	if (!value) return undefined;
+-	const trimmed = value.trim();
+-	if (/^\d+(?:\.\d+)?$/.test(trimmed)) {
+-		const milliseconds = Number(trimmed) * 1000;
+-		return Number.isFinite(milliseconds) ? Math.min(milliseconds, MAX_RETRY_DELAY_MS) : undefined;
+-	}
+-	const dateMs = Date.parse(trimmed);
+-	if (!Number.isFinite(dateMs) || dateMs <= nowMs) return undefined;
+-	return Math.min(dateMs - nowMs, MAX_RETRY_DELAY_MS);
+-}
+-
+-export function retryDelayMs(
+-	attempt: number,
+-	retryAfter: string | null,
+-	random = Math.random,
+-	nowMs = Date.now(),
+-): number {
+-	const serverDelay = parseRetryAfter(retryAfter, nowMs);
+-	if (serverDelay !== undefined) {
+-		return Math.floor(Math.min(serverDelay * (1 + random() * 0.1), MAX_RETRY_DELAY_MS));
+-	}
+-	const exponential = Math.min(BASE_DELAY_MS * 2 ** (attempt - 1), MAX_RETRY_DELAY_MS);
+-	return Math.floor(exponential * (0.9 + random() * 0.2));
+-}
+-
+-export function abortableDelay(milliseconds: number, signal?: AbortSignal): Promise<void> {
+-	if (signal?.aborted) return Promise.reject(new Error("Image generation was aborted."));
+-	return new Promise<void>((resolve, reject) => {
+-		const timer = setTimeout(finish, milliseconds);
+-		function cleanup() {
+-			clearTimeout(timer);
+-			signal?.removeEventListener("abort", abort);
+-		}
+-		function finish() {
+-			cleanup();
+-			resolve();
+-		}
+-		function abort() {
+-			cleanup();
+-			reject(new Error("Image generation was aborted."));
+-		}
+-		signal?.addEventListener("abort", abort, { once: true });
+-	});
+-}
+-
+@@ -182,37 +123,0 @@
+-// --- Image credentials (independent of the active chat provider) ---
+-
+-interface ImageAuth {
+-	provider: typeof IMAGE_AUTH_PROVIDER | typeof LEGACY_PROVIDER;
+-	token: string;
+-	accountId: string;
+-}
+-
+-async function resolveImageAuth(registry: ExtensionContext["modelRegistry"]): Promise<ImageAuth> {
+-	for (const provider of [IMAGE_AUTH_PROVIDER, LEGACY_PROVIDER] as const) {
+-		let token: string | undefined;
+-		try {
+-			if (typeof registry.getProviderAuth === "function") {
+-				const resolved = await registry.getProviderAuth(provider);
+-				// Pi returns undefined for a stored credential whose type this
+-				// OAuth-only provider cannot use. That is not an absent login and
+-				// must not silently select a different account's legacy OAuth.
+-				if (!resolved && provider === IMAGE_AUTH_PROVIDER
+-					&& registry.getProviderAuthStatus?.(provider).configured) {
+-					throw new Error("Configured image credentials could not be resolved.");
+-				}
+-				if (resolved && resolved.source !== "OAuth") {
+-					throw new Error("Image credentials must use OAuth.");
+-				}
+-				token = resolved?.auth.apiKey;
+-				if (resolved && !token) throw new Error("Missing image access token.");
+-			} else {
+-				token = await registry.getApiKeyForProvider(provider);
+-			}
+-		} catch {
+-			throw new Error(`Image authentication failed for ${provider}. Run /login ${IMAGE_AUTH_PROVIDER} again. No alternate account was used.`);
+-		}
+-		if (token) return { provider, token, accountId: extractImageAccountId(token) };
+-	}
+-	throw new Error(`Missing image OAuth credentials. Run /login ${IMAGE_AUTH_PROVIDER}. Pi's openai plan-sharing OAuth does not support images; API keys and Codex app credentials are not used.`);
+-}
+-
+@@ -224 +129 @@
+- * `openai-codex` catalog changes between releases, so a hardcoded default can
++ * `codex-host` catalog changes between releases, so a hardcoded default can
+@@ -226 +131 @@
+- * then the current session model when it is an `openai-codex` catalog model,
++ * then the current session model when it is an `codex-host` catalog model,
+@@ -228 +133 @@
+- * `openai-codex` models or cannot be read; never fail here.
++ * `codex-host` models or cannot be read; never fail here.
+@@ -238 +143 @@
+-			.filter(model => model?.provider === LEGACY_PROVIDER && typeof model.id === "string"
++			.filter(model => model?.provider === CHAT_PROVIDER && typeof model.id === "string"
+@@ -245 +150 @@
+-	if (sessionModel?.provider === LEGACY_PROVIDER && typeof sessionModel.id === "string" && ids.includes(sessionModel.id)) {
++	if (sessionModel?.provider === CHAT_PROVIDER && typeof sessionModel.id === "string" && ids.includes(sessionModel.id)) {
+@@ -464,100 +368,0 @@
+-// --- Request building ---
+-// #2: prompt_cache_key set to sessionId
+-// #7: parallel_tool_calls: false
+-// #14: include removed (not needed without reasoning)
+-
+-export function buildRequestBody(
+-	params: ToolParams,
+-	model: string,
+-	outputFormat: OutputFormat,
+-	sessionId: string,
+-	inputImages: InputImage[] = [],
+-) {
+-	return {
+-		model,
+-		store: false,
+-		stream: true,
+-		prompt_cache_key: sessionId,
+-		instructions:
+-			"You are generating bitmap image assets. For this request, call the image_generation tool exactly once. Do not answer with only text unless image generation is unavailable.",
+-		input: [
+-			{
+-				role: "user",
+-				content: [
+-					{ type: "input_text", text: params.prompt },
+-					...inputImages.map((image) => ({
+-						type: "input_image",
+-						image_url: `data:${image.mimeType};base64,${image.data}`,
+-					})),
+-				],
+-			},
+-		],
+-		tools: [{ type: "image_generation", output_format: outputFormat,
+-			...(params.background !== undefined ? { background: params.background } : {}) }],
+-		tool_choice: "auto",
+-		parallel_tool_calls: false,
+-		text: { verbosity: "low" },
+-	};
+-}
+-
+-// --- #1: requestImage with retry + backoff + jitter ---
+-
+-async function requestImage(
+-	params: ToolParams,
+-	auth: ImageAuth,
+-	model: string | undefined,
+-	outputFormat: OutputFormat,
+-	sessionId: string,
+-	inputImages: InputImage[],
+-	transport: ImageTransport,
+-	signal?: AbortSignal,
+-	onProgress?: (stage: string) => void,
+-): Promise<ParsedCodexResponse> {
+-	const body = JSON.stringify(transport === "images"
+-		? buildImagesRequest(params.prompt, params.background, inputImages)
+-		: buildRequestBody(params, model!, outputFormat, sessionId, inputImages));
+-	const endpoint = transport === "images"
+-		? `${CODEX_IMAGES_URL}/${inputImages.length ? "edits" : "generations"}` : CODEX_RESPONSES_URL;
+-	const secrets = [auth.token, auth.accountId];
+-	const headers: Record<string, string> = {
+-		Authorization: `Bearer ${auth.token}`,
+-		"chatgpt-account-id": auth.accountId,
+-		originator: "pi",
+-		"User-Agent": PACKAGE_NAME,
+-		"OpenAI-Beta": OPENAI_BETA_HEADER,
+-		accept: transport === "images" ? "application/json" : "text/event-stream",
+-		"content-type": "application/json",
+-		"x-client-request-id": randomUUID(),
+-		...(transport === "images" ? { "x-codex-image-turn-id": randomUUID() } : {}),
+-	};
+-
+-	return withRequestDeadline(signal, async (signal) => {
+-		for (let attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {
+-			signal.throwIfAborted();
+-			let response: Response;
+-			try {
+-				response = await abortable(fetch(endpoint, {
+-					method: "POST", headers, body, signal, redirect: "error",
+-				}), signal);
+-			} catch {
+-				signal.throwIfAborted();
+-				throw new Error("Codex connection failed. No automatic retry was made; check connectivity before trying again.");
+-			}
+-
+-			if (!response.ok) {
+-				const failure = await httpFailure(response, signal, secrets);
+-				if (attempt <= MAX_RETRIES && failure.retry) {
+-					const delay = retryDelayMs(attempt, response.headers.get("retry-after"));
+-					await abortableDelay(delay, signal);
+-					continue;
+-				}
+-				throw new CodexRequestError(failure.message, failure.diagnostics);
+-			}
+-
+-			return transport === "images" ? parseCodexImages(response, signal, secrets)
+-				: parseCodexSse(response, signal, secrets, onProgress);
+-		}
+-		throw new Error("Codex image generation request failed after all retries.");
+-	});
+-}
+-
+@@ -566,0 +372,2 @@
++	const socket = process.env.PI_CODEX_HOST_SOCKET;
++	if (!socket) return;
+@@ -570,2 +376,0 @@
 -	reportInstallTelemetry();
 -	pi.registerProvider(imageAuthProvider);
-+	const socket = process.env.PI_CODEX_HOST_SOCKET;
-+	if (!socket) pi.registerProvider(imageAuthProvider);
-@@ -668,2 +668,2 @@
+@@ -668,2 +473 @@
 -			const auth = await resolveImageAuth(ctx.modelRegistry);
 -			release = await admitGeneration(auth.accountId, signal);
-+			const auth = socket ? undefined : await resolveImageAuth(ctx.modelRegistry);
-+			release = await admitGeneration(auth?.accountId ?? "host-broker", signal);
-@@ -689 +689 @@
++			release = await admitGeneration("host-broker", signal);
+@@ -689,3 +493,2 @@
 -			const provider = auth.provider;
-+			const provider = auth?.provider ?? "codex-host-images";
-@@ -701 +701 @@
+-			const model = transport === "responses"
+-				? ctx.modelRegistry.find(provider, requestedModel)?.id || requestedModel : undefined;
++			const provider = "codex-host-images";
++			const model = transport === "responses" ? requestedModel : undefined;
+@@ -701,6 +504,4 @@
 -			const parsed = await requestImage(params, auth, model, outputFormat, sessionId, inputImages, transport, signal, (stage) => {
-+			const progress = (stage: string) => {
-@@ -706 +706,4 @@
+-				onUpdate?.({
+-					content: [{ type: "text", text: `Codex image stage: ${stage}.` }],
+-					details: { provider, model, stage },
+-				});
 -			});
-+			};
-+			const parsed = socket
-+				? await hostImageRequest(socket, { prompt: params.prompt, background: params.background, model, outputFormat, sessionId, inputImages, transport }, signal)
-+				: await requestImage(params, auth!, model, outputFormat, sessionId, inputImages, transport, signal, progress);
-@@ -841 +844 @@
++			const parsed = await hostImageRequest(socket!, {
++				prompt: params.prompt, background: params.background, model,
++				outputFormat, sessionId, inputImages, transport,
++			}, signal);
+@@ -841 +642 @@
 -	const description = "Generate or edit an image through the OpenAI Codex subscription backend, with native background control. Responses is the default; images is an opt-in PNG-only transport. The backend selects the image model. Accepts up to five local or recent conversation images (20 MiB each, 50 MiB total). Requires /login codex-images or existing legacy Pi OAuth credentials; works with openai OAuth chat and does not require the Codex app or an API key. Network deadline: 5 minutes; output image limit: 32 MiB; backend text is limited to 4,000 characters.";
-+	const description = `Generate or edit an image through the OpenAI Codex subscription backend, with native background control. Responses is the default; images is an opt-in PNG-only transport. The backend selects the image model. Accepts up to five local or recent conversation images (20 MiB each, 50 MiB total). ${socket ? "Uses the host-selected image account; configure it with pi-codex-auth on the host." : "Requires /login codex-images or existing legacy Pi OAuth credentials."} Network deadline: 5 minutes; output image limit: 32 MiB; backend text is limited to 4,000 characters.`;
++	const description = `Generate or edit an image through the OpenAI Codex subscription backend, with native background control. Responses is the default; images is an opt-in PNG-only transport. The backend selects the image model. Accepts up to five local or recent conversation images (20 MiB each, 50 MiB total). Uses the host-selected image account; configure it with pi-codex-auth on the host. Network deadline: 5 minutes; output image limit: 32 MiB; backend text is limited to 4,000 characters.`;
 --- a/skills/imagegen/SKILL.md
 +++ b/skills/imagegen/SKILL.md
 @@ -36,2 +36 @@
 -- Image login is separate from chat: use `/login codex-images` and complete the ChatGPT OAuth flow in Pi. The Codex app is not required. Existing legacy Pi `openai-codex` OAuth can be a fallback; new `openai` plan-sharing chat OAuth cannot generate images. Never ask the user to paste login URLs or tokens into chat.
 -- Legacy OAuth is used only when owned image credentials are absent. Configured but unusable `codex-images` credentials block fallback; repair that login instead of switching accounts.
-+- Image login is separate from chat. In brokered Pi, use `pi-codex-auth image-login work` (or `personal`) in a host terminal; the host menu selects the image account. Legacy Pi sessions without the broker can still use `/login codex-images`. Never ask the user to paste login URLs or tokens into chat.
++- Image login is separate from chat. Use `pi-codex-auth image-login work` (or `personal`) in a host terminal; the host menu selects the image account. Never ask the user to paste login URLs or tokens into chat.
+@@ -40 +39 @@
+-- The default routing model is `gpt-6-astra` while Pi's `openai-codex` catalog lists it; otherwise the extension picks a listed `openai-codex` model. Explicit tool parameters and configuration values override this default.
++- The default routing model is `gpt-6-astra` while Pi's `codex-host` catalog lists it; otherwise the extension picks a listed `codex-host` model. Explicit tool parameters and configuration values override this default.

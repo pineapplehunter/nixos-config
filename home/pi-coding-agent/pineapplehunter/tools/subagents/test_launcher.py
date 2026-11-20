@@ -149,12 +149,8 @@ class CodexHandoffTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "parent Pi wrapper"):
             self.launcher.validate_codex_handoff(options, self.agent)
 
-    def test_invalid_preset_or_layout(self):
+    def test_invalid_layout(self):
         options = self.options()
-        options.model = "codex-host-work/fixture"
-        with self.assertRaisesRegex(ValueError, "Retired Codex host provider"):
-            self.launcher.validate_codex_handoff(options, self.agent)
-        options.model = "codex-host/fixture"
         options.project_path = str(self.agent.parent)
         with self.assertRaisesRegex(ValueError, "must be separate"):
             self.launcher.validate_codex_handoff(options, self.agent)

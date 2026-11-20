@@ -229,45 +229,7 @@ def main() -> int:
     (home / ".pi").mkdir(parents=True, exist_ok=True)
     (home / ".cache/nix").mkdir(parents=True, exist_ok=True)
 
-    profile = os.environ.get("PI_WRAPPER_PROFILE", "personal")
-    if profile == "personal":
-        agent_dir = home / ".pi/agent"
-    elif profile in {"work", "auto"}:
-        agent_dir = home / f".pi/agent-{profile}"
-        agent_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
-        for entry in (
-            "AGENTS.md",
-            "APPEND_SYSTEM.md",
-            "SYSTEM.md",
-            "extensions",
-            "skills",
-            "prompts",
-            "themes",
-            "npm",
-            "git",
-            "settings.json",
-            "keybindings.json",
-            "models.json",
-            "trust.json",
-        ):
-            source, target = home / ".pi/agent" / entry, agent_dir / entry
-            if (
-                source.exists()
-                and not target.exists()
-                and not target.is_symlink()
-            ):
-                target.symlink_to(source)
-
-        # pi-usage rejects symlinks. Seed profile-local settings and migrate
-        # links created by older wrappers without changing their contents.
-        source = home / ".pi/agent/pi-usage.json"
-        target = agent_dir / "pi-usage.json"
-        if target.is_symlink():
-            atomic_write(target, target.read_bytes())
-        elif source.is_file() and not target.exists():
-            atomic_write(target, source.read_bytes())
-    else:
-        fail(f"Unknown Pi wrapper profile: {profile}")
+    agent_dir = home / ".pi/agent"
 
     instance_id = "pi-" + secrets.token_hex(16)
     instance_dir = runtime / ".flatpak" / instance_id
@@ -483,7 +445,7 @@ def main() -> int:
             "--clearenv",
         ]
         codex_host = os.environ.get("PI_CODEX_HOST_ENABLED") == "1"
-        if profile == "personal" and codex_host:
+        if codex_host:
             broker_dir = runtime / "pi-codex-host"
             if broker_dir.is_dir():
                 bwrap.extend(
@@ -542,10 +504,10 @@ def main() -> int:
                 str(agent_dir),
                 "--setenv",
                 "PI_CODING_AGENT_SESSION_DIR",
-                str(home / ".pi/agent/sessions"),
+                str(agent_dir / "sessions"),
                 "--setenv",
                 "PI_WRAPPER_PROFILE",
-                profile,
+                "personal",
                 "--setenv",
                 "GIT_CONFIG_GLOBAL",
                 os.environ["PI_GIT_CONFIG"],

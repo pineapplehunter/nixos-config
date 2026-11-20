@@ -105,18 +105,13 @@ class UpdateResources(unittest.TestCase):
         self.assertIn("npm:managed", self.read_settings()["packages"])
         self.assertNotIn("npm:filtered", self.read_settings()["packages"])
 
-    def test_shared_and_independent_profiles(self):
-        shared = self.home / ".pi/agent-work/settings.json"
-        shared.parent.mkdir()
-        shared.symlink_to(self.settings)
-        independent = self.home / ".pi/agent-auto/settings.json"
-        independent.parent.mkdir()
-        independent.write_text('{"defaultModel":"keep","packages":["npm:extra"]}')
+    def test_uses_canonical_agent_directory(self):
+        self.environment["PI_CODING_AGENT_DIR"] = str(self.home / "custom")
         self.local()
-        self.assertTrue(shared.is_symlink())
-        self.assertEqual(json.loads(independent.read_text())["defaultModel"], "keep")
-        self.assertIn("npm:extra", json.loads(independent.read_text())["packages"])
-        self.assertEqual(len(self.calls.read_text().splitlines()), 2)
+        self.assertFalse((self.home / "custom").exists())
+        calls = [json.loads(line) for line in self.calls.read_text().splitlines()]
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0][1], str(self.settings.parent))
 
     def test_invalid_source_preserves_installed_resources(self):
         self.local()

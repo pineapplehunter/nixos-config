@@ -2,7 +2,6 @@
   pkgs,
   codexHost,
   state,
-  legacy,
 }:
 let
   inherit (pkgs) lib;
@@ -19,7 +18,6 @@ pkgs.writeShellApplication {
   ];
   text = ''
     state=${lib.escapeShellArg state}
-    legacy=${lib.escapeShellArg legacy}
     pi=${lib.escapeShellArg (lib.getExe pkgs.pi-coding-agent)}
     node=${lib.escapeShellArg (lib.getExe pkgs.nodejs)}
     codex_host=${lib.escapeShellArg (toString codexHost)}
