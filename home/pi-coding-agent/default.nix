@@ -112,17 +112,9 @@ in
 
       codexHostEnabled = config.programs.pi-coding-agent.codexHost.enable;
       codexHostState = "${config.home.homeDirectory}/.local/state/pi-codex-host";
-      piRuntime = "${pkgs.pi-coding-agent}/lib/node_modules/pi-monorepo/dist";
       codexImages = import ./codex-images.nix { inherit pkgs; };
-      codexImageHost = pkgs.replaceVars ./pineapplehunter/wrapper/codex_image_host.mjs {
-        PI_RUNTIME = piRuntime;
-        IMAGE_PACKAGE = codexImages;
-      };
-      codexHost = pkgs.replaceVars ./pineapplehunter/wrapper/codex_host.mjs {
-        PI_RUNTIME = "${piRuntime}/index.js";
-        IMAGE_HOST = codexImageHost;
-        SEARCH_HOST = ./pineapplehunter/wrapper/codex_search.mjs;
-      };
+      codexHostPackage = import ./codex-host.nix { inherit pkgs codexImages; };
+      codexHost = "${codexHostPackage}/codex_host.mts";
       codexAuth = import ./codex-auth.nix {
         inherit pkgs codexHost;
         state = codexHostState;

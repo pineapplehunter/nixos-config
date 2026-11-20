@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "target": "es2024",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "strict": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "typeRoots": ["@PI_ROOT@/node_modules/@types"],
+    "paths": {
+      "@earendil-works/pi-ai": ["@PI_ROOT@/node_modules/@earendil-works/pi-ai/dist/index.d.ts"]
+    }
+  },
+  "files": ["codex_host.mts"]
+}

@@ -6,6 +6,15 @@ The companion [pi-customizations credits](https://github.com/pineapplehunter/pi-
 link to the sandbox-side code. Update the docs and the corresponding version
 or hash pins together; `pi-update` does not rebase either patch.
 
+[codex-host.nix](codex-host.nix) runs strict, no-emit type checking against
+the packaged Pi SDK using `pkgs.typescript` (the Go compiler in the pinned
+nixpkgs). It then checks Node's native TypeScript syntax before
+installing the broker. The service runs those same `.mts` files directly.
+The [compiler config](pineapplehunter/wrapper/codex-tsconfig.json) enables
+`strict` plus checks for missing returns, switch fall-through, unused code,
+and explicit type-only imports. Keep runtime validation for socket input
+and upstream JSON; compiler types alone do not validate either.
+
 ## Web search and page helpers
 
 The base is Nico Bailon's [pi-web-access](https://github.com/nicobailon/pi-web-access)
@@ -13,8 +22,8 @@ The base is Nico Bailon's [pi-web-access](https://github.com/nicobailon/pi-web-a
 The patch, bundle hashes, and porting instructions live in
 [pi-customizations `extensions/codex-host/web/`](https://github.com/pineapplehunter/pi-customizations/tree/main/extensions/codex-host/web).
 The patch changes only the published Pi `dist/index.js`, not the MCP build.
-On this side, [codex_search.mjs](pineapplehunter/wrapper/codex_search.mjs) implements
-hosted search; [codex_host.mjs](pineapplehunter/wrapper/codex_host.mjs) wires it
+On this side, [codex_search.mts](pineapplehunter/wrapper/codex_search.mts) implements
+hosted search; [codex_host.mts](pineapplehunter/wrapper/codex_host.mts) wires it
 into `/v1/search`. Run the mocked host test after changing the contract:
 
 ```sh
@@ -36,7 +45,7 @@ Its bundled `imagegen` skill was itself adapted from [OpenAI Codex's imagegen sk
   provider. It retains upstream reference selection, saves, and artifacts.
 - [codex_image_client.ts](pineapplehunter/wrapper/codex_image_client.ts) is
   installed as `src/host-image.ts` in the patched package.
-  [codex_image_host.mjs](pineapplehunter/wrapper/codex_image_host.mjs) uses
+  [codex_image_host.mts](pineapplehunter/wrapper/codex_image_host.mts) uses
   upstream `src/image-oauth.ts`, `src/images-request.ts`, and
   `src/codex-response.ts` for host-side OAuth, request building, and parsing.
 
