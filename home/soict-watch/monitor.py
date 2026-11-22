@@ -168,19 +168,34 @@ def notify_discord(reason):
     ], check=True, timeout=30)
 
 
+def mark_stage(stage):
+    runtime = os.environ.get("RUNTIME_DIRECTORY")
+    invocation = os.environ.get("INVOCATION_ID")
+    if runtime and invocation:
+        # Keep the previous complete marker if systemd stops us during a write.
+        marker = Path(runtime) / "stage.tmp"
+        marker.write_text(f"{invocation}:{stage}\n", encoding="utf-8")
+        marker.replace(marker.with_name("stage"))
+
+
 def main():
     os.umask(0o077)
+    mark_stage("setup")
     year = datetime.date.today().year
     state = Path(os.environ["SOICT_STATE_DIR"]) / str(year)
     state.mkdir(parents=True, exist_ok=True)
     repo = state / "archive"
     repo.mkdir(exist_ok=True)
+    mark_stage("crawl")
     snapshot = crawl(repo, year)
+    mark_stage("compare")
     baseline = state / "baseline.json"
     pending = state / "current.json"
     pending.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2), encoding="utf-8")
     if not baseline.exists():
+        mark_stage("discord")
         notify_discord(f"初回の巡回で{len(snapshot)}ページの比較基準を作成しました。変更前のデータがないためSlackには投稿しません。")
+        mark_stage("baseline")
         pending.replace(baseline)
         print(f"Established initial baseline for {len(snapshot)} pages; notified Discord")
         return
@@ -189,6 +204,7 @@ def main():
         print("No Markdown changes; no notification or Pi review")
         return
     (state / "changes.diff").write_text(diff, encoding="utf-8")
+    mark_stage("ai")
     report = state / "response.json"
     report.unlink(missing_ok=True)
     prompt = f"""SOICT {year} のウェブサイト https://soict.org/ の変更を確認してください。
@@ -227,8 +243,9 @@ baseline.json、current.json、changes.diff、archive/ は変更しないでく�
 """
     with (state / "pi.log").open("w", encoding="utf-8") as log:
         subprocess.run([
-            "pi", "@noflake", "--model", "openai-codex/gpt-6-luna",
+            "pi", "@noflake", "--model", "codex-host/gpt-6-luna",
             "--print", "--no-session", "--no-extensions",
+            "--extension", str(Path.home() / ".pi/customizations/package/extensions/codex-host/index.ts"),
             "--extension", os.environ["SOICT_REPORT_EXTENSION"], "--no-mcp",
             "--no-skills", "--no-prompt-templates", "--no-context-files",
             "--no-approve", "--tools", "read,bash,edit,write", prompt,
@@ -236,10 +253,13 @@ baseline.json、current.json、changes.diff、archive/ は変更しないでく�
             stderr=subprocess.STDOUT, check=True, timeout=600)
     reviewed = load_report(report)
     if reviewed.recipient == "admin":
+        mark_stage("discord")
         notify_discord(reviewed.reason)
+        mark_stage("baseline")
         pending.replace(baseline)
         print("No reportable changes; notified Discord and updated baseline")
         return
+    mark_stage("slack")
     payload = json.dumps(slack_payload(reviewed), ensure_ascii=False).encode("utf-8")
     (state / "payload.json").write_bytes(payload)
     # Only the delivery code reads the webhook; it is not included in the prompt.
@@ -248,6 +268,7 @@ baseline.json、current.json、changes.diff、archive/ は変更しないでく�
     with urlopen(request, timeout=30) as response:
         if response.read().strip() != b"ok":
             raise RuntimeError("Slack did not acknowledge the notification")
+    mark_stage("baseline")
     pending.replace(baseline)
     print("Sent Japanese change report to Slack; baseline updated")
 

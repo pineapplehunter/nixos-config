@@ -19,18 +19,17 @@ Do this before rebuilding Beast: the secret declaration expects that key to
 exist. Do not put the plaintext URL in Nix or commit an unencrypted value.
 The existing Discord webhook is not used or changed.
 
-Pi must already be authenticated with OpenAI Codex as `shogo` on Beast (run `pi`
-and `/login` if needed). Reviews and repair attempts explicitly use
-`openai-codex/gpt-6-luna`, regardless of Pi's configured default. The timer uses the
-Bubblewrap/Pueue wrapper with `@noflake`, making the year's state directory the
-sandbox root without requiring a `flake.nix`. Its built-in `read`, `bash`, `edit`,
-and `write` tools are enabled, along with the explicitly loaded
-`validate-report.ts` extension; unrelated extensions, MCP, skills, project
-resources, and context files are disabled. The normal wrapper mounts still
-apply, including writable Pi configuration/authentication and Nix cache
-access; this is not a dedicated-user sandbox. The webhook stays outside the
-sandbox and is never included in the prompt. Website content is sent to the
-configured AI provider when changes occur.
+Set up [Host Codex chat](../pi-coding-agent/README.md#host-codex-chat) as
+`shogo` on Beast before running the monitor. Reviews and repair attempts use
+`codex-host/gpt-6.2-sol`, regardless of Pi's configured default. The timer uses
+the Bubblewrap/Pueue wrapper with `@noflake`, making the year's state directory
+the sandbox root without requiring a `flake.nix`. Its built-in `read`, `bash`,
+`edit`, and `write` tools are enabled. Only the host Codex provider and
+`validate-report.ts` extensions are loaded; MCP, skills, project resources, and
+context files are disabled. The normal wrapper mounts still apply, including
+writable Pi configuration and Nix cache access; this is not a dedicated-user
+sandbox. The webhook stays outside the sandbox and is never included in the
+prompt. Website content is sent to the configured AI provider when changes occur.
 
 Rebuild Beast using the usual repository workflow. Then, as `shogo` on Beast:
 
@@ -144,9 +143,11 @@ a failed state. Runs with no Markdown differences and the end-date condition
 send nothing. Reviewed differences that do not warrant a group report send an
 admin skip reason, not a failure alert. Both skip-reason
 and failure notifications use the official SOICT site icon as their avatar.
-Failure notifications contain only fixed diagnostic instructions, not exception text,
-website content, or webhook URLs. Notification delivery is attempted once, with
-no automatic retry or recursive failure handler; delivery errors appear in
+Failure notifications name the stage reached (such as website crawling, AI
+review, or Slack delivery). If the service fails before recording a stage, the
+alert says the stage is unknown. Alerts include log locations, but not exception
+text, website content, or webhook URLs. Notification delivery is attempted once,
+with no automatic retry or recursive failure handler; delivery errors appear in
 `journalctl --user -u soict-watch-failure.service`. The existing
 `pueue-discord-webhook` secret and host D-Bus notification service are reused;
 no new webhook is needed. Failures do not send a substitute Slack message.

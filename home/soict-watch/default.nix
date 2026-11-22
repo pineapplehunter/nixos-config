@@ -35,6 +35,32 @@
           exec python3 ${./.}/monitor.py
         '';
       };
+      notifyFailure = pkgs.writeShellApplication {
+        name = "soict-watch-notify-failure";
+        runtimeInputs = [ pkgs.local-notify ];
+        text = ''
+          stageFile=$1
+          stage="不明（サービス起動時など）"
+          # Ignore a marker left by an earlier invocation.
+          if [[ -n "''${MONITOR_INVOCATION_ID:-}" && -r "$stageFile" ]] &&
+              IFS= read -r marker < "$stageFile" &&
+              [[ "$marker" == "$MONITOR_INVOCATION_ID:"* ]]; then
+            case "''${marker#*:}" in
+              setup) stage="初期化" ;;
+              crawl) stage="ウェブサイト巡回" ;;
+              compare) stage="スナップショット比較" ;;
+              ai) stage="AIレビュー・報告書の検証" ;;
+              discord) stage="Discordへの通知" ;;
+              slack) stage="Slackへの投稿" ;;
+              baseline) stage="比較基準の更新" ;;
+            esac
+          fi
+          printf -v content "SOICTサイト監視に失敗しました。失敗箇所: %s。\n詳細: \`journalctl --user -u soict-watch.service -n 100\`\nPiログ: \`%s/<year>/pi.log\`\n次回の定期実行で再試行します。" \
+            "$stage" ${lib.escapeShellArg "${config.xdg.stateHome}/soict-watch"}
+          exec local-notify --username soict-watch --icon ${lib.escapeShellArg discordIcon} \
+            --title 'SOICT monitor failed' --color '#ED4245' --content "$content"
+        '';
+      };
     in
     {
       # The encrypted value must be added to secrets/home.yaml before deployment.
@@ -56,6 +82,9 @@
               ExecCondition = "${pkgs.python3}/bin/python3 -c 'import datetime, sys; sys.exit(datetime.date.today() > datetime.date(2026, 12, 10))'";
               ExecStart = lib.getExe monitor;
               TimeoutStartSec = "30min";
+              RuntimeDirectory = "soict-watch";
+              RuntimeDirectoryMode = "0700";
+              RuntimeDirectoryPreserve = "yes";
               UMask = "0077";
             };
           };
@@ -64,19 +93,7 @@
             Unit.Description = "Notify Discord when the SOICT monitor fails";
             Service = {
               Type = "oneshot";
-              ExecStart = lib.escapeShellArgs [
-                (lib.getExe' pkgs.local-notify "local-notify")
-                "--username"
-                "soict-watch"
-                "--icon"
-                discordIcon
-                "--title"
-                "SOICT monitor failed"
-                "--content"
-                "SOICTサイト監視に失敗しました。詳細: `journalctl --user -u soict-watch.service -n 100`。Piログ: `${config.xdg.stateHome}/soict-watch/<year>/pi.log`。次回の定期実行で再試行します。"
-                "--color"
-                "#ED4245"
-              ];
+              ExecStart = "${lib.getExe notifyFailure} %t/soict-watch/stage";
               TimeoutStartSec = "30s";
             };
           };
