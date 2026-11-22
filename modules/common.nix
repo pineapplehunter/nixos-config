@@ -85,7 +85,7 @@ in
           secret-key-files = [ config.sops.secrets.nix-signing-key.path ];
           substituters = [
             "https://cache.nixos.org"
-            "https://niks3.gweb.ihavenojob.work?priority=50"
+            "https://niks3.s.ihavenojob.work"
           ];
           trusted-public-keys = [
             "niks3-cache:RW+9UW/AgeDvEawJndPbzNVYQcDPjXA4J23srAi5+sE="
@@ -95,7 +95,7 @@ in
             "daniel-njlab-pc:V0eZq7oeUT3/Kb1xDROQ/RdD9kkExII7P8KZFqnENqU="
           ];
           trusted-substituters = [
-            "https://niks3.gweb.ihavenojob.work"
+            "https://niks3.s.ihavenojob.work"
             "https://nixos-raspberrypi.cachix.org"
           ];
           use-cgroups = true;

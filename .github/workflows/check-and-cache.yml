@@ -52,6 +52,7 @@ jobs:
             max-jobs = 1
             system = ${{ matrix.system }}
 
+      # The action gets the substituter and signing keys from /api/cache-config.
       - uses: Mic92/niks3-action@01820a2b97ac01531ad9fb859db94af63ffcbd83 # v1.10.0
         with:
           server-url: https://niks3.s.ihavenojob.work
