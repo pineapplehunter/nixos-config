@@ -86,6 +86,7 @@ in
           substituters = [
             "https://cache.nixos.org"
             "https://niks3.s.ihavenojob.work"
+            "https://nixos-raspberrypi.cachix.org"
           ];
           trusted-public-keys = [
             "niks3-cache:RW+9UW/AgeDvEawJndPbzNVYQcDPjXA4J23srAi5+sE="
