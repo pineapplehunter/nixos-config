@@ -98,6 +98,7 @@ in
             "https://niks3.s.ihavenojob.work"
             "https://nixos-raspberrypi.cachix.org"
           ];
+          trusted-users = [ "@wheel" ];
           use-cgroups = true;
           warn-dirty = false;
         };
