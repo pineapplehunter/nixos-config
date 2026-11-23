@@ -300,6 +300,7 @@ def main() -> int:
         proxy_command.append(
             "--call=io.github.pineapplehunter.GitHubFetch1=io.github.pineapplehunter.GitHubFetch1.Run@/io/github/pineapplehunter/GitHubFetch1"  # noqa: E501
         )
+    proxy_command.append("--call=io.github.pineapplehunter.PiRemoteCA1=io.github.pineapplehunter.PiRemoteCA1.IssueClientCertificate@/io/github/pineapplehunter/PiRemoteCA1")
     proxy_command.extend(
         f"--call={name}=io.github.pineapplehunter.Mcp1.{method}@/io/github/pineapplehunter/Mcp1"  # noqa: E501
         for name in MCP_BUS_NAMES

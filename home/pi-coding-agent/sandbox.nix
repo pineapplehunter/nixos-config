@@ -114,6 +114,7 @@ in
           pkgs.mcp-dbus-proxy
           sandbox.clipboardClient
           sandbox.gitSigningClient
+          sandbox.remoteIssuerClient
           skillPython
           portalClients
         ]
