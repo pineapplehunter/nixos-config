@@ -1,4 +1,4 @@
-"""Copy Pi customizations from Git or a local checkout and update packages."""
+"""Install Pi customizations from Git or a local checkout."""
 
 import argparse
 import fcntl
@@ -13,8 +13,10 @@ import tempfile
 
 
 DEFAULT_REPOSITORY = "https://github.com/pineapplehunter/pi-customizations"
+PACKAGE = "pi-customizations"
 FILES = (
-    "package.json", "settings.json", "AGENTS.md", "README.md", "LICENSE",
+    "package.json", "package-lock.json", "settings.json", "AGENTS.md",
+    "README.md", "LICENSE",
     "NOTICE", "CREDITS.md", "upstream.json",
 )
 DIRECTORIES = ("extensions", "skills", "references", "prompts", "themes")
@@ -98,12 +100,27 @@ def reconcile(
     return {**settings, "packages": retained}, owned
 
 
+def pack(checkout: Path, archive_dir: Path) -> Path:
+    with tempfile.TemporaryDirectory(prefix=".pack-", dir=archive_dir) as temp:
+        staged = Path(temp)
+        for name in FILES:
+            if (checkout / name).is_file():
+                shutil.copy2(checkout / name, staged / name)
+        for name in DIRECTORIES:
+            if (checkout / name).is_dir():
+                shutil.copytree(checkout / name, staged / name)
+        packed = subprocess.run(
+            ["npm", "pack", "--json", "--ignore-scripts",
+             "--pack-destination", str(archive_dir)],
+            cwd=staged, check=True, text=True, stdout=subprocess.PIPE,
+        )
+    return archive_dir / Path(json.loads(packed.stdout)[0]["filename"]).name
+
+
 def install(checkout: Path, home: Path, root: Path, pi: str) -> None:
     manifest = read_json(checkout / "package.json")
-    if manifest.get("name") != "pi-customizations":
+    if manifest.get("name") != PACKAGE:
         raise ValueError("expected the pi-customizations package")
-    if manifest.get("dependencies"):
-        raise ValueError("snapshot extensions must be dependency-free")
     declared = read_json(checkout / "settings.json")
     if set(declared) != {"packages"} or not isinstance(
         declared["packages"], list,
@@ -113,47 +130,60 @@ def install(checkout: Path, home: Path, root: Path, pi: str) -> None:
         if not source(entry).startswith(("npm:", "git:", "https://")):
             raise ValueError("repository packages must use npm or Git sources")
     instructions = (checkout / "AGENTS.md").read_text()
-    snapshot = root / "package"
-    previous_snapshot = root / "previous"
-    state_path = root / "managed-packages.json"
-    state = read_json(state_path, {})
-    desired = [*declared["packages"], str(snapshot)]
-    settings_path = home / ".pi/agent/settings.json"
+    agent = root.parent
+    settings_path = agent / "settings.json"
     if settings_path.is_symlink():
         raise ValueError(f"unexpected settings symlink: {settings_path}")
-    settings, state["agent"] = reconcile(
-        read_json(settings_path, {}), desired, state.get("agent", []),
-    )
+    legacy = home / ".pi/customizations"
+    state_path = root / "managed-packages.json"
+    state = read_json(state_path, {})
+    if not state_path.exists() and not legacy.is_symlink():
+        state = read_json(legacy / "managed-packages.json", {})
+    # Validate declarations before asking Pi to install anything.
+    desired = declared["packages"]
+    previous = state.get("agent", [])
+    reconcile(read_json(settings_path, {}), desired, previous)
 
-    for path in (snapshot, previous_snapshot):
-        if path.is_symlink():
-            raise ValueError(f"refusing to replace a snapshot symlink: {path}")
-    with tempfile.TemporaryDirectory(prefix=".stage-", dir=root) as staging:
-        staged = Path(staging) / "package"
-        staged.mkdir()
-        for name in FILES:
-            if (checkout / name).is_file():
-                shutil.copy2(checkout / name, staged / name)
-        for name in DIRECTORIES:
-            if (checkout / name).is_dir():
-                shutil.copytree(checkout / name, staged / name)
-        if previous_snapshot.exists():
-            shutil.rmtree(previous_snapshot)
-        if snapshot.exists():
-            snapshot.rename(previous_snapshot)
-        staged.rename(snapshot)
+    archives = root / "archives"
+    archives.mkdir(exist_ok=True, mode=0o700)
+    archive_dir = Path(tempfile.mkdtemp(prefix="build-", dir=archives))
+    environment = {**os.environ, "PI_CODING_AGENT_DIR": str(agent)}
+    try:
+        archive = pack(checkout, archive_dir)
+        package_source = f"npm:{PACKAGE}@{archive.as_uri()}"
+        subprocess.run(
+            [pi, "install", package_source, "--no-approve"],
+            cwd=root, env={**environment, "npm_config_ignore_scripts": "true"},
+            check=True,
+        )
+    except (OSError, ValueError, subprocess.CalledProcessError):
+        shutil.rmtree(archive_dir)
+        raise
 
+    settings = read_json(settings_path)
+    settings["packages"] = [
+        entry for entry in settings["packages"]
+        if Path(os.path.abspath(agent / Path(source(entry)).expanduser()))
+        != legacy / "package"
+    ]
+    settings, state["agent"] = reconcile(settings, desired, previous)
     write_json(settings_path, settings)
     write_json(state_path, state)
-    write_file(settings_path.with_name("AGENTS.md"), instructions)
-    print(f"Installed copied resources at {snapshot}", flush=True)
-    # Use the unwrapped Pi with canonical settings, not project settings.
-    environment = {**os.environ}
-    environment["PI_CODING_AGENT_DIR"] = str(settings_path.parent)
+    write_file(agent / "AGENTS.md", instructions)
     subprocess.run(
         [pi, "update", "--extensions", "--no-approve"],
         cwd=root, env=environment, check=True,
     )
+
+    # Only delete old snapshots after the managed installation succeeds.
+    if not legacy.is_symlink():
+        for path in (legacy / "package", legacy / "previous"):
+            if path.is_dir() and not path.is_symlink():
+                shutil.rmtree(path)
+    # Pi needs the current archive for reinstalls, but not older builds.
+    for path in archives.glob("build-*"):
+        if path != archive_dir and path.is_dir() and not path.is_symlink():
+            shutil.rmtree(path)
     print("Pi packages updated. Reload or restart Pi to load new resources.")
 
 
@@ -161,7 +191,7 @@ def main() -> int:
     cli = argparse.ArgumentParser(prog="pi-update", description=__doc__)
     cli.add_argument(
         "--local", type=Path,
-        help="copy from this checkout; still update external packages",
+        help="install a package built from this working tree instead of Git",
     )
     cli.add_argument(
         "--repo",
@@ -172,7 +202,7 @@ def main() -> int:
     )
     args = cli.parse_args()
     home = Path.home()
-    root = home / ".pi/customizations"
+    root = home / ".pi/agent/pi-update"
     if root.is_symlink():
         cli.error(f"expected a real installation directory: {root}")
     root.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -182,8 +212,10 @@ def main() -> int:
         try:
             if args.local is not None:
                 checkout = args.local.expanduser().resolve(strict=True)
-                if checkout == root or root in checkout.parents:
-                    raise ValueError("--local must not be an installed copy")
+                if any(checkout.is_relative_to(path) for path in (
+                    root.parent, home / ".pi/customizations",
+                )):
+                    raise ValueError("--local must be a source checkout")
                 install(checkout, home, root, pi)
             else:
                 with tempfile.TemporaryDirectory(prefix="pi-custom-") as tmp:

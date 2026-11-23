@@ -22,13 +22,22 @@ class ReportLimitsTest(unittest.TestCase):
             snapshot = {"https://soict.org/": "Program Committee\n"}
 
             report = {"recipient": "admin", "reason": "見出しの単数形への修正のみのため投稿不要です。https://soict.org/"}
+            home = Path(directory) / "home"
+            codex = home / (
+                ".pi/agent/npm/node_modules/pi-customizations/extensions/codex-host/index.ts"
+            )
+            codex.parent.mkdir(parents=True)
+            codex.touch()
 
-            def review(*args, **kwargs):
+            def review(args, **kwargs):
+                self.assertIn(("--extension", str(codex)), zip(args, args[1:]))
                 (state / "response.json").write_text(json.dumps(report), encoding="utf-8")
 
             with patch.dict("os.environ", {
                 "SOICT_STATE_DIR": directory, "SOICT_REPORT_EXTENSION": "unused",
-            }), patch("monitor.crawl", return_value=snapshot), patch(
+            }), patch("monitor.Path.home", return_value=home), patch(
+                "monitor.crawl", return_value=snapshot,
+            ), patch(
                 "monitor.subprocess.run", side_effect=review,
             ), patch("monitor.notify_discord") as notify, patch("monitor.urlopen") as send:
                 main()

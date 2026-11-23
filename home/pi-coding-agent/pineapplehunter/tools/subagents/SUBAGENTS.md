@@ -11,8 +11,8 @@ build-time flake8 linting), substitutes only the RPC runner path, and puts it di
 `sandboxTools`. Commands run by binary
 name using the inherited parent PATH. There is no CLI-specific wrapper.
 
-Run `pi-update` before launching subagents. The workflow skill is installed at
-`~/.pi/customizations/package/skills/subagents/SKILL.md`.
+Run `pi-update` before launching subagents. The workflow skill is in
+`skills/personal/subagents/SKILL.md` in the Pi-managed `pi-customizations` package.
 
 ## Optional extension/skill isolation
 
@@ -27,7 +27,7 @@ pi-subagent review-skill /tmp/review-workspace /tmp/review-task.md \
   --no-inherit-resources
 ```
 
-Every child explicitly loads the pinned snapshot's public
+Every child explicitly loads the Pi-managed package's public
 `extensions/pueue-tool/index.ts` and private `extensions/subagent-pueue/index.ts`
 adapter. Normal discovery deduplicates canonical extension paths. With this
 flag the launcher also passes `--no-extensions --no-skills`, but retains both

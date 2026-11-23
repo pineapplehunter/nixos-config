@@ -241,11 +241,18 @@ sections の各文字列は日本語の簡潔な箇条書きとし、関連す�
 baseline.json、current.json、changes.diff、archive/ は変更しないでください。
 最終回答だけで済ませず、必ず write ツール等で response.json を作成してください。
 """
+    # The wrapped Pi command uses the canonical user profile.
+    codex_extension = (
+        Path.home() / ".pi/agent/npm/node_modules/pi-customizations"
+        / "extensions/codex-host/index.ts"
+    )
+    if not codex_extension.is_file():
+        raise FileNotFoundError("Run pi-update to install the codex-host extension")
     with (state / "pi.log").open("w", encoding="utf-8") as log:
         subprocess.run([
             "pi", "@noflake", "--model", "codex-host/gpt-6-luna",
             "--print", "--no-session", "--no-extensions",
-            "--extension", str(Path.home() / ".pi/customizations/package/extensions/codex-host/index.ts"),
+            "--extension", str(codex_extension),
             "--extension", os.environ["SOICT_REPORT_EXTENSION"], "--no-mcp",
             "--no-skills", "--no-prompt-templates", "--no-context-files",
             "--no-approve", "--tools", "read,bash,edit,write", prompt,

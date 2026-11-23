@@ -20,7 +20,7 @@ Project-specific `.pi/skills` stay in this repository.
 ## Migration / updating
 
 1. Rebuild Home Manager/NixOS once to install the updater and new runtime paths.
-2. Before launching Pi/subagents, seed the copied package:
+2. Before launching Pi or subagents, install the managed package:
 
    ```sh
    pi-update --local /absolute/path/to/pi-customizations
@@ -32,23 +32,29 @@ Project-specific `.pi/skills` stay in this repository.
    pi-update
    ```
 
-Both modes update all configured global external packages. `--local` only
-changes the customization source; it always copies and never edits that checkout.
+Both modes pack the source and use `pi install` to install the tarball and its
+runtime dependencies. `--local` includes uncommitted changes and never edits
+or publishes the checkout. Without `--local`, the updater clones the configured
+Git source. After installing, it updates all configured global external packages.
 `--repo URL`/`--branch NAME` (or `PI_CUSTOMIZATIONS_REPO`/`PI_CUSTOMIZATIONS_BRANCH`)
 override the default `pineapplehunter/pi-customizations` `main` source.
 
-The package snapshot lives at `~/.pi/customizations/package/`, already visible
-through existing `~/.pi` sandbox/subagent mounts. The launcher explicitly loads
-that snapshot's public `extensions/pueue-tool/index.ts` and private
-`extensions/subagent-pueue/index.ts` adapter for every child, including with
-`--no-inherit-resources`; run the updater before launching subagents. Host code changes still need a rebuild; resources
-need only an update and Pi reload/restart. Pi itself remains Nix-managed:
+Pi installs the package at `~/.pi/agent/npm/node_modules/pi-customizations`.
+The active tarball stays in `~/.pi/agent/pi-update/archives` for reinstalls.
+Successful migration removes the old snapshot entry and deletes the old current
+and previous snapshots, without touching unrelated files.
+
+The launcher explicitly loads `extensions/pueue-tool/index.ts` and
+`extensions/subagent-pueue/index.ts` from the active Pi profile’s installed
+package, including with `--no-inherit-resources`. Run the updater before launching
+subagents. Host code changes still need a rebuild; resources need only an update
+and Pi reload/restart. Pi itself remains Nix-managed:
 `pi-update` invokes the unwrapped executable's `update --extensions`, not
 `pi update` (which would request a self-update).
 
 The updater preserves unrelated preferences/packages, authentication, sessions,
 and MCP settings. It tracks owned package entries, retires the two old
-Nix-store resource packages, and replaces only its own resource snapshot. It
+Nix-store resource packages, and installs only its own resource package. It
 updates only `~/.pi/agent`. A failed external update exits nonzero but may leave
 some packages already updated; retry after fixing the error.
 Home Manager activation itself performs no customization/package network update.
@@ -62,7 +68,7 @@ customization updates.
 ## Private Pueue lifecycle
 
 The wrapper directly executes Pi; it does not start Pueue or install a static
-Pueue configuration/callback. The public snapshot extension automatically owns
+Pueue configuration/callback. The public Pueue extension automatically owns
 a fresh private daemon, config, callback, and temporary directory per interactive
 or RPC Pi process. Print/JSON mode starts no daemon. It never attaches to an
 inherited config or host queue, and sets `PUEUE_CONFIG_PATH` and

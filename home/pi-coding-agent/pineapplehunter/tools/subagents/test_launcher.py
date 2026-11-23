@@ -63,8 +63,12 @@ class CodexHandoffTest(unittest.TestCase):
         spec.loader.exec_module(self.launcher)
         self.launcher.STATE_ROOT = root / "state"
         self.launcher.CODEX_SOCKET = broker
-        for ext in (*self.launcher.PINNED_EXTENSIONS,
-                    self.launcher.CODEX_EXTENSION):
+        self.pinned = tuple(self.launcher.extension_path(self.agent, name)
+                            for name in self.launcher.PINNED_EXTENSIONS)
+        self.codex_extension = self.launcher.extension_path(
+            self.agent, self.launcher.CODEX_HOST,
+        )
+        for ext in (*self.pinned, self.codex_extension):
             ext.parent.mkdir(parents=True, exist_ok=True)
             ext.touch()
         # Do not inspect the real UPKI config when constructing argv.
@@ -130,8 +134,7 @@ class CodexHandoffTest(unittest.TestCase):
                 self.assertEqual(pi[pi.index("--session-id") + 1], "child")
                 self.assertEqual(no_inherit, "--no-extensions" in pi)
                 self.assertEqual(no_inherit, "--no-skills" in pi)
-                for ext in (*self.launcher.PINNED_EXTENSIONS,
-                            self.launcher.CODEX_EXTENSION):
+                for ext in (*self.pinned, self.codex_extension):
                     self.assertIn(("--extension", str(ext)), zip(pi, pi[1:]))
 
     def test_other_preset_does_not_get_socket_or_provider(self):
@@ -142,7 +145,7 @@ class CodexHandoffTest(unittest.TestCase):
             options, self.launcher.STATE_ROOT, self.agent,
         )
         self.assertNotIn(str(self.launcher.CODEX_SOCKET), args)
-        self.assertNotIn(str(self.launcher.CODEX_EXTENSION), args)
+        self.assertNotIn(str(self.codex_extension), args)
         self.assertNotIn(str(self.default), args)
         self.assertIn("openai-codex/fixture", args)
 
@@ -199,7 +202,7 @@ class CodexHandoffTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "regular file"):
             self.launcher.validate_codex_handoff(options, self.agent)
         self.default.unlink()
-        self.launcher.CODEX_EXTENSION.unlink()
+        self.codex_extension.unlink()
         with self.assertRaisesRegex(ValueError, "Run pi-update"):
             self.launcher.validate_codex_handoff(options, self.agent)
 

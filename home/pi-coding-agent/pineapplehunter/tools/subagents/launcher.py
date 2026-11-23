@@ -21,15 +21,10 @@ SUBAGENT_RUNNER = (
     "@SUBAGENT_RUNNER@"
     "/bin/pi-subagent-runner"
 )
-EXTENSIONS = Path.home() / ".pi/customizations/package/extensions"
-PINNED_EXTENSIONS = tuple(
-    (EXTENSIONS / name / "index.ts").resolve()
-    for name in ("pueue-tool", "subagent-pueue")
-)
+PINNED_EXTENSIONS = ("pueue-tool", "subagent-pueue")
 CODEX_HOST = "codex-host"
 CODEX_SOCKET_ENV = "PI_CODEX_HOST_SOCKET"
 CODEX_SOCKET = Path("/run/pi-codex-host/broker.sock")
-CODEX_EXTENSION = (EXTENSIONS / CODEX_HOST / "index.ts").resolve()
 CHILD_INSTRUCTIONS = """You are a subagent of the parent Pi agent.
 Your working directory is a caller-prepared, possibly incomplete workspace
 mounted at the original project path. The original project is not accessible.
@@ -54,6 +49,11 @@ results, test outcomes, and changed files using project-relative paths.
 If inputs are missing, report exactly what the parent should provide before
 resuming you. Do not invoke or create other subagents.
 """
+
+
+def extension_path(agent_source, name):
+    extensions = agent_source / "npm/node_modules/pi-customizations/extensions"
+    return extensions / name / "index.ts"
 
 
 @contextlib.contextmanager
@@ -138,7 +138,7 @@ def validate_codex_handoff(options, agent_source):
         raise ValueError(
             "codex-host requires the broker socket from the parent Pi wrapper"
         )
-    if not CODEX_EXTENSION.is_file():
+    if not extension_path(agent_source, CODEX_HOST).is_file():
         raise ValueError("Run pi-update: the codex-host extension is missing")
     project = Path(options.project_path)
     if agent_source.resolve(strict=True) != agent_source or any(
@@ -282,10 +282,11 @@ def sandbox_command(options, state, agent_source):
     if options.no_inherit_resources:
         command.extend(["--no-extensions", "--no-skills"])
     # Pi deduplicates discovered and explicit extensions by canonical path.
-    for extension in PINNED_EXTENSIONS:
-        command.extend(["--extension", str(extension)])
+    names = PINNED_EXTENSIONS + ((CODEX_HOST,) if options.codex_host else ())
+    for name in names:
+        path = extension_path(agent_source, name)
+        command.extend(["--extension", str(path)])
     if options.codex_host:
-        command.extend(["--extension", str(CODEX_EXTENSION)])
         command.extend(["--provider", CODEX_HOST])
     command.extend(["--model", options.model])
     if options.thinking:
@@ -369,8 +370,6 @@ def main():
     options = parser().parse_args()
     if options.codex_handoff and not options.run:
         raise ValueError("--codex-handoff is only for queued workers")
-    if not all(path.is_file() for path in PINNED_EXTENSIONS):
-        raise ValueError("Run pi-update before launching subagents")
     os.umask(0o077)
     options.directory = str(Path(options.directory).resolve(strict=True))
     if not Path(options.directory).is_dir():
@@ -412,6 +411,9 @@ def main():
             "PI_CODING_AGENT_DIR is required for subagent configuration"
         )
     agent_source = Path(agent_dir).absolute()
+    for name in PINNED_EXTENSIONS:
+        if not extension_path(agent_source, name).is_file():
+            raise ValueError("Run pi-update before launching subagents")
     defaults(options, state, agent_source)
     validate_codex_handoff(options, agent_source)
     if options.run:
