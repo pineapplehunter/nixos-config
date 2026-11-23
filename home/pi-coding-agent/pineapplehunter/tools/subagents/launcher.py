@@ -16,6 +16,7 @@ import uuid
 
 THINKING_LEVELS = ("off", "minimal", "low", "medium", "high", "xhigh", "max")
 STATE_ROOT = Path("/tmp/pi-subagent-state")
+NIX_DAEMON_DIR = "/nix/var/nix/daemon-socket"
 SUBAGENT_RUNNER = (
     "@SUBAGENT_RUNNER@"
     "/bin/pi-subagent-runner"
@@ -38,7 +39,7 @@ tool selection is unchanged. Your supplied project is trusted by default.
 Your ~/.pi resources are writable tmpfs overlays: changes there are discarded
 when this process exits and never propagate to the parent. Symlink targets in
 the Nix store remain immutable; replace the link with a copy if you need edits.
-Nix store/daemon and networking are available.
+The Nix store, untrusted Nix daemon proxy, and networking are available.
 Your Pueue daemon is private to this sandbox. Every task completion starts
 another turn, or queues a follow-up if you are busy. Do independent work, then
 end your response naturally when only background tasks remain; do not wait or
@@ -156,9 +157,26 @@ def validate_codex_handoff(options, agent_source):
             raise ValueError("codex-route-default must be a regular file")
 
 
+def nix_proxy_directory():
+    # Reuse the parent's bind mount, never the host daemon at the same path.
+    for entry in Path("/proc/self/mountinfo").read_text().splitlines():
+        root, target, flags = entry.split()[3:6]
+        if (target == NIX_DAEMON_DIR and root.endswith("/pi-nix-daemon")
+                and "ro" in flags.split(",")):
+            return Path(NIX_DAEMON_DIR)
+    runtime = os.environ.get("XDG_RUNTIME_DIR")
+    if not runtime:
+        raise ValueError("XDG_RUNTIME_DIR is not set")
+    return Path(runtime) / "pi-nix-daemon"
+
+
 def sandbox_command(options, state, agent_source):
     home = Path.home()
     pi_home = home / ".pi"
+    nix_proxy_dir = nix_proxy_directory()
+    nix_proxy_socket = nix_proxy_dir / "socket"
+    if not nix_proxy_socket.is_socket():
+        raise ValueError(f"Nix proxy socket not found: {nix_proxy_socket}")
     args = [
         "bwrap",
         "--unshare-all",
@@ -169,9 +187,16 @@ def sandbox_command(options, state, agent_source):
         "/dev",
         "--proc",
         "/proc",
+        "--tmpfs",
+        "/nix",
         "--ro-bind",
         "/nix/store",
         "/nix/store",
+        "--ro-bind",
+        str(nix_proxy_dir),
+        NIX_DAEMON_DIR,
+        "--remount-ro",
+        "/nix",
         "--tmpfs",
         "/run",
         "--dir",
@@ -230,9 +255,6 @@ def sandbox_command(options, state, agent_source):
             "--bind",
             str(state / "response.md"),
             "/run/pi-subagent/response.md",
-            "--ro-bind",
-            "/nix/var/nix/daemon-socket",
-            "/nix/var/nix/daemon-socket",
         ]
     )
     # Match the parent's UPKI setup; the host remains the only cache writer.

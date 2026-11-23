@@ -34,8 +34,16 @@ class CodexHandoffTest(unittest.TestCase):
         listening = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.addCleanup(listening.close)
         listening.bind(str(broker))
+        self.nix_socket = root / "runtime/pi-nix-daemon/socket"
+        self.nix_socket.parent.mkdir(parents=True)
+        nix_listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.addCleanup(nix_listener.close)
+        nix_listener.bind(str(self.nix_socket))
+        self.mountinfo = root / "mountinfo"
+        self.mountinfo.touch()
         self.enterContext(patch.dict(os.environ, {
             "HOME": str(home),
+            "XDG_RUNTIME_DIR": str(root / "runtime"),
             "PI_CODING_AGENT_DIR": str(self.agent),
             "PI_CODING_AGENT_SESSION_DIR": "/parent/sessions",
             "PI_CODEX_HOST_SOCKET": str(broker),
@@ -62,6 +70,7 @@ class CodexHandoffTest(unittest.TestCase):
         # Do not inspect the real UPKI config when constructing argv.
         path = self.enterContext(patch.object(
             self.launcher, "Path", side_effect=lambda value: (
+                self.mountinfo if value == "/proc/self/mountinfo" else
                 root / "no-upki" if str(value) in (
                     "/etc/upki/config.toml", "/var/cache/upki",
                 ) else Path(value)
@@ -107,6 +116,11 @@ class CodexHandoffTest(unittest.TestCase):
                           zip(mounts, mounts[1:], mounts[2:])
                           if flag == "--setenv"]
                 self.assertIn(("PI_CODEX_HOST_SOCKET", broker), setenv)
+                self.assertIn(("NIX_REMOTE", "daemon"), setenv)
+                nix_socket = mounts.index("/nix/var/nix/daemon-socket")
+                self.assertEqual(mounts[nix_socket-2:nix_socket], [
+                    "--ro-bind", str(self.nix_socket.parent),
+                ])
                 self.assertIn(("PI_CODING_AGENT_SESSION_DIR",
                                "/run/pi-subagent/sessions"), setenv)
                 self.assertFalse(any("/not-mounted/" in arg for arg in args))
@@ -131,6 +145,31 @@ class CodexHandoffTest(unittest.TestCase):
         self.assertNotIn(str(self.launcher.CODEX_EXTENSION), args)
         self.assertNotIn(str(self.default), args)
         self.assertIn("openai-codex/fixture", args)
+
+    def test_rebinds_parent_nix_proxy_at_standard_path(self):
+        daemon_dir = str(self.nix_socket.parent)
+        options = self.options()
+        self.launcher.validate_codex_handoff(options, self.agent)
+        self.mountinfo.write_text(f"2 1 0:1 /pi-nix-daemon {daemon_dir} ro\n")
+        with (
+            patch.dict(os.environ, {"XDG_RUNTIME_DIR": "/not-mounted"}),
+            patch.object(self.launcher, "NIX_DAEMON_DIR", daemon_dir),
+        ):
+            args = self.launcher.sandbox_command(
+                options, self.launcher.STATE_ROOT, self.agent,
+            )
+        mount = args.index(daemon_dir)
+        self.assertEqual(args[mount-1:mount+2],
+                         ["--ro-bind", daemon_dir, daemon_dir])
+
+    def test_missing_nix_proxy_prevents_launch(self):
+        daemon_dir = self.launcher.NIX_DAEMON_DIR
+        self.mountinfo.write_text(f"2 1 0:1 {daemon_dir} {daemon_dir} ro\n")
+        self.nix_socket.unlink()
+        with self.assertRaisesRegex(ValueError, "Nix proxy socket not found"):
+            self.launcher.sandbox_command(
+                self.options(), self.launcher.STATE_ROOT, self.agent,
+            )
 
     def test_unauthorized_and_invalid_socket(self):
         options = self.options()

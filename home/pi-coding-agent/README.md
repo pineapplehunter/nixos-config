@@ -86,6 +86,20 @@ Combine with `@debug-shell`, `@allow PATH` (read-only), or `@allow-rw PATH`.
 only enable it for trusted hardware/firmware work. Without it, the minimal
 sandbox `/dev` remains unchanged.
 
+## Nix daemon access
+
+Home Manager enables `pi-nix-daemon.socket` in the user manager's
+`sockets.target`. The proxy listens at `$XDG_RUNTIME_DIR/pi-nix-daemon/socket`
+and treats Pi clients as untrusted before forwarding requests to the host's
+Nix daemon. Pi and its subagents see the proxy at the standard `/nix/var/nix/daemon-socket/socket`
+path without changing their Nix configuration. They mount `/nix/store`
+read-only and do not mount the host daemon socket or Nix state directory.
+
+Pi and its subagents refuse to start if the proxy socket is missing. Start it
+on the host with `systemctl --user start pi-nix-daemon.socket` if needed.
+After activation, restart running Pi sessions. Inside Pi,
+`nix store info --json` should report `"trusted": false`.
+
 ## Sandbox `/etc` and TLS
 
 The wrapper populates a private `/etc` with Bubblewrap `--file` copies, not host

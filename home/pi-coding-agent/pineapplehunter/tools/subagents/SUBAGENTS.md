@@ -125,10 +125,11 @@ or cleanup command. Inspect tasks with Pueue and remove finished state using
 ## Sandbox
 
 Bubblewrap starts with an empty root, mounts the supplied workspace at the
-original project path, exposes the Nix store/daemon, inherits whole read-only
-`/etc`, `/bin`, and `/usr` mounts from the parent sandbox, and provides private
-tmp and runtime directories. The configured UPKI cache is mounted read-only,
-so inherited `curl-upki` can check revocation without writing to the host cache.
+original project path, exposes the read-only Nix store and untrusted Nix daemon
+proxy, inherits whole read-only `/etc`, `/bin`, and `/usr` mounts from the
+parent sandbox, and provides private tmp and runtime directories. The
+configured UPKI cache is mounted read-only, so inherited `curl-upki` can check
+revocation without writing to the host cache.
 Networking and environment/PATH are inherited. The supplied project is trusted by default.
 
 `~/.pi` and any custom agent directory outside it are writable `--tmp-overlay`

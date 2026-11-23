@@ -222,6 +222,13 @@ def main() -> int:
 
     home = Path.home()
     runtime = Path(runtime_text)
+    nix_proxy_dir = runtime / "pi-nix-daemon"
+    nix_proxy_socket = nix_proxy_dir / "socket"
+    if not nix_proxy_socket.is_socket():
+        fail(
+            f"Nix proxy socket not found: {nix_proxy_socket}; "
+            "run 'systemctl --user start pi-nix-daemon.socket' on the host"
+        )
     extra_binds: list[str] = []
     debug, noflake, arguments = parse_wrapper_args(sys.argv[1:], extra_binds)
     root = Path.cwd() if noflake else project_root(marker)
@@ -266,8 +273,8 @@ def main() -> int:
         "--proc",
         "/proc",
         "--ro-bind",
-        "/nix",
-        "/nix",
+        "/nix/store",
+        "/nix/store",
         "--dir",
         str(runtime),
     ]
@@ -412,9 +419,11 @@ def main() -> int:
             "/dev",
             "--proc",
             "/proc",
+            "--tmpfs",
+            "/nix",
             "--ro-bind",
-            "/nix",
-            "/nix",
+            "/nix/store",
+            "/nix/store",
             "--tmpfs",
             str(home),
             "--tmpfs",
@@ -425,6 +434,13 @@ def main() -> int:
             "/run/user",
             "--dir",
             str(runtime),
+            # Bind the directory so socket recreation is visible to clients.
+            "--ro-bind",
+            str(nix_proxy_dir),
+            "/nix/var/nix/daemon-socket",
+            # A writable state directory makes Nix auto-select a local store.
+            "--remount-ro",
+            "/nix",
             "--ro-bind",
             str(proxy_socket),
             str(runtime / "bus"),

@@ -12,6 +12,8 @@ in
     }:
     let
       isLinux = pkgs.stdenv.hostPlatform.isLinux;
+      nixProxyPackage =
+        if lib.versionAtLeast pkgs.nix.version "2.36" then pkgs.nix else pkgs.nixVersions.latest;
       mcpServers = lib.filterAttrs (_: server: server.enable) config.services.mcp-dbus.servers;
       mcpRegistrations = lib.mapAttrs (_: server: {
         command = lib.getExe pkgs.mcp-dbus-proxy;
@@ -353,6 +355,35 @@ in
             Exec=${lib.getExe clipboardDaemon} --wl-copy ${lib.getExe' pkgs.wl-clipboard "wl-copy"}
             SystemdService=pi-clipboard.service
           '';
+        };
+
+        systemd.user.services."pi-nix-daemon@" = {
+          Unit.Description = "Proxy a Pi Nix daemon connection as untrusted";
+          Service = {
+            # Handle the accepted socket on stdio without setting up build cgroups.
+            ExecStart = lib.escapeShellArgs [
+              (lib.getExe' nixProxyPackage "nix-daemon")
+              "--stdio"
+              "--store"
+              "unix:///nix/var/nix/daemon-socket/socket"
+              "--force-untrusted"
+            ];
+            StandardInput = "socket";
+            StandardOutput = "socket";
+            StandardError = "journal";
+          };
+        };
+
+        systemd.user.sockets.pi-nix-daemon = {
+          Unit.Description = "Socket for the untrusted Pi Nix daemon proxy";
+          Socket = {
+            ListenStream = "%t/pi-nix-daemon/socket";
+            Accept = true;
+            DirectoryMode = "0700";
+            SocketMode = "0600";
+            RemoveOnStop = true;
+          };
+          Install.WantedBy = [ "sockets.target" ];
         };
       };
     };
