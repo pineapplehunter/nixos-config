@@ -42,14 +42,24 @@ def project_root(marker: str) -> Path:
     return current
 
 
+def flatten_args(groups: list[str | list[str]]) -> list[str]:
+    return [
+        arg for group in groups
+        for arg in ([group] if isinstance(group, str) else group)
+    ]
+
+
 def add_bind(
-    args: list[str], option: str, source: Path | str, destination: Path | str
+    args: list[str | list[str]],
+    option: str,
+    source: Path | str,
+    destination: Path | str,
 ) -> None:
-    args.extend((option, str(source), str(destination)))
+    args.append([option, str(source), str(destination)])
 
 
 def add_copy(
-    args: list[str],
+    args: list[str | list[str]],
     files: list[BinaryIO],
     source: Path | str,
     destination: Path | str,
@@ -57,7 +67,7 @@ def add_copy(
     """Copy a file into the private filesystem, without a host bind mount."""
     stream = Path(source).open("rb")
     files.append(stream)
-    args.extend(("--file", str(stream.fileno()), str(destination)))
+    args.append(["--file", str(stream.fileno()), str(destination)])
 
 
 def portal_mount() -> Path | None:
@@ -169,7 +179,7 @@ def read_bwrap_info(
 
 
 def parse_wrapper_args(
-    arguments: list[str], bwrap: list[str]
+    arguments: list[str], bwrap: list[str | list[str]]
 ) -> tuple[bool, bool, list[str]]:
     debug = False
     noflake = False
@@ -186,17 +196,17 @@ def parse_wrapper_args(
             noflake = True
             index += 1
         elif argument == "@dev":
-            bwrap.extend(
-                ("--dev-bind", "/dev", "/dev", "--ro-bind", "/sys", "/sys")
-            )
+            bwrap.extend([
+                ["--dev-bind", "/dev", "/dev"],
+                ["--ro-bind", "/sys", "/sys"],
+            ])
             index += 1
         elif argument in {"@allow", "@allow-rw"}:
             if index + 1 >= len(arguments):
                 fail(f"{argument} requires a path")
-            path = str(Path(arguments[index + 1]).resolve(strict=True))
-            bwrap.extend(
-                ("--ro-bind" if argument == "@allow" else "--bind", path, path)
-            )
+            path = Path(arguments[index + 1]).resolve(strict=True)
+            option = "--ro-bind" if argument == "@allow" else "--bind"
+            add_bind(bwrap, option, path, path)
             index += 2
         else:
             fail(f"error while processing wrapping argument {argument}")
@@ -229,7 +239,7 @@ def main() -> int:
             f"Nix proxy socket not found: {nix_proxy_socket}; "
             "run 'systemctl --user start pi-nix-daemon.socket' on the host"
         )
-    extra_binds: list[str] = []
+    extra_binds: list[str | list[str]] = []
     debug, noflake, arguments = parse_wrapper_args(sys.argv[1:], extra_binds)
     root = Path.cwd() if noflake else project_root(marker)
     has_wayland_clipboard = bool(os.environ.get("WAYLAND_DISPLAY"))
@@ -261,86 +271,48 @@ def main() -> int:
     proxy_binary = shutil.which("xdg-dbus-proxy")
     if proxy_binary is None:
         fail("xdg-dbus-proxy not found")
-    proxy_command = [
-        "bwrap",
+    proxy_bwrap: list[str | list[str]] = [
         "--unshare-all",
         "--share-net",
         "--die-with-parent",
-        "--cap-drop",
-        "ALL",
-        "--dev",
-        "/dev",
-        "--proc",
-        "/proc",
-        "--ro-bind",
-        "/nix/store",
-        "/nix/store",
-        "--dir",
-        str(runtime),
+        ["--cap-drop", "ALL"],
+        ["--dev", "/dev"],
+        ["--proc", "/proc"],
+        ["--ro-bind", "/nix/store", "/nix/store"],
+        ["--dir", str(runtime)],
     ]
     if host_bus_socket is not None:
-        proxy_command.extend(
-            ("--ro-bind", str(host_bus_socket), str(host_bus_socket))
+        add_bind(proxy_bwrap, "--ro-bind", host_bus_socket, host_bus_socket)
+    proxy_bwrap.extend([
+        ["--bind", str(proxy_dir), str(proxy_dir)],
+        ["--ro-bind", str(metadata_path), "/.flatpak-info"],
+        "--clearenv",
+        ["--setenv", "XDG_RUNTIME_DIR", str(runtime)],
+    ])
+    proxy_command = [
+        proxy_binary, host_bus, str(proxy_socket),
+        f"--fd={lifetime_child.fileno()}",
+        "--filter",
+        "--call=io.github.pineapplehunter.LocalClipboard1=io.github.pineapplehunter.LocalClipboard1.Copy@/io/github/pineapplehunter/LocalClipboard1",  # noqa: E501
+        "--call=io.github.pineapplehunter.GitSign1=io.github.pineapplehunter.GitSign1.SignCommit@/io/github/pineapplehunter/GitSign1",  # noqa: E501
+    ]
+    if os.environ.get("PI_GITHUB_FETCH_ENABLED") == "1":
+        proxy_command.append(
+            "--call=io.github.pineapplehunter.GitHubFetch1=io.github.pineapplehunter.GitHubFetch1.Run@/io/github/pineapplehunter/GitHubFetch1"  # noqa: E501
         )
     proxy_command.extend(
-        (
-            "--bind",
-            str(proxy_dir),
-            str(proxy_dir),
-            "--ro-bind",
-            str(metadata_path),
-            "/.flatpak-info",
-            "--clearenv",
-            "--setenv",
-            "XDG_RUNTIME_DIR",
-            str(runtime),
-            "--",
-            proxy_binary,
-            host_bus,
-            str(proxy_socket),
-            f"--fd={lifetime_child.fileno()}",
-            "--filter",
-            (
-                "--call=io.github.pineapplehunter.LocalClipboard1="
-                "io.github.pineapplehunter.LocalClipboard1.Copy@"
-                "/io/github/pineapplehunter/LocalClipboard1"
-            ),
-            (
-                "--call=io.github.pineapplehunter.GitSign1="
-                "io.github.pineapplehunter.GitSign1.SignCommit@"
-                "/io/github/pineapplehunter/GitSign1"
-            ),
-            *(
-                (
-                    "--call=io.github.pineapplehunter.GitHubFetch1="
-                    "io.github.pineapplehunter.GitHubFetch1.Run@"
-                    "/io/github/pineapplehunter/GitHubFetch1",
-                )
-                if os.environ.get("PI_GITHUB_FETCH_ENABLED") == "1"
-                else ()
-            ),
-            *(
-                f"--call={name}=io.github.pineapplehunter.Mcp1.{method}"
-                "@/io/github/pineapplehunter/Mcp1"
-                for name in MCP_BUS_NAMES
-                for method in ("Open", "Send", "Receive", "Close")
-            ),
-            (
-                f"--call={PORTAL}=org.freedesktop.portal.FileChooser"
-                f".OpenFile@{PORTAL_PATH}"
-            ),
-            (
-                f"--call={PORTAL}=org.freedesktop.portal.Request"
-                f".Close@{PORTAL_PATH}/request/*"
-            ),
-            (
-                f"--broadcast={PORTAL}=org.freedesktop.portal.Request"
-                f".Response@{PORTAL_PATH}/request/*"
-            ),
-        )
+        f"--call={name}=io.github.pineapplehunter.Mcp1.{method}@/io/github/pineapplehunter/Mcp1"  # noqa: E501
+        for name in MCP_BUS_NAMES
+        for method in ["Open", "Send", "Receive", "Close"]
     )
+    proxy_command.extend([
+        f"--call={PORTAL}=org.freedesktop.portal.FileChooser.OpenFile@{PORTAL_PATH}",  # noqa: E501
+        f"--call={PORTAL}=org.freedesktop.portal.Request.Close@{PORTAL_PATH}/request/*",  # noqa: E501
+        f"--broadcast={PORTAL}=org.freedesktop.portal.Request.Response@{PORTAL_PATH}/request/*",  # noqa: E501
+    ])
     proxy = subprocess.Popen(
-        proxy_command, pass_fds=(lifetime_child.fileno(),)
+        ["bwrap", *flatten_args(proxy_bwrap), "--", *proxy_command],
+        pass_fds=(lifetime_child.fileno(),),
     )
     lifetime_child.close()
     child: subprocess.Popen | None = None
@@ -408,130 +380,70 @@ def main() -> int:
         for name, content in generated.items():
             atomic_write(instance_dir / name, content.encode(), 0o444)
 
-        bwrap = [
-            "bwrap",
+        bwrap: list[str | list[str]] = [
             "--unshare-all",
             "--die-with-parent",
-            "--cap-drop",
-            "ALL",
+            ["--cap-drop", "ALL"],
             "--share-net",
-            "--dev",
-            "/dev",
-            "--proc",
-            "/proc",
-            "--tmpfs",
-            "/nix",
-            "--ro-bind",
-            "/nix/store",
-            "/nix/store",
-            "--tmpfs",
-            str(home),
-            "--tmpfs",
-            "/etc",
-            "--tmpfs",
-            "/run",
-            "--dir",
-            "/run/user",
-            "--dir",
-            str(runtime),
+            ["--dev", "/dev"],
+            ["--proc", "/proc"],
+            ["--tmpfs", "/nix"],
+            ["--ro-bind", "/nix/store", "/nix/store"],
+            ["--tmpfs", str(home)],
+            ["--tmpfs", "/etc"],
+            ["--tmpfs", "/run"],
+            ["--dir", "/run/user"],
+            ["--dir", str(runtime)],
             # Bind the directory so socket recreation is visible to clients.
-            "--ro-bind",
-            str(nix_proxy_dir),
-            "/nix/var/nix/daemon-socket",
+            ["--ro-bind", str(nix_proxy_dir), "/nix/var/nix/daemon-socket"],
             # A writable state directory makes Nix auto-select a local store.
-            "--remount-ro",
-            "/nix",
-            "--ro-bind",
-            str(proxy_socket),
-            str(runtime / "bus"),
-            "--ro-bind",
-            str(metadata_path),
-            "/.flatpak-info",
-            "--tmpfs",
-            "/var",
-            "--bind",
-            str(home / ".pi"),
-            str(home / ".pi"),
-            "--bind",
-            str(home / ".cache/nix"),
-            str(home / ".cache/nix"),
-            "--bind",
-            str(root),
-            str(root),
+            ["--remount-ro", "/nix"],
+            ["--ro-bind", str(proxy_socket), str(runtime / "bus")],
+            ["--ro-bind", str(metadata_path), "/.flatpak-info"],
+            ["--tmpfs", "/var"],
+            ["--bind", str(home / ".pi"), str(home / ".pi")],
+            ["--bind", str(home / ".cache/nix"), str(home / ".cache/nix")],
+            ["--bind", str(root), str(root)],
             "--clearenv",
         ]
         codex_host = os.environ.get("PI_CODEX_HOST_ENABLED") == "1"
         if codex_host:
             broker_dir = runtime / "pi-codex-host"
             if broker_dir.is_dir():
-                bwrap.extend(
-                    ("--ro-bind", str(broker_dir), "/run/pi-codex-host")
-                )
+                add_bind(bwrap, "--ro-bind", broker_dir, "/run/pi-codex-host")
             # A missing socket must not reactivate sandbox image OAuth.
-            bwrap.extend(
-                (
-                    "--setenv",
-                    "PI_CODEX_HOST_SOCKET",
-                    "/run/pi-codex-host/broker.sock",
-                )
-            )
+            bwrap.append([
+                "--setenv", "PI_CODEX_HOST_SOCKET",
+                "/run/pi-codex-host/broker.sock",
+            ])
         # No SSH keys or agent socket are mounted; the host selects its own
         # signing key through filtered D-Bus.
         if has_wayland_clipboard:
             # Pi uses WAYLAND_DISPLAY only to select its wl-copy backend. The
             # compatibility client talks to the host broker, not to Wayland.
-            bwrap.extend(("--setenv", "WAYLAND_DISPLAY", "pi-clipboard"))
+            bwrap.append(["--setenv", "WAYLAND_DISPLAY", "pi-clipboard"])
         documents = portal_mount()
         if documents is not None and documents.is_dir():
-            bwrap.extend(
-                (
-                    "--dir",
-                    "/run/flatpak",
-                    "--ro-bind",
-                    str(documents),
-                    "/run/flatpak/doc",
-                    "--bind",
-                    str(documents),
-                    "/run/flatpak/doc-rw",
-                )
-            )
-            bwrap.extend(
-                ("--symlink", "/run/flatpak/doc", str(runtime / "doc"))
-            )
-        bwrap.extend(
-            (
-                "--setenv",
-                "LANG",
-                "C",
-                "--setenv",
-                "HOME",
-                str(home),
-                "--setenv",
-                "PWD",
-                str(Path.cwd()),
-                "--setenv",
-                "XDG_RUNTIME_DIR",
-                str(runtime),
-                "--setenv",
-                "DBUS_SESSION_BUS_ADDRESS",
-                f"unix:path={runtime}/bus",
-                "--setenv",
-                "PI_CODING_AGENT_DIR",
-                str(agent_dir),
-                "--setenv",
-                "PI_CODING_AGENT_SESSION_DIR",
-                str(agent_dir / "sessions"),
-                "--setenv",
-                "GIT_CONFIG_GLOBAL",
-                os.environ["PI_GIT_CONFIG"],
-                "--setenv",
-                "GIT_CONFIG_NOSYSTEM",
-                "1",
-                "--setenv",
-                "EDITOR",
-                "hx",
-            )
-        )
+            bwrap.extend([
+                ["--dir", "/run/flatpak"],
+                ["--ro-bind", str(documents), "/run/flatpak/doc"],
+                ["--bind", str(documents), "/run/flatpak/doc-rw"],
+                ["--symlink", "/run/flatpak/doc", str(runtime / "doc")],
+            ])
+        environment = {
+            "LANG": "C",
+            "HOME": str(home),
+            "PWD": str(Path.cwd()),
+            "XDG_RUNTIME_DIR": str(runtime),
+            "DBUS_SESSION_BUS_ADDRESS": f"unix:path={runtime}/bus",
+            "PI_CODING_AGENT_DIR": str(agent_dir),
+            "PI_CODING_AGENT_SESSION_DIR": str(agent_dir / "sessions"),
+            "GIT_CONFIG_GLOBAL": os.environ["PI_GIT_CONFIG"],
+            "GIT_CONFIG_NOSYSTEM": "1",
+            "EDITOR": "hx",
+        }
+        for key, value in environment.items():
+            bwrap.append(["--setenv", key, value])
         for name in generated:
             add_copy(bwrap, sandbox_files, instance_dir / name, f"/etc/{name}")
         # Preserve host network/timezone policy as per-launch snapshots.
@@ -549,7 +461,7 @@ def main() -> int:
                 "/etc/ssl/certs/ca-bundle.crt",
                 "/etc/pki/tls/certs/ca-bundle.crt",
             ):
-                bwrap.extend(("--symlink", bundle, alias))
+                bwrap.append(["--symlink", bundle, alias])
 
         upki_config = Path("/etc/upki/config.toml")
         upki_cache = Path("/var/cache/upki")
@@ -559,7 +471,7 @@ def main() -> int:
             add_copy(bwrap, sandbox_files, upki_config, upki_config)
 
         for entry in ("/bin/sh", "/usr/bin/env"):
-            bwrap.extend(("--ro-bind-try", entry, entry))
+            bwrap.append(["--ro-bind-try", entry, entry])
 
         sandbox_path = os.environ.get("PI_SANDBOX_PATH")
         if not sandbox_path:
@@ -568,7 +480,7 @@ def main() -> int:
             path = Path(entry)
             if not path.is_absolute() or not path.is_dir():
                 raise RuntimeError(f"Invalid sandbox PATH entry: {entry}")
-        bwrap.extend(("--setenv", "PATH", sandbox_path))
+        bwrap.append(["--setenv", "PATH", sandbox_path])
 
         git_file = root / ".git"
         if git_file.is_file():
@@ -593,12 +505,13 @@ def main() -> int:
         bwrap.extend(extra_binds)
         info_read, info_write = os.pipe()
         block_read, block_write = os.pipe()
-        bwrap.extend(
-            ("--info-fd", str(info_write), "--block-fd", str(block_read), "--")
-        )
+        bwrap.extend([
+            ["--info-fd", str(info_write)],
+            ["--block-fd", str(block_read)],
+        ])
         command = os.environ.get("SHELL", "/bin/sh") if debug else executable
         child = subprocess.Popen(
-            [*bwrap, command, *arguments],
+            ["bwrap", *flatten_args(bwrap), "--", command, *arguments],
             pass_fds=(
                 info_write,
                 block_read,

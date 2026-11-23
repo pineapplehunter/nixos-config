@@ -177,32 +177,20 @@ def sandbox_command(options, state, agent_source):
     nix_proxy_socket = nix_proxy_dir / "socket"
     if not nix_proxy_socket.is_socket():
         raise ValueError(f"Nix proxy socket not found: {nix_proxy_socket}")
-    args = [
-        "bwrap",
+    bwrap: list[str | list[str]] = [
         "--unshare-all",
         "--share-net",
         "--die-with-parent",
         "--new-session",
-        "--dev",
-        "/dev",
-        "--proc",
-        "/proc",
-        "--tmpfs",
-        "/nix",
-        "--ro-bind",
-        "/nix/store",
-        "/nix/store",
-        "--ro-bind",
-        str(nix_proxy_dir),
-        NIX_DAEMON_DIR,
-        "--remount-ro",
-        "/nix",
-        "--tmpfs",
-        "/run",
-        "--dir",
-        "/run/pi-subagent",
-        "--dir",
-        str(home),
+        ["--dev", "/dev"],
+        ["--proc", "/proc"],
+        ["--tmpfs", "/nix"],
+        ["--ro-bind", "/nix/store", "/nix/store"],
+        ["--ro-bind", str(nix_proxy_dir), NIX_DAEMON_DIR],
+        ["--remount-ro", "/nix"],
+        ["--tmpfs", "/run"],
+        ["--dir", "/run/pi-subagent"],
+        ["--dir", str(home)],
     ]
     unset = {
         "PUEUE_CONFIG_PATH", "PI_PUEUE_NOTIFY_DIR", "PI_SESSION_ID",
@@ -213,50 +201,28 @@ def sandbox_command(options, state, agent_source):
     if options.codex_host:
         unset.add("CODEX_HOME")
     for key in sorted(unset):
-        args.extend(["--unsetenv", key])
+        bwrap.append(["--unsetenv", key])
     for entry in ("/etc", "/bin", "/usr"):
-        args.extend(["--ro-bind", entry, entry])
+        bwrap.append(["--ro-bind", entry, entry])
     if pi_home.is_dir():
-        args.extend(
-            [
-                "--overlay-src",
-                str(pi_home),
-                "--tmp-overlay",
-                str(pi_home),
-                "--tmpfs",
-                str(pi_home / "agent/sessions"),
-            ]
-        )
+        bwrap.extend([
+            ["--overlay-src", str(pi_home), "--tmp-overlay", str(pi_home)],
+            ["--tmpfs", str(pi_home / "agent/sessions")],
+        ])
     if not agent_source.is_relative_to(pi_home):
-        args.extend(
-            [
-                "--overlay-src",
-                str(agent_source),
-                "--tmp-overlay",
-                str(agent_source),
-            ]
-        )
+        bwrap.append([
+            "--overlay-src", str(agent_source),
+            "--tmp-overlay", str(agent_source),
+        ])
     if agent_source != pi_home / "agent":
-        args.extend(["--tmpfs", str(agent_source / "sessions")])
-    args.extend(
-        [
-            "--bind",
-            options.directory,
-            options.project_path,
-            "--bind",
-            str(state / "tmp"),
-            "/tmp",
-            "--bind",
-            str(state / "sessions"),
-            "/run/pi-subagent/sessions",
-            "--ro-bind",
-            str(state / "prompt.md"),
-            "/run/pi-subagent/prompt.md",
-            "--bind",
-            str(state / "response.md"),
-            "/run/pi-subagent/response.md",
-        ]
-    )
+        bwrap.append(["--tmpfs", str(agent_source / "sessions")])
+    bwrap.extend([
+        ["--bind", options.directory, options.project_path],
+        ["--bind", str(state / "tmp"), "/tmp"],
+        ["--bind", str(state / "sessions"), "/run/pi-subagent/sessions"],
+        ["--ro-bind", str(state / "prompt.md"), "/run/pi-subagent/prompt.md"],
+        ["--bind", str(state / "response.md"), "/run/pi-subagent/response.md"],
+    ])
     # Match the parent's UPKI setup; the host remains the only cache writer.
     upki_config = Path("/etc/upki/config.toml")
     upki_cache = Path("/var/cache/upki")
@@ -264,7 +230,7 @@ def sandbox_command(options, state, agent_source):
         with upki_config.open("rb") as stream:
             upki_cache = Path(tomllib.load(stream)["cache-dir"])
     if upki_cache.is_dir():
-        args.extend(["--ro-bind", str(upki_cache), str(upki_cache)])
+        bwrap.append(["--ro-bind", str(upki_cache), str(upki_cache)])
     environment = {
         "HOME": str(home),
         "PWD": options.project_path,
@@ -277,14 +243,14 @@ def sandbox_command(options, state, agent_source):
     }
     if options.codex_host:
         environment[CODEX_SOCKET_ENV] = str(CODEX_SOCKET)
-        args.extend(["--ro-bind", str(CODEX_SOCKET), str(CODEX_SOCKET)])
+        bwrap.append(["--ro-bind", str(CODEX_SOCKET), str(CODEX_SOCKET)])
         # stdin is /dev/null in run_child: cover the global route with an
         # empty regular file without reading or modifying the parent default.
-        args.extend([
+        bwrap.append([
             "--ro-bind-data", "0", str(agent_source / "codex-route-default"),
         ])
     for key, value in environment.items():
-        args.extend(["--setenv", key, value])
+        bwrap.append(["--setenv", key, value])
     instructions = CHILD_INSTRUCTIONS
     if options.no_inherit_resources:
         instructions += (
@@ -302,37 +268,33 @@ def sandbox_command(options, state, agent_source):
         )
     if options.context:
         instructions += "\n## Additional context\n\n" + options.context + "\n"
-    args.extend(
-        [
-            "--chdir",
-            options.project_path,
-            "--",
-            SUBAGENT_RUNNER,
-            "/run/pi-subagent/prompt.md",
-            "--",
-            "--session-dir",
-            "/run/pi-subagent/sessions",
-            "--session-id",
-            options.session_id,
-            "--name",
-            options.name,
-            "--approve",
-            "--append-system-prompt",
-            instructions,
-        ]
-    )
+    bwrap.append(["--chdir", options.project_path])
+    command = [
+        SUBAGENT_RUNNER,
+        "/run/pi-subagent/prompt.md",
+        "--",
+        "--session-dir", "/run/pi-subagent/sessions",
+        "--session-id", options.session_id,
+        "--name", options.name,
+        "--approve",
+        "--append-system-prompt", instructions,
+    ]
     if options.no_inherit_resources:
-        args.extend(["--no-extensions", "--no-skills"])
+        command.extend(["--no-extensions", "--no-skills"])
     # Pi deduplicates discovered and explicit extensions by canonical path.
     for extension in PINNED_EXTENSIONS:
-        args.extend(["--extension", str(extension)])
+        command.extend(["--extension", str(extension)])
     if options.codex_host:
-        args.extend(["--extension", str(CODEX_EXTENSION)])
-        args.extend(["--provider", CODEX_HOST])
-    args.extend(["--model", options.model])
+        command.extend(["--extension", str(CODEX_EXTENSION)])
+        command.extend(["--provider", CODEX_HOST])
+    command.extend(["--model", options.model])
     if options.thinking:
-        args.extend(["--thinking", options.thinking])
-    return args
+        command.extend(["--thinking", options.thinking])
+    bwrap_args = [
+        arg for group in bwrap
+        for arg in ([group] if isinstance(group, str) else group)
+    ]
+    return ["bwrap", *bwrap_args, "--", *command]
 
 
 def run_child(options, state, agent_source):
