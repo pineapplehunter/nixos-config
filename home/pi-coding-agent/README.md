@@ -5,6 +5,11 @@ Pueue/Node sandbox tools, subagent launcher/runner, clipboard,
 portal clients, and host MCP registrations. Host/runtime sources remain under
 `pineapplehunter/wrapper/` and `pineapplehunter/tools/subagents/`.
 
+`default.nix` imports the sandbox and host daemon files, which together define
+the Pi Home Manager module. `sandbox.nix` assembles the wrapper. The clipboard,
+Git signing, GitHub fetch, Codex broker, and Nix proxy files define their own
+services and activation files.
+
 Extensions, global skills, external package declarations, and shared agent
 instructions now live in the separate
 [pi-customizations](https://github.com/pineapplehunter/pi-customizations)
