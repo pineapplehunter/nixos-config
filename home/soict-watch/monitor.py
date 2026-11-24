@@ -11,7 +11,7 @@ import re
 import subprocess
 import time
 from urllib.parse import unquote, urljoin, urlsplit, urlunsplit
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 from urllib.robotparser import RobotFileParser
 
 import requests
