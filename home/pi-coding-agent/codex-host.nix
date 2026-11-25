@@ -3,6 +3,7 @@ let
   piRoot = "${pkgs.pi-coding-agent}/lib/node_modules/pi-monorepo";
   broker = pkgs.replaceVars ./pineapplehunter/wrapper/codex_host.mts {
     PI_RUNTIME = "${piRoot}/dist/index.js";
+    PI_AI_RETRY = "${piRoot}/node_modules/@earendil-works/pi-ai/dist/utils/retry.js";
   };
   image = pkgs.replaceVars ./pineapplehunter/wrapper/codex_image_host.mts {
     PI_RUNTIME = "${piRoot}/dist";

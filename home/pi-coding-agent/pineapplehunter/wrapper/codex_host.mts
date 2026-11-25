@@ -5,7 +5,14 @@ import { readFile } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { join } from "node:path";
 import { ModelRuntime, VERSION } from "@PI_RUNTIME@";
-import type { Api, Message, Model, ModelsApiStreamOptions } from "@earendil-works/pi-ai";
+import { isRetryableAssistantError } from "@PI_AI_RETRY@";
+import type {
+  Api,
+  AssistantMessage,
+  Message,
+  Model,
+  ModelsApiStreamOptions,
+} from "@earendil-works/pi-ai";
 import { createImageHandler, IMAGE_BODY_LIMIT, imageAuth } from "./codex_image_host.mts";
 import {
   codexSearch,
@@ -305,14 +312,22 @@ function priorityReasoning(model: ChatModel, level: Reasoning | undefined) {
   });
 }
 
-function streamError(error: string | undefined, account: Account) {
-  // Do not forward arbitrary upstream error bodies, headers, or diagnostics.
-  if (/context.length|context window|too many tokens/i.test(error ?? ""))
+function streamError(message: AssistantMessage, account: Account, status: number | undefined) {
+  // Preserve Pi's retry signal without forwarding upstream text, headers or diagnostics.
+  const error = message.errorMessage ?? "";
+  if (/context.length|context window|too many tokens/i.test(error))
     return "context_length_exceeded";
-  if (USAGE_LIMIT.test(error ?? "")) return "Codex usage limit reached.";
-  if (/\b401\b|\b403\b|unauthoriz|authentication/i.test(error ?? "")) {
+  if (status === 429 || USAGE_LIMIT.test(error)) return "Codex usage limit reached.";
+  if (status === 401 || status === 403 || /\b401\b|\b403\b|unauthoriz|authentication/i.test(error)) {
     return `Codex ${account} authentication failed. Run pi-codex-auth login ${account} on the host.`;
   }
+  if (status === 408) return `Codex ${account}: upstream request timed out (HTTP 408).`;
+  if (status !== undefined && status >= 500)
+    return `Codex ${account}: upstream server error (HTTP ${status}).`;
+  if (status !== undefined && status >= 400)
+    return `Codex ${account} request rejected (HTTP ${status}).`;
+  if (isRetryableAssistantError(message))
+    return `Codex ${account}: upstream server or connection error.`;
   return `Codex ${account} request failed.`;
 }
 
@@ -676,9 +691,14 @@ export function broker(
       );
       const reasoning =
         isReasoning(data.reasoning) && data.reasoning !== "off" ? data.reasoning : undefined;
-      const streamFor = (account: Account, fast: FastSupport | undefined) => {
+      const streamFor = (
+        account: Account,
+        fast: FastSupport | undefined,
+        onStatus: (status: number) => void,
+      ) => {
         const options = {
           signal,
+          onResponse: ({ status }) => onStatus(status),
           sessionId:
             typeof data.sessionId === "string" && /^[\w-]{1,128}$/.test(data.sessionId)
               ? `${account}:${data.sessionId}`
@@ -727,7 +747,10 @@ export function broker(
       let workFast: FastSupport | undefined;
       const send = async (selected: Account, capability: FastSupport | undefined) => {
         let started = false;
-        for await (const event of streamFor(selected, capability)) {
+        let upstreamStatus: number | undefined;
+        for await (const event of streamFor(selected, capability, (status) => {
+          upstreamStatus = status;
+        })) {
           if (signal.aborted || res.destroyed) break;
           let fastError;
           if (
@@ -735,7 +758,7 @@ export function broker(
             selected === "personal" &&
             !started &&
             event.type === "error" &&
-            USAGE_LIMIT.test(event.error.errorMessage ?? "")
+            (upstreamStatus === 429 || USAGE_LIMIT.test(event.error.errorMessage ?? ""))
           ) {
             personalBlockedUntil = Date.now() + 60_000;
             if (await workAvailable(model, signal)) {
@@ -753,7 +776,6 @@ export function broker(
               await once(res, "drain", { signal });
             }
           }
-          started = true;
           const field =
             event.type === "done" ? "message" : event.type === "error" ? "error" : "partial";
           const original =
@@ -762,11 +784,21 @@ export function broker(
               : event.type === "error"
                 ? event.error
                 : event.partial;
-          const { diagnostics, errorMessage, ...message } = original;
-          const result =
-            event.type === "error"
-              ? { ...message, errorMessage: fastError ?? streamError(errorMessage, selected) }
-              : message;
+          const { diagnostics, errorMessage: _errorMessage, ...message } = original;
+          const errorMessage =
+            event.type === "error" ? fastError ?? streamError(event.error, selected, upstreamStatus) : undefined;
+          if (errorMessage) {
+            console.warn("Codex chat failure:", JSON.stringify({
+              account: selected,
+              model: model.id,
+              fast: !!capability,
+              upstreamStatus: upstreamStatus ?? null,
+              streamStarted: started,
+              errorMessage,
+            }));
+          }
+          const result = errorMessage ? { ...message, errorMessage } : message;
+          started = true;
           if (!res.write(JSON.stringify({ ...event, [field]: result }) + "\n")) {
             await once(res, "drain", { signal });
           }

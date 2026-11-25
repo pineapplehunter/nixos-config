@@ -176,6 +176,11 @@ After rebuilding broker code, restart `pi-codex-host.service` on the host,
 update customizations, and restart Pi. Stop or restart the socket only from
 the host.
 
+For chat failures, run `journalctl --user -u pi-codex-host.service --since '15 min ago'`
+on the host. The `Codex chat failure` entry includes the account, upstream
+HTTP status (if received), and whether streaming started, but not raw upstream
+errors or credentials. Pi's normal retry settings apply to transient failures.
+
 Account credentials live under `~/.local/state/pi-codex-host/`, outside
 the normal sandbox mounts. Do not expose that directory via a project mount,
 portal, or wrapper allow flag. Only the broker's runtime socket directory

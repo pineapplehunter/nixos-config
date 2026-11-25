@@ -80,6 +80,10 @@ async function unixFixture(t) {
       "data:text/javascript,export%20const%20ModelRuntime%3Dnull%2CVERSION%3D%271.5.2%27",
     )
     .replace(
+      "@PI_AI_RETRY@",
+      "data:text/javascript,export%20const%20isRetryableAssistantError%3D()%3D%3Efalse",
+    )
+    .replace(
       "./codex_image_host.mts",
       "data:text/javascript,export%20const%20createImageHandler%3Dnull%2CIMAGE_BODY_LIMIT%3D0%2CimageAuth%3Dnull",
     )
