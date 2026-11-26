@@ -1,10 +1,12 @@
 """Pi Remote host ticket broker and its restricted D-Bus client."""
 import asyncio
 import base64
+import hashlib
 import http.client
 import json
 import os
 from pathlib import Path
+from tempfile import TemporaryDirectory
 import re
 import ssl
 import subprocess
@@ -16,6 +18,7 @@ BUS = "io.github.pineapplehunter.PiRemoteTicket1"
 PATH = "/io/github/pineapplehunter/PiRemoteTicket1"
 NS = "pi-remote-host-v1"
 MAX_KEY = 80
+DEFAULT_ORIGIN = 'https://pi-agent.s.ihavenojob.work'
 
 
 def check_key(key):
@@ -62,35 +65,78 @@ def post(origin, path, payload):
         conn.close()
 
 
+def websocket_url(directory):
+    origin = json.loads((directory / 'host.json').read_text()).get('origin', DEFAULT_ORIGIN)
+    parse_origin(origin)
+    return f'wss://{urlsplit(origin).netloc}/agent/ws'
+
+
+class AgentKeyUnavailable(ValueError):
+    """Safe local diagnostic, without key material or subprocess output."""
+
+
+def agent_sign(fingerprint, message):
+    if not isinstance(fingerprint, str) or not re.fullmatch(r'SHA256:[A-Za-z0-9+/]{43}', fingerprint):
+        raise ValueError('invalid SSH fingerprint')
+    sock = os.environ.get('SSH_AUTH_SOCK')
+    if not sock:
+        raise AgentKeyUnavailable('SSH_AUTH_SOCK is not set in the host broker service')
+    env = {'PATH': os.environ['PATH'], 'SSH_AUTH_SOCK': sock,
+           'SSH_ASKPASS_REQUIRE': 'never'}
+    listing = subprocess.run(['ssh-add', '-L'], env=env, capture_output=True, timeout=5)
+    if listing.returncode:
+        raise AgentKeyUnavailable('host SSH agent is unavailable or has no loaded identities')
+    identities = listing.stdout.splitlines()
+    for identity in identities:
+        fields = identity.split()
+        if len(fields) < 2 or fields[0] != b'ssh-ed25519':
+            continue
+        pub = b' '.join(fields[:2]).decode('ascii')
+        check_key(pub)
+        digest = hashlib.sha256(base64.b64decode(fields[1])).digest()
+        if 'SHA256:' + base64.b64encode(digest).decode().rstrip('=') != fingerprint:
+            continue
+        # This fresh directory contains only a public key. SSH signing must
+        # be performed by the selected identity in the host's SSH agent.
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'selected.pub'
+            path.write_text(pub + '\n')
+            return subprocess.run(['ssh-keygen', '-Y', 'sign', '-n', NS, '-f', str(path)],
+                                  input=message, capture_output=True, timeout=5, check=True,
+                                  start_new_session=True, env=env).stdout.decode('ascii')
+    raise AgentKeyUnavailable('enrolled key is not loaded in the host SSH agent')
+
+
 def issue(directory, key):
     check_key(key)
     config = json.loads((directory / 'host.json').read_text())
-    host = config['host_id']
+    name = config['host_name']
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError('missing enrolled host name')
+    origin = parse_origin(config.get('origin', DEFAULT_ORIGIN))
+    reply = post(origin, '/agent/challenge', {'host_name': name, 'agent_key': key})
+    host = reply['host_id']
     if str(UUID(host)) != host:
-        raise ValueError('expected canonical host UUID')
-    origin = parse_origin(config['origin'])
-    binding = {'host_id': host, 'agent_key': key}
-    nonce = token(post(origin, '/agent/challenge', binding)['challenge'], nonce=True)
+        raise ValueError('expected canonical enrollment UUID')
+    nonce = token(reply['challenge'], nonce=True)
     message = f'{NS}\n{host}\n{key}\n{nonce}\n'.encode()
-    signed = subprocess.run(['ssh-keygen', '-Y', 'sign', '-n', NS, '-f', str(directory / 'host_ed25519')],
-                            input=message, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                            timeout=5, check=True, start_new_session=True,
-                            env={'PATH': os.environ['PATH'], 'SSH_ASKPASS_REQUIRE': 'never'})
-    return token(post(origin, '/agent/ticket', {**binding, 'challenge': nonce,
-                      'signature': signed.stdout.decode('ascii')})['ticket'])
+    signature = agent_sign(reply['fingerprint'], message)
+    return token(post(origin, '/agent/ticket', {'host_id': host, 'agent_key': key,
+                      'challenge': nonce, 'signature': signature})['ticket'])
 
 
-async def request(key):
+async def request(key=None):
     from dbus_next import Message, MessageType
     from dbus_next.aio import MessageBus
 
     bus = await MessageBus().connect()
     try:
         reply = await bus.call(Message(destination=BUS, path=PATH, interface=BUS,
-                                       member='RequestTicket', signature='s', body=[key]))
+                                       member='GetWebSocketURL' if key is None else 'RequestTicket',
+                                       signature='' if key is None else 's', body=[] if key is None else [key]))
         if reply is None or reply.message_type != MessageType.METHOD_RETURN or reply.signature != 's':
             raise ValueError('ticket request rejected')
-        return token(reply.body[0])
+        return reply.body[0] if key is None else token(reply.body[0])
     finally:
         bus.disconnect()
 
@@ -106,12 +152,22 @@ async def serve():
         active = 0
 
         @method()
+        def GetWebSocketURL(self) -> 's':
+            try:
+                return websocket_url(directory)
+            except (ValueError, KeyError, TypeError, OSError):
+                raise DBusError(f'{BUS}.Rejected', 'invalid gateway origin') from None
+
+        @method()
         async def RequestTicket(self, agent_key: 's') -> 's':
             if self.active >= 8:
                 raise DBusError(f'{BUS}.Busy', 'host broker busy')
             self.active += 1
             try:
                 return await asyncio.to_thread(issue, directory, agent_key)
+            except AgentKeyUnavailable as error:
+                print(str(error), file=sys.stderr, flush=True)
+                raise DBusError(f'{BUS}.KeyUnavailable', str(error)) from None
             except Exception:
                 # Never echo credentials, remote response bodies or paths over D-Bus.
                 raise DBusError(f'{BUS}.Rejected', 'ticket request failed') from None
@@ -128,6 +184,12 @@ async def serve():
 def main():
     if sys.argv[1:] == ['--dbus']:
         asyncio.run(serve())
+        return
+    if sys.argv[1:] == ['--ws-url']:
+        try:
+            print(asyncio.run(asyncio.wait_for(request(), timeout=5)))
+        except Exception:
+            sys.exit('pi-remote-request-ticket: endpoint discovery failed')
         return
     if sys.argv[1:]:
         sys.exit('usage: pi-remote-request-ticket < agent.pub')

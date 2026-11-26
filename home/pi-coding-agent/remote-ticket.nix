@@ -7,6 +7,14 @@
       runtimeInputs = [ pkgs.openssh ];
       text = ''exec ${python}/bin/python3 -I ${./pineapplehunter/wrapper/pi_remote_ticket.py} "$@"'';
     };
+    setupScripts = pkgs.runCommand "pi-remote-setup-scripts" { } ''
+      mkdir -p "$out"
+      cp ${./pineapplehunter/wrapper/pi_remote_setup.py} "$out/pi_remote_setup.py"
+      cp ${./pineapplehunter/wrapper/pi_remote_ticket.py} "$out/pi_remote_ticket.py"
+    '';
+    setup = pkgs.writeShellScriptBin "pi-remote-setup" ''
+      exec ${pkgs.python3}/bin/python3 -Es ${setupScripts}/pi_remote_setup.py "$@"
+    '';
     daemon = "${client}/bin/pi-remote-request-ticket --dbus";
   in {
     options.programs.pi-coding-agent.sandbox.remoteTicketClient = lib.mkOption {
@@ -16,7 +24,7 @@
     };
     config = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
       programs.pi-coding-agent.sandbox.remoteTicketClient = client;
-      home.packages = [ client ];
+      home.packages = [ client setup ];
       systemd.user.services.pi-remote-ticket = {
         Unit.Description = "Pi Remote host ticket broker";
         Service = {
@@ -24,7 +32,7 @@
           BusName = bus;
           ExecStart = daemon;
           NoNewPrivileges = true;
-          PrivateTmp = true;
+          # SSH_AUTH_SOCK may refer to a user-agent socket under /tmp.
         };
       };
       xdg.dataFile."dbus-1/services/${bus}.service".text = ''

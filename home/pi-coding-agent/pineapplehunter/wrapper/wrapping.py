@@ -314,9 +314,11 @@ def main() -> int:
             "--call=io.github.pineapplehunter.GitHubFetch1=io.github.pineapplehunter.GitHubFetch1.Run@/io/github/pineapplehunter/GitHubFetch1"  # noqa: E501
         )
     ticket = "io.github.pineapplehunter.PiRemoteTicket1"
-    ticket_rule = (f"--call={ticket}={ticket}.RequestTicket"
-                   "@/io/github/pineapplehunter/PiRemoteTicket1")
-    proxy_command.append(ticket_rule)
+    ticket_rules = [
+        f"--call={ticket}={ticket}.{method}@/io/github/pineapplehunter/PiRemoteTicket1"  # noqa: E501
+        for method in ("RequestTicket", "GetWebSocketURL")
+    ]
+    proxy_command.extend(ticket_rules)
     proxy_command.extend(
         f"--call={name}=io.github.pineapplehunter.Mcp1.{method}@/io/github/pineapplehunter/Mcp1"  # noqa: E501
         for name in MCP_BUS_NAMES
@@ -330,7 +332,7 @@ def main() -> int:
     # A second listener, not a chain: each address/path pair has its own
     # policy. Workers never receive the broader parent listener.
     proxy_command.extend([host_bus, str(ticket_socket), "--filter",
-                          ticket_rule])
+                          *ticket_rules])
     proxy = subprocess.Popen(
         ["bwrap", *flatten_args(proxy_bwrap), "--", *proxy_command],
         pass_fds=(lifetime_child.fileno(),),

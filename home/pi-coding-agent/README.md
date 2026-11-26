@@ -309,32 +309,27 @@ running sandbox keeps its old configuration and D-Bus permissions.
 
 ## Pi Remote ticket broker (Linux)
 
-Optional: enroll each Pi computer separately. Do the following **on the host,
-not in a Pi sandbox**. Use a dedicated Ed25519 key, not your Git or login key.
-The background service needs a noninteractive private key; protect the host
-account and keep this directory outside any sandbox/project mounts or backups
-accessible to agents. Never put the key in a Nix expression or the Nix store.
-
-```sh
-umask 077
-install -d -m 0700 ~/.config/pi-remote
-cd ~/.config/pi-remote
-test -e host_ed25519 || ssh-keygen -q -t ed25519 -N '' -C '' -f host_ed25519
-awk '{print $1, $2}' host_ed25519.pub
-```
-
-Give **only** that public key and a host name to the gateway administrator for
-registration at `/admin/hosts` on the browser origin. Save the returned UUID
-in `~/.config/pi-remote/host.json` together with the actual private agent HTTPS
-origin (no path, redirects or userinfo). Example, with placeholders:
+Enroll each computer **on the host, outside Pi’s sandbox**. Choose an existing
+Ed25519 identity from `ssh-add -L`, or load one with `ssh-add ~/.ssh/id_ed25519`.
+Register its public key under a unique name at `/admin/hosts`. Run `pi-remote-setup`
+on the host and enter that name and the agent WebSocket address. Press Enter to
+accept the displayed defaults. Alternatively, set
+`~/.config/pi-remote/host.json` to:
 
 ```json
-{"host_id":"SERVER-GENERATED-UUID","origin":"https://agents.example.org"}
+{"host_name":"build-laptop"}
 ```
 
+The default origin is `https://pi-agent.s.ihavenojob.work`. To use another
+gateway add an `origin` field. Upgrade the gateway before the broker. Replace
+the old `host_id` setting with the exact enabled enrollment name. In the shell
+with the loaded key, run `systemctl --user import-environment SSH_AUTH_SOCK`
+and restart `pi-remote-ticket.service`. Repeat after an agent socket change.
+The broker matches the gateway's enrolled fingerprint against local identities
+and uses SSHSIG without opening any host private key file.
+
 The private origin must serve `/agent/challenge`, `/agent/ticket` and
-`/agent/ws` with a certificate trusted by the host and the sandbox. Configure
-the extension for `wss://agents.example.org/agent/ws` on the same origin.
+`/agent/ws` with a certificate trusted by the host and the sandbox. The extension discovers `wss://agents.example.org/agent/ws` from this origin via `pi-remote-request-ticket --ws-url`.
 After installing the updated Home Manager module, start **new** Pi wrappers
 and workers: D-Bus filters are created at launch. Do not retain the old CA
 issuer/service or mTLS fallback. An unenrolled host can still use ordinary Pi.
@@ -342,7 +337,7 @@ issuer/service or mTLS fallback. An unenrolled host can still use ordinary Pi.
 Inside the wrapper, `pi-remote-request-ticket` takes just one canonical
 `ssh-ed25519 BASE64` agent public key on stdin (optional final LF). Its stdout
 is a short-lived secret; pipe it only to the requesting agent, never log it.
-A dedicated worker bus allows only `PiRemoteTicket1.RequestTicket`; parent
+A dedicated worker bus allows only `PiRemoteTicket1.RequestTicket` and `PiRemoteTicket1.GetWebSocketURL`; parent
 bus integrations are unchanged. The host signer constructs the namespaced
 message itself. No sandbox can select a URL, key path, namespace or message,
 and neither the host key nor an SSH agent socket is forwarded. The extension
@@ -350,9 +345,9 @@ proves ownership of its own ephemeral key before opening a Pi session.
 
 For troubleshooting, check that `pi-remote-request-ticket` and `ssh-keygen`
 are on the sandbox PATH and `pi-remote-ticket.service` is D-Bus activatable
-on the host. Verify the origin, TLS trust and registered key/UUID; never send
+on the host. Verify the origin, TLS trust and enrollment name and loaded key; never send
 tickets or private keys with diagnostics. Disable the host in `/admin/hosts`
-to revoke it; to rotate, enroll a new key/UUID and replace the host config.
+to revoke it; to rotate, disable the old enrollment and enroll the new public key under the same name.
 
 ## Checks
 

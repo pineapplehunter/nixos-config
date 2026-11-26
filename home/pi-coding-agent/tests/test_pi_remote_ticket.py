@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
@@ -24,18 +25,40 @@ class TicketTests(unittest.TestCase):
                             '-f', self.root / name], check=True)
         self.key = (self.root / 'agent.pub').read_text().strip()
         self.host = '12345678-1234-4abc-abcd-123456789abc'
-        self.config = {'origin': 'https://private.example:5151', 'host_id': self.host}
+        self.config = {'origin': 'https://private.example:5151', 'host_name': 'build-laptop'}
         (self.root / 'host.json').write_text(json.dumps(self.config))
         self.nonce = base64.urlsafe_b64encode(bytes(range(32))).decode().rstrip('=')
 
+    def test_endpoint_from_host_origin(self):
+        self.assertEqual(broker.websocket_url(self.root), 'wss://private.example:5151/agent/ws')
+
+    def test_name_only_configuration(self):
+        (self.root / 'host.json').write_text(json.dumps({'host_name': 'build-laptop'}))
+        self.assertEqual(broker.websocket_url(self.root), 'wss://pi-agent.s.ihavenojob.work/agent/ws')
+
     def test_signed_exchange(self):
+        sock = self.root / 'ssh-agent.sock'
+        env = self.enterContext(patch.dict(os.environ, {'SSH_AUTH_SOCK': str(sock)}))
+        agent = subprocess.Popen(['ssh-agent', '-D', '-a', str(sock)], stdout=subprocess.DEVNULL)
+        self.addCleanup(agent.wait, 5)
+        self.addCleanup(agent.terminate)
+        for _ in range(100):
+            if sock.is_socket():
+                break
+            time.sleep(.01)
+        for name in ('agent', 'host_ed25519'):
+            subprocess.run(['ssh-add', str(self.root / name)], env=env, check=True, stderr=subprocess.DEVNULL)
+            (self.root / name).unlink()
+        fingerprint = subprocess.check_output(['ssh-keygen', '-lf', self.root / 'host_ed25519.pub']).split()[1].decode()
+        with self.assertRaisesRegex(ValueError, 'not loaded'):
+            broker.agent_sign('SHA256:' + 'A' * 43, b'no matching identity')
         result = base64.urlsafe_b64encode(b'synthetic ticket').decode().rstrip('=')
         def gateway(origin, path, body):
             self.assertEqual(origin, ('private.example', 5151))
             binding = {'host_id': self.host, 'agent_key': self.key}
             if path == '/agent/challenge':
-                self.assertEqual(body, binding)
-                return {'challenge': self.nonce}
+                self.assertEqual(body, {'host_name': 'build-laptop', 'agent_key': self.key})
+                return {'challenge': self.nonce, 'host_id': self.host, 'fingerprint': fingerprint}
             self.assertEqual(path, '/agent/ticket')
             (self.root / 'sig').write_text(body.pop('signature'))
             self.assertEqual(body, {**binding, 'challenge': self.nonce})
@@ -58,7 +81,7 @@ class TicketTests(unittest.TestCase):
 
     def test_rejects_invalid_challenge_before_signing(self):
         for nonce in ('?', 'AA', self.nonce + '=', self.nonce + '\n'):
-            with patch.object(broker, 'post', return_value={'challenge': nonce}) as post, self.assertRaises(ValueError):
+            with patch.object(broker, 'post', return_value={'challenge': nonce, 'host_id': self.host}) as post, self.assertRaises(ValueError):
                 broker.issue(self.root, self.key)
             self.assertEqual(post.call_count, 1)
 
@@ -99,6 +122,12 @@ class PrivateBusTest(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(proc.returncode, 0)
                     self.assertEqual(stdout, (ticket + '\n').encode())
                     self.assertEqual(issue.call_args.args[1], key)
+                    with patch.object(broker, 'websocket_url', return_value='wss://test.local/agent/ws'):
+                        proc = await asyncio.create_subprocess_exec(sys.executable, broker.__file__, '--ws-url',
+                                stdout=asyncio.subprocess.PIPE)
+                        stdout, _ = await proc.communicate()
+                        self.assertEqual(proc.returncode, 0)
+                        self.assertEqual(stdout, b'wss://test.local/agent/ws\n')
             finally:
                 task.cancel()
                 await asyncio.gather(task, return_exceptions=True)
