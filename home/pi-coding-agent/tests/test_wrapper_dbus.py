@@ -20,6 +20,24 @@ import portal_client as portal  # noqa: E402
 import wrapping  # noqa: E402
 
 
+class HostConfigProtection(unittest.TestCase):
+    def test_refuses_binds_exposing_ticket_signer_directory(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            home = Path(tmp)
+            private = home / '.config/pi-remote'
+            private.mkdir(parents=True)
+            alias = home / 'alias'
+            alias.symlink_to(private)
+            for source in (home, private.parent, alias, private / 'host.json'):
+                with self.assertRaisesRegex(RuntimeError, 'host configuration'):
+                    wrapping.protect_ticket_config([
+                        ['--ro-bind', str(source), '/test'],
+                    ], home)
+            wrapping.protect_ticket_config([
+                ['--bind', str(home / 'project'), '/test'],
+            ], home)
+
+
 class Portal(ServiceInterface):
     def __init__(self, bus):
         super().__init__("org.freedesktop.portal.FileChooser")

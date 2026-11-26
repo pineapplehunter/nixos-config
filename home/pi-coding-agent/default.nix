@@ -7,6 +7,6 @@
     ./github-fetch.nix
     ./codex-broker.nix
     ./nix-daemon.nix
-    ./remote-issuer.nix
+    ./remote-ticket.nix
   ];
 }

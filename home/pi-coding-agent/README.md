@@ -307,6 +307,53 @@ and arbitrary SSH signing requests are not supported by this broker.
 Rebuild Home Manager/NixOS and restart Pi to activate these changes; an already
 running sandbox keeps its old configuration and D-Bus permissions.
 
+## Pi Remote ticket broker (Linux)
+
+Optional: enroll each Pi computer separately. Do the following **on the host,
+not in a Pi sandbox**. Use a dedicated Ed25519 key, not your Git or login key.
+The background service needs a noninteractive private key; protect the host
+account and keep this directory outside any sandbox/project mounts or backups
+accessible to agents. Never put the key in a Nix expression or the Nix store.
+
+```sh
+umask 077
+install -d -m 0700 ~/.config/pi-remote
+cd ~/.config/pi-remote
+test -e host_ed25519 || ssh-keygen -q -t ed25519 -N '' -C '' -f host_ed25519
+awk '{print $1, $2}' host_ed25519.pub
+```
+
+Give **only** that public key and a host name to the gateway administrator for
+registration at `/admin/hosts` on the browser origin. Save the returned UUID
+in `~/.config/pi-remote/host.json` together with the actual private agent HTTPS
+origin (no path, redirects or userinfo). Example, with placeholders:
+
+```json
+{"host_id":"SERVER-GENERATED-UUID","origin":"https://agents.example.org"}
+```
+
+The private origin must serve `/agent/challenge`, `/agent/ticket` and
+`/agent/ws` with a certificate trusted by the host and the sandbox. Configure
+the extension for `wss://agents.example.org/agent/ws` on the same origin.
+After installing the updated Home Manager module, start **new** Pi wrappers
+and workers: D-Bus filters are created at launch. Do not retain the old CA
+issuer/service or mTLS fallback. An unenrolled host can still use ordinary Pi.
+
+Inside the wrapper, `pi-remote-request-ticket` takes just one canonical
+`ssh-ed25519 BASE64` agent public key on stdin (optional final LF). Its stdout
+is a short-lived secret; pipe it only to the requesting agent, never log it.
+A dedicated worker bus allows only `PiRemoteTicket1.RequestTicket`; parent
+bus integrations are unchanged. The host signer constructs the namespaced
+message itself. No sandbox can select a URL, key path, namespace or message,
+and neither the host key nor an SSH agent socket is forwarded. The extension
+proves ownership of its own ephemeral key before opening a Pi session.
+
+For troubleshooting, check that `pi-remote-request-ticket` and `ssh-keygen`
+are on the sandbox PATH and `pi-remote-ticket.service` is D-Bus activatable
+on the host. Verify the origin, TLS trust and registered key/UUID; never send
+tickets or private keys with diagnostics. Disable the host in `/admin/hosts`
+to revoke it; to rotate, enroll a new key/UUID and replace the host config.
+
 ## Checks
 
 ```sh
@@ -324,6 +371,8 @@ Python environment with `dbus-next` installed:
 ```sh
 PI_WRAPPER_TEST_PRIVATE_BUS=1 dbus-run-session -- \
   python3 -m unittest discover -s home/pi-coding-agent/tests -p 'test_git_signing.py'
+PI_WRAPPER_TEST_PRIVATE_BUS=1 dbus-run-session -- \
+  python3 -m unittest discover -s home/pi-coding-agent/tests -p 'test_pi_remote_ticket.py'
 ```
 
 Resource tests moved to pi-customizations.

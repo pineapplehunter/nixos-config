@@ -195,7 +195,7 @@ def sandbox_command(options, state, agent_source):
     unset = {
         "PUEUE_CONFIG_PATH", "PI_PUEUE_NOTIFY_DIR", "PI_SESSION_ID",
         "PI_SESSION_FILE", "PI_PROVIDER", "PI_MODEL", "PI_REASONING_LEVEL",
-        CODEX_SOCKET_ENV,
+        CODEX_SOCKET_ENV, "DBUS_SESSION_BUS_ADDRESS",
     }
     unset.update(key for key in os.environ if key.startswith("PI_CODEX_"))
     if options.codex_host:
@@ -241,6 +241,12 @@ def sandbox_command(options, state, agent_source):
         "PI_SKIP_VERSION_CHECK": "1",
         "NIX_REMOTE": "daemon",
     }
+    # The stock parent wrapper mounts a separate, issuance-only endpoint.
+    # Do not use the parent session bus or a caller-supplied socket path.
+    ticket = Path("/run/pi-subagent/ticket-bus")
+    if ticket.is_socket() and ticket.resolve() == ticket:
+        bwrap.append(["--ro-bind", str(ticket), str(ticket)])
+        environment["DBUS_SESSION_BUS_ADDRESS"] = f"unix:path={ticket}"
     if options.codex_host:
         environment[CODEX_SOCKET_ENV] = str(CODEX_SOCKET)
         bwrap.append(["--ro-bind", str(CODEX_SOCKET), str(CODEX_SOCKET)])

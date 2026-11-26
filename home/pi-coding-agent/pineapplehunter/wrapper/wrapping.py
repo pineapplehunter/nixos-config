@@ -178,6 +178,18 @@ def read_bwrap_info(
     raise RuntimeError("did not receive valid Bubblewrap process information")
 
 
+def protect_ticket_config(bwrap: list[str | list[str]], home: Path) -> None:
+    private = (home / ".config/pi-remote").resolve()
+    for arg in bwrap:
+        if isinstance(arg, list) and arg[0] in {
+            "--ro-bind", "--ro-bind-try", "--bind", "--dev-bind",
+        }:
+            source = Path(arg[1]).resolve()
+            if (source.is_relative_to(private)
+                    or private.is_relative_to(source)):
+                raise RuntimeError("cannot mount Pi Remote host configuration")
+
+
 def parse_wrapper_args(
     arguments: list[str], bwrap: list[str | list[str]]
 ) -> tuple[bool, bool, list[str]]:
@@ -261,6 +273,7 @@ def main() -> int:
     proxy_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
     os.chmod(proxy_dir, 0o700)
     proxy_socket = proxy_dir / f"session-{os.getpid()}-{secrets.token_hex(8)}"
+    ticket_socket = proxy_socket.with_suffix(".ticket")
     host_bus = os.environ.get(
         "DBUS_SESSION_BUS_ADDRESS", f"unix:path={runtime}/bus"
     )
@@ -300,9 +313,10 @@ def main() -> int:
         proxy_command.append(
             "--call=io.github.pineapplehunter.GitHubFetch1=io.github.pineapplehunter.GitHubFetch1.Run@/io/github/pineapplehunter/GitHubFetch1"  # noqa: E501
         )
-    proxy_command.append(
-        "--call=io.github.pineapplehunter.PiRemoteCA1=io.github.pineapplehunter.PiRemoteCA1.IssueClientCertificate@/io/github/pineapplehunter/PiRemoteCA1"  # noqa: E501
-    )
+    ticket = "io.github.pineapplehunter.PiRemoteTicket1"
+    ticket_rule = (f"--call={ticket}={ticket}.RequestTicket"
+                   "@/io/github/pineapplehunter/PiRemoteTicket1")
+    proxy_command.append(ticket_rule)
     proxy_command.extend(
         f"--call={name}=io.github.pineapplehunter.Mcp1.{method}@/io/github/pineapplehunter/Mcp1"  # noqa: E501
         for name in MCP_BUS_NAMES
@@ -313,6 +327,10 @@ def main() -> int:
         f"--call={PORTAL}=org.freedesktop.portal.Request.Close@{PORTAL_PATH}/request/*",  # noqa: E501
         f"--broadcast={PORTAL}=org.freedesktop.portal.Request.Response@{PORTAL_PATH}/request/*",  # noqa: E501
     ])
+    # A second listener, not a chain: each address/path pair has its own
+    # policy. Workers never receive the broader parent listener.
+    proxy_command.extend([host_bus, str(ticket_socket), "--filter",
+                          ticket_rule])
     proxy = subprocess.Popen(
         ["bwrap", *flatten_args(proxy_bwrap), "--", *proxy_command],
         pass_fds=(lifetime_child.fileno(),),
@@ -338,6 +356,7 @@ def main() -> int:
             except subprocess.TimeoutExpired:
                 proxy.kill()
         proxy_socket.unlink(missing_ok=True)
+        ticket_socket.unlink(missing_ok=True)
         shutil.rmtree(instance_dir, ignore_errors=True)
 
     def forward(signum, _frame) -> None:
@@ -353,7 +372,7 @@ def main() -> int:
             fail("Failed to synchronize with the D-Bus proxy")
         lifetime_parent.settimeout(None)
         deadline = time.monotonic() + 5
-        while not proxy_socket.is_socket():
+        while not (proxy_socket.is_socket() and ticket_socket.is_socket()):
             if proxy.poll() is not None:
                 fail("Failed to start the D-Bus proxy")
             if time.monotonic() >= deadline:
@@ -402,6 +421,7 @@ def main() -> int:
             # A writable state directory makes Nix auto-select a local store.
             ["--remount-ro", "/nix"],
             ["--ro-bind", str(proxy_socket), str(runtime / "bus")],
+            ["--ro-bind", str(ticket_socket), "/run/pi-subagent/ticket-bus"],
             ["--ro-bind", str(metadata_path), "/.flatpak-info"],
             ["--tmpfs", "/var"],
             ["--bind", str(home / ".pi"), str(home / ".pi")],
@@ -506,6 +526,7 @@ def main() -> int:
         if upki_cache.is_dir():
             add_bind(bwrap, "--ro-bind", upki_cache, upki_cache)
         bwrap.extend(extra_binds)
+        protect_ticket_config(bwrap, home)
         info_read, info_write = os.pipe()
         block_read, block_write = os.pipe()
         bwrap.extend([
