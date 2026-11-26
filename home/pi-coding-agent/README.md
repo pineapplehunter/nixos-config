@@ -179,7 +179,10 @@ the host.
 For chat failures, run `journalctl --user -u pi-codex-host.service --since '15 min ago'`
 on the host. The `Codex chat failure` entry includes the account, upstream
 HTTP status (if received), and whether streaming started, but not raw upstream
-errors or credentials. Pi's normal retry settings apply to transient failures.
+errors or credentials. For chat failures, Pi shows the provider's structured HTTP or stream error
+code and display message, or its incomplete reason, when supplied. These details are not
+written to the journal. A generic error means the broker had no display detail;
+it does not by itself indicate a policy refusal.
 
 Account credentials live under `~/.local/state/pi-codex-host/`, outside
 the normal sandbox mounts. Do not expose that directory via a project mount,
@@ -192,9 +195,15 @@ child. See the [subagent guide](pineapplehunter/tools/subagents/SUBAGENTS.md).
 
 Brokered `web_search` and `source_check` require the pinned `pi-web-access`
 0.48.0 patch. See `extensions/codex-host/web/README.md` in pi-customizations
-for activation and rollback. Hosted search follows `/codex-route` and does
-not fall back to paid OpenAI. Independent search providers, page fetching,
-and the GitHub shim are unchanged.
+for activation and rollback. If `web_search` asks for `/login` or an OpenAI
+API key while chat is using `codex-host`, run `pi list --no-approve`. The
+plain `npm:pi-web-access` entry must be filtered with `"extensions": []`
+in `~/.pi/agent/settings.json`, and the separate patched package path must
+also be listed. Restore those entries and reload Pi rather than adding
+credentials to the sandbox. `pi-update` preserves this manual override.
+
+Hosted search follows `/codex-route` and does not fall back to paid OpenAI.
+Independent search providers, page fetching, and the GitHub shim are unchanged.
 
 `/usage` and the footer show the active host Codex account. In Auto, send a
 prompt first so the broker can report which account it used. `/usage` can

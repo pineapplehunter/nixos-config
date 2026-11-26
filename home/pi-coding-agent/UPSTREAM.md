@@ -10,6 +10,23 @@ or hash pins together; `pi-update` does not rebase either patch.
 the packaged Pi SDK using `pkgs.typescript` (the Go compiler in the pinned
 nixpkgs). It then checks Node's native TypeScript syntax before
 installing the broker. The service runs those same `.mts` files directly.
+
+The build runs [chat differential tests](pineapplehunter/wrapper/codex_chat.test.mjs)
+against the packaged Pi Codex provider: full and simple requests, streamed text,
+thinking and tool calls, usage, refusals, HTTP/stream failures, retries, and
+cancellation. They use fake credentials and a mock upstream, not a live account.
+
+The compatibility target is native Pi Codex chat. The client requests the SDK's
+`auto` transport by default. The broker accepts only SDK transport names (SSE,
+WebSocket, cached WebSocket, or auto), pins the endpoint, and gates priority on
+Fast capability. WebSocket continuation is account-, credential-, and session-scoped;
+an isolated replay or a token change cannot reuse the previous socket. A second
+offline test checks delta requests, socket isolation, and fallback to guarded SSE. It never forwards client credentials, custom headers, URLs, or fetch
+implementations. `onPayload` edits the broker request, not raw OpenAI JSON.
+`onResponse` receives upstream status per HTTP attempt, without upstream headers;
+raw provider-event callbacks are not proxied. A successful WebSocket chat
+doesn't synthesize an HTTP status event.
+The broker caps a chat at 15 minutes and accepts at most five SDK retries.
 The [compiler config](pineapplehunter/wrapper/codex-tsconfig.json) enables
 `strict` plus checks for missing returns, switch fall-through, unused code,
 and explicit type-only imports. Keep runtime validation for socket input

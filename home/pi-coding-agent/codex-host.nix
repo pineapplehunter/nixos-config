@@ -5,6 +5,13 @@ let
     PI_RUNTIME = "${piRoot}/dist/index.js";
     PI_AI_RETRY = "${piRoot}/node_modules/@earendil-works/pi-ai/dist/utils/retry.js";
   };
+  ws = pkgs.replaceVars ./pineapplehunter/wrapper/codex_chat_ws.mts {
+    PI_TRANSCRIPT = "${piRoot}/node_modules/@earendil-works/pi-ai/dist/utils/transcript.js";
+    PI_CODEX_API = "${piRoot}/node_modules/@earendil-works/pi-ai/dist/api/openai-codex-responses.js";
+  };
+  chatTest = pkgs.replaceVars ./pineapplehunter/wrapper/codex_chat.test.mjs {
+    PI_CODEX_API = "${piRoot}/node_modules/@earendil-works/pi-ai/dist/api/openai-codex-responses.js";
+  };
   image = pkgs.replaceVars ./pineapplehunter/wrapper/codex_image_host.mts {
     PI_RUNTIME = "${piRoot}/dist";
     IMAGE_PACKAGE = codexImages;
@@ -20,6 +27,7 @@ pkgs.runCommand "pi-codex-host" {
   ];
 } ''
   cp ${broker} codex_host.mts
+  cp ${ws} codex_chat_ws.mts
   cp ${image} codex_image_host.mts
   cp ${./pineapplehunter/wrapper/codex_search.mts} codex_search.mts
   cp ${./pineapplehunter/wrapper/codex_protocol.mts} codex_protocol.mts
@@ -29,5 +37,7 @@ pkgs.runCommand "pi-codex-host" {
     # Check that Node can load this syntax without transforming TypeScript.
     node --check "$file"
   done
+  cp ${chatTest} codex_chat.test.mjs
+  node --test codex_chat.test.mjs
   install -Dm644 -t "$out" ./*.mts
 ''

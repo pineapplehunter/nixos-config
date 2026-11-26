@@ -12,6 +12,7 @@ import type {
   Message,
   Model,
   ModelsApiStreamOptions,
+  SimpleStreamOptions,
 } from "@earendil-works/pi-ai";
 import { createImageHandler, IMAGE_BODY_LIMIT, imageAuth } from "./codex_image_host.mts";
 import {
@@ -36,6 +37,10 @@ const UPSTREAM = "openai-codex";
 const MAX_BODY = 32 * 1024 * 1024;
 const EFFORTS = ["minimal", "low", "medium", "high", "xhigh", "max"] as const;
 type Reasoning = "off" | (typeof EFFORTS)[number];
+const oneOf = <T extends string>(v: unknown, choices: readonly T[]): v is T =>
+  choices.some((c) => c === v);
+const boundedInt = (v: unknown, max: number) =>
+  typeof v === "number" && Number.isSafeInteger(v) && v >= 0 && v <= max ? v : undefined;
 const reasoningLevels = new Set<unknown>(["off", ...EFFORTS]);
 const isReasoning = (value: unknown): value is Reasoning => reasoningLevels.has(value);
 const roles = new Set<unknown>(["system", "user", "assistant", "toolResult"]);
@@ -312,13 +317,63 @@ function priorityReasoning(model: ChatModel, level: Reasoning | undefined) {
   });
 }
 
+function displayFields(code: unknown, message: unknown): string | undefined {
+  return [code, message].filter((s) => typeof s === "string" && s.trim()).join(": ") || undefined;
+}
+
+// Only extract provider-authored display fields. SDK exception strings may contain
+// serialized events, HTTP bodies or local diagnostics and aren't safe to forward.
+function providerFailure(data: unknown): string | undefined {
+  const event = record(data);
+  const response = record(event?.response);
+  if (response?.status === "incomplete" &&
+      (event?.type === "response.incomplete" || event?.type === "response.done" || event?.type === "response.completed")) {
+    const reason = record(response.incomplete_details)?.reason;
+    return typeof reason === "string" && reason ? `Response incomplete: ${reason}` : "Response incomplete without a provider reason";
+  }
+  const failed = event?.type === "response.failed";
+  if (!failed && event?.type !== "error") return;
+  const error = record(failed ? response?.error : event?.error);
+  const message = (!failed && typeof event?.message === "string") ? event.message : error?.message;
+  const code = (!failed && typeof event?.code === "string") ? event.code : error?.code;
+  const detail = displayFields(code, message);
+  if (!detail) return;
+  return failed ? detail : `Codex error: ${detail}`;
+}
+
+// The SDK consumes the original response. Inspect only a bounded copy of failed
+// responses, and never treat a raw HTTP body as a user-facing error.
+async function httpFailure(response: Response): Promise<string | undefined> {
+  const reader = response.clone().body?.getReader();
+  if (!reader) return;
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      size += value.length;
+      if (size > 64 * 1024) return;
+      chunks.push(value);
+    }
+    const error = record(record(JSON.parse(Buffer.concat(chunks).toString("utf8")))?.error);
+    return displayFields(error?.code ?? error?.type, error?.message);
+  } catch {
+    // Malformed or non-JSON error responses use the broker's classified fallback.
+  } finally {
+    void reader.cancel().catch(() => {});
+  }
+  return undefined;
+}
+
 function streamError(message: AssistantMessage, account: Account, status: number | undefined) {
   // Preserve Pi's retry signal without forwarding upstream text, headers or diagnostics.
   const error = message.errorMessage ?? "";
   if (/context.length|context window|too many tokens/i.test(error))
     return "context_length_exceeded";
   if (status === 429 || USAGE_LIMIT.test(error)) return "Codex usage limit reached.";
-  if (status === 401 || status === 403 || /\b401\b|\b403\b|unauthoriz|authentication/i.test(error)) {
+  if (status === 403) return `Codex ${account} request forbidden (HTTP 403).`;
+  if (status === 401 || /\b401\b|unauthoriz|authentication/i.test(error)) {
     return `Codex ${account} authentication failed. Run pi-codex-auth login ${account} on the host.`;
   }
   if (status === 408) return `Codex ${account}: upstream request timed out (HTTP 408).`;
@@ -680,7 +735,7 @@ export function broker(
         return json(res, 409, { error: fastUnavailable(account, fast.capability, model) });
       }
       // Only model IDs, transcript data and explicitly supported scalar options
-      // come from Pi. Never accept client transport, API key, URL, or headers.
+      // come from Pi. Never accept client networking code, API keys, URLs, or headers.
       // Preserve replay for the selected route; let Pi convert messages
       // from a different provider when the user switches routes.
       // The broker checks roles above; the SDK owns the transcript payload format.
@@ -691,14 +746,27 @@ export function broker(
       );
       const reasoning =
         isReasoning(data.reasoning) && data.reasoning !== "off" ? data.reasoning : undefined;
-      const streamFor = (
+      const streamFor = async (
         account: Account,
         fast: FastSupport | undefined,
-        onStatus: (status: number) => void,
+        onStatus: (status: number) => Promise<void>,
+        onFailure: (detail: string | undefined) => void,
+        secrets: string[],
       ) => {
+        const displayFailure = (detail: string | undefined) => {
+          if (!detail) return;
+          for (const secret of secrets) detail = detail.replaceAll(secret, "[redacted]");
+          onFailure(detail.replace(/[\u0000-\u001f\u007f-\u009f]/g, " ").slice(0, 4096));
+        };
         const options = {
           signal,
           onResponse: ({ status }) => onStatus(status),
+          onProviderStreamEvent: (event) => displayFailure(providerFailure(event)),
+          cacheRetention: oneOf(data.cacheRetention, ["none", "short", "long"] as const) ? data.cacheRetention : undefined,
+          temperature: typeof data.temperature === "number" && Number.isFinite(data.temperature) ? data.temperature : undefined,
+          timeoutMs: boundedInt(data.timeoutMs, 900_000),
+          maxRetries: boundedInt(data.maxRetries, 5),
+          maxRetryDelayMs: boundedInt(data.maxRetryDelayMs, 900_000),
           sessionId:
             typeof data.sessionId === "string" && /^[\w-]{1,128}$/.test(data.sessionId)
               ? `${account}:${data.sessionId}`
@@ -709,8 +777,9 @@ export function broker(
             data.maxTokens > 0
               ? Math.min(data.maxTokens, model.maxTokens)
               : undefined,
-          transport: "sse",
-          fetch: (url, init) => {
+          transport: oneOf(data.transport, ["auto", "websocket", "websocket-cached"] as const) ? data.transport : "sse",
+          websocketConnectTimeoutMs: boundedInt(data.websocketConnectTimeoutMs, 900_000),
+          fetch: async (url, init) => {
             if (url !== CODEX_RESPONSES) throw new Error("Unexpected Codex endpoint");
             if (
               fast &&
@@ -718,39 +787,70 @@ export function broker(
             ) {
               throw new Error("Codex login changed after Fast capability verification.");
             }
-            return fetch(url, { ...init, redirect: "error" });
+            const headers = new Headers(init?.headers);
+            secrets.splice(0, secrets.length, ...[headers.get("authorization")?.replace(/^Bearer /i, ""), headers.get("chatgpt-account-id")]
+              .filter((s): s is string => !!s));
+            onFailure(undefined); // Don't reuse a previous attempt's detail on an SDK retry.
+            const response = await fetch(url, { ...init, redirect: "error" });
+            if (!response.ok) displayFailure(await httpFailure(response));
+            return response;
           },
         } satisfies ModelsApiStreamOptions<"openai-codex-responses">;
-        // Pi 1.5.2's simple adapter drops serviceTier. Use the full Codex SDK
+        const auth = options.transport !== "sse" && model.api === "openai-codex-responses"
+          ? await accountAuth(runtimes[account], signal).catch(() => undefined) : undefined;
+        const allowSocket = auth && (!fast || fastFingerprint(auth.headers.Authorization) === fast.fingerprint);
+        const token = auth?.headers.Authorization.slice("Bearer ".length);
+        const socket = allowSocket && token ? (await import("./codex_chat_ws.mts")).socketClient(
+          model, messages, token, data.disableContinuation === true || options.cacheRetention === "none" ? undefined : options.sessionId,
+        ) : undefined;
+        if (socket && auth && token) secrets.push(token, auth.headers["ChatGPT-Account-Id"]);
+        else options.transport = "sse"; // All runtime-managed requests must use the guarded fetch.
+        const dispatch = socket ?? {
+          stream: (o: ModelsApiStreamOptions<"openai-codex-responses">) => runtimes[account].stream(model, { messages }, o),
+          streamSimple: (o: SimpleStreamOptions) => runtimes[account].streamSimple(model, { messages }, o),
+        };
+        // Pi's simple adapter drops serviceTier. Use the full Codex SDK
         // stream for priority so its request builder AND cost logic see the tier.
-        return fast
-          ? runtimes[account].stream(
-              model,
-              { messages },
-              {
+        const full = data.full === true;
+        return fast || full
+          ? dispatch.stream({
                 ...options,
-                serviceTier: "priority",
-                reasoningEffort: priorityReasoning(model, reasoning),
+                serviceTier: fast ? "priority" : full && oneOf(data.serviceTier, ["auto", "default", "flex", "scale"] as const)
+                  ? data.serviceTier : undefined,
+                toolChoice: oneOf(data.toolChoice, ["auto", "none", "required"] as const) ? data.toolChoice : undefined,
+                textVerbosity: full && oneOf(data.textVerbosity, ["low", "medium", "high"] as const) ? data.textVerbosity : undefined,
+                reasoningSummary: full && (data.reasoningSummary === null ||
+                  oneOf(data.reasoningSummary, ["auto", "concise", "detailed", "off", "on"] as const)) ? data.reasoningSummary : undefined,
+                reasoningEffort: full
+                  ? (oneOf(data.reasoningEffort, ["none", ...EFFORTS] as const) ? data.reasoningEffort : undefined)
+                  : priorityReasoning(model, reasoning) ?? (model.reasoning ? "none" : undefined),
               },
             )
-          : runtimes[account].streamSimple(
-              model,
-              { messages },
-              {
+          : dispatch.streamSimple({
                 ...options,
                 reasoning,
+                toolChoice: oneOf(data.toolChoice, ["auto", "none"] as const) ? data.toolChoice : undefined,
               },
             );
       };
-      res.writeHead(200, { "Content-Type": "application/x-ndjson" });
+      const statusEvents = req.headers["x-pi-codex-status-events"] === "1";
+      res.writeHead(200, { "Content-Type": "application/x-ndjson",
+        ...(statusEvents ? { "X-Pi-Codex-Status-Events": "1" } : {}),
+      });
       res.flushHeaders();
       let workFast: FastSupport | undefined;
       const send = async (selected: Account, capability: FastSupport | undefined) => {
         let started = false;
         let upstreamStatus: number | undefined;
-        for await (const event of streamFor(selected, capability, (status) => {
+        let providerDetail: string | undefined;
+        const secrets: string[] = [];
+        for await (const event of await streamFor(selected, capability, async (status) => {
           upstreamStatus = status;
-        })) {
+          if (statusEvents && !signal.aborted && !res.destroyed &&
+              !res.write(JSON.stringify({ type: "codex-status", status }) + "\n")) {
+            await once(res, "drain", { signal });
+          }
+        }, (detail) => { providerDetail = detail; }, secrets)) {
           if (signal.aborted || res.destroyed) break;
           let fastError;
           if (
@@ -785,6 +885,11 @@ export function broker(
                 ? event.error
                 : event.partial;
           const { diagnostics, errorMessage: _errorMessage, ...message } = original;
+          // Pi also copies incomplete_details.reason into rawStopReason.
+          if (message.rawStopReason) {
+            for (const secret of secrets) message.rawStopReason = message.rawStopReason.replaceAll(secret, "[redacted]");
+            message.rawStopReason = message.rawStopReason.slice(0, 4096);
+          }
           const errorMessage =
             event.type === "error" ? fastError ?? streamError(event.error, selected, upstreamStatus) : undefined;
           if (errorMessage) {
@@ -797,7 +902,14 @@ export function broker(
               errorMessage,
             }));
           }
-          const result = errorMessage ? { ...message, errorMessage } : message;
+          // The SDK synthesizes this quota notice (including the reset time) from
+          // HTTP metadata. Preserve its known format, not arbitrary SDK exception text.
+          const usageNotice = original.errorMessage?.match(
+            /^You have hit your ChatGPT usage limit(?: \((?:free|plus|pro|team|business|enterprise|edu) plan\))?\.(?: Try again in ~\d+ min\.)?$/,
+          )?.[0];
+          const result = errorMessage
+            ? { ...message, errorMessage: fastError ?? usageNotice ?? providerDetail ?? errorMessage }
+            : message;
           started = true;
           if (!res.write(JSON.stringify({ ...event, [field]: result }) + "\n")) {
             await once(res, "drain", { signal });
